@@ -1,0 +1,31 @@
+// src/app/shells/EmployeeShell.tsx
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { roleStorage } from "../storage/roleStorage";
+import { ROUTE_PATHS } from "../router/routePaths";
+
+export function EmployeeShell() {
+  const role = roleStorage.get();
+  const loc = useLocation();
+
+  if (role !== "employee") {
+    return <Navigate to={ROUTE_PATHS.landing} state={{ from: loc.pathname }} replace />;
+  }
+
+  return (
+    <div style={{ background: "var(--wm-emp-bg)", minHeight: "100vh" }}>
+      <div className="wm-topbar">
+        <div className="wm-title">
+          <h1>WorkMitra</h1>
+          <p>Employee</p>
+        </div>
+        <button className="wm-iconbtn" type="button" aria-label="Notifications">
+          🔔
+        </button>
+      </div>
+
+      <div className="wm-container">
+        <Outlet />
+      </div>
+    </div>
+  );
+}

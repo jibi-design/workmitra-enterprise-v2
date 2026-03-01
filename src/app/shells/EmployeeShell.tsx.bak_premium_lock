@@ -1,0 +1,62 @@
+// src/app/shells/EmployeeShell.tsx
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { roleStorage } from "../storage/roleStorage";
+import { ROUTE_PATHS } from "../router/routePaths";
+
+function IconBell() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6V11a7 7 0 1 0-14 0v5L3 18v1h18v-1l-2-2Zm-2 1H7v-6a5 5 0 1 1 10 0v6Z"
+      />
+    </svg>
+  );
+}
+
+function IconSettings() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.2 7.2 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 1h-3.8a.5.5 0 0 0-.49.42l-.36 2.54c-.58.24-1.12.55-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 7.48a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94L2.83 14.52a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.31.6.22l2.39-.96c.5.39 1.05.7 1.63.94l.36 2.54c.04.24.25.42.49.42h3.8c.24 0 .45-.18.49-.42l.36-2.54c.58-.24 1.12-.55 1.63-.94l2.39.96c.22.09.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"
+      />
+    </svg>
+  );
+}
+
+export function EmployeeShell() {
+  const role = roleStorage.get();
+  const loc = useLocation();
+
+  if (role !== "employee") {
+    return <Navigate to={ROUTE_PATHS.landing} state={{ from: loc.pathname }} replace />;
+  }
+
+  return (
+    <div style={{ background: "var(--wm-emp-bg)", minHeight: "100vh" }}>
+      <div className="wm-topbar">
+        <div className="wm-title">
+          <h1>WorkMitra</h1>
+          <p>Dashboard</p>
+        </div>
+
+        <div className="wm-topbarActions">
+          <span className="wm-rolePill">Employee</span>
+
+          <button className="wm-iconbtn" type="button" aria-label="Notifications" title="Notifications">
+            <IconBell />
+          </button>
+
+          <button className="wm-iconbtn" type="button" aria-label="Settings" title="Settings">
+            <IconSettings />
+          </button>
+        </div>
+      </div>
+
+      <div className="wm-container">
+        <Outlet />
+      </div>
+    </div>
+  );
+}
