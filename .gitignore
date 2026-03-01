@@ -8,3 +8,9 @@ Thumbs.db
 .env
 .env.*
 src/index.css.__tmp
+
+# Local backups
+*.bak
+*.bak2
+*.bak_*
+
