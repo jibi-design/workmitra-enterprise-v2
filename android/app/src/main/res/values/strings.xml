@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">workmitra-enterprise-v2</string>
+    <string name="title_activity_main">workmitra-enterprise-v2</string>
+    <string name="package_name">com.workmitra.app</string>
+    <string name="custom_url_scheme">com.workmitra.app</string>
+</resources>

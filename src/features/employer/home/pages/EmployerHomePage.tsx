@@ -1,166 +1,213 @@
-// src/features/employer/home/pages/EmployerHomePage.tsx
+﻿// src/features/employer/home/pages/EmployerHomePage.tsx
+// Session 15: 2-col tiles, zero=grey values, CSS-driven green icons,
+// useCallback handlers, vault stats prop, broadcast modal clean.
+
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useNavigate } from "react-router-dom";
+import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { CenterModal } from "../../../../shared/components/CenterModal";
+import { checkAndSendRatingReminders } from "../../helpers/ratingNudgeNotificationService";
+import { getDashboardSnapshot, subscribeDashboard } from "../helpers/employerHomeDashboard";
+import { employerSettingsStorage } from "../../company/storage/employerSettings.storage";
+import { IconTileShift, IconBroadcast } from "../components/employerHomeIcons";
+import {
+  ShiftJobsCard,
+  CareerJobsCard,
+} from "../components/EmployerHomePrimaryCards";
+import {
+  RatingHintCard,
+  WorkVaultCard,
+  InsightsCard,
+} from "../components/EmployerHomeSecondaryCards";
+import { OnboardingOverlay } from "../../../../shared/components/OnboardingOverlay";
+import { EMPLOYER_SLIDES, ONBOARDING_KEY } from "../../../../shared/components/onboardingConstants";
+
+/* ---- Style tokens ---- */
+const ZERO_VALUE_STYLE = {
+  color: "var(--wm-zero-text, #9ca3af)",
+} as const;
+
+/* ------------------------------------------------ */
+/* Main Page                                        */
+/* ------------------------------------------------ */
 export function EmployerHomePage() {
+  const nav = useNavigate();
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    try { return !localStorage.getItem(ONBOARDING_KEY); } catch { return false; }
+  });
+  const data = useSyncExternalStore(subscribeDashboard, getDashboardSnapshot, getDashboardSnapshot);
+  const [showBroadcastModal, setShowBroadcastModal] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [welcomeFading, setWelcomeFading] = useState(false);
+
+  const isFirstTime = useMemo(() => !data.shiftPostsExist, [data.shiftPostsExist]);
+  const companyDisplayName = useMemo(() => {
+    const profile = employerSettingsStorage.get();
+    return profile.companyName || profile.fullName || "";
+  }, []);
+
+  useEffect(() => { checkAndSendRatingReminders(); }, []);
+
+  useEffect(() => {
+    if (!isFirstTime) return;
+    const fadeTimer = setTimeout(() => setWelcomeFading(true), 10000);
+    const removeTimer = setTimeout(() => setShowWelcome(false), 10500);
+    return () => { clearTimeout(fadeTimer); clearTimeout(removeTimer); };
+  }, [isFirstTime]);
+
+  /* ---- Handlers ---- */
+  const handleShiftTile = useCallback(() => {
+    nav(ROUTE_PATHS.employerShiftHome);
+  }, [nav]);
+
+  const handleShiftTileKey = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === "Enter") nav(ROUTE_PATHS.employerShiftHome);
+  }, [nav]);
+
+  const handleBroadcastTile = useCallback(() => {
+    setShowBroadcastModal(true);
+  }, []);
+
+  const handleBroadcastTileKey = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === "Enter") setShowBroadcastModal(true);
+  }, []);
+
+  const handleCloseBroadcastModal = useCallback(() => {
+    setShowBroadcastModal(false);
+  }, []);
+
+  const handleShiftBroadcast = useCallback(() => {
+    setShowBroadcastModal(false);
+    nav(ROUTE_PATHS.employerShiftWorkspaces);
+  }, [nav]);
+
   return (
     <div>
-      {/* Top Stats Tiles (3) - fixed, no gradients */}
-      <div className="wm-er-tiles">
-        <div className="wm-er-tile">
+      {/* ---- Top Tiles (2-column) ---- */}
+      <div className="wm-er-tiles wm-er-dashTiles">
+        <div
+          className="wm-er-tile"
+          role="button"
+          tabIndex={0}
+          style={{ cursor: "pointer" }}
+          onClick={handleShiftTile}
+          onKeyDown={handleShiftTileKey}
+        >
           <div className="wm-er-tileTop">
-            <div className="wm-er-tileLabel">Active Shifts</div>
-            <span className="wm-er-tileIcon" aria-hidden="true">
-              🗓️
-            </span>
+            <div className="wm-er-tileLabel">Upcoming Shifts</div>
+            <div className="wm-er-tileIcon">
+              <IconTileShift />
+            </div>
           </div>
-          <div className="wm-er-tileValue">0</div>
+          <div
+            className="wm-er-tileValue"
+            style={data.pendingShifts === 0 ? ZERO_VALUE_STYLE : undefined}
+          >
+            {data.pendingShifts}
+          </div>
         </div>
 
-        <div className="wm-er-tile">
+        <div
+          className="wm-er-tile"
+          role="button"
+          tabIndex={0}
+          style={{ cursor: "pointer" }}
+          onClick={handleBroadcastTile}
+          onKeyDown={handleBroadcastTileKey}
+        >
           <div className="wm-er-tileTop">
-            <div className="wm-er-tileLabel">Open Jobs</div>
-            <span className="wm-er-tileIcon" aria-hidden="true">
-              📌
-            </span>
+            <div className="wm-er-tileLabel">Broadcast Messages</div>
+            <div className="wm-er-tileIcon">
+              <IconBroadcast />
+            </div>
           </div>
-          <div className="wm-er-tileValue">0</div>
-        </div>
-
-        <div className="wm-er-tile">
-          <div className="wm-er-tileTop">
-            <div className="wm-er-tileLabel">Total Staff</div>
-            <span className="wm-er-tileIcon" aria-hidden="true">
-              👥
-            </span>
+          <div
+            className="wm-er-tileValue"
+            style={data.broadcastMessages === 0 ? ZERO_VALUE_STYLE : undefined}
+          >
+            {data.broadcastMessages}
           </div>
-          <div className="wm-er-tileValue">0</div>
         </div>
       </div>
 
-      {/* Domain Cards - white cards + subtle tinted header only */}
-      <div style={{ marginTop: 12 }}>
-        <section className="wm-er-card wm-er-accentCard wm-er-vShift">
-          <div className="wm-er-headTint">
-            <div className="wm-er-cardHead">
-              <div>
-                <div className="wm-er-titleRow">
-                  <span className="wm-er-domainIcon" aria-hidden="true">
-                    🗓️
-                  </span>
-                  <div>
-                    <div className="wm-er-cardTitle">Shift Management</div>
-                    <div className="wm-er-cardSub">Create & manage shifts, applicants, assignments.</div>
-                  </div>
-                </div>
-              </div>
-
-              <button className="wm-primarybtn" type="button" onClick={() => window.alert("Employer Shift module: next")}>
-                Post Shift
-              </button>
-            </div>
+      {/* ---- Broadcast Modal ---- */}
+      <CenterModal
+        open={showBroadcastModal}
+        onBackdropClose={handleCloseBroadcastModal}
+        ariaLabel="Choose broadcast type"
+        maxWidth={400}
+      >
+        <div style={{ padding: 20 }}>
+          <div style={{ fontWeight: 700, fontSize: 15, color: "var(--wm-er-text)" }}>
+            Broadcast Messages
           </div>
-
-          <div className="wm-er-chips">
-            <span className="wm-er-chip">
-              Active: <span className="n">0</span>
-            </span>
-            <span className="wm-er-chip">
-              Pending: <span className="n">0</span>
-            </span>
+          <div style={{ marginTop: 6, fontSize: 13, color: "var(--wm-er-muted)", lineHeight: 1.5 }}>
+            Choose the broadcast stream you want to open.
           </div>
-        </section>
-
-        <section className="wm-er-card wm-er-accentCard wm-er-vCareer">
-          <div className="wm-er-headTint">
-            <div className="wm-er-cardHead">
-              <div>
-                <div className="wm-er-titleRow">
-                  <span className="wm-er-domainIcon" aria-hidden="true">
-                    💼
-                  </span>
-                  <div>
-                    <div className="wm-er-cardTitle">Hiring Pipeline</div>
-                    <div className="wm-er-cardSub">Post jobs & manage candidates through stages.</div>
-                  </div>
-                </div>
-              </div>
-
-              <button className="wm-primarybtn" type="button" onClick={() => window.alert("Employer Career module: next")}>
-                Post Job
-              </button>
-            </div>
-          </div>
-
-          <div className="wm-er-chips">
-            <span className="wm-er-chip">
-              Open: <span className="n">0</span>
-            </span>
-            <span className="wm-er-chip">
-              Approvals: <span className="n">0</span>
-            </span>
-          </div>
-        </section>
-
-        <section className="wm-er-card wm-er-accentCard wm-er-vWorkforce">
-          <div className="wm-er-headTint">
-            <div className="wm-er-cardHead">
-              <div>
-                <div className="wm-er-titleRow">
-                  <span className="wm-er-domainIcon" aria-hidden="true">
-                    🧾
-                  </span>
-                  <div>
-                    <div className="wm-er-cardTitle">Workforce Control</div>
-                    <div className="wm-er-cardSub">Manage staff, permissions, attendance and performance.</div>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                className="wm-primarybtn"
-                type="button"
-                onClick={() => window.alert("Employer WorkforceOps module: next")}
-              >
-                Manage
-              </button>
-            </div>
-          </div>
-
-          <div className="wm-er-chips">
-            <span className="wm-er-chip">
-              Staff: <span className="n">0</span>
-            </span>
-            <span className="wm-er-chip">
-              Alerts: <span className="n">0</span>
-            </span>
-          </div>
-        </section>
-
-        {/* Insights - tiny icon + baseline aligned */}
-        <section className="wm-er-insights">
-          <div className="wm-er-insightsHead">
-            <div className="wm-er-insightsTitle">
-              📊 <span>Insights</span>
-            </div>
-            <button className="wm-er-linkBtn" type="button" onClick={() => window.alert("Analytics: next module")}>
-              View analytics →
+          <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+            <button
+              type="button"
+              onClick={handleShiftBroadcast}
+              style={{
+                width: "100%",
+                padding: "12px 16px",
+                borderRadius: 10,
+                border: "1px solid var(--wm-shift-border, rgba(22,163,74,0.2))",
+                background: "var(--wm-shift-wash, rgba(22,163,74,0.06))",
+                color: "var(--wm-shift-accent, #16a34a)",
+                fontWeight: 700,
+                fontSize: 13,
+                cursor: "pointer",
+                textAlign: "center",
+              }}
+            >
+              Shift Jobs Broadcasts
             </button>
           </div>
+        </div>
+      </CenterModal>
 
-          <div className="wm-er-kpis">
-            <div className="wm-er-kpiRow">
-              <div className="wm-er-kpiLabel">Hires</div>
-              <div className="wm-er-kpiValue">0</div>
-            </div>
-            <div className="wm-er-kpiRow">
-              <div className="wm-er-kpiLabel">Reports</div>
-              <div className="wm-er-kpiValue">0</div>
-            </div>
-            <div className="wm-er-kpiRow">
-              <div className="wm-er-kpiLabel">Cancellations</div>
-              <div className="wm-er-kpiValue">0</div>
-            </div>
+      {/* ---- Welcome Card ---- */}
+      {isFirstTime && showWelcome && (
+        <div
+          style={{
+            marginTop: 12,
+            borderRadius: 12,
+            padding: 16,
+            textAlign: "center",
+            background: "var(--wm-success-wash, #f0fdf4)",
+            border: "1px solid var(--wm-success-border, #86efac)",
+            opacity: welcomeFading ? 0 : 1,
+            transition: "opacity 0.5s ease-out",
+          }}
+        >
+          <div style={{ fontSize: 15, fontWeight: 700, color: "var(--wm-success-dark, #15803d)" }}>
+            {companyDisplayName ? `Welcome, ${companyDisplayName}!` : "Welcome!"} 👋
           </div>
-        </section>
+          <div style={{ marginTop: 6, fontSize: 13, color: "var(--wm-text-muted, #6b7280)", lineHeight: 1.5 }}>
+            Everything you need to manage your team is right here. Set up your company, build your team, and get started.
+          </div>
+        </div>
+      )}
+
+      {/* ---- Cards ---- */}
+      <div style={{ marginTop: 12 }}>
+        <ShiftJobsCard data={data} />
+        <CareerJobsCard data={data} />
+        {/* Phase 2 — HR, Console, Workforce hidden at launch */}
+        <RatingHintCard />
+        <WorkVaultCard />
+        <InsightsCard data={data} />
       </div>
+
+      {/* Onboarding — first launch only */}
+      {showOnboarding && (
+        <OnboardingOverlay
+          slides={EMPLOYER_SLIDES}
+          ctaLabel="Post Your First Job &#8594;"
+          onComplete={() => { setShowOnboarding(false); nav(ROUTE_PATHS.employerShiftCreate); }}
+        />
+      )}
     </div>
   );
 }

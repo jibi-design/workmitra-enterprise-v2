@@ -1,0 +1,283 @@
+﻿/* src/app/theme/employee.css — Employee Home, cards, tiles, domain overrides */
+/* v3.0: All fontWeight max 700. Never 800, 900, 1000. */
+
+/* ------------------------------------------------ */
+/* Employee tiles — BASE (used everywhere)          */
+/* ------------------------------------------------ */
+.wm-ee-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--wm-space-12);
+  margin-top: 0;
+}
+.wm-ee-dashTiles {
+  grid-template-columns: 1fr 1fr;
+}
+.wm-ee-tile {
+  border: 1px solid var(--wm-er-border);
+  background: #fff;
+  border-radius: var(--wm-radius-14);
+  padding: 14px;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+}
+.wm-ee-tile::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--wm-er-accent-shift, #16a34a);
+}
+.wm-ee-vCareer .wm-ee-tile::before {
+  background: var(--wm-er-accent-career, #1d4ed8);
+}
+.wm-ee-tileTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.wm-ee-tileLabel { font-size: 12px; color: var(--wm-er-muted); }
+.wm-ee-tileValue {
+  margin-top: 6px;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--wm-er-text);
+}
+.wm-ee-tileValue.is-zero { color: var(--wm-er-text); }
+.wm-ee-tileIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--wm-er-divider);
+  background: #fff;
+  color: var(--wm-er-muted);
+}
+.wm-ee-tileIcon svg { display: block; }
+
+/* ------------------------------------------------ */
+/* DASHBOARD ONLY tiles — green border + centered   */
+/* Scoped to .wm-ee-dashTiles (EmployeeHomePage)    */
+/* ------------------------------------------------ */
+.wm-ee-dashTiles .wm-ee-tile {
+  text-align: center;
+}
+.wm-ee-dashTiles .wm-ee-tileTop {
+  justify-content: center;
+}
+.wm-ee-dashTiles .wm-ee-tileValue {
+  text-align: center;
+}
+.wm-ee-dashTiles .wm-ee-tileIcon {
+  border: none;
+  background: var(--wm-er-shift-wash, rgba(22,163,74,0.08));
+  color: var(--wm-er-accent-shift, #16a34a);
+}
+
+/* ------------------------------------------------ */
+/* Employee cards                                   */
+/* ------------------------------------------------ */
+.wm-ee-card {
+  border: 1px solid var(--wm-er-border);
+  background: #fff;
+  border-radius: var(--wm-radius-14);
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.wm-ee-card + .wm-ee-card { margin-top: var(--wm-space-12); }
+
+.wm-ee-helperText {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--wm-er-muted);
+}
+
+.wm-ee-linkBtn {
+  border: 0;
+  background: transparent;
+  color: var(--wm-brand-600);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+.wm-ee-linkBtn:hover { color: var(--wm-brand-700); }
+.wm-ee-linkBtn[disabled],
+.wm-ee-linkBtn[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ------------------------------------------------ */
+/* Employee accent strip + head tint                */
+/* ------------------------------------------------ */
+.wm-ee-accentCard::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--wm-ee-accent, var(--wm-brand-600));
+  border-top-left-radius: var(--wm-radius-14);
+  border-bottom-left-radius: var(--wm-radius-14);
+}
+.wm-ee-headTint {
+  margin-left: -16px;
+  margin-right: -16px;
+  margin-top: -16px;
+  padding: 12px 16px 12px 16px;
+  border-bottom: 1px solid var(--wm-er-divider);
+  background: var(--wm-ee-wash, transparent);
+}
+
+.wm-ee-cardHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--wm-space-12);
+}
+.wm-ee-titleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.wm-ee-domainIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--wm-radius-14);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--wm-er-divider);
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--wm-ee-accent, var(--wm-brand-600));
+}
+.wm-ee-domainIcon svg { display: block; }
+
+.wm-ee-cardTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--wm-er-text);
+  line-height: 1.2;
+}
+.wm-ee-cardSub {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--wm-er-muted);
+  line-height: 1.4;
+}
+
+/* ------------------------------------------------ */
+/* Employee chips                                   */
+/* ------------------------------------------------ */
+.wm-ee-chips {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.wm-ee-chip {
+  height: 28px;
+  border-radius: 999px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f4f6f8;
+  border: 1px solid #e5e7eb;
+  font-size: 12px;
+  color: var(--wm-er-text);
+}
+.wm-ee-chip .n { font-weight: 700; color: inherit; }
+
+/* ------------------------------------------------ */
+/* Employee insights                                */
+/* ------------------------------------------------ */
+.wm-ee-insights {
+  margin-top: var(--wm-space-12);
+  border: 1px solid var(--wm-er-border);
+  background: #fff;
+  border-radius: var(--wm-radius-14);
+  padding: 16px;
+}
+.wm-ee-insightsHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.wm-ee-insightsTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--wm-er-text);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1;
+}
+.wm-ee-insightsTitle svg { display: block; }
+.wm-ee-kpis {
+  margin-top: 10px;
+  display: grid;
+  gap: 10px;
+}
+.wm-ee-kpiRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid var(--wm-er-divider);
+}
+.wm-ee-kpiRow:first-child { border-top: 0; padding-top: 0; }
+.wm-ee-kpiLabel { font-size: 12px; color: var(--wm-er-muted); }
+.wm-ee-kpiValue { font-size: 14px; font-weight: 700; color: var(--wm-er-text); }
+.wm-ee-kpiValue.is-zero { color: var(--wm-er-text); }
+
+/* ------------------------------------------------ */
+/* Employee domain mapping                          */
+/* ------------------------------------------------ */
+.wm-ee-vShift { --wm-ee-accent: var(--wm-er-accent-shift); --wm-ee-wash: var(--wm-er-shift-wash); }
+.wm-ee-vCareer { --wm-ee-accent: var(--wm-er-accent-career); --wm-ee-wash: var(--wm-er-career-wash); }
+.wm-ee-vWorkforce { --wm-ee-accent: var(--wm-er-accent-workforce); --wm-ee-wash: var(--wm-er-workforce-wash); }
+
+/* ------------------------------------------------ */
+/* Employee Shift green overrides                   */
+/* ------------------------------------------------ */
+.wm-ee-vShift .wm-primarybtn { background: var(--wm-er-accent-shift); }
+.wm-ee-vShift .wm-primarybtn:hover { background: #115e59; }
+
+.wm-ee-vShift .wm-outlineBtn {
+  height: 40px;
+  border-radius: var(--wm-radius-14);
+  border: 1px solid var(--wm-er-border);
+  background: #fff;
+  padding: 0 12px;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--wm-er-text);
+  white-space: nowrap;
+}
+
+.wm-ee-vShift .wm-ee-linkBtn { color: var(--wm-er-accent-shift); }
+.wm-ee-vShift .wm-ee-linkBtn:hover { color: #115e59; }
+
+/* Career blue button override */
+.wm-ee-vCareer .wm-primarybtn,
+.wm-career-btn {
+  background: var(--wm-er-accent-career, #1d4ed8);
+  color: #fff;
+}
+.wm-ee-vCareer .wm-primarybtn:hover,
+.wm-career-btn:hover {
+  background: #1e40af;
+}

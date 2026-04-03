@@ -1,0 +1,152 @@
+/* src/app/theme/admin.css
+ *
+ * WorkMitra Admin — Light Premium Theme (v5 Approved)
+ * Background: #f4f6f8  |  Cards: #ffffff  |  Navy topbar: #0f172a
+ * Accent: #16a34a (green)  |  Domain colors preserved
+ */
+
+.wm-shellAdmin {
+  --wm-ad-bg: #f4f6f8;
+  --wm-ad-white: #ffffff;
+  --wm-ad-card: #ffffff;
+  --wm-ad-card-inner: #f7f8fa;
+  --wm-ad-card-inner-hover: #f0f2f5;
+  --wm-ad-border: rgba(15, 23, 42, 0.07);
+  --wm-ad-border-strong: rgba(15, 23, 42, 0.12);
+  --wm-ad-divider: #e8ecf0;
+  --wm-ad-navy: #0f172a;
+  --wm-ad-navy-700: #1e293b;
+  --wm-ad-navy-600: #334155;
+  --wm-ad-navy-500: #475569;
+  --wm-ad-navy-400: #64748b;
+  --wm-ad-navy-300: #94a3b8;
+  --wm-ad-navy-200: #cbd5e1;
+  --wm-ad-navy-50: #f1f5f9;
+  --wm-ad-green: #16a34a;
+  --wm-ad-green-light: #22c55e;
+  --wm-ad-green-dim: rgba(22, 163, 74, 0.08);
+  --wm-ad-green-border: rgba(22, 163, 74, 0.20);
+  --wm-ad-shift: #0f766e;
+  --wm-ad-shift-dim: rgba(15, 118, 110, 0.06);
+  --wm-ad-shift-border: rgba(15, 118, 110, 0.14);
+  --wm-ad-career: #3730a3;
+  --wm-ad-career-light: #6366f1;
+  --wm-ad-career-dim: rgba(55, 48, 163, 0.06);
+  --wm-ad-career-border: rgba(55, 48, 163, 0.14);
+  --wm-ad-workforce: #b45309;
+  --wm-ad-workforce-dim: rgba(180, 83, 9, 0.06);
+  --wm-ad-workforce-border: rgba(180, 83, 9, 0.14);
+  --wm-ad-danger: #dc2626;
+  --wm-ad-danger-dim: rgba(220, 38, 38, 0.06);
+  --wm-ad-r: 16px;
+  --wm-ad-ri: 12px;
+  --wm-ad-rs: 10px;
+  --wm-ad-sh: 0 1px 3px rgba(15, 23, 42, 0.04), 0 6px 16px rgba(15, 23, 42, 0.03);
+  --wm-ad-sh-md: 0 2px 8px rgba(15, 23, 42, 0.06), 0 12px 28px rgba(15, 23, 42, 0.05);
+}
+
+.wm-shellAdmin { background: var(--wm-ad-bg); color: var(--wm-ad-navy); min-height: 100dvh; }
+
+/* ── Navy Topbar ── */
+.wm-shellAdmin .wm-topbar.wm-admin-topbar { background: var(--wm-ad-navy); border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+.wm-shellAdmin .wm-admin-topbar .wm-title h1 { color: #fff; font-size: 17px; font-weight: 900; letter-spacing: -0.3px; }
+.wm-shellAdmin .wm-admin-topbar .wm-title p { color: rgba(255, 255, 255, 0.45); font-size: 11px; }
+.wm-shellAdmin .wm-admin-topbar .wm-iconbtn { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.10); color: rgba(255, 255, 255, 0.6); border-radius: var(--wm-ad-ri); transition: all 0.15s; }
+.wm-shellAdmin .wm-admin-topbar .wm-iconbtn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.14); color: #fff; }
+.wm-shellAdmin .wm-admin-topbar .wm-roleBadge { background: rgba(34, 197, 94, 0.15); color: var(--wm-ad-green-light); font-size: 8px; font-weight: 800; padding: 2px 8px; border-radius: 999px; letter-spacing: 0.8px; border: 1px solid rgba(34, 197, 94, 0.25); }
+
+/* ── Tabs ── */
+.wm-ad-tabs { display: flex; gap: 0; padding: 0 16px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; background: var(--wm-ad-white); border-bottom: 1px solid var(--wm-ad-divider); }
+.wm-ad-tabs::-webkit-scrollbar { display: none; }
+.wm-ad-tab { flex-shrink: 0; padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--wm-ad-navy-400); background: transparent; border: none; cursor: pointer; transition: all 0.15s; position: relative; white-space: nowrap; }
+.wm-ad-tab:hover { color: var(--wm-ad-navy-600); }
+.wm-ad-tab[data-active="true"] { color: var(--wm-ad-navy); font-weight: 800; }
+.wm-ad-tab[data-active="true"]::after { content: ""; position: absolute; bottom: 0; left: 12px; right: 12px; height: 3px; background: var(--wm-ad-green); border-radius: 3px 3px 0 0; }
+.wm-ad-tab[data-disabled="true"] { color: var(--wm-ad-navy-300); cursor: default; pointer-events: none; }
+.wm-ad-tabSoon { font-size: 7.5px; font-weight: 700; color: var(--wm-ad-navy-300); margin-left: 2px; vertical-align: super; letter-spacing: 0.4px; }
+
+/* ── Section Header ── */
+.wm-ad-secHead { display: flex; align-items: center; gap: 10px; margin-top: 28px; margin-bottom: 14px; }
+.wm-ad-secLabel { font-size: 11px; font-weight: 800; color: var(--wm-ad-navy-500); letter-spacing: 1.2px; text-transform: uppercase; flex-shrink: 0; }
+.wm-ad-secLine { flex: 1; height: 1px; background: var(--wm-ad-divider); }
+
+/* ── KPI Card ── */
+.wm-ad-kpiCard { background: var(--wm-ad-white); border: 1px solid var(--wm-ad-border); border-radius: var(--wm-ad-r); padding: 7px; box-shadow: var(--wm-ad-sh); }
+.wm-ad-kpiGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.wm-ad-kpiTile { background: var(--wm-ad-card-inner); border: 1px solid var(--wm-ad-border); border-radius: var(--wm-ad-ri); padding: 22px 10px 18px; text-align: center; transition: all 0.15s; }
+.wm-ad-kpiTile:hover { background: var(--wm-ad-card-inner-hover); border-color: var(--wm-ad-border-strong); }
+.wm-ad-kpiValue { font-size: 32px; font-weight: 900; letter-spacing: -1.5px; line-height: 1; }
+.wm-ad-kpiValue[data-zero="true"] { color: var(--wm-ad-navy-200) !important; }
+.wm-ad-kpiLabel { font-size: 10px; font-weight: 700; color: var(--wm-ad-navy-400); margin-top: 8px; text-transform: uppercase; letter-spacing: 0.9px; }
+
+/* ── Domain Card ── */
+.wm-ad-domainCard { background: var(--wm-ad-white); border: 1px solid var(--wm-ad-border); border-radius: var(--wm-ad-r); padding: 22px 20px 20px 26px; position: relative; overflow: hidden; margin-top: 12px; box-shadow: var(--wm-ad-sh); transition: all 0.2s; }
+.wm-ad-domainCard:hover { box-shadow: var(--wm-ad-sh-md); border-color: var(--wm-ad-border-strong); }
+.wm-ad-domainBar { position: absolute; left: 0; top: 0; bottom: 0; width: 5px; border-radius: var(--wm-ad-r) 0 0 var(--wm-ad-r); }
+.wm-ad-domainHead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.wm-ad-domainTitle { font-size: 16px; font-weight: 800; letter-spacing: -0.2px; }
+.wm-ad-domainTag { font-size: 9.5px; font-weight: 800; padding: 4px 12px; border-radius: 999px; letter-spacing: 0.7px; }
+.wm-ad-domainGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.wm-ad-metricCell { background: var(--wm-ad-card-inner); border: 1px solid var(--wm-ad-border); border-radius: var(--wm-ad-rs); padding: 14px 6px 12px; text-align: center; transition: all 0.15s; }
+.wm-ad-metricCell:hover { background: var(--wm-ad-card-inner-hover); border-color: var(--wm-ad-border-strong); }
+.wm-ad-metricVal { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; line-height: 1; }
+.wm-ad-metricVal[data-zero="true"] { color: var(--wm-ad-navy-200) !important; }
+.wm-ad-metricLabel { font-size: 9px; font-weight: 700; color: var(--wm-ad-navy-400); margin-top: 6px; text-transform: uppercase; letter-spacing: 0.8px; }
+
+/* ── Actions ── */
+.wm-ad-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.wm-ad-actionBtn { font-size: 13px; font-weight: 800; padding: 12px 24px; border-radius: var(--wm-ad-ri); cursor: pointer; transition: all 0.15s; letter-spacing: 0.1px; }
+.wm-ad-actionBtn[data-variant="default"] { background: var(--wm-ad-white); border: 1px solid var(--wm-ad-border); color: var(--wm-ad-navy-600); box-shadow: var(--wm-ad-sh); }
+.wm-ad-actionBtn[data-variant="default"]:hover { background: var(--wm-ad-navy-50); border-color: var(--wm-ad-border-strong); color: var(--wm-ad-navy); }
+.wm-ad-actionBtn[data-variant="green"] { background: var(--wm-ad-green); border: 1px solid var(--wm-ad-green); color: #fff; box-shadow: 0 2px 10px rgba(22, 163, 74, 0.2); }
+.wm-ad-actionBtn[data-variant="green"]:hover { background: #15803d; }
+.wm-ad-actionBtn[data-variant="danger"] { background: var(--wm-ad-danger-dim); border: 1px solid rgba(220, 38, 38, 0.14); color: var(--wm-ad-danger); }
+.wm-ad-actionBtn[data-variant="danger"]:hover { background: rgba(220, 38, 38, 0.10); }
+
+/* ── Health Bar ── */
+.wm-ad-healthBar { background: linear-gradient(135deg, rgba(22, 163, 74, 0.05) 0%, rgba(22, 163, 74, 0.02) 100%); border: 1px solid var(--wm-ad-green-border); border-radius: var(--wm-ad-r); padding: 20px 22px; display: flex; align-items: flex-start; gap: 16px; }
+.wm-ad-healthDot { width: 12px; height: 12px; border-radius: 50%; background: var(--wm-ad-green); box-shadow: 0 0 12px rgba(22, 163, 74, 0.25); flex-shrink: 0; margin-top: 3px; animation: wm-ad-pulse 2s ease-in-out infinite; }
+.wm-ad-healthTitle { font-size: 14px; font-weight: 800; color: var(--wm-ad-green); }
+.wm-ad-healthSub { font-size: 12.5px; color: var(--wm-ad-navy-500); margin-top: 3px; line-height: 1.5; }
+.wm-ad-healthStats { display: flex; gap: 20px; margin-top: 10px; flex-wrap: wrap; }
+.wm-ad-healthStat { font-size: 12px; color: var(--wm-ad-navy-400); }
+.wm-ad-healthStat strong { color: var(--wm-ad-navy-700); font-weight: 800; }
+
+/* ── Timeline ── */
+.wm-ad-timelineCard { background: var(--wm-ad-white); border: 1px solid var(--wm-ad-border); border-radius: var(--wm-ad-r); overflow: hidden; box-shadow: var(--wm-ad-sh); margin-bottom: 24px; }
+.wm-ad-timelineToggle { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 18px 22px; background: transparent; border: none; cursor: pointer; font-size: 15px; font-weight: 800; color: var(--wm-ad-navy); letter-spacing: -0.1px; }
+.wm-ad-timelineToggle:hover { background: var(--wm-ad-card-inner); }
+.wm-ad-timelineCount { font-size: 11px; color: var(--wm-ad-navy-300); font-weight: 700; }
+.wm-ad-tlItem { display: flex; gap: 14px; }
+.wm-ad-tlDot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; border: 2px solid var(--wm-ad-white); }
+.wm-ad-tlLine { width: 1.5px; flex: 1; margin-top: 3px; border-radius: 1px; background: var(--wm-ad-divider); }
+.wm-ad-tlBadge { font-size: 9px; font-weight: 900; padding: 3px 9px; border-radius: 999px; letter-spacing: 0.6px; }
+.wm-ad-tlBadge[data-domain="shift"] { background: var(--wm-ad-shift-dim); color: var(--wm-ad-shift); border: 1px solid var(--wm-ad-shift-border); }
+.wm-ad-tlBadge[data-domain="career"] { background: var(--wm-ad-career-dim); color: var(--wm-ad-career-light); border: 1px solid var(--wm-ad-career-border); }
+.wm-ad-tlTitle { font-size: 13.5px; font-weight: 700; color: var(--wm-ad-navy); }
+.wm-ad-tlTime { font-size: 11px; color: var(--wm-ad-navy-300); white-space: nowrap; font-weight: 600; }
+.wm-ad-tlBody { font-size: 12.5px; color: var(--wm-ad-navy-500); margin-top: 5px; line-height: 1.55; }
+
+/* ── Audit Log ── */
+.wm-ad-searchInput { width: 100%; padding: 11px 16px; font-size: 13px; font-weight: 600; color: var(--wm-ad-navy); background: var(--wm-ad-white); border: 1px solid var(--wm-ad-border); border-radius: var(--wm-ad-ri); outline: none; box-shadow: var(--wm-ad-sh); transition: border-color 0.15s; margin-bottom: 14px; }
+.wm-ad-searchInput::placeholder { color: var(--wm-ad-navy-300); }
+.wm-ad-searchInput:focus { border-color: var(--wm-ad-green-border); }
+.wm-ad-filterBar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.wm-ad-filterChip { font-size: 11px; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--wm-ad-border); background: var(--wm-ad-white); color: var(--wm-ad-navy-400); cursor: pointer; transition: all 0.15s; letter-spacing: 0.2px; }
+.wm-ad-filterChip:hover { color: var(--wm-ad-navy-600); border-color: var(--wm-ad-border-strong); }
+.wm-ad-filterChip[data-active="true"] { background: var(--wm-ad-green-dim); color: var(--wm-ad-green); border-color: var(--wm-ad-green-border); font-weight: 800; }
+.wm-ad-auditEntry { padding: 14px 18px; border-bottom: 1px solid var(--wm-ad-divider); transition: background 0.1s; }
+.wm-ad-auditEntry:last-child { border-bottom: none; }
+.wm-ad-auditEntry:hover { background: var(--wm-ad-card-inner); }
+.wm-ad-kindBadge { font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 999px; letter-spacing: 0.4px; text-transform: uppercase; background: var(--wm-ad-navy-50); color: var(--wm-ad-navy-500); border: 1px solid var(--wm-ad-border); }
+.wm-ad-pagination { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 16px; }
+.wm-ad-pageBtn { font-size: 12px; font-weight: 800; padding: 8px 18px; border-radius: var(--wm-ad-rs); border: 1px solid var(--wm-ad-border); background: var(--wm-ad-white); color: var(--wm-ad-navy-500); cursor: pointer; transition: all 0.15s; }
+.wm-ad-pageBtn:hover:not(:disabled) { background: var(--wm-ad-navy-50); color: var(--wm-ad-navy); }
+.wm-ad-pageBtn:disabled { opacity: 0.35; cursor: default; }
+.wm-ad-pageInfo { font-size: 11px; font-weight: 800; color: var(--wm-ad-navy-300); }
+.wm-ad-empty { text-align: center; padding: 32px 16px; color: var(--wm-ad-navy-300); font-size: 13px; font-weight: 700; }
+
+/* ── Animations ── */
+@keyframes wm-ad-pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.4); } }
+@keyframes wm-ad-fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.wm-ad-fadeIn { animation: wm-ad-fadeIn 0.3s ease-out both; }

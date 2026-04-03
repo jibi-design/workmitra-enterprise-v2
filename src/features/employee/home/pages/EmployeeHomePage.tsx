@@ -1,348 +1,274 @@
-// src/features/employee/home/pages/EmployeeHomePage.tsx
-import { useMemo } from "react";
+﻿// src/features/employee/home/pages/EmployeeHomePage.tsx
+// Session 15: Workforce tile removed, 2-col tiles, zero=grey (values + icons),
+// vault props via page, careerOffered prop, CSS vars only, useCallback handlers.
+
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { useEmployeeHRRecords } from "../../employment/helpers/employeeHRSubscription";
+import { OfferResponseCard } from "../../employment/components/OfferResponseCard";
+import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
+import { readDemo, n, formatNumber } from "../helpers/employeeHomeHelpers";
+import { IconCalendar, IconMegaphone } from "../components/employeeHomeIcons";
+import {
+  ShiftJobsCard,
+  CareerJobsCard,
+  WorkVaultCard,
+  InsightsCard,
+} from "../components/EmployeeHomeCards";
+import { ProfileNudgeCard } from "../components/ProfileNudgeCard";
+import { OnboardingOverlay } from "../../../../shared/components/OnboardingOverlay";
+import { EMPLOYEE_SLIDES, ONBOARDING_KEY } from "../../../../shared/components/onboardingConstants";
 
-type EmployeeHomeDemoState = {
-  flags?: {
-    shiftEnabled?: boolean;
-    careerEnabled?: boolean;
-    workforceAssigned?: boolean;
-  };
-  counts?: {
-    upcomingShifts7d?: number;
-    applicationsOpen?: number;
-    alerts?: number;
+/* ---- Style tokens (zero vs active) ---- */
+const ZERO_VALUE = { color: "var(--wm-zero-text, #94a3b8)", fontWeight: 500 } as const;
 
-    shiftApplied?: number;
-    shiftAssigned?: number;
 
-    careerApplied?: number;
-    careerInterviews?: number;
 
-    workforceRoster?: number;
-    workforceAlerts?: number;
-
-    earningsMonth?: number;
-    completedShifts?: number;
-    responseRatePct?: number;
-  };
-};
-
-const DEMO_KEY = "wm_employee_home_demo_v1";
-const ARROW = "\u2192";
-
-function readDemo(): EmployeeHomeDemoState {
+/* ---- Vault count helpers (read-only, no side effects) ---- */
+function getVaultFolderCount(): number {
   try {
-    const raw = localStorage.getItem(DEMO_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw) as EmployeeHomeDemoState;
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
-  }
+    const raw = localStorage.getItem("wm_employee_vault_folders_v1");
+    if (!raw) return 0;
+    const arr: unknown = JSON.parse(raw);
+    return Array.isArray(arr) ? arr.length : 0;
+  } catch { return 0; }
 }
 
-function n(v: unknown, fallback = 0): number {
-  return typeof v === "number" && Number.isFinite(v) ? v : fallback;
-}
-
-/**
- * Global-safe number display: NO currency symbol/code.
- * Uses user locale for grouping/formatting.
- */
-function formatNumber(value: number): string {
+function getVaultDocumentCount(): number {
   try {
-    return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(value);
-  } catch {
-    // Ultra-safe fallback
-    return String(value);
-  }
+    const raw = localStorage.getItem("wm_employee_vault_documents_v1");
+    if (!raw) return 0;
+    const arr: unknown = JSON.parse(raw);
+    return Array.isArray(arr) ? arr.length : 0;
+  } catch { return 0; }
 }
 
-function IconCalendar() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        fill="currentColor"
-        d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1.5A2.5 2.5 0 0 1 22 6.5v14A2.5 2.5 0 0 1 19.5 23h-15A2.5 2.5 0 0 1 2 20.5v-14A2.5 2.5 0 0 1 4.5 4H6V3a1 1 0 0 1 1-1Zm12.5 7H4.5v11.5c0 .276.224.5.5.5h14c.276 0 .5-.224.5-.5V9ZM6 6H4.5a.5.5 0 0 0-.5.5V7h16v-.5a.5.5 0 0 0-.5-.5H18v1a1 1 0 1 1-2 0V6H8v1a1 1 0 1 1-2 0V6Z"
-      />
-    </svg>
-  );
-}
-
-function IconBriefcase() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        fill="currentColor"
-        d="M9 2a2 2 0 0 0-2 2v2H5.5A2.5 2.5 0 0 0 3 8.5v10A2.5 2.5 0 0 0 5.5 21h13A2.5 2.5 0 0 0 21 18.5v-10A2.5 2.5 0 0 0 18.5 6H17V4a2 2 0 0 0-2-2H9Zm6 4V4H9v2h6Zm4 6H5v6.5c0 .276.224.5.5.5h13c.276 0 .5-.224.5-.5V12Zm0-3.5V10H5V8.5c0-.276.224-.5.5-.5h13c.276 0 .5.224.5.5Z"
-      />
-    </svg>
-  );
-}
-
-function IconUsers() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        fill="currentColor"
-        d="M16 11a4 4 0 1 0-4-4a4 4 0 0 0 4 4Zm-8 0a3 3 0 1 0-3-3a3 3 0 0 0 3 3Zm0 2c-2.67 0-6 1.34-6 4v1h10v-1c0-1.57.7-2.86 1.86-3.8A9.2 9.2 0 0 0 8 13Zm8 0c-2.67 0-6 1.34-6 4v1h12v-1c0-2.66-3.33-4-6-4Z"
-      />
-    </svg>
-  );
-}
-
-function IconInsights() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="currentColor" d="M4 19h16v2H2V3h2v16Zm3-3h2V9H7v7Zm4 0h2V5h-2v11Zm4 0h2v-6h-2v6Z" />
-    </svg>
-  );
-}
-
+/* ------------------------------------------------ */
+/* Component                                        */
+/* ------------------------------------------------ */
 export function EmployeeHomePage() {
   const nav = useNavigate();
 
+  /* ---- Onboarding (one-time) ---- */
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    try { return !localStorage.getItem(ONBOARDING_KEY); } catch { return false; }
+  });
+
+  /* ---- Data ---- */
   const demo = useMemo(() => readDemo(), []);
-  const flags = demo.flags ?? {};
+  const flags = useMemo(() => demo.flags ?? {}, [demo]);
   const counts = demo.counts ?? {};
 
   const showShift = flags.shiftEnabled ?? true;
   const showCareer = flags.careerEnabled ?? true;
-  const workforceAssigned = flags.workforceAssigned ?? false;
+  const anyDomain = showShift || showCareer;
 
-  const anyDomain = showShift || showCareer || workforceAssigned;
+  const upcomingShift = n(counts.upcomingShifts7d, 0);
+  const shiftBroadcastUnread = n(counts.alerts, 0);
 
-  const upcoming = n(counts.upcomingShifts7d, 0);
-  const appsOpen = n(counts.applicationsOpen, 0);
-  const alerts = n(counts.alerts, 0);
+  /* ---- Vault counts (computed in page, passed as props — clean arch) ---- */
+  const vaultFolders = useMemo(() => getVaultFolderCount(), []);
+  const vaultDocuments = useMemo(() => getVaultDocumentCount(), []);
 
-  const earningsMonth = n(counts.earningsMonth, 0);
-  const completedShifts = n(counts.completedShifts, 0);
-  const responseRate = typeof counts.responseRatePct === "number" ? counts.responseRatePct : 0;
+  /* ---- Welcome banner ---- */
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [welcomeFading, setWelcomeFading] = useState(false);
+
+  const userDisplayName = useMemo(() => {
+    const profile = employeeProfileStorage.get();
+    return profile.fullName || "";
+  }, []);
+
+  const isFirstTime = useMemo(
+    () => !flags.shiftEnabled && !flags.careerEnabled,
+    [flags],
+  );
+
+  useEffect(() => {
+    if (!isFirstTime) return;
+    const fadeTimer = setTimeout(() => setWelcomeFading(true), 10000);
+    const removeTimer = setTimeout(() => setShowWelcome(false), 10500);
+    return () => { clearTimeout(fadeTimer); clearTimeout(removeTimer); };
+  }, [isFirstTime]);
+
+  /* ---- HR records ---- */
+  const hrRecords = useEmployeeHRRecords();
+  const pendingOffers = hrRecords.filter((r) => r.status === "offered");
+
+  /* ---- Navigation handlers (no inline arrow fns in JSX) ---- */
+  const handleShiftTile = useCallback(() => {
+    nav(ROUTE_PATHS.employeeShiftCenter);
+  }, [nav]);
+
+  const handleBroadcastTile = useCallback(() => {
+    nav(ROUTE_PATHS.employeeShiftWorkspaces);
+  }, [nav]);
+
+  const handleFindShifts = useCallback(() => {
+    nav(ROUTE_PATHS.employeeShiftSearch);
+  }, [nav]);
+
+  const handleCareerSearch = useCallback(() => {
+    nav(ROUTE_PATHS.employeeCareerSearch);
+  }, [nav]);
+
+  const handleViewHistory = useCallback(() => {
+    nav(ROUTE_PATHS.employeeShiftEarnings);
+  }, [nav]);
 
   return (
     <div>
-      {/* Stats Tiles (Employee) */}
-      <div className="wm-ee-tiles">
-        <div className="wm-ee-tile">
+      {/* ── Top Tiles (2-column) ── */}
+     <div className="wm-ee-tiles wm-ee-dashTiles">
+        {/* Upcoming Shifts */}
+        <button
+          className="wm-ee-tile"
+          type="button"
+           style={{ cursor: "pointer" }}
+          onClick={handleShiftTile}
+        >
           <div className="wm-ee-tileTop">
             <div className="wm-ee-tileLabel">Upcoming Shifts</div>
-            <span className="wm-ee-tileIcon" aria-hidden="true">
+            <span
+              className="wm-ee-tileIcon"
+              aria-hidden="true"
+            >
               <IconCalendar />
             </span>
           </div>
-          <div className="wm-ee-tileValue">{formatNumber(upcoming)}</div>
-        </div>
+          <div
+            className="wm-ee-tileValue"
+            style={upcomingShift === 0 ? ZERO_VALUE : undefined}
+          >
+            {formatNumber(upcomingShift)}
+          </div>
+        </button>
 
-        <div className="wm-ee-tile">
+        {/* Broadcast Messages */}
+        <button
+          className="wm-ee-tile"
+          type="button"
+                    style={{ cursor: "pointer" }}
+          onClick={handleBroadcastTile}
+        >
           <div className="wm-ee-tileTop">
-            <div className="wm-ee-tileLabel">Applications</div>
-            <span className="wm-ee-tileIcon" aria-hidden="true">
-              <IconBriefcase />
+            <div className="wm-ee-tileLabel">Broadcast Messages</div>
+            <span
+              className="wm-ee-tileIcon"
+              aria-hidden="true"
+            >
+              <IconMegaphone />
             </span>
           </div>
-          <div className="wm-ee-tileValue">{formatNumber(appsOpen)}</div>
-        </div>
-
-        <div className="wm-ee-tile">
-          <div className="wm-ee-tileTop">
-            <div className="wm-ee-tileLabel">Alerts</div>
-            <span className="wm-ee-tileIcon" aria-hidden="true">
-              <IconUsers />
-            </span>
+          <div
+            className="wm-ee-tileValue"
+            style={shiftBroadcastUnread === 0 ? ZERO_VALUE : undefined}
+          >
+            {formatNumber(shiftBroadcastUnread)}
           </div>
-          <div className="wm-ee-tileValue">{formatNumber(alerts)}</div>
-        </div>
+        </button>
       </div>
 
+      {/* ── Welcome Card (first-time only, auto-fade after 10s) ── */}
+      {isFirstTime && showWelcome && (
+        <div
+          className="wm-ee-welcomeCard"
+          style={{
+            marginTop: 12,
+            borderRadius: 12,
+            padding: 16,
+            textAlign: "center",
+            background: "var(--wm-success-wash, #f0fdf4)",
+            border: "1px solid var(--wm-success-border, #86efac)",
+            opacity: welcomeFading ? 0 : 1,
+            transition: "opacity 0.5s ease-out",
+          }}
+        >
+          <div style={{ fontSize: 15, fontWeight: 700, color: "var(--wm-success-dark, #15803d)" }}>
+            {userDisplayName ? `Welcome, ${userDisplayName}!` : "Welcome!"} 👋
+          </div>
+          <div style={{ marginTop: 6, fontSize: 13, color: "var(--wm-text-muted, #6b7280)", lineHeight: 1.5 }}>
+            Your complete work companion is here. Find jobs, track your work, and stay organized.
+          </div>
+        </div>
+      )}
+
+      {/* ── Profile Nudge ── */}
+      <ProfileNudgeCard />
+
+      {/* ── Cards ── */}
       <div style={{ marginTop: 12 }}>
-        {/* Empty state (never blank) */}
-        {!anyDomain ? (
+        {/* Get Started — shown only when no domain enabled */}
+        {!anyDomain && (
           <section className="wm-ee-card">
-            <div style={{ fontWeight: 900, color: "var(--wm-er-text)", fontSize: 16 }}>Get started</div>
+            <div style={{ fontWeight: 700, color: "var(--wm-er-text)", fontSize: 16 }}>
+              Get started
+            </div>
             <div className="wm-ee-helperText">
-              Enable Shift Jobs to find daily work, and Career Jobs for permanent roles.
+              Find shifts for daily work, or search career jobs for permanent roles.
             </div>
-            <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
-              <button className="wm-primarybtn" type="button" onClick={() => window.alert("Set preferences: next step (Phase-0 demo)")}>
-                Set preferences
+            <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
+              <button
+                className="wm-primarybtn"
+                type="button"
+                onClick={handleFindShifts}
+                style={{ flex: 1 }}
+              >
+                Find Shifts
               </button>
-            </div>
-          </section>
-        ) : null}
-
-        {/* Shift Jobs Card */}
-        {showShift ? (
-          <section className="wm-ee-card wm-ee-accentCard wm-ee-vShift">
-            <div className="wm-ee-headTint">
-              <div className="wm-ee-cardHead">
-                <div>
-                  <div className="wm-ee-titleRow">
-                    <span className="wm-ee-domainIcon" aria-hidden="true">
-                      <IconCalendar />
-                    </span>
-                    <div>
-                      <div className="wm-ee-cardTitle">Shift Jobs</div>
-                      <div className="wm-ee-cardSub">Find daily shifts and track assignments.</div>
-                    </div>
-                  </div>
-                </div>
-
-                <button className="wm-primarybtn" type="button" onClick={() => nav(ROUTE_PATHS.employeeShiftCenter)}>
-                  Find Shifts
-                </button>
-              </div>
-            </div>
-
-            <div className="wm-ee-chips">
-              <span className="wm-ee-chip">
-                Applied: <span className="n">{formatNumber(n(counts.shiftApplied, 0))}</span>
-              </span>
-              <span className="wm-ee-chip">
-                Assigned: <span className="n">{formatNumber(n(counts.shiftAssigned, 0))}</span>
-              </span>
-            </div>
-
-            <div style={{ marginTop: 10 }}>
-              <button className="wm-ee-linkBtn" type="button" onClick={() => window.alert("My shifts: next step (Phase-0 demo)")}>
-                My shifts {ARROW}
-              </button>
-            </div>
-          </section>
-        ) : null}
-
-        {/* Career Jobs Card */}
-        {showCareer ? (
-          <section className="wm-ee-card wm-ee-accentCard wm-ee-vCareer">
-            <div className="wm-ee-headTint">
-              <div className="wm-ee-cardHead">
-                <div>
-                  <div className="wm-ee-titleRow">
-                    <span className="wm-ee-domainIcon" aria-hidden="true">
-                      <IconBriefcase />
-                    </span>
-                    <div>
-                      <div className="wm-ee-cardTitle">Career Jobs</div>
-                      <div className="wm-ee-cardSub">Apply to permanent roles and track interviews.</div>
-                    </div>
-                  </div>
-                </div>
-
-                <button className="wm-primarybtn" type="button" onClick={() => window.alert("Explore Jobs: next module (Phase-0 demo)")}>
-                  Explore Jobs
-                </button>
-              </div>
-            </div>
-
-            <div className="wm-ee-chips">
-              <span className="wm-ee-chip">
-                Applied: <span className="n">{formatNumber(n(counts.careerApplied, 0))}</span>
-              </span>
-              <span className="wm-ee-chip">
-                Interviews: <span className="n">{formatNumber(n(counts.careerInterviews, 0))}</span>
-              </span>
-            </div>
-
-            <div style={{ marginTop: 10 }}>
-              <button className="wm-ee-linkBtn" type="button" onClick={() => window.alert("My applications: next step (Phase-0 demo)")}>
-                My applications {ARROW}
-              </button>
-            </div>
-          </section>
-        ) : null}
-
-        {/* Workforce: show only when assigned (FINAL) */}
-        {workforceAssigned ? (
-          <section className="wm-ee-card wm-ee-accentCard wm-ee-vWorkforce">
-            <div className="wm-ee-headTint">
-              <div className="wm-ee-cardHead">
-                <div>
-                  <div className="wm-ee-titleRow">
-                    <span className="wm-ee-domainIcon" aria-hidden="true">
-                      <IconUsers />
-                    </span>
-                    <div>
-                      <div className="wm-ee-cardTitle">Workforce</div>
-                      <div className="wm-ee-cardSub">View roster, attendance, and announcements.</div>
-                    </div>
-                  </div>
-                </div>
-
-                <button className="wm-primarybtn" type="button" onClick={() => window.alert("Open Workforce: next module (Phase-0 demo)")}>
-                  Open Workforce
-                </button>
-              </div>
-            </div>
-
-            <div className="wm-ee-chips">
-              <span className="wm-ee-chip">
-                Roster: <span className="n">{formatNumber(n(counts.workforceRoster, 0))}</span>
-              </span>
-              <span className="wm-ee-chip">
-                Alerts: <span className="n">{formatNumber(n(counts.workforceAlerts, 0))}</span>
-              </span>
-            </div>
-          </section>
-        ) : (
-          <section className="wm-ee-card">
-            <div className="wm-ee-titleRow">
-              <span className="wm-ee-domainIcon" aria-hidden="true" style={{ color: "var(--wm-er-accent-workforce)" }}>
-                <IconUsers />
-              </span>
-              <div>
-                <div className="wm-ee-cardTitle" style={{ margin: 0 }}>
-                  Workforce
-                </div>
-                <div className="wm-ee-helperText">Available when a company assigns you.</div>
-              </div>
-            </div>
-
-            <div style={{ marginTop: 10 }}>
-              <button className="wm-ee-linkBtn" type="button" onClick={() => window.alert("Workforce onboarding: next step (Phase-0 demo)")}>
-                How it works {ARROW}
+              <button
+                className="wm-outlineBtn"
+                type="button"
+                onClick={handleCareerSearch}
+                style={{ flex: 1 }}
+              >
+                Career Jobs
               </button>
             </div>
           </section>
         )}
 
-        {/* Personal Insights */}
-        <section className="wm-ee-insights">
-          <div className="wm-ee-insightsHead">
-            <div className="wm-ee-insightsTitle">
-              <IconInsights /> <span>Insights</span>
-            </div>
-            <button className="wm-ee-linkBtn" type="button" onClick={() => window.alert("View history: next step (Phase-0 demo)")}>
-              View history {ARROW}
-            </button>
-          </div>
+        {showShift && (
+          <ShiftJobsCard
+            waitingList={n(counts.applicationsOpen, 0)}
+            confirmed={n(counts.shiftAssigned, 0)}
+            activeJobs={n(counts.shiftAssigned, 0)}
+          />
+        )}
 
-          <div className="wm-ee-kpis">
-            <div className="wm-ee-kpiRow">
-              <div className="wm-ee-kpiLabel">Earnings (month)</div>
-              <div className="wm-ee-kpiValue">{formatNumber(earningsMonth)}</div>
-            </div>
-            <div className="wm-ee-kpiRow">
-              <div className="wm-ee-kpiLabel">Completed shifts</div>
-              <div className="wm-ee-kpiValue">{formatNumber(completedShifts)}</div>
-            </div>
-            <div className="wm-ee-kpiRow">
-              <div className="wm-ee-kpiLabel">Response rate</div>
-              <div className="wm-ee-kpiValue">{formatNumber(responseRate)}%</div>
-            </div>
-          </div>
-        </section>
+        {showCareer && (
+          <CareerJobsCard
+            careerApplied={n(counts.careerApplied, 0)}
+            careerInterviews={n(counts.careerInterviews, 0)}
+            careerOffered={0}
+          />
+        )}
+
+        {pendingOffers.map((offer) => (
+          <OfferResponseCard key={offer.id} record={offer} />
+        ))}
+
+        <WorkVaultCard
+          folderCount={vaultFolders}
+          documentCount={vaultDocuments}
+        />
+
+        <InsightsCard
+          earningsMonth={n(counts.earningsMonth, 0)}
+          completedShifts={n(counts.completedShifts, 0)}
+          onViewHistory={handleViewHistory}
+        />
       </div>
 
-      <div className="wm-footer">
-        <a href="#" onClick={(e) => e.preventDefault()}>
-          Help
-        </a>
-        <a href="#" onClick={(e) => e.preventDefault()}>
-          Support
-        </a>
-      </div>
+      {/* Onboarding — first launch only */}
+      {showOnboarding && (
+        <OnboardingOverlay
+          slides={EMPLOYEE_SLIDES}
+          ctaLabel="Complete My Profile &#8594;"
+          onComplete={() => { setShowOnboarding(false); nav(ROUTE_PATHS.employeeProfile); }}
+        />
+      )}
     </div>
   );
 }

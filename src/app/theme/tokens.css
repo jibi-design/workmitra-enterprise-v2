@@ -1,0 +1,104 @@
+﻿/* src/app/theme/tokens.css */
+:root {
+  /* Brand */
+  --wm-brand-600: #1d4ed8; /* Primary */
+  --wm-brand-700: #1e40af; /* pressed/hover */
+
+  /* Employee mood (friendly light) */
+  --wm-emp-bg: #f8fafc;
+  --wm-emp-card: #ffffff;
+  --wm-emp-text: #0f172a;
+  --wm-emp-muted: #475569;
+  --wm-emp-border: rgba(15, 23, 42, 0.10);
+
+  /* Employer mood (neutral premium light) - FINAL */
+  --wm-er-bg: #f7f8fa;          /* app background */
+  --wm-er-card: #ffffff;        /* card surface */
+  --wm-er-border: #e6e9ef;      /* 1px border */
+  --wm-er-divider: #eef1f5;     /* divider */
+  --wm-er-text: #111827;        /* primary text */
+  --wm-er-muted: #6b7280;       /* muted text */
+
+  /* Employer domain accents (strip + icon tint only) - FINAL */
+  --wm-er-accent-shift: #16a34a;     /* Shift (Green) */
+  --wm-er-accent-career: #1d4ed8;    /* Career (Royal Blue) */
+  --wm-er-accent-workforce: #b45309; /* Workforce (Amber) */
+  --wm-er-accent-hr: #7c3aed;        /* HR Management (Purple) */
+  --wm-er-accent-hr-light: rgba(124, 58, 237, 0.08);
+  --wm-er-accent-hr-border: rgba(124, 58, 237, 0.2);
+  --wm-er-accent-console: #0369a1;   /* Manager Console (Ocean Blue) */
+  --wm-er-accent-console-light: rgba(3, 105, 161, 0.08);
+  --wm-er-accent-console-border: rgba(3, 105, 161, 0.2);
+
+  /* Subtle header tints (6-8% opacity feel) - FINAL MICRO-POLISH */
+  --wm-er-shift-wash: rgba(22, 163, 74, 0.07);
+  --wm-er-career-wash: rgba(29, 78, 216, 0.07);
+  --wm-er-workforce-wash: rgba(180, 83, 9, 0.07);
+
+  /* ── Universal domain accents (Session 15) ──
+     Used by BOTH employee + employer sides.
+     Values mirror employer accents for consistency. */
+  --wm-shift-accent: #16a34a;        /* Shift Jobs (Green) */
+  --wm-career-accent: #1d4ed8;       /* Career Jobs (Royal Blue) */
+  --wm-vault-accent: #7c3aed;        /* Work Vault (Purple) */
+  --wm-insights-accent: #64748b;     /* Insights (Grey) */
+  --wm-console-accent: #0369a1;      /* Manager Console (Ocean Blue) */
+  --wm-rating-accent: #d97706;       /* Rating / Amber */
+  --wm-notification-accent: #0891b2; /* Bell icon (Cyan) */
+
+  /* ── Universal text tokens (Session 15) ── */
+  --wm-text-muted: #64748b;          /* Subtitle, helper text */
+  --wm-zero-text: #374151;           /* Zero-value text — dark for alive feel */
+  --wm-zero-bg: #f1f5f9;             /* Zero-value chip background */
+
+  /* ── Success states (Session 15) ── */
+  --wm-success-wash: #f0fdf4;        /* Welcome card background */
+  --wm-success-border: #86efac;      /* Welcome card border */
+  --wm-success-dark: #15803d;        /* Welcome card heading */
+
+  /* Feedback colors (minimal) */
+  --wm-success: #16a34a;
+  --wm-warning: #d97706;
+  --wm-error: #dc2626;
+
+  /* Admin mood (authority control panel) */
+  --wm-ad-bg: #071024;
+  --wm-ad-card: #ffffff;
+  --wm-ad-text: #eaf0ff;
+  --wm-ad-muted: rgba(234, 240, 255, 0.70);
+  --wm-ad-border: rgba(255, 255, 255, 0.14);
+
+  /* Radius & spacing */
+  --wm-radius-14: 14px;
+  --wm-radius-12: 12px;
+  --wm-radius-10: 10px;
+
+  --wm-space-8: 8px;
+  --wm-space-12: 12px;
+  --wm-space-16: 16px;
+  --wm-space-20: 20px;
+
+  /* Shadow: subtle only */
+  --wm-shadow-soft: 0 6px 16px rgba(17, 24, 39, 0.06);
+
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+/* Global input readability — Session 7 */
+input,
+textarea,
+select {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 15px;
+}
+input::placeholder,
+textarea::placeholder {
+  font-weight: 400;
+  color: #9ca3af;
+  font-size: 14px;
+}
