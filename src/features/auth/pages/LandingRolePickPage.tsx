@@ -75,13 +75,7 @@ function RoleIconEmployer(): ReactElement {
   );
 }
 
-function RoleIconAdmin(): ReactElement {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="currentColor" d="M12 2l8 4v6c0 5-3.4 9.4-8 10c-4.6-.6-8-5-8-10V6l8-4Zm0 7a3 3 0 0 0-3 3v1H8v2h8v-2h-1v-1a3 3 0 0 0-3-3Z" />
-    </svg>
-  );
-}
+
 
 /* ------------------------------------------------ */
 /* Helpers                                          */
@@ -130,13 +124,7 @@ export function LandingRolePickPage() {
       accent: "#7c3aed",
       Icon: RoleIconEmployer,
     },
-    {
-      role: "admin" as const,
-      title: "Admin",
-      desc: "Control panel, oversight, analytics, and reports.",
-      accent: "#e11d48",
-      Icon: RoleIconAdmin,
-    },
+    /* Admin hidden — internal only, not for public launch */
   ], []);
 
   function goTo(role: AppRole) {
