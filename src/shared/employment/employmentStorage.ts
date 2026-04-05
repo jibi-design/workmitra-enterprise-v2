@@ -81,6 +81,7 @@ export const employmentStorage = {
       exitNotes: "",
       wasWithdrawn: false,
       withdrawnAt: null,
+      forceCompleted: false,
       workDurationDays: null,
       workDurationDisplay: "",
       timeline: [{ status: "selected", timestamp: now, actor: "system", note: "Offer accepted" }],

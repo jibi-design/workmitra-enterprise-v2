@@ -2,7 +2,7 @@
 // Session 17: Display helpers for employment lifecycle UI.
 
 import type { EmploymentRecord, EmploymentStatus, StatusBadgeConfig, TimelineEntry } from "./employmentTypes";
-import { STATUS_BADGE_MAP, TERMINATED_BADGE, EMPLOYEE_RESIGN_REASONS, EMPLOYER_TERMINATE_REASONS } from "./employmentTypes";
+import { STATUS_BADGE_MAP, TERMINATED_BADGE, FORCE_COMPLETED_BADGE, FORCE_COMPLETE_GRACE_DAYS, EMPLOYEE_RESIGN_REASONS, EMPLOYER_TERMINATE_REASONS } from "./employmentTypes";
 
 /* ── Date Formatters ── */
 
@@ -43,6 +43,9 @@ export function getStatusBadge(record: EmploymentRecord): StatusBadgeConfig {
   if (record.status === "completed" && record.exitType === "terminated") {
     return TERMINATED_BADGE;
   }
+  if (record.status === "completed" && record.forceCompleted) {
+    return FORCE_COMPLETED_BADGE;
+  }
   return STATUS_BADGE_MAP[record.status];
 }
 
@@ -51,7 +54,32 @@ export function getStatusLabel(record: EmploymentRecord): string {
   if (record.status === "completed" && record.exitType === "terminated") {
     return "Terminated";
   }
+  if (record.status === "completed" && record.forceCompleted) {
+    return "Completed (unconfirmed)";
+  }
   return STATUS_BADGE_MAP[record.status].label;
+}
+
+/* ── Force Complete Eligibility ── */
+
+/** Employee can force-complete if notice expired + 7 days and employer hasn't responded. */
+export function canForceComplete(record: EmploymentRecord): boolean {
+  if (record.status !== "notice" && record.status !== "resigned") return false;
+  const GRACE_MS = FORCE_COMPLETE_GRACE_DAYS * 86_400_000;
+  if (record.lastWorkingDay) return Date.now() >= record.lastWorkingDay + GRACE_MS;
+  if (record.resignedAt) return Date.now() >= record.resignedAt + GRACE_MS;
+  return false;
+}
+
+/** Days until force-complete becomes available. 0 = available now. */
+export function getDaysUntilForceComplete(record: EmploymentRecord): number {
+  if (record.status !== "notice" && record.status !== "resigned") return -1;
+  const GRACE_MS = FORCE_COMPLETE_GRACE_DAYS * 86_400_000;
+  const base = record.lastWorkingDay ?? record.resignedAt;
+  if (!base) return -1;
+  const eligibleAt = base + GRACE_MS;
+  const remaining = Math.ceil((eligibleAt - Date.now()) / 86_400_000);
+  return Math.max(0, remaining);
 }
 
 /* ── Notice Period Countdown ── */
@@ -155,9 +183,11 @@ export function getEmployerActions(record: EmploymentRecord): {
 export function getEmployeeActions(record: EmploymentRecord): {
   canResign: boolean;
   canWithdraw: boolean;
+  canForceComplete: boolean;
 } {
   return {
     canResign: record.status === "working",
     canWithdraw: canWithdrawResignation(record),
+    canForceComplete: canForceComplete(record),
   };
 }

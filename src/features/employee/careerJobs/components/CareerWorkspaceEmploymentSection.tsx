@@ -11,6 +11,7 @@ import {
   getEmployeeActions,
   getStatusLabel,
   formatDate,
+  getDaysUntilForceComplete,
 } from "../../../../shared/employment/employmentDisplayHelpers";
 import { EmploymentStatusBadge, NoticePeriodCard } from "../../../../shared/employment/components/EmploymentBadges";
 import { EmploymentTimeline } from "../../../../shared/employment/components/EmploymentTimeline";
@@ -45,6 +46,15 @@ export function CareerWorkspaceEmploymentSection({ careerPostId, companyName, no
     setResignOpen(false);
     if (result) onNotice({ title: "Resignation submitted", message: "Your employer has been notified.", tone: "success" });
     else onNotice({ title: "Cannot resign", message: "Please try again.", tone: "warn" });
+  }
+
+  const [forceConfirm, setForceConfirm] = useState<ConfirmData | null>(null);
+
+  function handleForceComplete(): void {
+    const result = employmentActions.forceComplete(careerPostId);
+    setForceConfirm(null);
+    if (result) onNotice({ title: "Employment completed", message: "You can now rate your employer. Work history has been updated.", tone: "success" });
+    else onNotice({ title: "Cannot complete", message: "Conditions not met. Please try again later.", tone: "warn" });
   }
 
   function handleWithdraw(): void {
@@ -123,6 +133,35 @@ export function CareerWorkspaceEmploymentSection({ careerPostId, companyName, no
               Withdraw resignation
             </button>
           )}
+          {actions.canForceComplete && (
+            <button
+              type="button"
+              onClick={() => setForceConfirm({
+                title: "Complete employment?",
+                message: "Your employer has not responded to your resignation. This will mark the employment as completed and unlock ratings. Your employer will be notified.",
+                tone: "neutral",
+                confirmLabel: "Complete now",
+                cancelLabel: "Wait",
+              })}
+              style={{
+                height: 38, padding: "0 16px", borderRadius: 10,
+                border: "1px solid #b45309", background: "rgba(180,83,9,0.06)",
+                color: "#b45309", fontSize: 13, fontWeight: 700, cursor: "pointer",
+              }}
+            >
+              Complete employment
+            </button>
+          )}
+          {!actions.canForceComplete && (record.status === "notice" || record.status === "resigned") && (
+            (() => {
+              const daysLeft = getDaysUntilForceComplete(record);
+              return daysLeft > 0 ? (
+                <div style={{ fontSize: 11, color: "var(--wm-er-muted, #6b7280)", marginTop: 4, width: "100%", textAlign: "right" }}>
+                  If employer does not respond, you can complete this in {daysLeft} day{daysLeft > 1 ? "s" : ""}.
+                </div>
+              ) : null;
+            })()
+          )}
         </div>
       </div>
 
@@ -145,6 +184,11 @@ export function CareerWorkspaceEmploymentSection({ careerPostId, companyName, no
         confirm={withdrawConfirm}
         onConfirm={handleWithdraw}
         onCancel={() => setWithdrawConfirm(null)}
+      />
+      <ConfirmModal
+        confirm={forceConfirm}
+        onConfirm={handleForceComplete}
+        onCancel={() => setForceConfirm(null)}
       />
     </>
   );

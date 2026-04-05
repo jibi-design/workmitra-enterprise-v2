@@ -125,10 +125,16 @@ export type EmploymentRecord = {
   /** Audit trail — every status change recorded */
   timeline: TimelineEntry[];
 
+  /** Force-complete: employee closed after employer ignored for 7+ days */
+  forceCompleted: boolean;
+
   /** Rating completion flags */
   employeeRated: boolean;
   employerRated: boolean;
 };
+
+/** Days after notice expiry / resignation before employee can force-complete. */
+export const FORCE_COMPLETE_GRACE_DAYS = 7;
 
 /* ── Status Badge Config ── */
 export type StatusBadgeConfig = {
@@ -148,6 +154,11 @@ export const STATUS_BADGE_MAP: Readonly<Record<EmploymentStatus, StatusBadgeConf
 /** Badge override when completed via termination. */
 export const TERMINATED_BADGE: StatusBadgeConfig = {
   label: "Terminated", color: "#dc2626", bgColor: "rgba(220,38,38,0.08)",
+};
+
+/** Badge override when force-completed by employee (employer unresponsive). */
+export const FORCE_COMPLETED_BADGE: StatusBadgeConfig = {
+  label: "Completed (unconfirmed)", color: "#b45309", bgColor: "rgba(180,83,9,0.08)",
 };
 
 /* ── Valid Status Transitions ── */

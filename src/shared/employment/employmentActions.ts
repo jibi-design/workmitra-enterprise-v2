@@ -24,6 +24,7 @@ import {
   notifyEmployeeResignConfirmed,
   notifyEmployeeTerminated,
   notifyBothPleaseRate,
+  notifyEmployerForceCompleted,
 } from "./employmentNotifications";
 
 /* ── Action Methods ── */
@@ -157,6 +158,45 @@ export const employmentActions = {
     writeAll(all);
 
     notifyEmployeeTerminated(rec.jobTitle, rec.companyName);
+    notifyBothPleaseRate(rec.employeeName, rec.companyName, rec.jobTitle);
+    return rec;
+  },
+
+  /* ── Employee: Force Complete (employer unresponsive) ── */
+  forceComplete(careerPostId: string): EmploymentRecord | null {
+    const all = readAll();
+    const idx = findRecordIndex(all, careerPostId);
+    if (idx === -1) return null;
+    const rec = all[idx];
+
+    if (rec.status !== "notice" && rec.status !== "resigned") return null;
+
+    const GRACE_MS = 7 * 86_400_000;
+    let eligibleAfter: number | null = null;
+
+    if (rec.lastWorkingDay) {
+      eligibleAfter = rec.lastWorkingDay + GRACE_MS;
+    } else if (rec.resignedAt) {
+      eligibleAfter = rec.resignedAt + GRACE_MS;
+    }
+
+    if (!eligibleAfter || Date.now() < eligibleAfter) return null;
+
+    const now = Date.now();
+    rec.status = "completed";
+    rec.completedAt = now;
+    rec.forceCompleted = true;
+
+    if (rec.joinedAt) {
+      const dur = calcDuration(rec.joinedAt, now);
+      rec.workDurationDays = dur.days;
+      rec.workDurationDisplay = dur.display;
+    }
+    addTimeline(rec, "completed", "employee", "Force completed — employer did not respond");
+
+    writeAll(all);
+
+    notifyEmployerForceCompleted(rec.employeeName, rec.jobTitle);
     notifyBothPleaseRate(rec.employeeName, rec.companyName, rec.jobTitle);
     return rec;
   },

@@ -112,3 +112,11 @@ export function notifyBothPleaseRate(
     `Rate ${employeeName}'s work as ${jobTitle}.`,
   );
 }
+
+/** Employee force-completed employment → notify employer. */
+export function notifyEmployerForceCompleted(employeeName: string, jobTitle: string): void {
+  toEmployer(
+    "Employment auto-completed",
+    `${employeeName}'s employment as ${jobTitle} has been completed automatically. Resignation was not confirmed within the allowed period.`,
+  );
+}
