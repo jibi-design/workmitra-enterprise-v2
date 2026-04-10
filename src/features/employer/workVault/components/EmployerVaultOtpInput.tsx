@@ -75,10 +75,9 @@ export function EmployerVaultOtpInput({
         Enter Access Code
       </div>
       <div style={{ fontSize: 12, color: "var(--wm-er-muted)", marginBottom: 20, lineHeight: 1.5 }}>
-        Ask <strong>{employeeName}</strong> to share their 6-digit access code from the WorkMitra app.
+        Ask <strong>{employeeName}</strong> to share their 6-digit access code from the Job Mitra app.
       </div>
 
-      {/* OTP Input Boxes */}
       <div
         style={{
           display: "flex",
@@ -90,7 +89,9 @@ export function EmployerVaultOtpInput({
         {digits.map((digit, i) => (
           <input
             key={i}
-            ref={(el) => { inputRefs.current[i] = el; }}
+            ref={(el) => {
+              inputRefs.current[i] = el;
+            }}
             type="text"
             inputMode="numeric"
             maxLength={1}
@@ -103,9 +104,7 @@ export function EmployerVaultOtpInput({
               width: 44,
               height: 52,
               borderRadius: 12,
-              border: digit
-                ? `2px solid ${VAULT_ACCENT}`
-                : "2px solid var(--wm-er-divider, rgba(15, 23, 42, 0.12))",
+              border: digit ? `2px solid ${VAULT_ACCENT}` : "2px solid var(--wm-er-divider, rgba(15, 23, 42, 0.12))",
               background: digit ? `${VAULT_ACCENT}06` : "#fff",
               fontSize: 24,
               fontWeight: 900,
@@ -117,20 +116,14 @@ export function EmployerVaultOtpInput({
         ))}
       </div>
 
-      {/* Error */}
       {error && (
         <div style={{ fontSize: 12, color: "var(--wm-error)", fontWeight: 600, marginBottom: 12 }}>
           {error}
         </div>
       )}
 
-      {/* Actions */}
       <div style={{ display: "flex", justifyContent: "center", gap: 10, marginTop: 16 }}>
-        <button
-          className="wm-outlineBtn"
-          type="button"
-          onClick={onCancel}
-        >
+        <button className="wm-outlineBtn" type="button" onClick={onCancel}>
           Cancel
         </button>
         <button

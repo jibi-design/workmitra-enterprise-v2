@@ -1,3 +1,5 @@
+/** Job Mitra | EmployeeSettingsPage.tsx | C:\projects\WorkMitra_Enterprise_v2\src\features\employee\settings\pages\EmployeeSettingsPage.tsx */
+
 import { useMemo, useState } from "react";
 import { ExportImportSection } from "../../../../shared/components/ExportImportSection";
 import { roleStorage } from "../../../../app/storage/roleStorage";
@@ -16,7 +18,6 @@ type ConfirmState = {
 } | null;
 
 function isLanguage(x: string): x is EmployeeSettings["language"] {
-  // English-only rule
   return x === "en";
 }
 
@@ -57,7 +58,6 @@ export function EmployeeSettingsPage() {
   }
 
   function save(next: EmployeeSettings) {
-    // enforce English-only
     const safeNext: EmployeeSettings = { ...next, language: "en" };
     employeeSettingsStorage.set(safeNext);
     setS(safeNext);
@@ -74,7 +74,6 @@ export function EmployeeSettingsPage() {
       confirmText: "Clear local data",
       danger: true,
       onConfirm: () => {
-        // Employee demo keys (Phase-0)
         localStorage.removeItem("wm_employee_home_demo_v1");
         localStorage.removeItem("wm_employee_profile_v1");
         localStorage.removeItem("wm_employee_notifications_v1");
@@ -115,7 +114,6 @@ export function EmployeeSettingsPage() {
 
   return (
     <div>
-      {/* Notice modal */}
       {notice ? (
         <div
           role="dialog"
@@ -143,7 +141,7 @@ export function EmployeeSettingsPage() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ fontWeight: 1000, fontSize: 14, color: "var(--wm-er-text)" }}>{notice.title}</div>
+            <div style={{ fontWeight: 800, fontSize: 14, color: "var(--wm-er-text)" }}>{notice.title}</div>
             <div style={{ marginTop: 6, fontSize: 12, color: "var(--wm-er-muted)" }}>{notice.message}</div>
 
             <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
@@ -155,7 +153,6 @@ export function EmployeeSettingsPage() {
         </div>
       ) : null}
 
-      {/* Confirm modal */}
       {confirm ? (
         <div
           role="dialog"
@@ -174,7 +171,7 @@ export function EmployeeSettingsPage() {
           onClick={closeConfirm}
         >
           <div className="wm-ee-card" style={{ width: "100%", maxWidth: 520, margin: 0 }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ fontWeight: 1000, fontSize: 14, color: "var(--wm-er-text)" }}>{confirm.title}</div>
+            <div style={{ fontWeight: 800, fontSize: 14, color: "var(--wm-er-text)" }}>{confirm.title}</div>
             <div style={{ marginTop: 6, fontSize: 12, color: "var(--wm-er-muted)" }}>{confirm.message}</div>
 
             <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end", gap: 10 }}>
@@ -203,7 +200,7 @@ export function EmployeeSettingsPage() {
           <label className="wm-label">Language</label>
           <select
             className="wm-input"
-            value={"en"}
+            value="en"
             onChange={(e) => {
               const v = e.target.value;
               if (!isLanguage(v)) return;
@@ -325,7 +322,6 @@ export function EmployeeSettingsPage() {
           </label>
         </div>
 
-        {/* Polished actions: Logout is danger; clear local data is secondary */}
         <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
           <button className="wm-outlineBtn" type="button" onClick={clearLocalData} style={{ minWidth: 160, justifyContent: "center" }}>
             Clear local data

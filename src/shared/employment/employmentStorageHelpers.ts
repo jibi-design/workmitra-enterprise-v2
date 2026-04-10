@@ -61,8 +61,9 @@ export function addTimeline(
   status: EmploymentStatus | "withdrawn",
   actor: TimelineEntry["actor"],
   note: string,
+  timestamp?: number,
 ): void {
-  record.timeline.push({ status, timestamp: Date.now(), actor, note });
+  record.timeline.push({ status, timestamp: timestamp ?? Date.now(), actor, note });
 }
 
 /* ── Duration Calculator ── */

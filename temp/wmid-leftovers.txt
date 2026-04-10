@@ -1,0 +1,121 @@
+﻿
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employee\workVault\
+             components\VaultVerifyEmployerTab.
+             tsx
+LineNumber : 3
+Line       : // Vault "Verify Employer" tab — 
+             search employer by WM ID.
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\myStaff\pa
+             ges\EmployerStaffDetailPage.tsx
+LineNumber : 128
+Line       :     /* Save to shared rating 
+             engine so worker WM ID rating 
+             updates */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\shiftJobs\
+             pages\EmployerFavoritesPage.tsx
+LineNumber : 4
+Line       : // Search by WM ID to add 
+             manually.
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\shiftJobs\
+             pages\EmployerFavoritesPage.tsx
+LineNumber : 257
+Line       :     if (!wmId) { 
+             setAddError("Enter a WM ID."); 
+             return; }
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\shiftJobs\
+             pages\EmployerFavoritesPage.tsx
+LineNumber : 310
+Line       :           Add Worker by WM ID
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\shiftJobs\
+             pages\EmployerFavoritesPage.tsx
+LineNumber : 359
+Line       :             placeholder="Search 
+             by name or WM ID..."
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\shiftJobs\
+             pages\EmployerFavoritesPage.tsx
+LineNumber : 370
+Line       :             Rate a worker and 
+             select &ldquo;Hire Again&rdquo; 
+             to automatically add them here. 
+             Or add by WM ID above.
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\shiftJobs\
+             storage\favoritesStorage.ts
+LineNumber : 4
+Line       : // Workers saved by WM ID. 
+             Auto-added when employer selects 
+             "Hire Again = Yes".
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\shiftJobs\
+             storage\favoritesStorage.ts
+LineNumber : 5
+Line       : // Employer can also manually add 
+             by WM ID or remove.
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\shiftJobs\
+             storage\favoritesStorage.ts
+LineNumber : 12
+Line       :   /** Worker WM ID — primary 
+             identifier */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\shiftJobs\
+             storage\favoritesStorage.ts
+LineNumber : 113
+Line       :   /** Manual add by WM ID */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\employerProfile\AntiF
+             raudNotice.tsx
+LineNumber : 4
+Line       : // Shows employer WM ID 
+             visibility warning.
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\employerProfile\Emplo
+             yerTrustBadge.tsx
+LineNumber : 4
+Line       : // Shows: ★ average + level badge 
+             + rating count + WM ID (optional).
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\employerProfile\Emplo
+             yerTrustBadge.tsx
+LineNumber : 20
+Line       :   /** "compact" = inline row 
+             (search cards). "full" = stacked 
+             with WM ID. */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\employerProfile\Emplo
+             yerTrustBadge.tsx
+LineNumber : 106
+Line       :       {/* Row 2: WM ID — tap to 
+             copy */}
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\employerProfile\Emplo
+             yerTrustBadge.tsx
+LineNumber : 112
+Line       : /* ── WM ID with tap-to-copy 
+             ────────────────────── */
+
+
+

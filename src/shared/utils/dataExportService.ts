@@ -1,23 +1,12 @@
-// src/shared/utils/dataExportService.ts
-//
-// Data Export/Import — backup all localStorage to JSON file.
-// Vault documents excluded (too large). Metadata only.
-// Import: version gate + role check + date-aware confirmation.
+/** Job Mitra | dataExportService.ts | C:\projects\WorkMitra_Enterprise_v2\src\shared\utils\dataExportService.ts */
 
-/* ------------------------------------------------ */
-/* Constants                                        */
-/* ------------------------------------------------ */
-const APP_ID = "WorkMitra";
+const APP_ID = "JobMitra";
 const CURRENT_VERSION = "1.0";
 
-/** Keys that contain large binary/base64 document data — excluded from export */
 const EXCLUDED_KEYS = [
   "wm_employee_vault_documents_v1",
 ] as const;
 
-/* ------------------------------------------------ */
-/* Export types                                     */
-/* ------------------------------------------------ */
 export type ExportPayload = {
   app: string;
   version: string;
@@ -35,20 +24,16 @@ export type ImportResult =
   | { success: true; keysRestored: number }
   | { success: false; reason: string };
 
-/* ------------------------------------------------ */
-/* Role detection                                   */
-/* ------------------------------------------------ */
 function detectRole(): "employee" | "employer" {
   try {
     const raw = localStorage.getItem("wm_app_role_v1");
     if (raw === "employer") return "employer";
-  } catch { /* safe */ }
+  } catch {
+    /* safe */
+  }
   return "employee";
 }
 
-/* ------------------------------------------------ */
-/* Export                                           */
-/* ------------------------------------------------ */
 export function exportData(): void {
   const role = detectRole();
   const data: Record<string, string> = {};
@@ -75,16 +60,13 @@ export function exportData(): void {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `WorkMitra_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+  a.download = `JobMitra_Backup_${new Date().toISOString().slice(0, 10)}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
 
-/* ------------------------------------------------ */
-/* Validate import file (before confirmation)       */
-/* ------------------------------------------------ */
 export function validateImportFile(file: File): Promise<ImportValidation> {
   return new Promise((resolve) => {
     if (!file.name.endsWith(".json")) {
@@ -105,7 +87,7 @@ export function validateImportFile(file: File): Promise<ImportValidation> {
         const obj = parsed as Record<string, unknown>;
 
         if (obj["app"] !== APP_ID) {
-          resolve({ valid: false, reason: "This is not a WorkMitra backup file." });
+          resolve({ valid: false, reason: "This is not a Job Mitra backup file." });
           return;
         }
 
@@ -143,9 +125,6 @@ export function validateImportFile(file: File): Promise<ImportValidation> {
   });
 }
 
-/* ------------------------------------------------ */
-/* Import (after user confirms)                     */
-/* ------------------------------------------------ */
 export function importData(file: File): Promise<ImportResult> {
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -165,10 +144,8 @@ export function importData(file: File): Promise<ImportResult> {
           return;
         }
 
-        /* Clear current data — atomic replace */
         localStorage.clear();
 
-        /* Restore all keys */
         let count = 0;
         for (const [key, value] of Object.entries(data)) {
           if (typeof value === "string") {
@@ -191,9 +168,6 @@ export function importData(file: File): Promise<ImportResult> {
   });
 }
 
-/* ------------------------------------------------ */
-/* Format date helper (for confirmation message)    */
-/* ------------------------------------------------ */
 export function formatExportDate(ts: number): string {
   return new Date(ts).toLocaleDateString(undefined, {
     year: "numeric",

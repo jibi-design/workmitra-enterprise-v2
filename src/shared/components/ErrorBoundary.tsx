@@ -1,13 +1,9 @@
-﻿// src/shared/components/ErrorBoundary.tsx
+﻿/** Job Mitra | ErrorBoundary.tsx | C:\projects\WorkMitra_Enterprise_v2\src\shared\components\ErrorBoundary.tsx */
+
 import { Component, type ErrorInfo, type ReactNode } from "react";
 
-/* ------------------------------------------------ */
-/* Types                                            */
-/* ------------------------------------------------ */
 interface ErrorBoundaryProps {
-  /** Optional fallback UI. If not provided, default recovery card is shown. */
   fallback?: ReactNode;
-  /** Where the "Go Home" button navigates. Defaults to "/" */
   homePath?: string;
   children: ReactNode;
 }
@@ -17,9 +13,6 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-/* ------------------------------------------------ */
-/* Error Boundary (Class component — required by React) */
-/* ------------------------------------------------ */
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
@@ -31,8 +24,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
-    // Phase-0: console log only. Production: send to error tracking service.
-    console.error("[WorkMitra ErrorBoundary]", error, info.componentStack);
+    console.error("[JobMitra ErrorBoundary]", error, info.componentStack);
   }
 
   private handleGoHome = (): void => {
@@ -50,12 +42,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       return this.props.children;
     }
 
-    // Custom fallback provided
     if (this.props.fallback) {
       return this.props.fallback;
     }
 
-    // Default recovery card — enterprise styled, Play Store safe (no browser alerts)
     return (
       <div
         role="alert"
@@ -79,7 +69,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             textAlign: "center",
           }}
         >
-          {/* Icon */}
           <div
             style={{
               width: 48,
@@ -101,7 +90,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             </svg>
           </div>
 
-          {/* Title */}
           <div
             style={{
               fontSize: 16,
@@ -113,7 +101,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             Something went wrong
           </div>
 
-          {/* Description */}
           <div
             style={{
               fontSize: 13,
@@ -125,7 +112,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             An unexpected error occurred. You can try again or return to the home screen.
           </div>
 
-          {/* Action buttons */}
           <div
             style={{
               display: "flex",
@@ -170,7 +156,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             </button>
           </div>
 
-          {/* Error detail (dev only — collapsed) */}
           {this.state.error && (
             <details
               style={{

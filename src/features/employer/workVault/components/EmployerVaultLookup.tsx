@@ -1,4 +1,4 @@
-// src/features/employer/workVault/components/EmployerVaultLookup.tsx
+/** Job Mitra | EmployerVaultLookup.tsx | C:\projects\WorkMitra_Enterprise_v2\src\features\employer\workVault\components\EmployerVaultLookup.tsx */
 
 import { useState } from "react";
 import { validateId } from "../../../../shared/identity/validators/idValidator";
@@ -6,16 +6,10 @@ import { lookupById } from "../../../../shared/identity/registry/idRegistry";
 import { VAULT_ACCENT } from "../../../employee/workVault/constants/vaultConstants";
 import type { IdRegistryEntry } from "../../../../shared/identity/types/identityTypes";
 
-/* ------------------------------------------------ */
-/* Props                                            */
-/* ------------------------------------------------ */
 type EmployerVaultLookupProps = {
   onEmployeeFound: (entry: IdRegistryEntry) => void;
 };
 
-/* ------------------------------------------------ */
-/* Component                                        */
-/* ------------------------------------------------ */
 export function EmployerVaultLookup({ onEmployeeFound }: EmployerVaultLookupProps) {
   const [idInput, setIdInput] = useState("");
   const [error, setError] = useState("");
@@ -53,10 +47,17 @@ export function EmployerVaultLookup({ onEmployeeFound }: EmployerVaultLookupProp
     <div>
       <div style={{ marginBottom: 12 }}>
         <label
-          style={{ fontSize: 12, fontWeight: 700, color: "var(--wm-er-muted)", marginBottom: 6, display: "block" }}
+          style={{
+            fontSize: 12,
+            fontWeight: 700,
+            color: "var(--wm-er-muted)",
+            marginBottom: 6,
+            display: "block",
+          }}
         >
           Employee Unique ID
         </label>
+
         <div style={{ display: "flex", gap: 8 }}>
           <input
             className="wm-input"
@@ -72,9 +73,10 @@ export function EmployerVaultLookup({ onEmployeeFound }: EmployerVaultLookupProp
                 handleSearch();
               }
             }}
-            placeholder="WM-XXXX-XXX-XXXX"
+            placeholder="JM-XXXX-XXX-XXXX"
             autoFocus
           />
+
           <button
             type="button"
             onClick={handleSearch}
@@ -94,6 +96,7 @@ export function EmployerVaultLookup({ onEmployeeFound }: EmployerVaultLookupProp
             Search
           </button>
         </div>
+
         {error && (
           <div style={{ fontSize: 12, color: "var(--wm-error)", marginTop: 6, fontWeight: 600 }}>
             {error}
@@ -102,7 +105,7 @@ export function EmployerVaultLookup({ onEmployeeFound }: EmployerVaultLookupProp
       </div>
 
       <div style={{ fontSize: 11, color: "var(--wm-er-muted)", lineHeight: 1.6 }}>
-        Enter the employee's WorkMitra ID to view their public profile and request document access.
+        Enter the employee&apos;s Job Mitra ID to view their public profile and request document access.
       </div>
     </div>
   );

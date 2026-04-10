@@ -60,7 +60,7 @@ function getTips(rating: number | null, totalReviews: number): { primary: string
   const secondary: string[] = [];
 
   if (totalReviews === 0 || rating === null) {
-    primary.push("Complete your first shift or assignment, then ask your employer to rate your work on WorkMitra.");
+    primary.push("Complete your first shift or assignment, then ask your employer to rate your work on Job Mitra.");
     primary.push("Every rating builds your professional reputation and opens more opportunities.");
   } else if (rating < 3) {
     primary.push("Ask your employer to update your rating after your next successful assignment.");

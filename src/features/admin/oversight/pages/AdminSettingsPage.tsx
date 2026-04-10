@@ -46,7 +46,7 @@ function exportAllData(): void {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `workmitra-export-${Date.now()}.json`;
+    a.download = `job-mitra-export-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
     pushAdminAuditEntry("data_exported", "Data exported", `Full localStorage export. ${localStorage.length} keys.`);
@@ -231,7 +231,7 @@ export function AdminSettingsPage() {
       <Sec label="About" />
       <div className="wm-ad-domainCard" style={{ paddingLeft: 20 }}>
         <div style={{ display: "grid", gap: 10 }}>
-          <AboutRow label="Application" value="WorkMitra Enterprise" />
+          <AboutRow label="Application" value="Job Mitra Enterprise" />
           <AboutRow label="Version" value="0.1.0-demo" />
           <AboutRow label="Phase" value="Phase-0 (localStorage only)" />
           <AboutRow label="Build" value="React + TypeScript + Vite" />

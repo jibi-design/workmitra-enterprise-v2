@@ -6,7 +6,7 @@ import { generateAndRegisterId } from "../../../../shared/identity/registry/idRe
 /* Types                                            */
 /* ------------------------------------------------ */
 export interface EmployerProfile {
-  /** Unique WorkMitra ID for this employer. */
+  /** Unique Job Mitra ID for this employer. */
   uniqueId?: string;
 
   /** Company details */

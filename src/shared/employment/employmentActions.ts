@@ -7,6 +7,7 @@ import type {
   EmployeeResignReason,
   EmployerTerminateReason,
 } from "./employmentTypes";
+import { FORCE_COMPLETE_GRACE_DAYS } from "./employmentTypes";
 import {
   readAll,
   writeAll,
@@ -38,7 +39,7 @@ export const employmentActions = {
 
     all[idx].status = "working";
     all[idx].joinedAt = joinedAt;
-    addTimeline(all[idx], "working", "employer", "Marked as joined");
+    addTimeline(all[idx], "working", "employer", "Marked as joined", joinedAt);
     writeAll(all);
 
     notifyEmployeeJoined(all[idx].jobTitle, all[idx].companyName);
@@ -70,7 +71,7 @@ export const employmentActions = {
     const label = target === "notice"
       ? `Resigned with ${rec.noticePeriodDays}-day notice — ${reason}`
       : `Resigned — ${reason}`;
-    addTimeline(rec, target, "employee", label);
+    addTimeline(rec, target, "employee", label, now);
     appendExitLog({ employmentId: rec.id, exitType: "resigned", reason, notes, timestamp: now });
 
     writeAll(all);
@@ -96,7 +97,7 @@ export const employmentActions = {
     rec.lastWorkingDay = null;
     rec.wasWithdrawn = true;
     rec.withdrawnAt = now;
-    addTimeline(rec, "withdrawn", "employee", "Resignation withdrawn");
+    addTimeline(rec, "withdrawn", "employee", "Resignation withdrawn", now);
 
     writeAll(all);
 
@@ -120,7 +121,7 @@ export const employmentActions = {
       rec.workDurationDays = dur.days;
       rec.workDurationDisplay = dur.display;
     }
-    addTimeline(rec, "completed", "employer", "Resignation confirmed");
+    addTimeline(rec, "completed", "employer", "Resignation confirmed", now);
 
     writeAll(all);
 
@@ -152,7 +153,7 @@ export const employmentActions = {
       rec.workDurationDays = dur.days;
       rec.workDurationDisplay = dur.display;
     }
-    addTimeline(rec, "completed", "employer", `Terminated — ${reason}`);
+    addTimeline(rec, "completed", "employer", `Terminated — ${reason}`, now);
     appendExitLog({ employmentId: rec.id, exitType: "terminated", reason, notes, timestamp: now });
 
     writeAll(all);
@@ -171,7 +172,7 @@ export const employmentActions = {
 
     if (rec.status !== "notice" && rec.status !== "resigned") return null;
 
-    const GRACE_MS = 7 * 86_400_000;
+    const GRACE_MS = FORCE_COMPLETE_GRACE_DAYS * 86_400_000;
     let eligibleAfter: number | null = null;
 
     if (rec.lastWorkingDay) {
@@ -192,7 +193,7 @@ export const employmentActions = {
       rec.workDurationDays = dur.days;
       rec.workDurationDisplay = dur.display;
     }
-    addTimeline(rec, "completed", "employee", "Force completed — employer did not respond");
+    addTimeline(rec, "completed", "employee", "Force completed — employer did not respond", now);
 
     writeAll(all);
 

@@ -1,0 +1,134 @@
+﻿
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employee\profile\pa
+             ges\EmployeeProfilePage.tsx
+LineNumber : 51
+Line       :         <div style={{ fontSize: 
+             14, fontWeight: 700, color: 
+             "var(--wm-emp-text)" }}>Your Job 
+             Mitra ID</div>
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employee\profile\pa
+             ges\EmployeeProfilePage.tsx
+LineNumber : 95
+Line       :             Your Job Mitra ID is 
+             created from your real name. Use 
+             your real, full name — not a 
+             nickname or fake name. Once 
+             created, your name and ID cannot 
+             be changed.
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employee\profile\pa
+             ges\EmployeeProfilePage.tsx
+LineNumber : 101
+Line       :             Format: 
+             JM-XXXX-ABC-XXXX
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employee\profile\pa
+             ges\EmployeeProfilePage.tsx
+LineNumber : 162
+Line       :     setNotice({ title: "Copied!", 
+             message: "Your Job Mitra ID has 
+             been copied to clipboard.", tone: 
+             "success" });
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employee\profile\se
+             rvices\profileShareService.ts
+LineNumber : 37
+Line       :   lines.push("", "Verify me on 
+             Job Mitra — search my JM ID.");
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\company\pa
+             ges\EmployerSettingsPage.tsx
+LineNumber : 187
+Line       :               Your Job Mitra ID
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\components\HelpSuppor
+             tPage.tsx
+LineNumber : 16
+Line       :     a: "After a shift or job is 
+             completed, both the worker and 
+             employer rate each other. Ratings 
+             are permanent and linked to your 
+             Job Mitra ID. Higher ratings 
+             build trust and improve your 
+             chances.",
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\components\HelpSuppor
+             tPage.tsx
+LineNumber : 27
+Line       :     q: "What is my Job Mitra ID?",
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\components\HelpSuppor
+             tPage.tsx
+LineNumber : 28
+Line       :     a: "Your Job Mitra ID (JM ID) 
+             is a unique, permanent identifier 
+             created from your name. Share it 
+             with employers so they can find 
+             and verify you. It appears on 
+             your profile and all job 
+             interactions.",
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\components\HelpSuppor
+             tPage.tsx
+LineNumber : 32
+Line       :     a: "Go to Work Vault, tap the 
+             'Verify Employer' tab, and enter 
+             the employer's Job Mitra ID. 
+             You'll see their rating, reviews, 
+             and track record before 
+             applying.",
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\components\onboarding
+             Constants.ts
+LineNumber : 24
+Line       :     title: "Step 2: Get your JM 
+             ID",
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\components\onboarding
+             Constants.ts
+LineNumber : 43
+Line       :     message: "Add your company 
+             name and details. Workers verify 
+             you using your JM ID.",
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\identity\constants\id
+             Constants.ts
+LineNumber : 10
+Line       : /** Fixed app-level prefix for 
+             all Job Mitra IDs. */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\identity\constants\id
+             Constants.ts
+LineNumber : 29
+Line       :  * Final format: JM-XXXX-ABC-XXXX
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\identity\generators\u
+             niqueIdGenerator.ts
+LineNumber : 71
+Line       :  * Format: JM-XXXX-ABC-XXXX
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\rating\ratingTypes.ts
+LineNumber : 6
+Line       :  * Permanent, linked to Job Mitra 
+             ID. Cannot delete/reset/fake.
+
+
+

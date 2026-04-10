@@ -1,17 +1,12 @@
-// src/shared/rating/ratingTypes.ts
-//
-// WorkMitra Rating & Trust System — Core Types.
-// Two-way mandatory rating: Employer → Worker + Worker → Employer.
-// Permanent, linked to WM ID. Cannot delete/reset/fake.
+/** Job Mitra | ratingTypes.ts | C:\projects\WorkMitra_Enterprise_v2\src\shared\rating\ratingTypes.ts */
 
-/* ------------------------------------------------ */
-/* Domain                                           */
-/* ------------------------------------------------ */
+/**
+ * Job Mitra Rating & Trust System — Core Types.
+ * Two-way mandatory rating: Employer → Worker + Worker → Employer.
+ * Permanent, linked to Job Mitra ID. Cannot delete/reset/fake.
+ */
 export type RatingDomain = "shift" | "career";
 
-/* ------------------------------------------------ */
-/* Employer → Worker Rating                         */
-/* ------------------------------------------------ */
 export type EmployerWorkerTag =
   | "On time"
   | "Skilled"
@@ -24,9 +19,9 @@ export type EmployerWorkerTag =
 export type EmployerToWorkerRating = {
   id: string;
   domain: RatingDomain;
-  /** Employer's WM ID */
+  /** Employer's unique ID */
   employerWmId: string;
-  /** Worker's WM ID */
+  /** Worker's unique ID */
   workerWmId: string;
   /** Shift post ID or Career job ID */
   jobId: string;
@@ -35,15 +30,10 @@ export type EmployerToWorkerRating = {
   comment?: string;
   hireAgain: boolean;
   createdAt: number;
-  /** Timestamp of edit — null if never edited */
   editedAt: number | null;
-  /** 0 = not edited, 1 = max one edit allowed */
   editCount: number;
 };
 
-/* ------------------------------------------------ */
-/* Worker → Employer Rating                         */
-/* ------------------------------------------------ */
 export type WorkerEmployerTag =
   | "Paid on time"
   | "Respectful"
@@ -55,9 +45,9 @@ export type WorkerEmployerTag =
 export type WorkerToEmployerRating = {
   id: string;
   domain: RatingDomain;
-  /** Worker's WM ID */
+  /** Worker's unique ID */
   workerWmId: string;
-  /** Employer's WM ID */
+  /** Employer's unique ID */
   employerWmId: string;
   /** Shift post ID or Career job ID */
   jobId: string;
@@ -66,15 +56,10 @@ export type WorkerToEmployerRating = {
   comment?: string;
   workAgain: boolean;
   createdAt: number;
-  /** Timestamp of edit — null if never edited */
   editedAt: number | null;
-  /** 0 = not edited, 1 = max one edit allowed */
   editCount: number;
 };
 
-/* ------------------------------------------------ */
-/* Worker Points & Level                            */
-/* ------------------------------------------------ */
 export type RatingLevel = "bronze" | "silver" | "gold" | "platinum";
 
 export type PointsEventType =
@@ -109,9 +94,6 @@ export type WorkerPoints = {
   updatedAt: number;
 };
 
-/* ------------------------------------------------ */
-/* Aggregated Worker Rating Summary                 */
-/* ------------------------------------------------ */
 export type WorkerRatingSummary = {
   workerWmId: string;
   totalRatings: number;
@@ -123,9 +105,6 @@ export type WorkerRatingSummary = {
   points: number;
 };
 
-/* ------------------------------------------------ */
-/* Aggregated Employer Rating Summary               */
-/* ------------------------------------------------ */
 export type EmployerRatingSummary = {
   employerWmId: string;
   totalRatings: number;

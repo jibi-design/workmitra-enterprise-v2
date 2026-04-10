@@ -162,11 +162,14 @@ export function EmploymentDetails({ record, sm, duration }: EmploymentDetailsPro
         <FieldRow label="Unique ID" value={record.employeeUniqueId || "–"} />
         <FieldRow label="Job Title" value={record.jobTitle} />
         {record.category && <FieldRow label="Category" value={record.category} />}
-        <FieldRow label="Employment Type" value={record.employmentType.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase())} />
+        <FieldRow
+          label="Employment Type"
+          value={record.employmentType.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+        />
         <FieldRow label="Joined" value={formatDate(record.joinedAt)} />
         <FieldRow label="Duration" value={duration} />
         <FieldRow label="Status" value={sm.label} />
-        <FieldRow label="Added Via" value={record.addMethod === "via_app" ? "WorkMitra App" : "Manually Added"} />
+        <FieldRow label="Added Via" value={record.addMethod === "via_app" ? "Job Mitra App" : "Manually Added"} />
       </div>
     </div>
   );
@@ -178,11 +181,18 @@ export function EmploymentDetails({ record, sm, duration }: EmploymentDetailsPro
 export function ResignationBanner({ onAccept, onReject }: ResignationBannerProps) {
   return (
     <div style={{ padding: "12px 20px 0" }}>
-      <div
-        className="wm-er-card"
-        style={{ borderLeft: "4px solid #d97706", padding: 16 }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#d97706", fontWeight: 900, fontSize: 14, marginBottom: 8 }}>
+      <div className="wm-er-card" style={{ borderLeft: "4px solid #d97706", padding: 16 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            color: "#d97706",
+            fontWeight: 900,
+            fontSize: 14,
+            marginBottom: 8,
+          }}
+        >
           <IconWarning /> Resignation Submitted
         </div>
         <div style={{ fontSize: 13, color: "var(--wm-er-text)", lineHeight: 1.5 }}>
@@ -245,7 +255,8 @@ export function ExitActions({ onStartExit }: ExitActionsProps) {
           borderRadius: 10,
         }}
       >
-        Use this if the employee is leaving – termination, layoff, contract end, or if they left without resigning in the app. This will update their verified work history.
+        Use this if the employee is leaving – termination, layoff, contract end, or if they left without resigning in
+        the app. This will update their verified work history.
       </div>
       <button
         type="button"
@@ -275,12 +286,13 @@ export function ExitedInfo({ record }: ExitedInfoProps) {
   return (
     <div style={{ padding: "12px 20px 0" }}>
       <div className="wm-er-card" style={{ borderLeft: "4px solid #6b7280", padding: 16 }}>
-        <div style={{ fontWeight: 900, fontSize: 14, color: "#6b7280", marginBottom: 8 }}>
-          Employment Ended
-        </div>
+        <div style={{ fontWeight: 900, fontSize: 14, color: "#6b7280", marginBottom: 8 }}>Employment Ended</div>
         {record.exitedAt && <FieldRow label="Exit Date" value={formatDate(record.exitedAt)} />}
         {record.exitReason && (
-          <FieldRow label="Reason" value={record.exitReason.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase())} />
+          <FieldRow
+            label="Reason"
+            value={record.exitReason.replace("_", " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+          />
         )}
         {typeof record.employerRating === "number" && (
           <FieldRow label="Your Rating" value={"★".repeat(record.employerRating) + "☆".repeat(5 - record.employerRating)} />

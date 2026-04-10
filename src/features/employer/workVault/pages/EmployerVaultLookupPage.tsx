@@ -1,4 +1,4 @@
-// src/features/employer/workVault/pages/EmployerVaultLookupPage.tsx
+/** Job Mitra | EmployerVaultLookupPage.tsx | C:\projects\WorkMitra_Enterprise_v2\src\features\employer\workVault\pages\EmployerVaultLookupPage.tsx */
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,9 +9,6 @@ import type { VaultSectionData } from "../../../employee/workVault/services/vaul
 import { EmployerVaultLookup } from "../components/EmployerVaultLookup";
 import { EmployerVaultProfileView } from "../components/EmployerVaultProfileView";
 
-/* ------------------------------------------------ */
-/* Icons                                            */
-/* ------------------------------------------------ */
 function IconShield() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
@@ -34,9 +31,6 @@ function IconUnlock() {
   );
 }
 
-/* ------------------------------------------------ */
-/* Component                                        */
-/* ------------------------------------------------ */
 export function EmployerVaultLookupPage() {
   const nav = useNavigate();
   const [foundEntry, setFoundEntry] = useState<IdRegistryEntry | null>(null);
@@ -54,7 +48,6 @@ export function EmployerVaultLookupPage() {
 
   return (
     <div>
-      {/* Header */}
       <div className="wm-pageHead">
         <div>
           <div className="wm-pageTitle" style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -64,12 +57,11 @@ export function EmployerVaultLookupPage() {
             Verify Employee
           </div>
           <div className="wm-pageSub">
-            Look up an employee by their WorkMitra ID to view their profile and documents.
+            Look up an employee by their Job Mitra ID to view their profile and documents.
           </div>
         </div>
       </div>
 
-      {/* Lookup Input */}
       <section
         className="wm-ee-card"
         style={{
@@ -82,13 +74,10 @@ export function EmployerVaultLookupPage() {
         <EmployerVaultLookup onEmployeeFound={handleEmployeeFound} />
       </section>
 
-      {/* Public Profile + Locked Sections */}
       {foundEntry && sectionData && (
         <div style={{ marginTop: 16 }}>
-          {/* Profile View — unlocked=false shows public only */}
           <EmployerVaultProfileView data={sectionData} unlocked={false} />
 
-          {/* Unlock Button */}
           <button
             type="button"
             onClick={handleUnlockProfile}
@@ -113,7 +102,6 @@ export function EmployerVaultLookupPage() {
             Unlock Full Profile (OTP Required)
           </button>
 
-          {/* Hint */}
           <div
             style={{
               marginTop: 8,
@@ -123,7 +111,7 @@ export function EmployerVaultLookupPage() {
               lineHeight: 1.5,
             }}
           >
-            Ask the employee to share their 6-digit access code from the WorkMitra app.
+            Ask the employee to share their 6-digit access code from the Job Mitra app.
           </div>
         </div>
       )}

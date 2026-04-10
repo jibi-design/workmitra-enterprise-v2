@@ -1,17 +1,9 @@
-// src/app/shells/AdminShell.tsx
-//
-// Admin shell — clean dark premium. Top nav tabs for all admin pages.
-// Tabs: Overview | Users | Audit | Analytics | Alerts | Settings
-// Mobile-first, horizontal scroll on narrow screens.
+/** Job Mitra | AdminShell.tsx | C:\projects\WorkMitra_Enterprise_v2\src\app\shells\AdminShell.tsx */
 
 import { useSyncExternalStore } from "react";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { roleStorage, type AppRole } from "../storage/roleStorage";
 import { ROUTE_PATHS } from "../router/routePaths";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Icons (inline SVG — zero dependencies)
-// ─────────────────────────────────────────────────────────────────────────────
 
 function IconBack() {
   return (
@@ -40,10 +32,6 @@ function IconLogout() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Tab Configuration
-// ─────────────────────────────────────────────────────────────────────────────
-
 type TabDef = {
   label: string;
   path: string;
@@ -58,10 +46,6 @@ const ADMIN_TABS: TabDef[] = [
   { label: "Alerts", path: ROUTE_PATHS.adminNotifications, enabled: true },
   { label: "Settings", path: ROUTE_PATHS.adminSettings, enabled: true },
 ];
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────────────────────────────────────
 
 function useRole(): AppRole | null {
   return useSyncExternalStore(roleStorage.subscribe, roleStorage.get, roleStorage.get);
@@ -82,10 +66,6 @@ function isTabActive(tabPath: string, currentHash: string): boolean {
   }
   return currentPath.startsWith(tabPath);
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Component
-// ─────────────────────────────────────────────────────────────────────────────
 
 export function AdminShell() {
   const role = useRole();
@@ -114,7 +94,6 @@ export function AdminShell() {
 
   return (
     <div className="wm-shellRoot wm-shellAdmin">
-      {/* ── Top Bar ── */}
       <div className="wm-topbar wm-admin-topbar">
         <div className="wm-topbarActions" aria-label="Left navigation" style={{ display: "flex", gap: 10 }}>
           <button className="wm-iconbtn" type="button" aria-label="Back" title="Back" onClick={goBack}>
@@ -123,7 +102,7 @@ export function AdminShell() {
         </div>
 
         <div className="wm-title">
-          <h1>WorkMitra</h1>
+          <h1>Job Mitra</h1>
           <p>
             Admin Control{" "}
             <span className="wm-roleBadge wm-roleBadgeAdmin" aria-label="Demo workspace badge">
@@ -142,7 +121,6 @@ export function AdminShell() {
         </div>
       </div>
 
-      {/* ── Navigation Tabs ── */}
       <div className="wm-ad-tabs" role="tablist" aria-label="Admin navigation">
         {ADMIN_TABS.map((tab) => (
           <button
@@ -175,9 +153,9 @@ export function AdminShell() {
           </button>
         ))}
       </div>
+
       <div className="wm-ad-tabDivider" />
 
-      {/* ── Page Content ── */}
       <div className="wm-container" style={{ padding: "16px 16px 32px" }}>
         <Outlet />
       </div>

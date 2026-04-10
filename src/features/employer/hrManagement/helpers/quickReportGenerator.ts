@@ -11,10 +11,9 @@ async function loadJsPDF() {
 }
 import { attendanceLogStorage } from "../storage/attendanceLog.storage";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────────────────────────────────────
-
+/* ------------------------------------------------ */
+/* Types                                            */
+/* ------------------------------------------------ */
 export type ReportData = {
   employeeName: string;
   employeeId: string;
@@ -30,10 +29,9 @@ export type GeneratedReport = {
   filename: string;
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Date Helpers
-// ─────────────────────────────────────────────────────────────────────────────
-
+/* ------------------------------------------------ */
+/* Date Helpers                                     */
+/* ------------------------------------------------ */
 function formatDisplayDate(dateKey: string): string {
   const [y, m, d] = dateKey.split("-").map(Number);
   return new Date(y, m - 1, d).toLocaleDateString("en-GB", {
@@ -43,33 +41,28 @@ function formatDisplayDate(dateKey: string): string {
   });
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PDF Generator
-// ─────────────────────────────────────────────────────────────────────────────
-
+/* ------------------------------------------------ */
+/* PDF Generator                                    */
+/* ------------------------------------------------ */
 export async function generateAttendanceReport(data: ReportData): Promise<GeneratedReport> {
-  const summary = attendanceLogStorage.getRangeSummary(
-    data.hrCandidateId,
-    data.startDate,
-    data.endDate,
-  );
+  const summary = attendanceLogStorage.getRangeSummary(data.hrCandidateId, data.startDate, data.endDate);
 
-  const entries = attendanceLogStorage.getAllForCandidate(data.hrCandidateId)
+  const entries = attendanceLogStorage
+    .getAllForCandidate(data.hrCandidateId)
     .filter((e) => e.dateKey >= data.startDate && e.dateKey <= data.endDate)
     .sort((a, b) => a.dateKey.localeCompare(b.dateKey));
 
-    const JsPDF = await loadJsPDF();
+  const JsPDF = await loadJsPDF();
   const doc = new JsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 16;
   const contentWidth = pageWidth - margin * 2;
   let y = margin;
 
-  // ── Header ──
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(26, 82, 118);
-  doc.text("WorkMitra", margin, y);
+  doc.text("Job Mitra", margin, y);
 
   y += 8;
   doc.setFontSize(13);
@@ -80,26 +73,24 @@ export async function generateAttendanceReport(data: ReportData): Promise<Genera
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(93, 109, 126);
-  doc.text(
-    `Period: ${formatDisplayDate(data.startDate)} to ${formatDisplayDate(data.endDate)}`,
-    margin,
-    y,
-  );
+  doc.text(`Period: ${formatDisplayDate(data.startDate)} to ${formatDisplayDate(data.endDate)}`, margin, y);
 
   y += 4;
   doc.text(
-    `Generated: ${new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}`,
+    `Generated: ${new Date().toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    })}`,
     margin,
     y,
   );
 
-  // ── Divider ──
   y += 6;
   doc.setDrawColor(174, 214, 241);
   doc.setLineWidth(0.5);
   doc.line(margin, y, pageWidth - margin, y);
 
-  // ── Employee Info ──
   y += 8;
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
@@ -128,7 +119,6 @@ export async function generateAttendanceReport(data: ReportData): Promise<Genera
     y += 5;
   }
 
-  // ── Summary Box ──
   y += 4;
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
@@ -146,11 +136,11 @@ export async function generateAttendanceReport(data: ReportData): Promise<Genera
   doc.setFontSize(9);
 
   const summaryItems = [
-    { label: "Days Present", value: String(summary.daysPresent), color: [21, 128, 61] },
-    { label: "Days Absent", value: String(summary.daysAbsent), color: [220, 38, 38] },
-    { label: "Leave", value: String(summary.daysLeave), color: [217, 119, 6] },
-    { label: "Off/Holiday", value: String(summary.daysOff), color: [107, 114, 128] },
-    { label: "Total Hours", value: `${summary.totalHours}h`, color: [26, 82, 118] },
+    { label: "Days Present", value: String(summary.daysPresent), color: [21, 128, 61] as const },
+    { label: "Days Absent", value: String(summary.daysAbsent), color: [220, 38, 38] as const },
+    { label: "Leave", value: String(summary.daysLeave), color: [217, 119, 6] as const },
+    { label: "Off/Holiday", value: String(summary.daysOff), color: [107, 114, 128] as const },
+    { label: "Total Hours", value: `${summary.totalHours}h`, color: [26, 82, 118] as const },
   ];
 
   const colWidth = contentWidth / summaryItems.length;
@@ -173,7 +163,6 @@ export async function generateAttendanceReport(data: ReportData): Promise<Genera
 
   y = boxY + boxH + 8;
 
-  // ── Daily Breakdown Table ──
   if (entries.length > 0) {
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
@@ -182,7 +171,6 @@ export async function generateAttendanceReport(data: ReportData): Promise<Genera
 
     y += 6;
 
-    // Table header
     const cols = [
       { label: "Date", x: margin, w: 28 },
       { label: "Status", x: margin + 28, w: 22 },
@@ -205,8 +193,6 @@ export async function generateAttendanceReport(data: ReportData): Promise<Genera
     }
 
     y += 6;
-
-    // Table rows
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
 
@@ -218,7 +204,6 @@ export async function generateAttendanceReport(data: ReportData): Promise<Genera
     };
 
     for (let i = 0; i < entries.length; i++) {
-      // New page check
       if (y > 270) {
         doc.addPage();
         y = margin;
@@ -254,7 +239,6 @@ export async function generateAttendanceReport(data: ReportData): Promise<Genera
     }
   }
 
-  // ── Footer ──
   y += 10;
   if (y > 270) {
     doc.addPage();
@@ -269,10 +253,9 @@ export async function generateAttendanceReport(data: ReportData): Promise<Genera
   doc.setFontSize(7);
   doc.setFont("helvetica", "italic");
   doc.setTextColor(93, 109, 126);
-  doc.text("WorkMitra © 2026 | This report is generated by the employer and is for internal use only.", margin, y);
+  doc.text("Job Mitra © 2026 | This report is generated by the employer and is for internal use only.", margin, y);
 
-  // ── Generate ──
-  const filename = `WorkMitra_Attendance_${data.employeeName.replace(/\s+/g, "_")}_${data.startDate}_to_${data.endDate}.pdf`;
+  const filename = `JobMitra_Attendance_${data.employeeName.replace(/\s+/g, "_")}_${data.startDate}_to_${data.endDate}.pdf`;
   const blob = doc.output("blob");
 
   return { blob, filename };

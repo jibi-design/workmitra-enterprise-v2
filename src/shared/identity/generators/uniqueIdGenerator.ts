@@ -1,4 +1,4 @@
-// src/shared/identity/generators/uniqueIdGenerator.ts
+/** Job Mitra | uniqueIdGenerator.ts | C:\projects\WorkMitra_Enterprise_v2\src\shared\identity\generators\uniqueIdGenerator.ts */
 
 import {
   ID_CHARSET,
@@ -34,12 +34,6 @@ function randomBlock(length: number): string {
  * - Strips non-A-Z characters.
  * - Takes first 3 uppercase letters.
  * - Pads with "X" if fewer than 3 letters.
- *
- * Examples:
- *   "Rahul"   → "RAH"
- *   "Al"      → "ALX"
- *   "X"       → "XXX"
- *   "José"    → "JOS"
  */
 export function deriveNameBlock(name: string): string {
   const letters = name
@@ -52,7 +46,6 @@ export function deriveNameBlock(name: string): string {
 
 /**
  * Computes a single check character from the raw ID characters.
- * Uses a weighted sum mod 32 mapped back to ID_CHARSET.
  */
 function charToChecksumSafe(ch: string): string {
   if (ch === "I") return "J";
@@ -73,16 +66,13 @@ function computeCheckChar(block1: string, nameBlock: string, block3Partial: stri
 }
 
 /**
- * Generates a single WorkMitra unique ID.
+ * Generates a single Job Mitra unique ID.
  *
-  * Format: WM-XXXX-ABC-XXXX
- *   - WM      = fixed prefix
+ * Format: JM-XXXX-ABC-XXXX
+ *   - JM      = fixed prefix
  *   - XXXX    = 4 random characters (block 1)
  *   - ABC     = first 3 letters of name
  *   - XXX+C   = 3 random characters + 1 check character (block 3)
- *
- * @param name - The name to embed (employee name or company name).
- * @returns The generated ID string.
  */
 export function generateRawId(name: string): string {
   const block1 = randomBlock(ID_BLOCK_LENGTH);

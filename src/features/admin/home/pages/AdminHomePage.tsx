@@ -144,7 +144,7 @@ function fmtDate(ts: number): string { if (!ts) return "—"; try { return new D
 function fmtBytes(b: number): string { if (b < 1024) return `${b} B`; if (b < 1048576) return `${(b / 1024).toFixed(1)} KB`; return `${(b / 1048576).toFixed(2)} MB`; }
 function relTime(ts: number): string { const m = Math.floor((Date.now() - ts) / 60000); if (m < 1) return "just now"; if (m < 60) return `${m}m ago`; const h = Math.floor(m / 60); if (h < 24) return `${h}h ago`; return `${Math.floor(h / 24)}d ago`; }
 
-function exportAllData() { try { const data: Record<string, unknown> = {}; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (!k) continue; try { data[k] = JSON.parse(localStorage.getItem(k) ?? "null"); } catch { data[k] = localStorage.getItem(k); } } const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `workmitra-export-${Date.now()}.json`; a.click(); URL.revokeObjectURL(url); } catch { /* ignore */ } }
+function exportAllData() { try { const data: Record<string, unknown> = {}; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (!k) continue; try { data[k] = JSON.parse(localStorage.getItem(k) ?? "null"); } catch { data[k] = localStorage.getItem(k); } } const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `job-mitra-export-${Date.now()}.json`; a.click(); URL.revokeObjectURL(url); } catch { /* ignore */ } }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Component

@@ -118,9 +118,7 @@ function WorkingDaysCard({ config }: { config: CompanyConfig }) {
 
   const handleCustomToggle = (day: WeekDay) => {
     const current = config.customWorkingDays;
-    const updated = current.includes(day)
-      ? current.filter((d) => d !== day)
-      : [...current, day];
+    const updated = current.includes(day) ? current.filter((d) => d !== day) : [...current, day];
     companyConfigStorage.setWorkingDays("custom", updated);
   };
 
@@ -134,9 +132,8 @@ function WorkingDaysCard({ config }: { config: CompanyConfig }) {
     <div>
       <div style={sectionTitle}>Working Days</div>
       <div style={sectionHint}>
-        Select which days your company operates. Days not selected will be automatically
-        marked as &ldquo;Off&rdquo; in attendance for all employees. You won&rsquo;t need
-        to mark weekends manually anymore.
+        Select which days your company operates. Days not selected will be automatically marked as &ldquo;Off&rdquo;
+        in attendance for all employees. You won&rsquo;t need to mark weekends manually anymore.
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -152,9 +149,7 @@ function WorkingDaysCard({ config }: { config: CompanyConfig }) {
                 alignItems: "center",
                 gap: 8,
                 padding: "10px 12px",
-                border: isSelected
-                  ? `2px solid ${PURPLE}`
-                  : `1.5px solid ${BORDER_COLOR}`,
+                border: isSelected ? `2px solid ${PURPLE}` : `1.5px solid ${BORDER_COLOR}`,
                 borderRadius: 8,
                 background: isSelected ? "var(--wm-er-accent-hr-light)" : "#fff",
                 cursor: "pointer",
@@ -165,14 +160,18 @@ function WorkingDaysCard({ config }: { config: CompanyConfig }) {
                 width: "100%",
               }}
             >
-              <span style={{
-                width: 18, height: 18, borderRadius: "50%",
-                border: `2px solid ${isSelected ? PURPLE : BORDER_COLOR}`,
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                {isSelected && (
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: PURPLE }} />
-                )}
+              <span
+                style={{
+                  width: 18,
+                  height: 18,
+                  borderRadius: "50%",
+                  border: `2px solid ${isSelected ? PURPLE : BORDER_COLOR}`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {isSelected && <span style={{ width: 8, height: 8, borderRadius: "50%", background: PURPLE }} />}
               </span>
               {p.label}
             </button>
@@ -182,9 +181,7 @@ function WorkingDaysCard({ config }: { config: CompanyConfig }) {
 
       {config.workingDaysPreset === "custom" && (
         <div style={{ marginTop: 10 }}>
-          <div style={{ fontSize: 12, color: "var(--wm-er-muted)", marginBottom: 6 }}>
-            Tap to select your working days:
-          </div>
+          <div style={{ fontSize: 12, color: "var(--wm-er-muted)", marginBottom: 6 }}>Tap to select your working days:</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {ALL_DAYS.map((day) => {
               const isActive = config.customWorkingDays.includes(day);
@@ -213,15 +210,17 @@ function WorkingDaysCard({ config }: { config: CompanyConfig }) {
       )}
 
       {config.weekendDays.length > 0 && (
-        <div style={{
-          marginTop: 10,
-          padding: "8px 12px",
-          borderRadius: 6,
-          background: "#f0f9ff",
-          border: "1px solid #bae6fd",
-          fontSize: 12,
-          color: "#0369a1",
-        }}>
+        <div
+          style={{
+            marginTop: 10,
+            padding: "8px 12px",
+            borderRadius: 6,
+            background: "#f0f9ff",
+            border: "1px solid #bae6fd",
+            fontSize: 12,
+            color: "#0369a1",
+          }}
+        >
           Weekends (auto Off): {config.weekendDays.map((d) => DAY_LABELS[d]).join(", ")}
         </div>
       )}
@@ -246,47 +245,25 @@ function ShiftTimingsCard({ config }: { config: CompanyConfig }) {
     <div>
       <div style={sectionTitle}>Default Shift Timings</div>
       <div style={sectionHint}>
-        Set your company&rsquo;s standard work hours. When you mark attendance, the sign in
-        and sign out times will be pre-filled with these values. You can always change the
-        time for individual employees if needed.
+        Set your company&rsquo;s standard work hours. When you mark attendance, the sign in and sign out times will be
+        pre-filled with these values. You can always change the time for individual employees if needed.
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
         <div>
           <label style={labelStyle}>Start Time</label>
-          <input
-            type="time"
-            value={start}
-            onChange={(e) => setStart(e.target.value)}
-            style={inputStyle}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-          />
+          <input type="time" value={start} onChange={(e) => setStart(e.target.value)} style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
         </div>
         <div>
           <label style={labelStyle}>End Time</label>
-          <input
-            type="time"
-            value={end}
-            onChange={(e) => setEnd(e.target.value)}
-            style={inputStyle}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-          />
+          <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
         </div>
       </div>
       <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 10 }}>
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={!hasChanges}
-          style={hasChanges ? purpleBtnStyle : purpleBtnDisabledStyle}
-        >
+        <button type="button" onClick={handleSave} disabled={!hasChanges} style={hasChanges ? purpleBtnStyle : purpleBtnDisabledStyle}>
           Save Timings
         </button>
-        {saved && (
-          <span style={{ fontSize: 12, color: "#15803d", fontWeight: 700 }}>Saved!</span>
-        )}
+        {saved && <span style={{ fontSize: 12, color: "#15803d", fontWeight: 700 }}>Saved!</span>}
       </div>
     </div>
   );
@@ -327,7 +304,9 @@ function HolidaysCard({ config }: { config: CompanyConfig }) {
   const formatDate = (dateKey: string) => {
     const [y, m, d] = dateKey.split("-").map(Number);
     return new Date(y, m - 1, d).toLocaleDateString("en-GB", {
-      day: "2-digit", month: "short", year: "numeric",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
     });
   };
 
@@ -337,22 +316,14 @@ function HolidaysCard({ config }: { config: CompanyConfig }) {
     <div>
       <div style={sectionTitle}>Company Holidays</div>
       <div style={sectionHint}>
-        Add your company&rsquo;s public holidays and special off days here. These dates
-        will be automatically marked as &ldquo;Off&rdquo; in attendance for all employees.
-        No need to mark each employee separately.
+        Add your company&rsquo;s public holidays and special off days here. These dates will be automatically marked as
+        &ldquo;Off&rdquo; in attendance for all employees. No need to mark each employee separately.
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
         <div>
           <label style={labelStyle}>Date</label>
-          <input
-            type="date"
-            value={newDate}
-            onChange={(e) => setNewDate(e.target.value)}
-            style={inputStyle}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-          />
+          <input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
         </div>
         <div>
           <label style={labelStyle}>Holiday Name</label>
@@ -361,19 +332,19 @@ function HolidaysCard({ config }: { config: CompanyConfig }) {
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="Enter holiday name"
-            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAdd(); } }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleAdd();
+              }
+            }}
             style={inputStyle}
             onFocus={handleFocus}
             onBlur={handleBlur}
           />
         </div>
       </div>
-      <button
-        type="button"
-        onClick={handleAdd}
-        disabled={!canAdd}
-        style={{ marginTop: 8, ...(canAdd ? purpleBtnStyle : purpleBtnDisabledStyle) }}
-      >
+      <button type="button" onClick={handleAdd} disabled={!canAdd} style={{ marginTop: 8, ...(canAdd ? purpleBtnStyle : purpleBtnDisabledStyle) }}>
         + Add Holiday
       </button>
 
@@ -400,8 +371,12 @@ function HolidaysCard({ config }: { config: CompanyConfig }) {
                 type="button"
                 onClick={() => handleDeleteRequest(h.id, h.name)}
                 style={{
-                  background: "none", border: "none", cursor: "pointer",
-                  fontSize: 14, color: "#dc2626", padding: "0 4px",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: 14,
+                  color: "#dc2626",
+                  padding: "0 4px",
                 }}
               >
                 ×
@@ -420,7 +395,10 @@ function HolidaysCard({ config }: { config: CompanyConfig }) {
       <ConfirmModal
         confirm={deleteConfirm}
         onConfirm={handleDeleteConfirm}
-        onCancel={() => { setPendingDeleteId(null); setDeleteConfirm(null); }}
+        onCancel={() => {
+          setPendingDeleteId(null);
+          setDeleteConfirm(null);
+        }}
       />
     </div>
   );
@@ -435,9 +413,8 @@ function LeaveYearCard({ config }: { config: CompanyConfig }) {
     <div>
       <div style={sectionTitle}>Leave Year Start</div>
       <div style={sectionHint}>
-        When does your company&rsquo;s leave year begin? Most companies start in January,
-        but some use April or other months. This helps calculate leave balances correctly
-        for your employees.
+        When does your company&rsquo;s leave year begin? Most companies start in January, but some use April or other
+        months. This helps calculate leave balances correctly for your employees.
       </div>
       <select
         value={config.leaveYearStartMonth}
@@ -447,7 +424,9 @@ function LeaveYearCard({ config }: { config: CompanyConfig }) {
         onBlur={handleBlur as unknown as React.FocusEventHandler<HTMLSelectElement>}
       >
         {MONTH_OPTIONS.map((m) => (
-          <option key={m.value} value={m.value}>{m.label}</option>
+          <option key={m.value} value={m.value}>
+            {m.label}
+          </option>
         ))}
       </select>
     </div>
@@ -461,24 +440,23 @@ export function CompanyConfigSection() {
   const config = useCompanyConfig();
 
   return (
-    <div style={{
-      padding: 16,
-      background: "#fff",
-      borderRadius: 12,
-      border: `1px solid ${BORDER_COLOR}`,
-      display: "flex",
-      flexDirection: "column",
-      gap: 24,
-    }}>
-      {/* Header */}
+    <div
+      style={{
+        padding: 16,
+        background: "#fff",
+        borderRadius: 12,
+        border: `1px solid ${BORDER_COLOR}`,
+        display: "flex",
+        flexDirection: "column",
+        gap: 24,
+      }}
+    >
       <div>
-        <div style={{ fontWeight: 900, fontSize: 15, color: "var(--wm-er-text)" }}>
-          Company Settings
-        </div>
+        <div style={{ fontWeight: 900, fontSize: 15, color: "var(--wm-er-text)" }}>Company Settings</div>
         <div style={{ fontSize: 12, color: "var(--wm-er-muted)", marginTop: 4, lineHeight: 1.5 }}>
-          Set up your company&rsquo;s work schedule once. WorkMitra will use these settings
-          to automatically mark weekends and holidays as &ldquo;Off&rdquo; in attendance,
-          pre-fill shift timings, and calculate leave correctly for all your employees.
+          Set up your company&rsquo;s work schedule once. Job Mitra will use these settings to automatically mark
+          weekends and holidays as &ldquo;Off&rdquo; in attendance, pre-fill shift timings, and calculate leave
+          correctly for all your employees.
         </div>
       </div>
 

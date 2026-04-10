@@ -17,7 +17,7 @@ function makeFile(payload: Record<string, unknown>, name = "backup.json"): File 
 
 function makeValidPayload(overrides?: Partial<ExportPayload>): ExportPayload {
   return {
-    app: "WorkMitra",
+    app: "JobMitra",
     version: "1.0",
     exportedAt: Date.now(),
     role: "employee",
@@ -57,12 +57,12 @@ describe("validateImportFile", () => {
     if (!result.valid) expect(result.reason).toContain("JSON");
   });
 
-  it("rejects non-WorkMitra file", async () => {
+  it("rejects non-JobMitra file", async () => {
     const file = makeFile({ app: "OtherApp", version: "1.0" });
     const result = await validateImportFile(file);
 
     expect(result.valid).toBe(false);
-    if (!result.valid) expect(result.reason).toContain("not a WorkMitra");
+    if (!result.valid) expect(result.reason).toContain("not a Job Mitra");
   });
 
   it("rejects wrong version", async () => {
@@ -132,14 +132,14 @@ describe("importData", () => {
   });
 
   it("rejects wrong version", async () => {
-    const file = makeFile({ app: "WorkMitra", version: "0.1", data: {} });
+    const file = makeFile({ app: "JobMitra", version: "0.1", data: {} });
     const result = await importData(file);
 
     expect(result.success).toBe(false);
   });
 
   it("rejects backup with null data", async () => {
-    const file = makeFile({ app: "WorkMitra", version: "1.0", data: null });
+    const file = makeFile({ app: "JobMitra", version: "1.0", data: null });
     const result = await importData(file);
 
     expect(result.success).toBe(false);

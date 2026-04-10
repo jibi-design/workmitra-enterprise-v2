@@ -1,7 +1,4 @@
-// src/app/shells/EmployeeShell.tsx
-// Session 7: DEMO removed, Home icon removed, header aligned to Root Map,
-// Gear → QuickSettingsSheet. All hooks BEFORE early return.
-// Session 15: Bell filled cyan + subtitle italic removed + code quality audit.
+/** Job Mitra | EmployeeShell.tsx | C:\projects\WorkMitra_Enterprise_v2\src\app\shells\EmployeeShell.tsx */
 
 import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -13,9 +10,6 @@ import { QuickSettingsSheet } from "../../shared/components/QuickSettingsSheet";
 import { jobAlertStorage } from "../../shared/utils/jobAlertStorage";
 import { ConfirmModal, type ConfirmData } from "../../shared/components/ConfirmModal";
 
-/* ------------------------------------------------ */
-/* Icons                                            */
-/* ------------------------------------------------ */
 function IconBack() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
@@ -40,9 +34,6 @@ function IconSettings() {
   );
 }
 
-/* ------------------------------------------------ */
-/* Hooks                                            */
-/* ------------------------------------------------ */
 function useRole(): AppRole | null {
   return useSyncExternalStore(roleStorage.subscribe, roleStorage.get, roleStorage.get);
 }
@@ -56,12 +47,13 @@ function useUnreadCount(): number {
 }
 
 function safeCanGoBack(): boolean {
-  try { return window.history.length > 1; } catch { return false; }
+  try {
+    return window.history.length > 1;
+  } catch {
+    return false;
+  }
 }
 
-/* ------------------------------------------------ */
-/* Shell                                            */
-/* ------------------------------------------------ */
 export function EmployeeShell() {
   const role = useRole();
   const unread = useUnreadCount();
@@ -79,7 +71,6 @@ export function EmployeeShell() {
     if (role === "employee") jobAlertStorage.checkAlerts();
   }, [role]);
 
-  /* --- ALL useCallback hooks BEFORE early return --- */
   const handleOpenSettings = useCallback(() => {
     nav(ROUTE_PATHS.employeeSettings);
   }, [nav]);
@@ -125,7 +116,6 @@ export function EmployeeShell() {
     setLogoutConfirm(null);
   }, []);
 
-  /* --- Early return AFTER all hooks --- */
   if (role !== "employee") {
     const target = role === "employer" ? ROUTE_PATHS.employerHome : ROUTE_PATHS.landing;
     return <Navigate to={target} replace />;
@@ -133,13 +123,18 @@ export function EmployeeShell() {
 
   const isHome = loc.pathname === ROUTE_PATHS.employeeHome;
 
-  function goHome() { nav(ROUTE_PATHS.employeeHome); }
-  function goBack() { if (safeCanGoBack()) nav(-1); else goHome(); }
+  function goHome() {
+    nav(ROUTE_PATHS.employeeHome);
+  }
+
+  function goBack() {
+    if (safeCanGoBack()) nav(-1);
+    else goHome();
+  }
 
   return (
     <div className="wm-shellRoot wm-shellEmployee">
       <div className="wm-topbar">
-        {/* Left section — matches Root Map header pattern */}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           {!isHome && (
             <button className="wm-iconbtn" type="button" aria-label="Back" title="Back" onClick={goBack}>
@@ -154,12 +149,11 @@ export function EmployeeShell() {
             role={isHome ? undefined : "button"}
             tabIndex={isHome ? undefined : 0}
           >
-            <h1>WorkMitra</h1>
+            <h1>Job Mitra</h1>
             <p style={{ color: "var(--wm-text-muted, #64748b)" }}>Your career, your control.</p>
           </div>
         </div>
 
-        {/* Right section — Bell + Settings only */}
         <div className="wm-topbarActions" aria-label="Top actions" style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <button
             className="wm-iconbtn wm-iconbtnBadgeWrap"
@@ -175,12 +169,20 @@ export function EmployeeShell() {
                 <span
                   aria-label={`${unread} unread`}
                   style={{
-                    position: "absolute", top: -6, right: -6,
-                    minWidth: 16, height: 16, borderRadius: 999,
-                    padding: "0 5px", display: "inline-flex",
-                    alignItems: "center", justifyContent: "center",
-                    fontSize: 11, fontWeight: 700,
-                    background: "var(--wm-error)", color: "#fff",
+                    position: "absolute",
+                    top: -6,
+                    right: -6,
+                    minWidth: 16,
+                    height: 16,
+                    borderRadius: 999,
+                    padding: "0 5px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    background: "var(--wm-error)",
+                    color: "#fff",
                     border: "2px solid var(--wm-er-bg, #fff)",
                   }}
                 >
@@ -190,13 +192,7 @@ export function EmployeeShell() {
             </div>
           </button>
 
-          <button
-            className="wm-iconbtn"
-            type="button"
-            aria-label="Settings"
-            title="Settings"
-            onClick={handleOpenSheet}
-          >
+          <button className="wm-iconbtn" type="button" aria-label="Settings" title="Settings" onClick={handleOpenSheet}>
             <IconSettings />
           </button>
         </div>
@@ -218,11 +214,7 @@ export function EmployeeShell() {
         onOpenSettings={handleOpenSettings}
       />
 
-      <ConfirmModal
-        confirm={logoutConfirm}
-        onConfirm={handleLogoutConfirm}
-        onCancel={handleCancelLogout}
-      />
+      <ConfirmModal confirm={logoutConfirm} onConfirm={handleLogoutConfirm} onCancel={handleCancelLogout} />
     </div>
   );
 }

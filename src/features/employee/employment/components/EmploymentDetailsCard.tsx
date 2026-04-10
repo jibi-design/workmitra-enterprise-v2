@@ -29,7 +29,7 @@ export function EmploymentDetailsCard({ record }: Props) {
       <FieldRow label="Duration" value={duration} />
       <FieldRow label="Status" value={sm.label} />
       {isExited && record.exitReason && <FieldRow label="Exit Reason" value={exitReasonLabel(record.exitReason)} />}
-      <FieldRow label="Hired Via" value={record.hireMethod === "via_app" ? "WorkMitra App" : "Manually Added"} />
+      <FieldRow label="Hired Via" value={record.hireMethod === "via_app" ? "Job Mitra App" : "Manually Added"} />
     </div>
   );
 }

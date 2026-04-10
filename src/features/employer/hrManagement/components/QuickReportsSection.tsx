@@ -11,18 +11,16 @@ import { generateAttendanceReport } from "../helpers/quickReportGenerator";
 import type { GeneratedReport } from "../helpers/quickReportGenerator";
 import { attendanceLogStorage } from "../storage/attendanceLog.storage";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────────────────────────────────────
-
+/* ------------------------------------------------ */
+/* Types                                            */
+/* ------------------------------------------------ */
 type Props = {
   record: HRCandidateRecord;
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Styles
-// ─────────────────────────────────────────────────────────────────────────────
-
+/* ------------------------------------------------ */
+/* Styles                                           */
+/* ------------------------------------------------ */
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "10px 12px",
@@ -43,10 +41,9 @@ const labelStyle: React.CSSProperties = {
   marginBottom: 4,
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Component
-// ─────────────────────────────────────────────────────────────────────────────
-
+/* ------------------------------------------------ */
+/* Component                                        */
+/* ------------------------------------------------ */
 export function QuickReportsSection({ record }: Props) {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -62,7 +59,6 @@ export function QuickReportsSection({ record }: Props) {
 
   const canGenerate = startDate.length > 0 && endDate.length > 0 && startDate <= endDate;
 
-  // Show preview summary when both dates selected
   const handleDateChange = (start: string, end: string) => {
     setStartDate(start);
     setEndDate(end);
@@ -114,11 +110,9 @@ export function QuickReportsSection({ record }: Props) {
   const handleShareEmail = () => {
     if (!generatedReport) return;
 
-    const subject = encodeURIComponent(
-      `Attendance Report - ${record.employeeName} (${startDate} to ${endDate})`,
-    );
+    const subject = encodeURIComponent(`Attendance Report - ${record.employeeName} (${startDate} to ${endDate})`);
     const body = encodeURIComponent(
-      `Please find the attendance report for ${record.employeeName}.\n\nPeriod: ${startDate} to ${endDate}\n\nNote: Please download the PDF report from WorkMitra and attach it to this email.`,
+      `Please find the attendance report for ${record.employeeName}.\n\nPeriod: ${startDate} to ${endDate}\n\nNote: Please download the PDF report from Job Mitra and attach it to this email.`,
     );
     window.open(`mailto:?subject=${subject}&body=${body}`, "_blank");
   };
@@ -127,7 +121,7 @@ export function QuickReportsSection({ record }: Props) {
     if (!generatedReport) return;
 
     const text = encodeURIComponent(
-      `Attendance Report - ${record.employeeName}\nPeriod: ${startDate} to ${endDate}\n\nGenerated from WorkMitra.`,
+      `Attendance Report - ${record.employeeName}\nPeriod: ${startDate} to ${endDate}\n\nGenerated from Job Mitra.`,
     );
     window.open(`https://wa.me/?text=${text}`, "_blank");
   };
@@ -141,17 +135,13 @@ export function QuickReportsSection({ record }: Props) {
         border: "1px solid var(--wm-er-border, #e5e7eb)",
       }}
     >
-      {/* Section Header */}
       <div style={{ marginBottom: 14 }}>
-        <div style={{ fontWeight: 900, fontSize: 15, color: "var(--wm-er-text)" }}>
-          Quick Reports
-        </div>
+        <div style={{ fontWeight: 900, fontSize: 15, color: "var(--wm-er-text)" }}>Quick Reports</div>
         <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginTop: 2 }}>
           Generate attendance report for any date range
         </div>
       </div>
 
-      {/* Date Range Picker */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
         <div>
           <label style={labelStyle}>Start Date</label>
@@ -173,39 +163,43 @@ export function QuickReportsSection({ record }: Props) {
         </div>
       </div>
 
-      {/* Date validation message */}
       {startDate && endDate && startDate > endDate && (
-        <div style={{
-          marginTop: 8,
-          padding: "6px 10px",
-          borderRadius: 6,
-          background: "#fee2e2",
-          border: "1px solid #fca5a5",
-          fontSize: 12,
-          color: "#dc2626",
-          fontWeight: 600,
-        }}>
+        <div
+          style={{
+            marginTop: 8,
+            padding: "6px 10px",
+            borderRadius: 6,
+            background: "#fee2e2",
+            border: "1px solid #fca5a5",
+            fontSize: 12,
+            color: "#dc2626",
+            fontWeight: 600,
+          }}
+        >
           End date must be after start date.
         </div>
       )}
 
-      {/* Preview Summary */}
       {previewSummary && canGenerate && (
-        <div style={{
-          marginTop: 12,
-          padding: 12,
-          background: "#f8fafc",
-          borderRadius: 8,
-          border: "1px solid var(--wm-er-border, #e5e7eb)",
-        }}>
-          <div style={{
-            fontWeight: 800,
-            fontSize: 11,
-            color: "var(--wm-er-muted)",
-            textTransform: "uppercase",
-            letterSpacing: 0.5,
-            marginBottom: 8,
-          }}>
+        <div
+          style={{
+            marginTop: 12,
+            padding: 12,
+            background: "#f8fafc",
+            borderRadius: 8,
+            border: "1px solid var(--wm-er-border, #e5e7eb)",
+          }}
+        >
+          <div
+            style={{
+              fontWeight: 800,
+              fontSize: 11,
+              color: "var(--wm-er-muted)",
+              textTransform: "uppercase",
+              letterSpacing: 0.5,
+              marginBottom: 8,
+            }}
+          >
             Preview
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
@@ -233,7 +227,6 @@ export function QuickReportsSection({ record }: Props) {
         </div>
       )}
 
-      {/* Generate Button */}
       <div style={{ marginTop: 14 }}>
         <button
           className="wm-primarybtn"
@@ -249,20 +242,18 @@ export function QuickReportsSection({ record }: Props) {
         </button>
       </div>
 
-      {/* Download + Share */}
       {generatedReport && (
-        <div style={{
-          marginTop: 12,
-          padding: 14,
-          background: "#f0fdf4",
-          borderRadius: 10,
-          border: "1px solid #bbf7d0",
-        }}>
-          <div style={{ fontWeight: 800, fontSize: 13, color: "#15803d", marginBottom: 10 }}>
-            Report Ready
-          </div>
+        <div
+          style={{
+            marginTop: 12,
+            padding: 14,
+            background: "#f0fdf4",
+            borderRadius: 10,
+            border: "1px solid #bbf7d0",
+          }}
+        >
+          <div style={{ fontWeight: 800, fontSize: 13, color: "#15803d", marginBottom: 10 }}>Report Ready</div>
 
-          {/* Download */}
           <button
             type="button"
             onClick={handleDownload}
@@ -281,7 +272,6 @@ export function QuickReportsSection({ record }: Props) {
             Download PDF
           </button>
 
-          {/* Share Options */}
           <div style={{ marginTop: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             <button
               type="button"

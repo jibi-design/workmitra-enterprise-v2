@@ -1,7 +1,4 @@
-﻿// src/app/shells/EmployerShell.tsx
-// Session 7: Gear → QuickSettingsSheet bottom sheet. Logout confirm added.
-// All hooks BEFORE early return (React rules-of-hooks).
-// Session 15: Bell cyan + subtitle italic removed + code quality audit.
+﻿/** Job Mitra | EmployerShell.tsx | C:\projects\WorkMitra_Enterprise_v2\src\app\shells\EmployerShell.tsx */
 
 import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -13,9 +10,6 @@ import { employerSettingsStorage } from "../../features/employer/company/storage
 import { QuickSettingsSheet } from "../../shared/components/QuickSettingsSheet";
 import { ConfirmModal, type ConfirmData } from "../../shared/components/ConfirmModal";
 
-/* ------------------------------------------------ */
-/* Icons                                            */
-/* ------------------------------------------------ */
 function IconSettings() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
@@ -40,9 +34,6 @@ function IconBack() {
   );
 }
 
-/* ------------------------------------------------ */
-/* Hooks                                            */
-/* ------------------------------------------------ */
 function useRole(): AppRole | null {
   return useSyncExternalStore(roleStorage.subscribe, roleStorage.get, roleStorage.get);
 }
@@ -56,12 +47,13 @@ function useEmployerUnread(): number {
 }
 
 function safeCanGoBack(): boolean {
-  try { return window.history.length > 1; } catch { return false; }
+  try {
+    return window.history.length > 1;
+  } catch {
+    return false;
+  }
 }
 
-/* ------------------------------------------------ */
-/* Shell                                            */
-/* ------------------------------------------------ */
 export function EmployerShell() {
   const role = useRole();
   const unread = useEmployerUnread();
@@ -75,7 +67,6 @@ export function EmployerShell() {
     if (role === "employer") return initEmployerNotificationService();
   }, [role]);
 
-  /* --- ALL useCallback hooks BEFORE early return --- */
   const handleOpenSettings = useCallback(() => {
     nav(ROUTE_PATHS.employerSettings);
   }, [nav]);
@@ -121,7 +112,6 @@ export function EmployerShell() {
     setLogoutConfirm(null);
   }, []);
 
-  /* --- Early return AFTER all hooks --- */
   if (role !== "employer") {
     const target = role === "employee" ? ROUTE_PATHS.employeeHome : ROUTE_PATHS.landing;
     return <Navigate to={target} replace />;
@@ -131,13 +121,18 @@ export function EmployerShell() {
   const profile = employerSettingsStorage.get();
   const displayName = profile.companyName || profile.fullName || "Employer";
 
-  function goHome() { nav(ROUTE_PATHS.employerHome); }
-  function goBack() { if (safeCanGoBack()) nav(-1); else goHome(); }
+  function goHome() {
+    nav(ROUTE_PATHS.employerHome);
+  }
+
+  function goBack() {
+    if (safeCanGoBack()) nav(-1);
+    else goHome();
+  }
 
   return (
     <div className="wm-shellRoot wm-shellEmployer">
       <div className="wm-topbar wm-er-topbar">
-        {/* Left section */}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           {!isHome && (
             <button className="wm-iconbtn" type="button" aria-label="Back" title="Back" onClick={goBack}>
@@ -152,12 +147,11 @@ export function EmployerShell() {
             role={isHome ? undefined : "button"}
             tabIndex={isHome ? undefined : 0}
           >
-            <h1>WorkMitra</h1>
+            <h1>Job Mitra</h1>
             <p style={{ color: "var(--wm-text-muted, #64748b)" }}>Smart hiring starts with the right tools.</p>
           </div>
         </div>
 
-        {/* Right section */}
         <div className="wm-topbarActions" aria-label="Top actions" style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <button
             className="wm-iconbtn wm-iconbtnBadgeWrap"
@@ -173,12 +167,20 @@ export function EmployerShell() {
                 <span
                   aria-label={`${unread} unread`}
                   style={{
-                    position: "absolute", top: -6, right: -6,
-                    minWidth: 16, height: 16, borderRadius: 999,
-                    padding: "0 5px", display: "inline-flex",
-                    alignItems: "center", justifyContent: "center",
-                    fontSize: 11, fontWeight: 700,
-                    background: "var(--wm-error)", color: "#fff",
+                    position: "absolute",
+                    top: -6,
+                    right: -6,
+                    minWidth: 16,
+                    height: 16,
+                    borderRadius: 999,
+                    padding: "0 5px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    background: "var(--wm-error)",
+                    color: "#fff",
                     border: "2px solid var(--wm-er-bg, #fff)",
                   }}
                 >
@@ -188,13 +190,7 @@ export function EmployerShell() {
             </div>
           </button>
 
-          <button
-            className="wm-iconbtn"
-            type="button"
-            aria-label="Settings"
-            title="Settings"
-            onClick={handleOpenSheet}
-          >
+          <button className="wm-iconbtn" type="button" aria-label="Settings" title="Settings" onClick={handleOpenSheet}>
             <IconSettings />
           </button>
         </div>
@@ -216,11 +212,7 @@ export function EmployerShell() {
         onOpenSettings={handleOpenSettings}
       />
 
-      <ConfirmModal
-        confirm={logoutConfirm}
-        onConfirm={handleLogoutConfirm}
-        onCancel={handleCancelLogout}
-      />
+      <ConfirmModal confirm={logoutConfirm} onConfirm={handleLogoutConfirm} onCancel={handleCancelLogout} />
     </div>
   );
 }

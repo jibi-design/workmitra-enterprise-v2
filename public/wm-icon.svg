@@ -1,4 +1,38 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#1d4ed8"/>
-  <text x="256" y="290" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="200" font-weight="700" fill="#ffffff">WM</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <rect x="64" y="64" width="896" height="896" rx="224" fill="#0f172a"/>
+  <rect x="88" y="88" width="848" height="848" rx="200" fill="none" stroke="#334155" stroke-width="8"/>
+
+  <path
+    d="M302 320 L448 704 L566 352"
+    fill="none"
+    stroke="#1d4ed8"
+    stroke-width="120"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <path
+    d="M722 320 L576 704 L458 352"
+    fill="none"
+    stroke="#16a34a"
+    stroke-width="120"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <path
+    d="M512 250 L574 338 L512 426 L450 338 Z"
+    fill="#b45309"
+  />
+
+  <circle cx="512" cy="338" r="18" fill="#f8fafc"/>
+
+  <path
+    d="M352 748 C402 790 452 812 512 812 C572 812 622 790 672 748"
+    fill="none"
+    stroke="#94a3b8"
+    stroke-width="22"
+    stroke-linecap="round"
+    opacity="0.55"
+  />
 </svg>

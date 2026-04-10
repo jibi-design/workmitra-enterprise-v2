@@ -1,10 +1,12 @@
+// WorkMitra | build.gradle | C:\projects\WorkMitra_Enterprise_v2\android\app\build.gradle
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "com.workmitra.app"
+    namespace = "com.mitralabs.jobmitra"
     compileSdk = rootProject.ext.compileSdkVersion
+
     defaultConfig {
-        applicationId "com.workmitra.app"
+        applicationId "com.mitralabs.jobmitra"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -16,6 +18,7 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -25,7 +28,7 @@ android {
 }
 
 repositories {
-    flatDir{
+    flatDir {
         dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
     }
 }

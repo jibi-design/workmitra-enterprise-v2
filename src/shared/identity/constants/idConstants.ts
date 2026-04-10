@@ -1,4 +1,4 @@
-// src/shared/identity/constants/idConstants.ts
+/** Job Mitra | idConstants.ts | C:\projects\WorkMitra_Enterprise_v2\src\shared\identity\constants\idConstants.ts */
 
 /**
  * Character set for ID generation.
@@ -7,8 +7,11 @@
  */
 export const ID_CHARSET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" as const;
 
-/** Fixed app-level prefix for all WorkMitra IDs. */
-export const ID_PREFIX = "WM" as const;
+/** Fixed app-level prefix for all Job Mitra IDs. */
+export const ID_PREFIX = "JM" as const;
+
+/** Legacy prefix kept for backward compatibility with older local demo IDs. */
+export const LEGACY_ID_PREFIX = "WM" as const;
 
 /** Number of random characters per block (block 1 and block 3). */
 export const ID_BLOCK_LENGTH = 4 as const;
@@ -23,7 +26,7 @@ export const ID_NAME_PAD_CHAR = "X" as const;
 export const ID_SEPARATOR = "-" as const;
 
 /**
- * Final format: WM-XXXX-ABC-XXXX
+ * Final format: JM-XXXX-ABC-XXXX
  * Total display length: 2 + 1 + 4 + 1 + 3 + 1 + 4 = 16 characters.
  */
 export const ID_DISPLAY_LENGTH = 16 as const;

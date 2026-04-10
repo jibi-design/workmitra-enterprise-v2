@@ -46,7 +46,6 @@ function SheetInner({
   const touchStartY = useRef(0);
   const touchCurrentY = useRef(0);
 
-  /* Double-rAF for reliable animation trigger */
   useEffect(() => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -56,24 +55,18 @@ function SheetInner({
     });
   }, []);
 
-  /* Dismiss with reverse animation */
   const dismiss = useCallback(() => {
     if (overlayRef.current) overlayRef.current.style.opacity = "0";
     if (sheetRef.current) sheetRef.current.style.transform = "translateY(100%)";
     setTimeout(onClose, 300);
   }, [onClose]);
 
-  /* Action + dismiss */
-  const handleAction = useCallback(
-    (action: () => void) => {
-      if (overlayRef.current) overlayRef.current.style.opacity = "0";
-      if (sheetRef.current) sheetRef.current.style.transform = "translateY(100%)";
-      setTimeout(action, 310);
-    },
-    [],
-  );
+  const handleAction = useCallback((action: () => void) => {
+    if (overlayRef.current) overlayRef.current.style.opacity = "0";
+    if (sheetRef.current) sheetRef.current.style.transform = "translateY(100%)";
+    setTimeout(action, 310);
+  }, []);
 
-  /* Touch swipe tracking */
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
     touchCurrentY.current = e.touches[0].clientY;
@@ -98,7 +91,6 @@ function SheetInner({
     }
   };
 
-  /* Derived display values */
   const isEmployer = currentRole === "employer";
   const displayName = userName || (isEmployer ? "Employer" : "Employee");
   const roleLabel = isEmployer ? "Employer" : "Employee";
@@ -108,16 +100,12 @@ function SheetInner({
   const switchBg = isEmployer ? "rgba(3,105,161,0.08)" : "rgba(124,58,237,0.08)";
   const switchColor = isEmployer ? "#0369a1" : "#7c3aed";
   const switchTitle = isEmployer ? "Switch to Employee" : "Switch to Employer";
-  const switchSub = isEmployer
-    ? "Use WorkMitra as an employee"
-    : "Use WorkMitra as an employer";
+  const switchSub = isEmployer ? "Use Job Mitra as an employee" : "Use Job Mitra as an employer";
 
   return (
     <>
-      {/* Dark backdrop */}
       <div ref={overlayRef} style={overlayStyle} onClick={dismiss} />
 
-      {/* Bottom sheet */}
       <div
         ref={sheetRef}
         style={sheetStyle}
@@ -125,12 +113,10 @@ function SheetInner({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Drag handle */}
         <div style={handleWrap}>
           <div style={handleBar} />
         </div>
 
-        {/* Profile card */}
         <div style={profileCardStyle}>
           <div style={{ ...avatarStyle, background: avatarBg, color: avatarColor }}>
             <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
@@ -143,9 +129,7 @@ function SheetInner({
           </div>
         </div>
 
-        {/* Menu items */}
         <div style={menuListStyle}>
-          {/* My Company (employer only) */}
           {onOpenCompany && (
             <>
               <button type="button" style={menuItemStyle} onClick={() => handleAction(onOpenCompany)}>
@@ -156,14 +140,13 @@ function SheetInner({
                 </div>
                 <div style={menuTextWrap}>
                   <div style={{ ...menuTitleStyle, color: "#7c3aed" }}>My Company</div>
-                 <div style={menuSubStyle}>Profile, preferences, and company settings</div>
+                  <div style={menuSubStyle}>Profile, preferences, and company settings</div>
                 </div>
               </button>
               <div style={dividerStyle} />
             </>
           )}
 
-          {/* Profile (employee only) */}
           {onOpenProfile && (
             <>
               <button type="button" style={menuItemStyle} onClick={() => handleAction(onOpenProfile)}>
@@ -181,7 +164,6 @@ function SheetInner({
             </>
           )}
 
-          {/* Settings (employee only — employer uses My Company) */}
           {!onOpenCompany && onOpenSettings && (
             <>
               <button type="button" style={menuItemStyle} onClick={() => handleAction(onOpenSettings)}>
@@ -199,7 +181,6 @@ function SheetInner({
             </>
           )}
 
-          {/* Switch Role */}
           <button type="button" style={menuItemStyle} onClick={() => handleAction(onSwitchRole)}>
             <div style={{ ...iconBoxStyle, background: switchBg, color: switchColor }}>
               <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
@@ -216,7 +197,6 @@ function SheetInner({
 
           <div style={dividerStyle} />
 
-          {/* Log Out */}
           <button type="button" style={menuItemStyle} onClick={() => handleAction(onLogout)}>
             <div style={{ ...iconBoxStyle, background: "rgba(220,38,38,0.08)", color: "#dc2626" }}>
               <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
@@ -234,9 +214,6 @@ function SheetInner({
   );
 }
 
-/* ------------------------------------------------ */
-/* Styles                                           */
-/* ------------------------------------------------ */
 const overlayStyle: React.CSSProperties = {
   position: "fixed",
   inset: 0,

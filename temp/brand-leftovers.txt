@@ -1,0 +1,508 @@
+﻿
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\app\shells\AdminShell.tsx
+LineNumber : 1
+Line       : /** Job Mitra | AdminShell.tsx | C
+             :\projects\WorkMitra_Enterprise_v2
+             \src\app\shells\AdminShell.tsx */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\app\shells\EmployeeShell.tsx
+LineNumber : 1
+Line       : /** Job Mitra | EmployeeShell.tsx 
+             | C:\projects\WorkMitra_Enterprise
+             _v2\src\app\shells\EmployeeShell.t
+             sx */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\app\shells\EmployerShell.tsx
+LineNumber : 1
+Line       : /** Job Mitra | EmployerShell.tsx 
+             | C:\projects\WorkMitra_Enterprise
+             _v2\src\app\shells\EmployerShell.t
+             sx */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\app\theme\admin.css
+LineNumber : 3
+Line       :  * WorkMitra Admin — Light 
+             Premium Theme (v5 Approved)
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\admin\home\pages\Ad
+             minHomePage.tsx
+LineNumber : 147
+Line       : function exportAllData() { try { 
+             const data: Record<string, 
+             unknown> = {}; for (let i = 0; i 
+             < localStorage.length; i++) { 
+             const k = localStorage.key(i); if 
+             (!k) continue; try { data[k] = JSO
+             N.parse(localStorage.getItem(k) 
+             ?? "null"); } catch { data[k] = 
+             localStorage.getItem(k); } } 
+             const blob = new 
+             Blob([JSON.stringify(data, null, 
+             2)], { type: "application/json" 
+             }); const url = 
+             URL.createObjectURL(blob); const 
+             a = document.createElement("a"); 
+             a.href = url; a.download = `workmi
+             tra-export-${Date.now()}.json`; 
+             a.click(); 
+             URL.revokeObjectURL(url); } catch 
+             { /* ignore */ } }
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\admin\oversight\pag
+             es\AdminSettingsPage.tsx
+LineNumber : 49
+Line       :     a.download = `workmitra-export
+             -${Date.now()}.json`;
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\admin\oversight\pag
+             es\AdminSettingsPage.tsx
+LineNumber : 234
+Line       :           <AboutRow 
+             label="Application" 
+             value="WorkMitra Enterprise" />
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\auth\pages\LandingR
+             olePickPage.tsx
+LineNumber : 1
+Line       : /** WorkMitra | 
+             LandingRolePickPage.tsx | C:\proje
+             cts\WorkMitra_Enterprise_v2\src\fe
+             atures\auth\pages\LandingRolePickP
+             age.tsx */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\auth\pages\LandingR
+             olePickPage.tsx
+LineNumber : 116
+Line       : const PRIVACY_POLICY_URL = "https:
+             //jibi-design.github.io/workmitra-
+             privacy/";
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employee\employment
+             \components\EmploymentDetailsCard.
+             tsx
+LineNumber : 32
+Line       :       <FieldRow label="Hired Via" 
+             value={record.hireMethod === 
+             "via_app" ? "WorkMitra App" : 
+             "Manually Added"} />
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employee\profile\pa
+             ges\EmployeeProfilePage.tsx
+LineNumber : 1
+Line       : /** Job Mitra | 
+             EmployeeProfilePage.tsx | C:\proje
+             cts\WorkMitra_Enterprise_v2\src\fe
+             atures\employee\profile\pages\Empl
+             oyeeProfilePage.tsx */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employee\profile\se
+             rvices\profileShareService.ts
+LineNumber : 1
+Line       : /** Job Mitra | 
+             profileShareService.ts | C:\projec
+             ts\WorkMitra_Enterprise_v2\src\fea
+             tures\employee\profile\services\pr
+             ofileShareService.ts */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employee\settings\p
+             ages\EmployeeSettingsPage.tsx
+LineNumber : 1
+Line       : /** Job Mitra | 
+             EmployeeSettingsPage.tsx | C:\proj
+             ects\WorkMitra_Enterprise_v2\src\f
+             eatures\employee\settings\pages\Em
+             ployeeSettingsPage.tsx */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employee\settings\p
+             ages\EmployeeSettingsPage.tsx
+LineNumber : 348
+Line       :           <button 
+             className="wm-ee-linkBtn" 
+             type="button" onClick={() => windo
+             w.open("https://jibi-design.github
+             .io/workmitra-privacy/", 
+             "_blank")}>
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employee\workVault\
+             components\VaultPerformanceCard.ts
+             x
+LineNumber : 63
+Line       :     primary.push("Complete your 
+             first shift or assignment, then 
+             ask your employer to rate your 
+             work on WorkMitra.");
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employee\workVault\
+             components\VaultVerifyEmployerTab.
+             tsx
+LineNumber : 1
+Line       : /** Job Mitra | 
+             VaultVerifyEmployerTab.tsx | C:\pr
+             ojects\WorkMitra_Enterprise_v2\src
+             \features\employee\workVault\compo
+             nents\VaultVerifyEmployerTab.tsx 
+             */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\company\co
+             mponents\CompanyConfigSection.tsx
+LineNumber : 479
+Line       :           Set up your 
+             company&rsquo;s work schedule 
+             once. WorkMitra will use these 
+             settings
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\company\pa
+             ges\EmployerSettingsPage.tsx
+LineNumber : 1
+Line       : /** Job Mitra | 
+             EmployerSettingsPage.tsx | C:\proj
+             ects\WorkMitra_Enterprise_v2\src\f
+             eatures\employer\company\pages\Emp
+             loyerSettingsPage.tsx */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\company\pa
+             ges\EmployerSettingsPage.tsx
+LineNumber : 218
+Line       :             onClick={() => window.
+             open("https://jibi-design.github.i
+             o/workmitra-privacy/", "_blank")}
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\company\st
+             orage\employerSettings.storage.ts
+LineNumber : 9
+Line       :   /** Unique WorkMitra ID for 
+             this employer. */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\hrManageme
+             nt\components\QuickReportsSection.
+             tsx
+LineNumber : 121
+Line       :       `Please find the attendance 
+             report for ${record.employeeName}.
+             \n\nPeriod: ${startDate} to 
+             ${endDate}\n\nNote: Please 
+             download the PDF report from 
+             WorkMitra and attach it to this 
+             email.`,
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\hrManageme
+             nt\components\QuickReportsSection.
+             tsx
+LineNumber : 130
+Line       :       `Attendance Report - 
+             ${record.employeeName}\nPeriod: 
+             ${startDate} to 
+             ${endDate}\n\nGenerated from 
+             WorkMitra.`,
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\hrManageme
+             nt\helpers\quickReportGenerator.ts
+LineNumber : 72
+Line       :   doc.text("WorkMitra", margin, 
+             y);
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\hrManageme
+             nt\helpers\quickReportGenerator.ts
+LineNumber : 272
+Line       :   doc.text("WorkMitra © 2026 | 
+             This report is generated by the 
+             employer and is for internal use 
+             only.", margin, y);
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\hrManageme
+             nt\helpers\quickReportGenerator.ts
+LineNumber : 275
+Line       :   const filename = `WorkMitra_Atte
+             ndance_${data.employeeName.replace
+             (/\s+/g, "_")}_${data.startDate}_t
+             o_${data.endDate}.pdf`;
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\myStaff\co
+             mponents\AddStaffStep1.tsx
+LineNumber : 1
+Line       : /** Job Mitra | AddStaffStep1.tsx 
+             | C:\projects\WorkMitra_Enterprise
+             _v2\src\features\employer\myStaff\
+             components\AddStaffStep1.tsx */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\myStaff\co
+             mponents\StaffDetailSections.tsx
+LineNumber : 169
+Line       :         <FieldRow label="Added 
+             Via" value={record.addMethod === 
+             "via_app" ? "WorkMitra App" : 
+             "Manually Added"} />
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\myStaff\pa
+             ges\EmployerStaffDetailPage.tsx
+LineNumber : 128
+Line       :     /* Save to shared rating 
+             engine so worker WM ID rating 
+             updates */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\shiftJobs\
+             pages\EmployerFavoritesPage.tsx
+LineNumber : 1
+Line       : /** Job Mitra | 
+             EmployerFavoritesPage.tsx | C:\pro
+             jects\WorkMitra_Enterprise_v2\src\
+             features\employer\shiftJobs\pages\
+             EmployerFavoritesPage.tsx */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\shiftJobs\
+             storage\favoritesStorage.ts
+LineNumber : 4
+Line       : // Workers saved by WM ID. 
+             Auto-added when employer selects 
+             "Hire Again = Yes".
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\shiftJobs\
+             storage\favoritesStorage.ts
+LineNumber : 5
+Line       : // Employer can also manually add 
+             by WM ID or remove.
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\shiftJobs\
+             storage\favoritesStorage.ts
+LineNumber : 12
+Line       :   /** Worker WM ID — primary 
+             identifier */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\shiftJobs\
+             storage\favoritesStorage.ts
+LineNumber : 113
+Line       :   /** Manual add by WM ID */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\workVault\
+             components\EmployerVaultLookup.tsx
+LineNumber : 1
+Line       : /** Job Mitra | 
+             EmployerVaultLookup.tsx | C:\proje
+             cts\WorkMitra_Enterprise_v2\src\fe
+             atures\employer\workVault\componen
+             ts\EmployerVaultLookup.tsx */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\workVault\
+             components\EmployerVaultOtpInput.t
+             sx
+LineNumber : 78
+Line       :         Ask 
+             <strong>{employeeName}</strong> 
+             to share their 6-digit access 
+             code from the WorkMitra app.
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\features\employer\workVault\
+             pages\EmployerVaultLookupPage.tsx
+LineNumber : 1
+Line       : /** Job Mitra | 
+             EmployerVaultLookupPage.tsx | C:\p
+             rojects\WorkMitra_Enterprise_v2\sr
+             c\features\employer\workVault\page
+             s\EmployerVaultLookupPage.tsx */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\components\ErrorBound
+             ary.tsx
+LineNumber : 1
+Line       : /** WorkMitra | ErrorBoundary.tsx 
+             | C:\projects\WorkMitra_Enterprise
+             _v2\src\shared\components\ErrorBou
+             ndary.tsx */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\components\HelpSuppor
+             tPage.tsx
+LineNumber : 1
+Line       : /** Job Mitra | 
+             HelpSupportPage.tsx | C:\projects\
+             WorkMitra_Enterprise_v2\src\shared
+             \components\HelpSupportPage.tsx */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\components\onboarding
+             Constants.ts
+LineNumber : 1
+Line       : /** Job Mitra | 
+             onboardingConstants.ts | C:\projec
+             ts\WorkMitra_Enterprise_v2\src\sha
+             red\components\onboardingConstants
+             .ts */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\components\QuickSetti
+             ngsSheet.tsx
+LineNumber : 112
+Line       :     ? "Use WorkMitra as an 
+             employee"
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\components\QuickSetti
+             ngsSheet.tsx
+LineNumber : 113
+Line       :     : "Use WorkMitra as an 
+             employer";
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\docAccess\DocAccessMo
+             dal.tsx
+LineNumber : 362
+Line       :                 Ask 
+             <strong>{workerName}</strong> to 
+             share the 6-digit OTP from their 
+             WorkMitra app.
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\employerProfile\AntiF
+             raudNotice.tsx
+LineNumber : 1
+Line       : /** Job Mitra | 
+             AntiFraudNotice.tsx | C:\projects\
+             WorkMitra_Enterprise_v2\src\shared
+             \employerProfile\AntiFraudNotice.t
+             sx */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\employerProfile\Emplo
+             yerTrustBadge.tsx
+LineNumber : 1
+Line       : /** Job Mitra | 
+             EmployerTrustBadge.tsx | C:\projec
+             ts\WorkMitra_Enterprise_v2\src\sha
+             red\employerProfile\EmployerTrustB
+             adge.tsx */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\identity\constants\id
+             Constants.ts
+LineNumber : 1
+Line       : /** Job Mitra | idConstants.ts | C
+             :\projects\WorkMitra_Enterprise_v2
+             \src\shared\identity\constants\idC
+             onstants.ts */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\identity\generators\u
+             niqueIdGenerator.ts
+LineNumber : 1
+Line       : /** Job Mitra | 
+             uniqueIdGenerator.ts | C:\projects
+             \WorkMitra_Enterprise_v2\src\share
+             d\identity\generators\uniqueIdGene
+             rator.ts */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\identity\validators\i
+             dValidator.ts
+LineNumber : 1
+Line       : /** Job Mitra | idValidator.ts | C
+             :\projects\WorkMitra_Enterprise_v2
+             \src\shared\identity\validators\id
+             Validator.ts */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\rating\ratingTypes.ts
+LineNumber : 1
+Line       : /** WorkMitra | ratingTypes.ts | C
+             :\projects\WorkMitra_Enterprise_v2
+             \src\shared\rating\ratingTypes.ts 
+             */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\utils\__tests__\dataE
+             xportService.test.ts
+LineNumber : 20
+Line       :     app: "WorkMitra",
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\utils\__tests__\dataE
+             xportService.test.ts
+LineNumber : 60
+Line       :   it("rejects non-WorkMitra 
+             file", async () => {
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\utils\__tests__\dataE
+             xportService.test.ts
+LineNumber : 65
+Line       :     if (!result.valid) expect(resu
+             lt.reason).toContain("not a 
+             WorkMitra");
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\utils\__tests__\dataE
+             xportService.test.ts
+LineNumber : 135
+Line       :     const file = makeFile({ app: 
+             "WorkMitra", version: "0.1", 
+             data: {} });
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\utils\__tests__\dataE
+             xportService.test.ts
+LineNumber : 142
+Line       :     const file = makeFile({ app: 
+             "WorkMitra", version: "1.0", 
+             data: null });
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\shared\utils\dataExportServi
+             ce.ts
+LineNumber : 1
+Line       : /** WorkMitra | 
+             dataExportService.ts | C:\projects
+             \WorkMitra_Enterprise_v2\src\share
+             d\utils\dataExportService.ts */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\App.css
+LineNumber : 1
+Line       : /* src/App.css — WorkMitra 
+             Enterprise (cleaned: Vite 
+             defaults removed) */
+
+Path       : C:\projects\WorkMitra_Enterprise_v
+             2\src\index.css
+LineNumber : 1
+Line       : /* src/index.css — WorkMitra 
+             Enterprise: CSS entry point 
+             (imports only) */
+
+
+
