@@ -1,4 +1,7 @@
-// src/shared/docAccess/docAccessOtpService.ts
+// App: Job Mitra / WorkMitra_Enterprise_v2
+// File: docAccessOtpService.ts
+// Path: C:\projects\WorkMitra_Enterprise_v2\src\shared\docAccess\docAccessOtpService.ts
+
 //
 // Document Access OTP Service — Shift Jobs + Career Jobs.
 // COMPLETELY SEPARATE from HR OTP system (different storage keys).
@@ -7,14 +10,14 @@
 // OTP: 6 digits, 5 min expiry, one-time use.
 // Notification: auto-push to employee when employer requests.
 
-import { OTP_CODE_LENGTH, OTP_VALIDITY_MS } from "../../features/employee/workVault/constants/vaultConstants";
+import { DOC_ACCESS_OTP_CODE_LENGTH, DOC_ACCESS_OTP_VALIDITY_MS } from "./docAccessConstants";
 
 /* ------------------------------------------------ */
 /* Storage Keys (separate from HR)                  */
 /* ------------------------------------------------ */
-const DOC_OTP_KEY     = "wm_doc_access_otp_v1";
-const EMP_NOTES_KEY   = "wm_employee_notifications_v1";
-const CHANGED_EVENT   = "wm:doc-access-otp-changed";
+const DOC_OTP_KEY = "wm_doc_access_otp_v1";
+const EMP_NOTES_KEY = "wm_employee_notifications_v1";
+const CHANGED_EVENT = "wm:doc-access-otp-changed";
 
 /* ------------------------------------------------ */
 /* Types                                            */
@@ -34,7 +37,7 @@ export type DocAccessOtp = {
 /* Helpers                                          */
 /* ------------------------------------------------ */
 function generateCode(): string {
-  const array = new Uint8Array(OTP_CODE_LENGTH);
+  const array = new Uint8Array(DOC_ACCESS_OTP_CODE_LENGTH);
   crypto.getRandomValues(array);
   return Array.from(array, (byte) => (byte % 10).toString()).join("");
 }
@@ -44,7 +47,9 @@ function safeRead(): DocAccessOtp | null {
     const raw = localStorage.getItem(DOC_OTP_KEY);
     if (!raw) return null;
     return JSON.parse(raw) as DocAccessOtp;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 function safeWrite(otp: DocAccessOtp | null) {
@@ -54,35 +59,37 @@ function safeWrite(otp: DocAccessOtp | null) {
     } else {
       localStorage.setItem(DOC_OTP_KEY, JSON.stringify(otp));
     }
+
     window.dispatchEvent(new Event(CHANGED_EVENT));
-  } catch { /* safe */ }
+  } catch {
+    // Safe localStorage guard for Phase-0 demo mode.
+  }
 }
 
-function pushEmployeeNotification(employerName: string, code: string) {
+function pushEmployeeNotification(employerName: string, code: string, domain: "shift" | "career") {
   try {
     const existing = JSON.parse(localStorage.getItem(EMP_NOTES_KEY) ?? "[]") as object[];
     const note = {
       id: `n_dotp_${Date.now().toString(16)}`,
-      domain: "shift",
+      domain,
       title: "Document access requested",
       body: `${employerName} wants to view your documents. Your OTP is: ${code}. Share this only if you approve. Valid for 5 minutes.`,
       createdAt: Date.now(),
       isRead: false,
       route: "/employee/vault",
     };
+
     localStorage.setItem(EMP_NOTES_KEY, JSON.stringify([note, ...existing].slice(0, 100)));
     window.dispatchEvent(new Event("wm:employee-notifications-changed"));
-  } catch { /* safe */ }
+  } catch {
+    // Safe localStorage guard for Phase-0 demo mode.
+  }
 }
 
 /* ------------------------------------------------ */
 /* Public API                                       */
 /* ------------------------------------------------ */
 export const docAccessOtpService = {
-  /**
-   * Generate OTP — called when employer taps "View Documents".
-   * Pushes notification to employee automatically.
-   */
   generate(params: {
     employerName: string;
     employerId: string;
@@ -91,65 +98,81 @@ export const docAccessOtpService = {
   }): DocAccessOtp {
     const now = Date.now();
     const code = generateCode();
+
     const otp: DocAccessOtp = {
       code,
       generatedAt: now,
-      expiresAt: now + OTP_VALIDITY_MS,
+      expiresAt: now + DOC_ACCESS_OTP_VALIDITY_MS,
       used: false,
       ...params,
     };
+
     safeWrite(otp);
-    pushEmployeeNotification(params.employerName, code);
+    pushEmployeeNotification(params.employerName, code, params.domain);
+
     return otp;
   },
 
-  /** Get current OTP — for employee to see in notifications */
   getCurrent(): DocAccessOtp | null {
     const otp = safeRead();
+
     if (!otp) return null;
-    if (Date.now() > otp.expiresAt) { safeWrite(null); return null; }
+
+    if (Date.now() > otp.expiresAt) {
+      safeWrite(null);
+      return null;
+    }
+
     if (otp.used) return null;
+
     return otp;
   },
 
-  /** Verify OTP submitted by employer */
   verify(submittedCode: string): boolean {
     const otp = safeRead();
+
     if (!otp) return false;
     if (otp.used) return false;
     if (Date.now() > otp.expiresAt) return false;
     if (otp.code !== submittedCode.trim()) return false;
+
     safeWrite({ ...otp, used: true });
+
     return true;
   },
 
-  /** Check if OTP is still active (not expired, not used) */
   isActive(): boolean {
     const otp = safeRead();
+
     if (!otp) return false;
     if (otp.used) return false;
+
     return Date.now() <= otp.expiresAt;
   },
 
-  /** Remaining ms for current OTP */
   getRemainingMs(): number {
     const otp = safeRead();
+
     if (!otp || otp.used) return 0;
-    const r = otp.expiresAt - Date.now();
-    return r > 0 ? r : 0;
+
+    const remainingMs = otp.expiresAt - Date.now();
+
+    return remainingMs > 0 ? remainingMs : 0;
   },
 
-  /** Clear OTP manually */
-  clear(): void { safeWrite(null); },
+  clear(): void {
+    safeWrite(null);
+  },
 
-  /** Subscribe to OTP changes */
   subscribe(cb: () => void): () => void {
-    const h = () => cb();
-    window.addEventListener(CHANGED_EVENT, h);
-    window.addEventListener("storage", h);
+    const handler = () => cb();
+
+    window.addEventListener(CHANGED_EVENT, handler);
+    window.addEventListener("storage", handler);
+
     return () => {
-      window.removeEventListener(CHANGED_EVENT, h);
-      window.removeEventListener("storage", h);
+      window.removeEventListener(CHANGED_EVENT, handler);
+      window.removeEventListener("storage", handler);
     };
   },
 

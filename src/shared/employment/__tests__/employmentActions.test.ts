@@ -27,8 +27,10 @@ import {
 } from "../employmentNotifications";
 
 /* ── Factory ── */
-function seedRecord(overrides?: Partial<Parameters<typeof employmentStorage.create>[0]>) {
-  return employmentStorage.create({
+function seedRecord(
+  overrides?: Partial<Parameters<typeof employmentStorage.create>[0]>,
+): EmploymentRecord {
+  const record = employmentStorage.create({
     careerPostId: "post_001",
     employeeId: "ee_001",
     employeeName: "Rahul",
@@ -44,6 +46,12 @@ function seedRecord(overrides?: Partial<Parameters<typeof employmentStorage.crea
     noticePeriodDays: 7 as NoticePeriodDays,
     ...overrides,
   });
+
+  if (!record) {
+    throw new Error("Failed to seed employment record");
+  }
+
+  return record;
 }
 
 /* ── Setup ── */
@@ -246,7 +254,12 @@ describe("confirmResignation", () => {
     employmentActions.confirmResignation("post_001");
 
     expect(notifyEmployeeResignConfirmed).toHaveBeenCalledWith("Site Engineer", "TechCorp");
-    expect(notifyBothPleaseRate).toHaveBeenCalledWith("Rahul", "TechCorp", "Site Engineer");
+    expect(notifyBothPleaseRate).toHaveBeenCalledWith(
+      "Rahul",
+      "TechCorp",
+      "Site Engineer",
+      "post_001",
+    );
   });
 
   it("rejects confirm from selected status", () => {
@@ -305,7 +318,10 @@ describe("full lifecycle", () => {
     expect(result!.status).toBe("completed");
     expect(result!.timeline).toHaveLength(4); // selected, working, notice, completed
     expect(result!.timeline.map((t) => t.status)).toEqual([
-      "selected", "working", "notice", "completed",
+      "selected",
+      "working",
+      "notice",
+      "completed",
     ]);
   });
 

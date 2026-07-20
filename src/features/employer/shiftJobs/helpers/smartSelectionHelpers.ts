@@ -3,7 +3,7 @@
 // Smart Selection System — score each applicant and group into
 // Top Picks / Good Fit / Others using rating data + points level.
 
-import type { EmployeeShiftApplication } from "../storage/employerShift.storage";
+import type { EmployeeShiftApplication } from "../../shiftJobs/storage/employerShift.storage";
 import { ratingStorage } from "../../../../shared/rating/ratingStorage";
 import { workerPointsStorage } from "../../../../shared/rating/workerPointsStorage";
 import type { RatingLevel } from "../../../../shared/rating/ratingTypes";
@@ -30,9 +30,9 @@ export type ScoredApplication = {
 /* ------------------------------------------------ */
 const LEVEL_SCORE: Record<RatingLevel, number> = {
   platinum: 20,
-  gold:     15,
-  silver:   10,
-  bronze:    5,
+  gold: 15,
+  silver: 10,
+  bronze: 5,
 };
 
 /* ------------------------------------------------ */
@@ -77,23 +77,26 @@ export function scoreApplication(app: EmployeeShiftApplication): ScoredApplicati
   const goodToHavePct = calcGoodToHavePct(app);
 
   /* Score components */
-  const starScore     = ratingCount > 0 ? (avgStars / 5) * 40 : 20; // neutral 20 if no ratings
-  const levelScore    = LEVEL_SCORE[level];
-  const mustScore     = mustHavePct * 15;
-  const goodScore     = goodToHavePct * 10;
-  const hireScore     = ratingCount > 0 ? hireAgainPct * 10 : 5; // neutral 5 if no ratings
+  const starScore = ratingCount > 0 ? (avgStars / 5) * 40 : 20; // neutral 20 if no ratings
+  const levelScore = LEVEL_SCORE[level];
+  const mustScore = mustHavePct * 15;
+  const goodScore = goodToHavePct * 10;
+  const hireScore = ratingCount > 0 ? hireAgainPct * 10 : 5; // neutral 5 if no ratings
 
   const score = Math.round(starScore + levelScore + mustScore + goodScore + hireScore);
 
   /* Group */
-  const group: SelectionGroup =
-    score >= 65 ? "top"
-    : score >= 35 ? "good"
-    : "others";
+  const group: SelectionGroup = score >= 65 ? "top" : score >= 35 ? "good" : "others";
 
   return {
-    app, score, group, ratingCount,
-    avgStars, level, points, hireAgainPct,
+    app,
+    score,
+    group,
+    ratingCount,
+    avgStars,
+    level,
+    points,
+    hireAgainPct,
     mustHavePct,
   };
 }
@@ -102,16 +105,16 @@ export function scoreApplication(app: EmployeeShiftApplication): ScoredApplicati
 /* Group & sort applications                        */
 /* ------------------------------------------------ */
 export type GroupedApplications = {
-  top:    ScoredApplication[];
-  good:   ScoredApplication[];
+  top: ScoredApplication[];
+  good: ScoredApplication[];
   others: ScoredApplication[];
 };
 
 export function groupApplications(apps: EmployeeShiftApplication[]): GroupedApplications {
   const scored = apps.map(scoreApplication).sort((a, b) => b.score - a.score);
   return {
-    top:    scored.filter((s) => s.group === "top"),
-    good:   scored.filter((s) => s.group === "good"),
+    top: scored.filter((s) => s.group === "top"),
+    good: scored.filter((s) => s.group === "good"),
     others: scored.filter((s) => s.group === "others"),
   };
 }
@@ -121,14 +124,14 @@ export function groupApplications(apps: EmployeeShiftApplication[]): GroupedAppl
 /* ------------------------------------------------ */
 export const LEVEL_LABEL: Record<RatingLevel, string> = {
   platinum: "Platinum",
-  gold:     "Gold",
-  silver:   "Silver",
-  bronze:   "Bronze",
+  gold: "Gold",
+  silver: "Silver",
+  bronze: "Bronze",
 };
 
 export const LEVEL_COLOR: Record<RatingLevel, string> = {
   platinum: "#0369a1",
-  gold:     "#b45309",
-  silver:   "#64748b",
-  bronze:   "#92400e",
+  gold: "#b45309",
+  silver: "#64748b",
+  bronze: "#92400e",
 };

@@ -2,15 +2,17 @@
 //
 // Worker rates Employer modal — after shift completion.
 // Stars + Tags + Comment + "Work again?" Yes/No.
-// Edit mode: pre-populates, 1 edit within 48hr, no points re-award.
+// Edit mode: pre-populates, 1 edit within 24hr, no points re-award.
 
 import { useState, useCallback } from "react";
 import { StarRating } from "./StarRating";
 import { RatingTagSelector } from "./RatingTagSelector";
 import { WORKER_EMPLOYER_TAGS } from "../../rating/ratingTags";
 import { ratingStorage } from "../../rating/ratingStorage";
-import { workerPointsStorage } from "../../rating/workerPointsStorage";
+import { submitShiftRatingSaga } from "../../rating/submitShiftRatingSaga";
 import type { WorkerEmployerTag } from "../../rating/ratingTypes";
+
+const MAX_RATING_COMMENT_LENGTH = 240;
 
 /* ------------------------------------------------ */
 /* Props                                            */
@@ -33,8 +35,16 @@ type Props = {
 /* Component                                        */
 /* ------------------------------------------------ */
 export function WorkerRateEmployerModal({
-  isOpen, jobId, jobTitle, workerWmId, employerWmId,
-  companyName, domain, editMode, onSubmitted, onClose,
+  isOpen,
+  jobId,
+  jobTitle,
+  workerWmId,
+  employerWmId,
+  companyName,
+  domain,
+  editMode,
+  onSubmitted,
+  onClose,
 }: Props) {
   const existing = editMode
     ? ratingStorage.getWorkerRatingForJob(workerWmId, jobId, employerWmId)
@@ -49,80 +59,200 @@ export function WorkerRateEmployerModal({
   const [editSuccess, setEditSuccess] = useState(false);
 
   const handleStarsChange = useCallback((v: 1 | 2 | 3 | 4 | 5) => {
-    setStars(v); setError("");
+    setStars(v);
+    setError("");
   }, []);
 
   const handleSubmit = useCallback(() => {
-    if (stars === 0) { setError("Please select a star rating."); return; }
-    if (workAgain === null) { setError("Please answer: Would you work here again?"); return; }
+    if (stars === 0) {
+      setError("Please select a star rating.");
+      return;
+    }
+    if (workAgain === null) {
+      setError("Please answer: Would you work here again?");
+      return;
+    }
     setSubmitting(true);
 
     if (editMode) {
       const result = ratingStorage.editWorkerRating(workerWmId, jobId, employerWmId, {
-        stars: stars as 1 | 2 | 3 | 4 | 5, tags,
-        comment: comment.trim() || undefined, workAgain,
+        stars: stars as 1 | 2 | 3 | 4 | 5,
+        tags,
+        comment: comment.trim() || undefined,
+        workAgain,
       });
       setSubmitting(false);
-      if (!result.success) { setError(result.reason); return; }
+      if (!result.success) {
+        setError(result.reason);
+        return;
+      }
       setEditSuccess(true);
       setTimeout(() => onSubmitted(), 1500);
       return;
     }
 
+    if (domain === "shift") {
+      const sagaResult = submitShiftRatingSaga({
+        domain,
+        workerWmId,
+        employerWmId,
+        jobId,
+        stars: stars as 1 | 2 | 3 | 4 | 5,
+        tags,
+        comment: comment.trim() || undefined,
+        workAgain,
+      });
+
+      setSubmitting(false);
+
+      if (!sagaResult.ok) {
+        if (sagaResult.reason === "already_rated") {
+          setError("You have already submitted a rating for this work record.");
+        } else {
+          setError("Could not save your rating. Please try again.");
+        }
+        return;
+      }
+
+      onSubmitted();
+      return;
+    }
+
     ratingStorage.saveWorkerRating({
-      domain, workerWmId, employerWmId, jobId,
-      stars: stars as 1 | 2 | 3 | 4 | 5, tags,
-      comment: comment.trim() || undefined, workAgain,
+      domain,
+      workerWmId,
+      employerWmId,
+      jobId,
+      stars: stars as 1 | 2 | 3 | 4 | 5,
+      tags,
+      comment: comment.trim() || undefined,
+      workAgain,
     });
 
-    workerPointsStorage.applyEvent(workerWmId, "shift_complete", jobId);
     setSubmitting(false);
     onSubmitted();
-  }, [stars, tags, comment, workAgain, domain, workerWmId, employerWmId, jobId, editMode, onSubmitted]);
+  }, [
+    stars,
+    tags,
+    comment,
+    workAgain,
+    domain,
+    workerWmId,
+    employerWmId,
+    jobId,
+    editMode,
+    onSubmitted,
+  ]);
 
   if (!isOpen) return null;
 
   return (
     <div
-      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.45)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1000,
+        padding: 16,
+      }}
       onClick={onClose}
     >
       <div
-        style={{ background: "#fff", borderRadius: 16, width: "100%", maxWidth: 400, maxHeight: "90vh", overflow: "auto", boxShadow: "0 8px 32px rgba(0,0,0,0.15)" }}
+        style={{
+          background: "#fff",
+          borderRadius: 16,
+          width: "100%",
+          maxWidth: 400,
+          maxHeight: "90vh",
+          overflow: "auto",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div style={{ padding: "16px 18px 12px", borderBottom: "1px solid var(--wm-er-border)", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div
+          style={{
+            padding: "16px 18px 12px",
+            borderBottom: "1px solid var(--wm-er-border)",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+          }}
+        >
           <div>
             <div style={{ fontSize: 16, fontWeight: 700, color: "var(--wm-er-text)" }}>
               {editMode ? "Edit Review" : "Rate Employer"}
             </div>
-            <div style={{ fontSize: 12, color: "var(--wm-er-muted)", marginTop: 2 }}>{jobTitle}</div>
+            <div style={{ fontSize: 12, color: "var(--wm-er-muted)", marginTop: 2 }}>
+              {jobTitle}
+            </div>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", cursor: "pointer", color: "var(--wm-er-muted)", fontSize: 18, padding: 4, lineHeight: 1 }}>&times;</button>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "var(--wm-er-muted)",
+              fontSize: 18,
+              padding: 4,
+              lineHeight: 1,
+            }}
+          >
+            &times;
+          </button>
         </div>
 
         {/* Edit success state */}
         {editSuccess ? (
           <div style={{ padding: "32px 18px", textAlign: "center" }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>&#10003;</div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--wm-er-text)" }}>Review updated</div>
-            <div style={{ fontSize: 12, color: "var(--wm-er-muted)", marginTop: 6 }}>No further edits allowed.</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--wm-er-text)" }}>
+              Review updated
+            </div>
+            <div style={{ fontSize: 12, color: "var(--wm-er-muted)", marginTop: 6 }}>
+              No further edits allowed.
+            </div>
           </div>
         ) : (
           <>
             {/* Body */}
             <div style={{ padding: "16px 18px", display: "grid", gap: 16 }}>
               {/* Notice */}
-              <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(22,163,74,0.06)", border: "1px solid rgba(22,163,74,0.18)", fontSize: 12, fontWeight: 600, lineHeight: 1.5, color: "var(--wm-er-accent-shift, #16a34a)" }}>
+              <div
+                style={{
+                  padding: "10px 14px",
+                  borderRadius: 10,
+                  background: "rgba(22,163,74,0.06)",
+                  border: "1px solid rgba(22,163,74,0.18)",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  lineHeight: 1.5,
+                  color: "var(--wm-er-accent-shift, #16a34a)",
+                }}
+              >
                 {editMode
                   ? "Edit your review. This is your only edit \u2014 make it count."
                   : "Your rating helps other workers choose good employers. Rate fairly \u2014 it builds trust for everyone."}
               </div>
 
               {/* Company */}
-              <div style={{ padding: "10px 14px", borderRadius: 10, border: "1px solid var(--wm-er-border)", background: "var(--wm-er-card)" }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-er-text)" }}>{companyName}</div>
+              <div
+                style={{
+                  padding: "10px 14px",
+                  borderRadius: 10,
+                  border: "1px solid var(--wm-er-border)",
+                  background: "var(--wm-er-card)",
+                }}
+              >
+                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-er-text)" }}>
+                  {companyName}
+                </div>
                 <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginTop: 2 }}>
                   {editMode ? "Update your rating below" : "How was your experience?"}
                 </div>
@@ -130,7 +260,14 @@ export function WorkerRateEmployerModal({
 
               {/* Stars */}
               <div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: "var(--wm-er-text)", marginBottom: 8 }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "var(--wm-er-text)",
+                    marginBottom: 8,
+                  }}
+                >
                   Star Rating <span style={{ color: "var(--wm-error)" }}>*</span>
                 </div>
                 <StarRating value={stars} onChange={handleStarsChange} />
@@ -138,41 +275,160 @@ export function WorkerRateEmployerModal({
 
               {/* Tags */}
               <div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: "var(--wm-er-text)", marginBottom: 8 }}>What stood out? (optional)</div>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "var(--wm-er-text)",
+                    marginBottom: 8,
+                  }}
+                >
+                  What stood out? (optional)
+                </div>
                 <RatingTagSelector tags={WORKER_EMPLOYER_TAGS} selected={tags} onChange={setTags} />
               </div>
 
               {/* Comment */}
               <div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: "var(--wm-er-text)", marginBottom: 6 }}>Comment (optional)</div>
-                <input type="text" className="wm-input" placeholder="What was good or bad about working here?" value={comment} onChange={(e) => setComment(e.target.value)} maxLength={240} style={{ width: "100%", fontSize: 12 }} />
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "var(--wm-er-text)",
+                    marginBottom: 6,
+                  }}
+                >
+                  Comment (optional)
+                </div>
+                <input
+                  type="text"
+                  className="wm-input"
+                  placeholder="What was good or bad about working here?"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value.slice(0, MAX_RATING_COMMENT_LENGTH))}
+                  maxLength={MAX_RATING_COMMENT_LENGTH}
+                  style={{ width: "100%", fontSize: 12 }}
+                />
+
+                <div
+                  style={{
+                    marginTop: 4,
+                    fontSize: 11,
+                    color: "var(--wm-er-muted)",
+                    textAlign: "right",
+                    fontWeight: 700,
+                  }}
+                >
+                  {comment.length}/{MAX_RATING_COMMENT_LENGTH}
+                </div>
               </div>
 
               {/* Work again */}
               <div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: "var(--wm-er-text)", marginBottom: 8 }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "var(--wm-er-text)",
+                    marginBottom: 8,
+                  }}
+                >
                   Would you work here again? <span style={{ color: "var(--wm-error)" }}>*</span>
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
-                  <button type="button" onClick={() => setWorkAgain(true)} style={{ flex: 1, padding: "8px 0", borderRadius: 8, fontSize: 13, fontWeight: 600, border: workAgain === true ? "2px solid var(--wm-er-accent-shift, #16a34a)" : "1px solid var(--wm-er-border)", background: workAgain === true ? "rgba(22,163,74,0.08)" : "#fff", color: workAgain === true ? "var(--wm-er-accent-shift, #16a34a)" : "var(--wm-er-muted)", cursor: "pointer" }}>&#10003; Yes</button>
-                  <button type="button" onClick={() => setWorkAgain(false)} style={{ flex: 1, padding: "8px 0", borderRadius: 8, fontSize: 13, fontWeight: 600, border: workAgain === false ? "2px solid #ef4444" : "1px solid var(--wm-er-border)", background: workAgain === false ? "rgba(239,68,68,0.06)" : "#fff", color: workAgain === false ? "#ef4444" : "var(--wm-er-muted)", cursor: "pointer" }}>&#10005; No</button>
+                  <button
+                    type="button"
+                    onClick={() => setWorkAgain(true)}
+                    style={{
+                      flex: 1,
+                      padding: "8px 0",
+                      borderRadius: 8,
+                      fontSize: 13,
+                      fontWeight: 600,
+                      border:
+                        workAgain === true
+                          ? "2px solid var(--wm-er-accent-shift, #16a34a)"
+                          : "1px solid var(--wm-er-border)",
+                      background: workAgain === true ? "rgba(22,163,74,0.08)" : "#fff",
+                      color:
+                        workAgain === true
+                          ? "var(--wm-er-accent-shift, #16a34a)"
+                          : "var(--wm-er-muted)",
+                      cursor: "pointer",
+                    }}
+                  >
+                    &#10003; Yes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setWorkAgain(false)}
+                    style={{
+                      flex: 1,
+                      padding: "8px 0",
+                      borderRadius: 8,
+                      fontSize: 13,
+                      fontWeight: 600,
+                      border:
+                        workAgain === false ? "2px solid #ef4444" : "1px solid var(--wm-er-border)",
+                      background: workAgain === false ? "rgba(239,68,68,0.06)" : "#fff",
+                      color: workAgain === false ? "#ef4444" : "var(--wm-er-muted)",
+                      cursor: "pointer",
+                    }}
+                  >
+                    &#10005; No
+                  </button>
                 </div>
               </div>
 
               {error && (
-                <div style={{ padding: "8px 12px", borderRadius: 8, background: "rgba(220,38,38,0.06)", fontSize: 12, color: "var(--wm-error)", fontWeight: 600 }}>{error}</div>
+                <div
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: 8,
+                    background: "rgba(220,38,38,0.06)",
+                    fontSize: 12,
+                    color: "var(--wm-error)",
+                    fontWeight: 600,
+                  }}
+                >
+                  {error}
+                </div>
               )}
             </div>
 
             {/* Footer */}
             <div style={{ padding: "12px 18px 16px", borderTop: "1px solid var(--wm-er-border)" }}>
               {!editMode && (
-                <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginBottom: 10, textAlign: "center" }}>
-                  You can edit this review once within 48 hours
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: "var(--wm-er-muted)",
+                    marginBottom: 10,
+                    textAlign: "center",
+                  }}
+                >
+                  You can edit this review once within 24 hours
                 </div>
               )}
               <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                <button type="button" onClick={handleSubmit} disabled={submitting || stars === 0} style={{ padding: "10px 24px", borderRadius: 8, border: "none", background: stars > 0 && workAgain !== null ? "var(--wm-er-accent-shift, #16a34a)" : "#d1d5db", color: "#fff", fontSize: 13, fontWeight: 600, cursor: stars > 0 ? "pointer" : "not-allowed" }}>
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={submitting || stars === 0}
+                  style={{
+                    padding: "10px 24px",
+                    borderRadius: 8,
+                    border: "none",
+                    background:
+                      stars > 0 && workAgain !== null
+                        ? "var(--wm-er-accent-shift, #16a34a)"
+                        : "#d1d5db",
+                    color: "#fff",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: stars > 0 ? "pointer" : "not-allowed",
+                  }}
+                >
                   {submitting ? "Saving..." : editMode ? "Update Review" : "Submit Rating"}
                 </button>
               </div>

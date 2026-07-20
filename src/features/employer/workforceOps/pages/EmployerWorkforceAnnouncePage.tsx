@@ -1,36 +1,20 @@
-// src/features/employer/workforceOps/pages/EmployerWorkforceAnnouncePage.tsx
-//
-// Workforce Ops Hub — Create Announcement (Stepped Form).
-// Orchestrates 4 steps: Categories → Shifts → Vacancy → Details → Preview & Send.
+// App: Job Mitra / WorkMitra_Enterprise_v2
+// File: EmployerWorkforceAnnouncePage.tsx
+// Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\workforceOps\pages\EmployerWorkforceAnnouncePage.tsx
 
-import { useState, useCallback } from "react";
-import { workforceAnnouncementService } from "../services/workforceAnnouncementService";
-import type { AnnouncementShift } from "../types/workforceTypes";
-import type { CreateAnnouncementPayload } from "../services/workforceAnnouncementService";
+import { useCallback, useState } from "react";
+import type { AnnounceFormData } from "../types/announceForm.types";
 import { AnnounceStepCategories } from "../components/AnnounceStepCategories";
-import { AnnounceStepShifts } from "../components/AnnounceStepShifts";
-import { AnnounceStepVacancy } from "../components/AnnounceStepVacancy";
 import { AnnounceStepDetails } from "../components/AnnounceStepDetails";
 import { AnnounceStepPreview } from "../components/AnnounceStepPreview";
-import { IconBack } from "../components/workforceIcons";
-import { AMBER } from "../components/workforceStyles";
+import { AnnounceStepShifts } from "../components/AnnounceStepShifts";
+import { AnnounceStepVacancy } from "../components/AnnounceStepVacancy";
+import { EmployerWorkforceAnnounceHeader } from "../components/EmployerWorkforceAnnounceHeader";
+import { EmployerWorkforceAnnounceStepper } from "../components/EmployerWorkforceAnnounceStepper";
+import { workforceAnnouncementService } from "../services/workforceAnnouncementService";
+import type { CreateAnnouncementPayload } from "../services/workforceAnnouncementService";
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* Form State Type                                                            */
-/* ─────────────────────────────────────────────────────────────────────────── */
-
-export type AnnounceFormData = {
-  targetCategories: string[];
-  shifts: AnnouncementShift[];
-  vacancyPerCategoryPerShift: Record<string, Record<string, number>>;
-  waitingBuffer: number;
-  autoReplace: boolean;
-  title: string;
-  date: string;
-  time: string;
-  location: string;
-  description: string;
-};
+export type { AnnounceFormData } from "../types/announceForm.types";
 
 const INITIAL_FORM: AnnounceFormData = {
   targetCategories: [],
@@ -45,10 +29,6 @@ const INITIAL_FORM: AnnounceFormData = {
   description: "",
 };
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* Step Definition                                                            */
-/* ─────────────────────────────────────────────────────────────────────────── */
-
 type Step = 1 | 2 | 3 | 4 | 5;
 
 const STEP_LABELS: Record<Step, string> = {
@@ -59,48 +39,10 @@ const STEP_LABELS: Record<Step, string> = {
   5: "Preview & Send",
 };
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* Styles                                                                     */
-/* ─────────────────────────────────────────────────────────────────────────── */
-
-const progressBarBg: React.CSSProperties = {
-  height: 4,
-  borderRadius: 2,
-  background: "var(--wm-er-border)",
-  overflow: "hidden",
-};
-
-const stepIndicatorStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  marginTop: 12,
-  marginBottom: 4,
-};
-
-const backBtnStyle: React.CSSProperties = {
-  background: "none",
-  border: "none",
-  cursor: "pointer",
-  color: AMBER,
-  padding: 4,
-  borderRadius: 6,
-  display: "inline-flex",
-  alignItems: "center",
-};
-
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* Props                                                                      */
-/* ─────────────────────────────────────────────────────────────────────────── */
-
 type Props = {
   onBack: () => void;
   onCreated?: (announcementId: string) => void;
 };
-
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* Component                                                                  */
-/* ─────────────────────────────────────────────────────────────────────────── */
 
 export function EmployerWorkforceAnnouncePage({ onBack, onCreated }: Props) {
   const [step, setStep] = useState<Step>(1);
@@ -108,35 +50,32 @@ export function EmployerWorkforceAnnouncePage({ onBack, onCreated }: Props) {
   const [submitErrors, setSubmitErrors] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  /* ── Form updater ── */
   const updateForm = useCallback((patch: Partial<AnnounceFormData>) => {
-    setForm((prev) => ({ ...prev, ...patch }));
+    setForm((previous) => ({ ...previous, ...patch }));
     setSubmitErrors([]);
   }, []);
 
-  /* ── Load from template ── */
   const loadTemplate = useCallback((templateData: Partial<AnnounceFormData>) => {
-    setForm((prev) => ({ ...prev, ...templateData }));
+    setForm((previous) => ({ ...previous, ...templateData }));
   }, []);
 
-  /* ── Navigation ── */
   const goNext = useCallback(() => {
-    setStep((s) => Math.min(s + 1, 5) as Step);
+    setStep((currentStep) => Math.min(currentStep + 1, 5) as Step);
   }, []);
 
   const goBack = useCallback(() => {
     if (step === 1) {
       onBack();
-    } else {
-      setStep((s) => Math.max(s - 1, 1) as Step);
+      return;
     }
-  }, [step, onBack]);
+
+    setStep((currentStep) => Math.max(currentStep - 1, 1) as Step);
+  }, [onBack, step]);
 
   const goToStep = useCallback((target: Step) => {
     setStep(target);
   }, []);
 
-  /* ── Submit ── */
   const handleSubmit = useCallback(() => {
     setIsSubmitting(true);
     setSubmitErrors([]);
@@ -160,77 +99,25 @@ export function EmployerWorkforceAnnouncePage({ onBack, onCreated }: Props) {
     if (result.success && result.id) {
       onCreated?.(result.id);
       onBack();
-    } else {
-      setSubmitErrors(result.errors ?? ["Failed to create announcement."]);
+      return;
     }
-  }, [form, onCreated, onBack]);
 
-  /* ── Progress ── */
+    setSubmitErrors(result.errors ?? ["Failed to create announcement."]);
+  }, [form, onBack, onCreated]);
+
   const progress = (step / 5) * 100;
 
   return (
     <div className="wm-er-vWorkforce">
-      {/* ── Header ── */}
-      <div className="wm-pageHead" style={{ gap: 12 }}>
-        <button type="button" onClick={goBack} style={backBtnStyle}>
-          <IconBack />
-        </button>
-        <div style={{ flex: 1 }}>
-          <div className="wm-pageTitle">New Announcement</div>
-          <div className="wm-pageSub">{STEP_LABELS[step]}</div>
-        </div>
-      </div>
+      <EmployerWorkforceAnnounceHeader step={step} stepLabels={STEP_LABELS} onBack={goBack} />
 
-      {/* ── Progress Bar ── */}
-      <div style={progressBarBg}>
-        <div
-          style={{
-            height: "100%",
-            width: `${progress}%`,
-            background: AMBER,
-            borderRadius: 2,
-            transition: "width 0.3s ease",
-          }}
-        />
-      </div>
+      <EmployerWorkforceAnnounceStepper step={step} progress={progress} onStepClick={goToStep} />
 
-      {/* ── Step Indicator ── */}
-      <div style={stepIndicatorStyle}>
-        {([1, 2, 3, 4, 5] as Step[]).map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => s < step && goToStep(s)}
-            disabled={s > step}
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: 999,
-              border: "none",
-              background: s === step ? AMBER : s < step ? "rgba(180,83,9,0.15)" : "var(--wm-er-border)",
-              color: s === step ? "#fff" : s < step ? AMBER : "var(--wm-er-muted)",
-              fontSize: 12,
-              fontWeight: 900,
-              cursor: s < step ? "pointer" : "default",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {s < step ? "✓" : s}
-          </button>
-        ))}
-        <span style={{ fontSize: 12, color: "var(--wm-er-muted)", marginLeft: 4 }}>
-          Step {step} of 5
-        </span>
-      </div>
-
-      {/* ── Step Content ── */}
       <div style={{ marginTop: 10, marginBottom: 24 }}>
         {step === 1 && (
           <AnnounceStepCategories
             selected={form.targetCategories}
-            onChange={(cats) => updateForm({ targetCategories: cats })}
+            onChange={(categories) => updateForm({ targetCategories: categories })}
             onLoadTemplate={loadTemplate}
             onNext={goNext}
           />
@@ -250,7 +137,9 @@ export function EmployerWorkforceAnnouncePage({ onBack, onCreated }: Props) {
             shifts={form.shifts}
             vacancyMap={form.vacancyPerCategoryPerShift}
             waitingBuffer={form.waitingBuffer}
-            onChange={(vacMap, buffer) => updateForm({ vacancyPerCategoryPerShift: vacMap, waitingBuffer: buffer })}
+            onChange={(vacancyMap, waitingBuffer) =>
+              updateForm({ vacancyPerCategoryPerShift: vacancyMap, waitingBuffer })
+            }
             onNext={goNext}
           />
         )}

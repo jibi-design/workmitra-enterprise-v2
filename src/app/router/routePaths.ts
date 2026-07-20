@@ -1,6 +1,9 @@
-﻿// src/app/router/routePaths.ts
+// src/app/router/routePaths.ts
 export const ROUTE_PATHS = {
   landing: "/",
+  publicWelcome: "/welcome",
+  login: "/login",
+  rolePick: "/role-pick",
   employeeHome: "/employee",
   employerHome: "/employer",
   adminHome: "/admin",
@@ -12,11 +15,29 @@ export const ROUTE_PATHS = {
 
   // Employee Shift (Temporary) - detailed routes (Phase-0)
   employeeShiftSearch: "/employee/shift/search",
+  employeeShiftProjects: "/employee/shift/projects",
   employeeShiftPostDetails: "/employee/shift/post/:postId",
   employeeShiftApplications: "/employee/shift/applications",
+  employeeShiftPlanApplicationSummary: "/employee/shift/applications/plan/:planId",
+  employeeShiftProjectDetail: "/employee/shift/projects/:planId",
+  employeeShiftProjectApply: "/employee/shift/projects/:planId/apply",
   employeeShiftWorkspaces: "/employee/shift/workspaces",
   employeeShiftWorkspace: "/employee/shift/workspace/:workspaceId",
   employeeShiftEarnings: "/employee/shift/earnings",
+
+  // Employee Gig Projects (Demand Planner) — separate domain from Shift Jobs
+  employeePlannerHome: "/employee/planner/home",
+  employeePlannerBrowse: "/employee/planner/browse",
+  employeePlannerProjectDetail: "/employee/planner/projects/:planId",
+  employeePlannerProjectApply: "/employee/planner/projects/:planId/apply",
+  employeePlannerApplications: "/employee/planner/applications",
+  employeePlannerPlanApplicationSummary: "/employee/planner/applications/plan/:planId",
+  employeePlannerWorkspaces: "/employee/planner/workspaces",
+  employeePlannerWorkspace: "/employee/planner/workspace/:workspaceId",
+  employeePlannerEarnings: "/employee/planner/earnings",
+
+  // Employee Review Center
+  employeeReviewCenter: "/employee/review-center",
 
   // Employer domain entries
   employerShiftHome: "/employer/shift",
@@ -26,22 +47,31 @@ export const ROUTE_PATHS = {
   employerNotifications: "/employer/notifications",
   employerMyStaff: "/employer/my-staff",
 
+  // Employer Review Center & Analytics
+  employerReviewCenter: "/employer/review-center",
+  employerAnalytics: "/employer/analytics",
+
   // Employer Career - detailed routes (Phase-0)
   employerCareerCreate: "/employer/career/create",
+  employerCareerPosts: "/employer/career/posts",
+  employerCareerCompletedRecords: "/employer/career/completed-records",
   employerCareerPostDashboard: "/employer/career/post/:postId",
   employerCareerCandidateDetail: "/employer/career/post/:postId/candidate/:appId",
-  employerCareerInterviews: "/employer/career/post/:postId/interviews",
+  employerCareerCandidateWorkVaultReview:
+    "/employer/career/post/:postId/candidate/:appId/work-vault-review",
 
   // Employee Career - detailed routes (Phase-0)
   employeeCareerSearch: "/employee/career/search",
   employeeCareerPostDetails: "/employee/career/post/:postId",
   employeeCareerApplications: "/employee/career/applications",
   employeeCareerWorkspace: "/employee/career/workspace/:workspaceId",
+  employeeCareerCompletedRecords: "/employee/career/completed-records",
 
   // Employer Shift (Temporary) - detailed routes (Phase-0)
   employerShiftCreate: "/employer/shift/create",
   employerShiftPostDashboard: "/employer/shift/post/:postId",
   employerCandidateDetail: "/employer/shift/post/:postId/candidate/:appId",
+  employerCandidateDocumentAccess: "/employer/shift/post/:postId/candidate/:appId/document-access",
   employerShiftShortlist: "/employer/shift/post/:postId/shortlist",
   employerShiftWorkspaces: "/employer/shift/workspaces",
   employerShiftWorkspace: "/employer/shift/workspace/:workspaceId",
@@ -49,6 +79,13 @@ export const ROUTE_PATHS = {
   employerShiftFavorites: "/employer/shift/favorites",
   employerShiftTemplates: "/employer/shift/templates",
   employerShiftDemandPlanner: "/employer/shift/demand-planner",
+
+  // Employer Demand Planner (Teal subdomain)
+  employerPlannerHome: "/employer/planner/home",
+  employerPlannerPlans: "/employer/planner/plans",
+  employerPlannerNew: "/employer/planner/new",
+  employerPlannerDetail: "/employer/planner/plans/:planId",
+  employerPlannerFinance: "/employer/planner/plans/:planId/finance",
 
   // Employer Workforce - detailed routes (Phase-0)
   employerWorkforceStaff: "/employer/workforce/staff",
@@ -111,4 +148,7 @@ export const ROUTE_PATHS = {
   employeeSettings: "/employee/settings",
   employeeHelp: "/employee/help",
   employerHelp: "/employer/help",
+
+  // Employer Profile (Identity — Phase 1+)
+  employerProfile: "/employer/profile",
 } as const;

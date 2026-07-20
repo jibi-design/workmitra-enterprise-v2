@@ -31,7 +31,7 @@ export type EmployeeProfile = {
 
   availability: Availability;
 
- phoneMasked?: string;
+  phoneMasked?: string;
   emailMasked?: string;
   createdAt?: number;
 };
@@ -95,7 +95,22 @@ function write(profile: EmployeeProfile): void {
 /* ------------------------------------------------ */
 export const employeeProfileStorage = {
   get(): EmployeeProfile {
-    return safeParse(localStorage.getItem(KEY));
+    const profile = safeParse(localStorage.getItem(KEY));
+
+    if (!profile.uniqueId?.trim() && profile.fullName.trim()) {
+      const result = generateAndRegisterId(profile.fullName, "employee");
+      if (result.success) {
+        const next = {
+          ...profile,
+          uniqueId: result.id,
+          createdAt: profile.createdAt ?? Date.now(),
+        };
+        write(next);
+        return next;
+      }
+    }
+
+    return profile;
   },
 
   set(profile: EmployeeProfile): void {

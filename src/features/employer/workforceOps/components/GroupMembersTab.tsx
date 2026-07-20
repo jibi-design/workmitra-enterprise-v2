@@ -1,18 +1,16 @@
-// src/features/employer/workforceOps/components/GroupMembersTab.tsx
-//
-// Members tab for Group Detail page.
-// Lists active/exited members with exit reason and management actions.
+﻿// App: Job Mitra / WorkMitra_Enterprise_v2
+// File: GroupMembersTab.tsx
+// Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\workforceOps\components\GroupMembersTab.tsx
 
-import { useMemo, useState, useCallback } from "react";
-import { workforceGroupMemberService } from "../services/workforceGroupMemberService";
+import { useCallback, useMemo, useState } from "react";
+import type {
+  WorkforceGroup,
+  WorkforceGroupMember,
+} from "../../../../shared/domains/workforce/types/workforceTypes";
+import { IconStar } from "../../../../shared/domains/workforce/ui/workforceIcons";
+import { AMBER, AMBER_BG } from "../../../../shared/domains/workforce/ui/workforceStyles";
 import { workforceCategoryService } from "../services/workforceCategoryService";
-import type { WorkforceGroup, WorkforceGroupMember } from "../types/workforceTypes";
-import { IconStar } from "./workforceIcons";
-import { AMBER, AMBER_BG } from "./workforceStyles";
-
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* Props                                                                      */
-/* ─────────────────────────────────────────────────────────────────────────── */
+import { workforceGroupMemberService } from "../services/workforceGroupMemberService";
 
 type Props = {
   group: WorkforceGroup;
@@ -20,47 +18,64 @@ type Props = {
   onRefresh: () => void;
 };
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* Component                                                                  */
-/* ─────────────────────────────────────────────────────────────────────────── */
-
 export function GroupMembersTab({ group, members }: Props) {
   const categories = useMemo(() => workforceCategoryService.getAll(), []);
+
   const categoryMap = useMemo(() => {
     const map = new Map<string, string>();
-    for (const c of categories) map.set(c.id, c.name);
+
+    for (const category of categories) {
+      map.set(category.id, category.name);
+    }
+
     return map;
   }, [categories]);
 
-  const activeMembers = useMemo(() => members.filter((m) => m.status === "active"), [members]);
-  const exitedMembers = useMemo(() => members.filter((m) => m.status !== "active"), [members]);
+  const activeMembers = useMemo(
+    () => members.filter((member) => member.status === "active"),
+    [members],
+  );
+
+  const exitedMembers = useMemo(
+    () => members.filter((member) => member.status !== "active"),
+    [members],
+  );
 
   const [urgentMsg, setUrgentMsg] = useState("");
   const [urgentCatId, setUrgentCatId] = useState("");
   const [urgentResult, setUrgentResult] = useState("");
 
+  const groupCatIds = useMemo(() => {
+    const ids = new Set<string>();
+
+    for (const member of members) {
+      ids.add(member.categoryId);
+    }
+
+    return Array.from(ids);
+  }, [members]);
+
   const sendUrgent = useCallback(() => {
     if (!urgentCatId) return;
-    const result = workforceGroupMemberService.sendUrgentBroadcast(group.id, urgentCatId, urgentMsg);
+
+    const result = workforceGroupMemberService.sendUrgentBroadcast(
+      group.id,
+      urgentCatId,
+      urgentMsg,
+    );
+
     if (result.success) {
       setUrgentResult(`Urgent broadcast sent to ${result.notifiedCount} staff.`);
       setUrgentMsg("");
       setTimeout(() => setUrgentResult(""), 3000);
-    } else {
-      setUrgentResult(result.errors?.[0] ?? "Failed.");
+      return;
     }
-  }, [group.id, urgentCatId, urgentMsg]);
 
-  /* Unique categories in this group */
-  const groupCatIds = useMemo(() => {
-    const ids = new Set<string>();
-    for (const m of members) ids.add(m.categoryId);
-    return Array.from(ids);
-  }, [members]);
+    setUrgentResult(result.errors?.[0] ?? "Failed.");
+  }, [group.id, urgentCatId, urgentMsg]);
 
   return (
     <div style={{ display: "grid", gap: 12 }}>
-      {/* Active Members */}
       <div style={{ fontSize: 13, fontWeight: 800, color: "var(--wm-er-text)" }}>
         Active Members ({activeMembers.length})
       </div>
@@ -69,7 +84,7 @@ export function GroupMembersTab({ group, members }: Props) {
         <div style={{ display: "grid", gap: 8 }}>
           {activeMembers.map((member) => {
             const shifts = member.assignedShiftIds
-              .map((sid) => group.shifts.find((s) => s.id === sid)?.name ?? sid)
+              .map((shiftId) => group.shifts.find((shift) => shift.id === shiftId)?.name ?? shiftId)
               .join(", ");
 
             return (
@@ -82,15 +97,30 @@ export function GroupMembersTab({ group, members }: Props) {
                   background: "var(--wm-er-card)",
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div
+                  style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                >
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "var(--wm-er-text)" }}>{member.employeeName}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "var(--wm-er-text)" }}>
+                      {member.employeeName}
+                    </div>
+
                     <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginTop: 2 }}>
-                      {categoryMap.get(member.categoryId) ?? member.categoryId} · {shifts}
+                      {categoryMap.get(member.categoryId) ?? member.categoryId} - {shifts}
                     </div>
                   </div>
+
                   {member.postEventRating !== undefined && (
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 12, color: AMBER, fontWeight: 700 }}>
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 2,
+                        fontSize: 12,
+                        color: AMBER,
+                        fontWeight: 700,
+                      }}
+                    >
                       <IconStar /> {member.postEventRating}
                     </span>
                   )}
@@ -100,17 +130,38 @@ export function GroupMembersTab({ group, members }: Props) {
           })}
         </div>
       ) : (
-        <div style={{ fontSize: 12, color: "var(--wm-er-muted)", textAlign: "center", padding: 12 }}>
+        <div
+          style={{ fontSize: 12, color: "var(--wm-er-muted)", textAlign: "center", padding: 12 }}
+        >
           No active members
         </div>
       )}
 
-      {/* Exited Members */}
       {exitedMembers.length > 0 && (
         <>
+          <div
+            className="wm-er-card"
+            style={{
+              border: "1px solid rgba(220,38,38,0.22)",
+              background: "rgba(254,242,242,0.78)",
+            }}
+          >
+            <div style={{ fontSize: 13, fontWeight: 900, color: "var(--wm-error)" }}>
+              Worker exit alert
+            </div>
+
+            <div
+              style={{ marginTop: 4, fontSize: 12, color: "var(--wm-er-text)", lineHeight: 1.5 }}
+            >
+              One or more workers left this group. Review the reason and arrange a replacement if
+              needed.
+            </div>
+          </div>
+
           <div style={{ fontSize: 13, fontWeight: 800, color: "var(--wm-er-muted)", marginTop: 4 }}>
             Exited / Replaced ({exitedMembers.length})
           </div>
+
           <div style={{ display: "grid", gap: 6 }}>
             {exitedMembers.map((member) => (
               <div
@@ -123,11 +174,14 @@ export function GroupMembersTab({ group, members }: Props) {
                   opacity: 0.7,
                 }}
               >
-                <div style={{ fontSize: 12, fontWeight: 600, color: "var(--wm-er-text)" }}>{member.employeeName}</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: "var(--wm-er-text)" }}>
+                  {member.employeeName}
+                </div>
+
                 <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginTop: 2 }}>
                   {member.status === "replaced" ? "Replaced" : "Exited"}
-                  {member.exitReason && ` · ${member.exitReason}`}
-                  {member.exitNote && ` — ${member.exitNote}`}
+                  {member.exitReason && ` - ${member.exitReason}`}
+                  {member.exitNote && ` - ${member.exitNote}`}
                 </div>
               </div>
             ))}
@@ -135,12 +189,12 @@ export function GroupMembersTab({ group, members }: Props) {
         </>
       )}
 
-      {/* Urgent Broadcast (IMP-3) */}
       {group.status === "active" && groupCatIds.length > 0 && (
         <div className="wm-er-card" style={{ marginTop: 4 }}>
           <div style={{ fontSize: 13, fontWeight: 800, color: "var(--wm-error)", marginBottom: 6 }}>
             Urgent Replacement Broadcast
           </div>
+
           <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginBottom: 8 }}>
             Send an urgent notification to all available staff in a category.
           </div>
@@ -173,7 +227,7 @@ export function GroupMembersTab({ group, members }: Props) {
               className="wm-input"
               placeholder="Optional message..."
               value={urgentMsg}
-              onChange={(e) => setUrgentMsg(e.target.value)}
+              onChange={(event) => setUrgentMsg(event.target.value)}
               style={{ fontSize: 12 }}
               maxLength={200}
             />
@@ -193,7 +247,12 @@ export function GroupMembersTab({ group, members }: Props) {
             </button>
 
             {urgentResult && (
-              <div style={{ fontSize: 11, color: urgentResult.includes("sent") ? "var(--wm-success)" : "var(--wm-error)" }}>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: urgentResult.includes("sent") ? "var(--wm-success)" : "var(--wm-error)",
+                }}
+              >
                 {urgentResult}
               </div>
             )}

@@ -7,6 +7,18 @@ import type { WorkerPoints, PointsEventType } from "./ratingTypes";
 import { applyPointsEvent, createWorkerPoints, calculateLevel } from "./ratingLevels";
 
 /* ------------------------------------------------ */
+/* Errors                                           */
+/* ------------------------------------------------ */
+export class WorkerPointsStorageWriteError extends Error {
+  readonly reason = "storage_error" as const;
+
+  constructor() {
+    super("Failed to persist worker points.");
+    this.name = "WorkerPointsStorageWriteError";
+  }
+}
+
+/* ------------------------------------------------ */
 /* Storage Keys                                     */
 /* ------------------------------------------------ */
 const KEY = "wm_worker_points_v1";
@@ -22,7 +34,9 @@ let _cacheMap: Map<string, WorkerPoints> = new Map();
 /* Parse                                            */
 /* ------------------------------------------------ */
 type Rec = Record<string, unknown>;
-function isRec(x: unknown): x is Rec { return typeof x === "object" && x !== null; }
+function isRec(x: unknown): x is Rec {
+  return typeof x === "object" && x !== null;
+}
 
 function parsePointsMap(raw: string | null): Map<string, WorkerPoints> {
   const map = new Map<string, WorkerPoints>();
@@ -45,7 +59,9 @@ function parsePointsMap(raw: string | null): Map<string, WorkerPoints> {
       };
       map.set(workerWmId, record);
     }
-  } catch { /* safe */ }
+  } catch {
+    /* safe */
+  }
   return map;
 }
 
@@ -57,12 +73,26 @@ function readCache(): Map<string, WorkerPoints> {
   return _cacheMap;
 }
 
-function write(map: Map<string, WorkerPoints>) {
+function safeDispatchChanged(event: string): void {
+  try {
+    window.dispatchEvent(new Event(event));
+  } catch (error) {
+    console.warn("[workerPointsStorage] Failed to dispatch storage change event", {
+      event,
+      error,
+    });
+  }
+}
+
+function write(map: Map<string, WorkerPoints>): void {
   try {
     localStorage.setItem(KEY, JSON.stringify(Array.from(map.values())));
-  } catch { /* safe */ }
+  } catch {
+    throw new WorkerPointsStorageWriteError();
+  }
+
   _cacheRaw = null;
-  try { window.dispatchEvent(new Event(CHANGED_EVENT)); } catch { /* safe */ }
+  safeDispatchChanged(CHANGED_EVENT);
 }
 
 /* ------------------------------------------------ */
@@ -71,7 +101,9 @@ function write(map: Map<string, WorkerPoints>) {
 export const workerPointsStorage = {
   subscribe(cb: () => void): () => void {
     const h = () => cb();
-    const onStorage = (e: StorageEvent) => { if (e.key === KEY || e.key === null) cb(); };
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === KEY || e.key === null) cb();
+    };
     window.addEventListener(CHANGED_EVENT, h);
     window.addEventListener("storage", onStorage);
     return () => {

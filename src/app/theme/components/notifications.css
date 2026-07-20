@@ -1,0 +1,455 @@
+/* src/app/theme/components/notifications.css — Shared notification UI */
+
+.wm-notificationFilterTabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--wm-er-border);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.wm-notificationFilterTabs::-webkit-scrollbar {
+  display: none;
+}
+
+.wm-notificationFilterTab {
+  min-height: 34px;
+  border-radius: var(--wm-radius-pill);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--wm-er-muted);
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: var(--wm-shadow-xs);
+  transition:
+    transform var(--wm-motion-fast) var(--wm-motion-ease),
+    border-color var(--wm-motion-base) var(--wm-motion-ease),
+    background var(--wm-motion-base) var(--wm-motion-ease),
+    color var(--wm-motion-base) var(--wm-motion-ease),
+    box-shadow var(--wm-motion-base) var(--wm-motion-ease);
+}
+
+.wm-notificationFilterTab:active {
+  transform: scale(0.975);
+}
+
+.wm-notificationFilterTab.hasItems:not(.isActive) {
+  border-color: color-mix(
+    in srgb,
+    var(--wm-notification-tab-accent, var(--wm-brand-600)) 28%,
+    transparent
+  );
+  background: var(--wm-notification-tab-bg, rgba(29, 78, 216, 0.08));
+  color: var(--wm-notification-tab-accent, var(--wm-brand-600));
+}
+
+.wm-notificationFilterTab.isZero:not(.isActive) {
+  background: rgba(255, 255, 255, 0.62);
+  color: var(--wm-neutral-500);
+}
+
+.wm-notificationFilterTab.isActive {
+  border-color: rgba(15, 23, 42, 0.08);
+  background: linear-gradient(135deg, var(--wm-neutral-900), var(--wm-neutral-800));
+  color: #fff;
+  box-shadow: var(--wm-shadow-md);
+}
+
+.wm-notificationFilterLabel {
+  line-height: 1;
+}
+
+.wm-notificationFilterCount {
+  min-width: 20px;
+  height: 20px;
+  border-radius: var(--wm-radius-pill);
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.88);
+  color: currentColor;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.wm-notificationCardShell {
+  --wm-notification-accent: var(--wm-brand-600);
+  --wm-notification-surface: rgba(29, 78, 216, 0.06);
+  --wm-notification-badge: rgba(29, 78, 216, 0.1);
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--wm-radius-18);
+  margin-bottom: 8px;
+  background: var(--wm-red-600);
+}
+
+.wm-notificationDeleteButton {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 80px;
+  border: none;
+  background: linear-gradient(135deg, var(--wm-red-600), var(--wm-red-700));
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wm-notificationTrashIcon {
+  display: block;
+}
+
+.wm-notificationCardPanel {
+  position: relative;
+  z-index: 1;
+  transform: var(--wm-notification-card-transform, translateX(0));
+  transition: var(--wm-notification-card-transition, transform 0.25s var(--wm-motion-ease));
+  padding: 12px;
+  text-align: left;
+  border: 1px solid var(--wm-er-border);
+  border-left: 4px solid var(--wm-notification-accent);
+  border-radius: var(--wm-radius-18);
+  background:
+    radial-gradient(circle at 100% 0%, var(--wm-notification-surface), transparent 34%),
+    rgba(255, 255, 255, 0.94);
+  cursor: pointer;
+  user-select: none;
+  box-shadow: var(--wm-shadow-xs);
+  outline: none;
+}
+
+.wm-notificationCardPanel:focus-visible {
+  box-shadow:
+    0 0 0 3px rgba(22, 163, 74, 0.14),
+    var(--wm-shadow-sm);
+}
+
+.wm-notificationCardShell.isRead .wm-notificationCardPanel {
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: none;
+}
+
+.wm-notificationCardShell.isUnread .wm-notificationCardPanel {
+  box-shadow: var(--wm-shadow-sm);
+}
+
+.wm-notificationCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.wm-notificationCardTitleWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.wm-notificationCardDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--wm-notification-accent);
+  flex-shrink: 0;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--wm-notification-accent) 12%, transparent);
+}
+
+.wm-notificationCardShell.isRead .wm-notificationCardDot {
+  background: transparent;
+  box-shadow: none;
+}
+
+.wm-notificationCardTitle {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--wm-er-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wm-notificationCardShell.isRead .wm-notificationCardTitle {
+  font-weight: 700;
+  color: var(--wm-er-muted);
+}
+
+.wm-notificationCardBadge {
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: var(--wm-radius-pill);
+  background: var(--wm-notification-badge);
+  color: var(--wm-notification-accent);
+  flex-shrink: 0;
+  line-height: 1.4;
+  border: 1px solid color-mix(in srgb, var(--wm-notification-accent) 16%, transparent);
+}
+
+.wm-notificationCardBody {
+  font-size: 12px;
+  color: var(--wm-er-muted);
+  line-height: 1.45;
+  padding-left: 16px;
+  margin-top: 4px;
+}
+
+.wm-notificationCardShell.isRead .wm-notificationCardBody {
+  color: var(--wm-neutral-400);
+}
+
+.wm-notificationCardTime {
+  font-size: 11px;
+  color: var(--wm-neutral-400);
+  margin-top: 5px;
+  padding-left: 16px;
+}
+
+.wm-notificationEmptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  padding: 44px 24px 28px;
+}
+
+.wm-notificationEmptyIcon {
+  width: 66px;
+  height: 66px;
+  border-radius: var(--wm-radius-24);
+  background:
+    radial-gradient(circle at 90% 0%, rgba(8, 145, 178, 0.13), transparent 34%),
+    linear-gradient(135deg, rgba(236, 254, 255, 0.95), rgba(255, 255, 255, 0.92));
+  border: 1px solid rgba(8, 145, 178, 0.16);
+  color: var(--wm-notification-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: var(--wm-shadow-sm);
+}
+
+.wm-notificationEmptyBell {
+  display: block;
+}
+
+.wm-notificationEmptyTitle {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--wm-er-text);
+}
+
+.wm-notificationEmptyText {
+  font-size: 13px;
+  color: var(--wm-er-muted);
+  line-height: 1.5;
+  max-width: 280px;
+}
+
+/* ------------------------------------------------ */
+/* Legacy notification/list-card compatibility      */
+/* ------------------------------------------------ */
+.wm-noteTopActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.wm-noteItem {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--wm-er-border);
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: var(--wm-radius-18);
+  padding: 14px 14px 13px 14px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform var(--wm-motion-fast) var(--wm-motion-ease),
+    border-color var(--wm-motion-base) var(--wm-motion-ease),
+    box-shadow var(--wm-motion-base) var(--wm-motion-ease),
+    background var(--wm-motion-base) var(--wm-motion-ease);
+}
+
+.wm-noteItem::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 4px;
+  border-radius: 999px;
+  background: var(--wm-brand-600);
+}
+
+.wm-noteItem-shift::before {
+  background: var(--wm-shift-accent);
+}
+
+.wm-noteItem-career::before {
+  background: var(--wm-career-accent);
+}
+
+.wm-noteItem-workforce::before {
+  background: var(--wm-workforce-accent);
+}
+
+.wm-noteItem.isUnread {
+  box-shadow: var(--wm-shadow-sm);
+}
+
+.wm-noteItem.isRead {
+  opacity: 0.88;
+  box-shadow: none;
+}
+
+.wm-noteItem:hover {
+  border-color: rgba(17, 24, 39, 0.14);
+  box-shadow: var(--wm-shadow-md);
+  transform: translateY(-1px);
+}
+
+.wm-noteItem:active {
+  transform: scale(0.992);
+}
+
+.wm-noteItem.isRead:hover {
+  opacity: 0.92;
+}
+
+.wm-noteHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.wm-noteTitleRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.wm-noteTitle {
+  font-weight: 800;
+  color: var(--wm-er-text);
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wm-noteBody {
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--wm-er-muted);
+  text-align: left;
+}
+
+.wm-noteMeta {
+  margin-top: 9px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.wm-noteMetaLeft {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  color: var(--wm-er-muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.wm-noteTime,
+.wm-noteDomain {
+  color: var(--wm-er-muted);
+}
+
+.wm-noteMetaSep {
+  opacity: 0.7;
+}
+
+.wm-noteOpen {
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(29, 78, 216, 0.85);
+}
+
+.wm-noteItem:hover .wm-noteOpen {
+  color: var(--wm-brand-700);
+}
+
+.wm-noteItem-shift .wm-noteOpen {
+  color: var(--wm-shift-accent-strong);
+}
+
+.wm-noteItem-shift:hover .wm-noteOpen {
+  color: var(--wm-green-800);
+}
+
+/* ------------------------------------------------ */
+/* Shift Hub action row                             */
+/* ------------------------------------------------ */
+.wm-shiftHubActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.wm-shiftHubActions::-webkit-scrollbar {
+  display: none;
+}
+
+.wm-shiftHubActions > button {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: var(--wm-radius-pill);
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.wm-ee-vShift .wm-shiftPillBtn {
+  border: 1px solid rgba(22, 163, 74, 0.28);
+  background: rgba(22, 163, 74, 0.09);
+  color: var(--wm-neutral-800);
+}
+
+.wm-ee-vShift .wm-shiftPillBtn:hover {
+  border-color: rgba(22, 163, 74, 0.38);
+  background: rgba(22, 163, 74, 0.13);
+}
+
+.wm-ee-vShift .wm-shiftPillBtn:active {
+  transform: scale(0.975);
+}

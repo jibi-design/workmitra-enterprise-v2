@@ -1,4 +1,6 @@
-// src/features/employer/home/helpers/employerHomeDashboard.ts
+// App name: Job Mitra
+// File name: employerHomeDashboard.ts
+// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\home\helpers\employerHomeDashboard.ts
 
 import {
   CAREER_POSTS_KEY,
@@ -18,6 +20,7 @@ function safeParseArray(key: string): unknown[] {
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return [];
+
     const parsed = JSON.parse(raw) as unknown;
     return Array.isArray(parsed) ? parsed : [];
   } catch {
@@ -26,6 +29,7 @@ function safeParseArray(key: string): unknown[] {
 }
 
 type Rec = Record<string, unknown>;
+
 function isRec(x: unknown): x is Rec {
   return typeof x === "object" && x !== null;
 }
@@ -34,36 +38,54 @@ function isRec(x: unknown): x is Rec {
 /* Dashboard data type                              */
 /* ------------------------------------------------ */
 export type DashboardData = {
-  /* Top tiles */
+  /* Launch-safe hero KPIs */
+  activeHiring: number;
+  newApplications: number;
+  workVaultActivity: number;
+
+  /* Business clarity summary */
+  totalPosts: number;
+  applicationsActivity: number;
+  hiringActivity: number;
+  workVaultDocumentRecords: number;
+
+  /* Existing top tiles - kept for compatibility */
   pendingShifts: number;
   openJobs: number;
   broadcastMessages: number;
+
   /* Shift chips */
   shiftActive: number;
   shiftPending: number;
   shiftApplications: number;
   shiftConfirmed: number;
   shiftGroups: number;
+
   /* Career chips */
   careerActive: number;
   careerApplications: number;
   careerInterviews: number;
   careerOffered: number;
   careerHired: number;
-  /* Workforce */
+
+  /* Workforce - hidden/future launch module */
   upcomingWorkforce: number;
-  /* HR Management stats */
+
+  /* HR Management stats - hidden/future launch module */
   hrTotal: number;
   hrActive: number;
   hrPending: number;
   hrExited: number;
-  /* Manager Console stats */
+
+  /* Manager Console stats - hidden/future launch module */
   consolePresentToday: number;
   consoleAbsentToday: number;
   consoleActiveTasks: number;
   consoleAlerts: number;
-   /* Insights */
+
+  /* Insights */
   shiftTotalPosts: number;
+
   /* Flags */
   shiftPostsExist: boolean;
 };
@@ -76,23 +98,29 @@ function computeDashboard(): DashboardData {
   const workspaces = safeParseArray("wm_employee_shift_workspaces_v1");
   const employeeApps = safeParseArray("wm_employee_shift_applications_v1");
 
-  /* Career data */
   const careerPosts = safeParseArray(CAREER_POSTS_KEY);
   const careerApps = safeParseArray(CAREER_APPS_KEY);
 
+  const workVaultAccessLog = safeParseArray("wm_doc_access_log_v1");
+  const workVaultDocuments = safeParseArray("wm_work_vault_documents_v1");
+
   let careerActive = 0;
-  for (const p of careerPosts) {
-    if (!isRec(p)) continue;
-    if (p["status"] === "active") careerActive++;
+
+  for (const post of careerPosts) {
+    if (!isRec(post)) continue;
+    if (post["status"] === "active") careerActive++;
   }
 
   let careerApplications = 0;
   let careerInterviews = 0;
   let careerOffered = 0;
   let careerHired = 0;
-  for (const a of careerApps) {
-    if (!isRec(a)) continue;
-    const stage = a["stage"];
+
+  for (const application of careerApps) {
+    if (!isRec(application)) continue;
+
+    const stage = application["stage"];
+
     if (stage === "applied" || stage === "shortlisted") careerApplications++;
     if (stage === "interview") careerInterviews++;
     if (stage === "offered") careerOffered++;
@@ -116,94 +144,127 @@ function computeDashboard(): DashboardData {
     shiftActive++;
   }
 
-  const shiftPending = shiftPosts.filter((p) => {
-    if (!isRec(p)) return false;
-    const s = p["status"];
-    return s !== "completed" && s !== "cancelled";
+  const shiftPending = shiftPosts.filter((post) => {
+    if (!isRec(post)) return false;
+
+    const status = post["status"];
+    return status !== "completed" && status !== "cancelled";
   }).length;
 
-  const shiftApplications = employeeApps.filter((a) => {
-    if (!isRec(a)) return false;
-    return a["status"] === "applied";
+  const shiftApplications = employeeApps.filter((application) => {
+    if (!isRec(application)) return false;
+    return application["status"] === "applied";
   }).length;
 
-  /* Count active work groups */
   let shiftGroups = 0;
-  for (const ws of workspaces) {
-    if (!isRec(ws)) continue;
-    const status = ws["status"];
+
+  for (const workspace of workspaces) {
+    if (!isRec(workspace)) continue;
+
+    const status = workspace["status"];
     if (status === "active" || status === "upcoming") shiftGroups++;
   }
 
-  /* Broadcast messages — count unread from workspaces updates */
   let broadcastMessages = 0;
-  for (const ws of workspaces) {
-    if (!isRec(ws)) continue;
-    const unread = ws["unreadCount"];
+
+  for (const workspace of workspaces) {
+    if (!isRec(workspace)) continue;
+
+    const unread = workspace["unreadCount"];
     if (typeof unread === "number" && unread > 0) broadcastMessages += unread;
   }
 
-  /* HR Management stats */
   const hrAll = hrManagementStorage.getAll();
   const hrTotal = hrAll.length;
-  const hrActive = hrAll.filter((r) => r.status === "active").length;
-  const hrPending = hrAll.filter((r) => r.status === "offer_pending" || r.status === "offered" || r.status === "onboarding").length;
-  const hrExited = hrAll.filter((r) => r.status === "exit_processing").length;
+  const hrActive = hrAll.filter((record) => record.status === "active").length;
+  const hrPending = hrAll.filter(
+    (record) =>
+      record.status === "offer_pending" ||
+      record.status === "offered" ||
+      record.status === "onboarding",
+  ).length;
+  const hrExited = hrAll.filter((record) => record.status === "exit_processing").length;
 
-  /* Manager Console stats */
-  const activeStaff = hrAll.filter((r) => r.status === "active");
+  const activeStaff = hrAll.filter((record) => record.status === "active");
   const todayKey = attendanceLogStorage.toDateKey(new Date());
+
   let consolePresentToday = 0;
   let consoleAbsentToday = 0;
-  for (const emp of activeStaff) {
-    const entry = attendanceLogStorage.getDayEntry(emp.id, todayKey);
+
+  for (const employee of activeStaff) {
+    const entry = attendanceLogStorage.getDayEntry(employee.id, todayKey);
+
     if (!entry) continue;
     if (entry.status === "present") consolePresentToday++;
     if (entry.status === "absent") consoleAbsentToday++;
   }
 
   let consoleActiveTasks = 0;
-  for (const emp of activeStaff) {
-    consoleActiveTasks += taskAssignmentStorage.getActiveTasks(emp.id).length;
+
+  for (const employee of activeStaff) {
+    consoleActiveTasks += taskAssignmentStorage.getActiveTasks(employee.id).length;
   }
 
   const consoleAlerts = incidentReportStorage.getPendingCount();
 
+  const activeHiring = careerActive + shiftActive;
+  const newApplications = careerApplications + shiftApplications;
+  const workVaultDocumentRecords = workVaultDocuments.length;
+  const workVaultActivity = workVaultAccessLog.length + workVaultDocumentRecords;
+  const totalPosts = careerPosts.length + shiftPosts.length;
+  const applicationsActivity = careerApplications + shiftApplications;
+  const hiringActivity = careerInterviews + careerOffered + careerHired + shiftConfirmed;
+
   return {
+    activeHiring,
+    newApplications,
+    workVaultActivity,
+    totalPosts,
+    applicationsActivity,
+    hiringActivity,
+    workVaultDocumentRecords,
+
     pendingShifts: shiftPending,
     openJobs: careerActive,
     broadcastMessages,
+
     shiftActive,
     shiftPending,
     shiftApplications,
     shiftConfirmed,
     shiftGroups,
+
     careerActive,
     careerApplications,
     careerInterviews,
     careerOffered,
     careerHired,
+
     upcomingWorkforce: 0,
+
     hrTotal,
     hrActive,
     hrPending,
     hrExited,
+
     consolePresentToday,
     consoleAbsentToday,
     consoleActiveTasks,
     consoleAlerts,
-     shiftTotalPosts: shiftPosts.length,
+
+    shiftTotalPosts: shiftPosts.length,
     shiftPostsExist: shiftPosts.length > 0,
   };
 }
 
 /* ------------------------------------------------ */
-/* Snapshot + Subscribe (for useSyncExternalStore)   */
+/* Snapshot + Subscribe                             */
 /* ------------------------------------------------ */
 const EVENTS = [
   "wm:employer-shift-posts-changed",
   "wm:employee-shift-workspaces-changed",
   "wm:employee-shift-applications-changed",
+  "wm:doc-access-session-changed",
   CAREER_POSTS_CHANGED,
   CAREER_APPS_CHANGED,
   hrManagementStorage.CHANGED_EVENT,
@@ -221,8 +282,11 @@ export function getDashboardSnapshot(): DashboardData {
   const newKey = [
     localStorage.getItem("wm_employer_shift_posts_v1"),
     localStorage.getItem("wm_employee_shift_workspaces_v1"),
+    localStorage.getItem("wm_employee_shift_applications_v1"),
     localStorage.getItem(CAREER_POSTS_KEY),
     localStorage.getItem(CAREER_APPS_KEY),
+    localStorage.getItem("wm_doc_access_log_v1"),
+    localStorage.getItem("wm_work_vault_documents_v1"),
     localStorage.getItem("wm_hr_management_v1"),
     localStorage.getItem("wm_attendance_log_v1"),
     localStorage.getItem("wm_task_assignments_v1"),
@@ -230,17 +294,27 @@ export function getDashboardSnapshot(): DashboardData {
   ].join("|");
 
   if (newKey === cacheKey && cacheData) return cacheData;
+
   cacheKey = newKey;
   cacheData = computeDashboard();
+
   return cacheData;
 }
 
 export function subscribeDashboard(cb: () => void): () => void {
-  const h = () => cb();
-  for (const ev of EVENTS) window.addEventListener(ev, h);
-  document.addEventListener("visibilitychange", h);
+  const handler = () => cb();
+
+  for (const eventName of EVENTS) {
+    window.addEventListener(eventName, handler);
+  }
+
+  document.addEventListener("visibilitychange", handler);
+
   return () => {
-    for (const ev of EVENTS) window.removeEventListener(ev, h);
-    document.removeEventListener("visibilitychange", h);
+    for (const eventName of EVENTS) {
+      window.removeEventListener(eventName, handler);
+    }
+
+    document.removeEventListener("visibilitychange", handler);
   };
 }

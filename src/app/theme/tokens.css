@@ -1,104 +1,360 @@
-﻿/* src/app/theme/tokens.css */
+/* src/app/theme/tokens.css */
+/*
+  Job Mitra Enterprise Theme Tokens � Single Source of Truth
+
+  Golden Design System:
+  - Step 1: Structural integrity (container, DomainHero, z-index)
+  - Step 2: Material engine (dual-tier glass, locked blur scale)
+*/
+
 :root {
-  /* Brand */
-  --wm-brand-600: #1d4ed8; /* Primary */
-  --wm-brand-700: #1e40af; /* pressed/hover */
+  color-scheme: light;
 
-  /* Employee mood (friendly light) */
-  --wm-emp-bg: #f8fafc;
-  --wm-emp-card: #ffffff;
-  --wm-emp-text: #0f172a;
-  --wm-emp-muted: #475569;
-  --wm-emp-border: rgba(15, 23, 42, 0.10);
+  /* ------------------------------------------------ */
+  /* Core neutral palette                             */
+  /* ------------------------------------------------ */
+  --wm-white: #ffffff;
+  --wm-black: #020617;
 
-  /* Employer mood (neutral premium light) - FINAL */
-  --wm-er-bg: #f7f8fa;          /* app background */
-  --wm-er-card: #ffffff;        /* card surface */
-  --wm-er-border: #e6e9ef;      /* 1px border */
-  --wm-er-divider: #eef1f5;     /* divider */
-  --wm-er-text: #111827;        /* primary text */
-  --wm-er-muted: #6b7280;       /* muted text */
+  --wm-neutral-25: #fcfcfd;
+  --wm-neutral-50: #f8fafc;
+  --wm-neutral-75: #f5f7fb;
+  --wm-neutral-100: #f1f5f9;
+  --wm-neutral-150: #e9eef6;
+  --wm-neutral-200: #e2e8f0;
+  --wm-neutral-300: #cbd5e1;
+  --wm-neutral-400: #94a3b8;
+  --wm-neutral-500: #64748b;
+  --wm-neutral-600: #475569;
+  --wm-neutral-700: #334155;
+  --wm-neutral-800: #1e293b;
+  --wm-neutral-900: #0f172a;
+  --wm-neutral-950: #020617;
 
-  /* Employer domain accents (strip + icon tint only) - FINAL */
-  --wm-er-accent-shift: #16a34a;     /* Shift (Green) */
-  --wm-er-accent-career: #1d4ed8;    /* Career (Royal Blue) */
-  --wm-er-accent-workforce: #b45309; /* Workforce (Amber) */
-  --wm-er-accent-hr: #7c3aed;        /* HR Management (Purple) */
+  /* ------------------------------------------------ */
+  /* Domain palettes                                  */
+  /* ------------------------------------------------ */
+  --wm-green-25: #f6fef9;
+  --wm-green-50: #f0fdf4;
+  --wm-green-100: #dcfce7;
+  --wm-green-200: #bbf7d0;
+  --wm-green-300: #86efac;
+  --wm-green-400: #4ade80;
+  --wm-green-500: #22c55e;
+  --wm-green-600: #16a34a;
+  --wm-green-700: #15803d;
+  --wm-green-800: #166534;
+  --wm-green-900: #14532d;
+
+  --wm-blue-50: #eff6ff;
+  --wm-blue-100: #dbeafe;
+  --wm-blue-200: #bfdbfe;
+  --wm-blue-600: #1d4ed8;
+  --wm-blue-700: #1e40af;
+  --wm-blue-800: #1e3a8a;
+
+  --wm-amber-50: #fffbeb;
+  --wm-amber-100: #fef3c7;
+  --wm-amber-600: #d97706;
+  --wm-amber-700: #b45309;
+  --wm-amber-800: #92400e;
+
+  --wm-red-50: #fef2f2;
+  --wm-red-100: #fee2e2;
+  --wm-red-600: #dc2626;
+  --wm-red-700: #b91c1c;
+
+  --wm-purple-50: #f5f3ff;
+  --wm-purple-100: #ede9fe;
+  --wm-purple-600: #7c3aed;
+  --wm-purple-700: #6d28d9;
+
+  --wm-cyan-50: #ecfeff;
+  --wm-cyan-600: #0891b2;
+  --wm-cyan-700: #0e7490;
+  --wm-ocean-600: #0369a1;
+
+  /* ------------------------------------------------ */
+  /* Brand / domain identity                          */
+  /* ------------------------------------------------ */
+  --wm-brand-600: var(--wm-blue-600);
+  --wm-brand-700: var(--wm-blue-700);
+
+  --wm-shift-accent: var(--wm-green-600);
+  --wm-shift-accent-strong: var(--wm-green-700);
+  --wm-shift-accent-soft: rgba(22, 163, 74, 0.1);
+  --wm-shift-accent-border: rgba(22, 163, 74, 0.18);
+
+  --wm-career-accent: var(--wm-blue-600);
+  --wm-career-accent-strong: var(--wm-blue-700);
+  --wm-career-accent-soft: rgba(29, 78, 216, 0.1);
+  --wm-career-accent-border: rgba(29, 78, 216, 0.18);
+
+  --wm-workforce-accent: var(--wm-amber-700);
+  --wm-workforce-accent-strong: var(--wm-amber-800);
+  --wm-workforce-accent-soft: rgba(180, 83, 9, 0.1);
+  --wm-workforce-accent-border: rgba(180, 83, 9, 0.18);
+
+  --wm-vault-accent: var(--wm-purple-600);
+  --wm-insights-accent: var(--wm-neutral-500);
+  --wm-console-accent: var(--wm-ocean-600);
+  --wm-rating-accent: var(--wm-amber-600);
+  --wm-notification-accent: var(--wm-cyan-600);
+
+  /* Backward-compatible employer domain accents */
+  --wm-er-accent-shift: var(--wm-shift-accent);
+  --wm-er-accent-career: var(--wm-career-accent);
+  --wm-er-accent-workforce: var(--wm-workforce-accent);
+  --wm-er-accent-hr: var(--wm-purple-600);
+  --wm-er-accent-console: var(--wm-ocean-600);
+
+  --wm-planner-accent: #0891b2;
+  --wm-planner-accent-strong: #0e7490;
+  --wm-planner-accent-soft: rgba(8, 145, 178, 0.12);
+  --wm-planner-soft: rgba(8, 145, 178, 0.08);
+  --wm-planner-border: rgba(8, 145, 178, 0.22);
+  --wm-planner-border-strong: rgba(8, 145, 178, 0.36);
+  --wm-planner-wash: rgba(8, 145, 178, 0.07);
+  --wm-planner-glass-bg: rgba(236, 254, 255, 0.92);
+  --wm-planner-glass-border: rgba(8, 145, 178, 0.24);
+  --wm-planner-surface: linear-gradient(135deg, #ecfeff 0%, #f0fdfa 52%, #ffffff 100%);
+  --wm-planner-shadow: 0 16px 36px rgba(8, 145, 178, 0.14);
+  --wm-er-accent-planner: var(--wm-planner-accent);
+  --wm-er-planner-wash: var(--wm-planner-wash);
+  --wm-ee-planner-accent: var(--wm-planner-accent);
+  --wm-ee-planner-wash: var(--wm-planner-wash);
+
   --wm-er-accent-hr-light: rgba(124, 58, 237, 0.08);
   --wm-er-accent-hr-border: rgba(124, 58, 237, 0.2);
-  --wm-er-accent-console: #0369a1;   /* Manager Console (Ocean Blue) */
   --wm-er-accent-console-light: rgba(3, 105, 161, 0.08);
   --wm-er-accent-console-border: rgba(3, 105, 161, 0.2);
 
-  /* Subtle header tints (6-8% opacity feel) - FINAL MICRO-POLISH */
   --wm-er-shift-wash: rgba(22, 163, 74, 0.07);
   --wm-er-career-wash: rgba(29, 78, 216, 0.07);
   --wm-er-workforce-wash: rgba(180, 83, 9, 0.07);
 
-  /* ── Universal domain accents (Session 15) ──
-     Used by BOTH employee + employer sides.
-     Values mirror employer accents for consistency. */
-  --wm-shift-accent: #16a34a;        /* Shift Jobs (Green) */
-  --wm-career-accent: #1d4ed8;       /* Career Jobs (Royal Blue) */
-  --wm-vault-accent: #7c3aed;        /* Work Vault (Purple) */
-  --wm-insights-accent: #64748b;     /* Insights (Grey) */
-  --wm-console-accent: #0369a1;      /* Manager Console (Ocean Blue) */
-  --wm-rating-accent: #d97706;       /* Rating / Amber */
-  --wm-notification-accent: #0891b2; /* Bell icon (Cyan) */
+  /* ------------------------------------------------ */
+  /* Employee clean theme                             */
+  /* ------------------------------------------------ */
+  --wm-emp-bg: linear-gradient(180deg, #f8fafc 0%, #ffffff 44%, #f8fafc 100%);
+  --wm-emp-card: rgba(255, 255, 255, 0.98);
+  --wm-emp-card-soft: rgba(248, 250, 252, 0.94);
+  --wm-emp-text: var(--wm-neutral-900);
+  --wm-emp-muted: var(--wm-neutral-500);
+  --wm-emp-subtle: var(--wm-neutral-400);
+  --wm-emp-border: rgba(148, 163, 184, 0.18);
+  --wm-emp-divider: rgba(226, 232, 240, 0.9);
 
-  /* ── Universal text tokens (Session 15) ── */
-  --wm-text-muted: #64748b;          /* Subtitle, helper text */
-  --wm-zero-text: #374151;           /* Zero-value text — dark for alive feel */
-  --wm-zero-bg: #f1f5f9;             /* Zero-value chip background */
+  /* Employee Shift specific */
+  --wm-ee-accent: var(--wm-shift-accent);
+  --wm-ee-accent-strong: var(--wm-shift-accent-strong);
+  --wm-ee-accent-soft: var(--wm-shift-accent-soft);
+  --wm-ee-wash: var(--wm-er-shift-wash);
 
-  /* ── Success states (Session 15) ── */
-  --wm-success-wash: #f0fdf4;        /* Welcome card background */
-  --wm-success-border: #86efac;      /* Welcome card border */
-  --wm-success-dark: #15803d;        /* Welcome card heading */
+  /* ------------------------------------------------ */
+  /* Employer light glass command-center theme         */
+  /* ------------------------------------------------ */
+  --wm-er-bg:
+    radial-gradient(circle at 8% 0%, rgba(22, 163, 74, 0.12), transparent 32%),
+    radial-gradient(circle at 92% 4%, rgba(29, 78, 216, 0.08), transparent 30%),
+    linear-gradient(180deg, #f8fafc 0%, #eef4f8 48%, #f8fafc 100%);
+  --wm-er-card: rgba(255, 255, 255, 0.74);
+  --wm-er-card-strong: rgba(255, 255, 255, 0.9);
+  --wm-er-card-soft: rgba(255, 255, 255, 0.58);
+  --wm-er-border: rgba(148, 163, 184, 0.24);
+  --wm-er-border-strong: rgba(148, 163, 184, 0.34);
+  --wm-er-divider: rgba(226, 232, 240, 0.86);
+  --wm-er-text: var(--wm-neutral-950);
+  --wm-er-muted: var(--wm-neutral-500);
+  --wm-er-subtle: var(--wm-neutral-400);
 
-  /* Feedback colors (minimal) */
-  --wm-success: #16a34a;
-  --wm-warning: #d97706;
-  --wm-error: #dc2626;
+  /* ------------------------------------------------ */
+  /* Universal text / state tokens                    */
+  /* ------------------------------------------------ */
+  --wm-text-muted: var(--wm-neutral-500);
+  --wm-zero-text: var(--wm-neutral-700);
+  --wm-zero-bg: var(--wm-neutral-100);
 
-  /* Admin mood (authority control panel) */
+  --wm-success: var(--wm-green-600);
+  --wm-success-wash: var(--wm-green-50);
+  --wm-success-border: var(--wm-green-300);
+  --wm-success-dark: var(--wm-green-700);
+
+  --wm-warning: var(--wm-amber-600);
+  --wm-error: var(--wm-red-600);
+
+  /* ------------------------------------------------ */
+  /* Admin mood � preserved, not polished in Step 14A */
+  /* ------------------------------------------------ */
   --wm-ad-bg: #071024;
   --wm-ad-card: #ffffff;
   --wm-ad-text: #eaf0ff;
-  --wm-ad-muted: rgba(234, 240, 255, 0.70);
+  --wm-ad-muted: rgba(234, 240, 255, 0.7);
   --wm-ad-border: rgba(255, 255, 255, 0.14);
 
-  /* Radius & spacing */
-  --wm-radius-14: 14px;
-  --wm-radius-12: 12px;
+  /* ------------------------------------------------ */
+  /* Geometry � Step 4 radius ladder                  */
+  /* ------------------------------------------------ */
+  --wm-radius-8: 8px;
   --wm-radius-10: 10px;
+  --wm-radius-12: 12px;
+  --wm-radius-14: 14px;
+  --wm-radius-16: 16px;
+  --wm-radius-18: 18px;
+  --wm-radius-20: 20px;
+  --wm-radius-22: 22px;
+  --wm-radius-24: 24px;
+  --wm-radius-28: 28px;
+  --wm-radius-32: 32px;
+  --wm-radius-pill: 999px;
 
+  /* Semantic radius ladder (Golden Rulebook Step 4) */
+  --wm-radius-button: var(--wm-radius-12);
+  --wm-radius-chip: var(--wm-radius-16);
+  --wm-radius-employee-card: var(--wm-radius-20);
+  --wm-radius-employer-card: var(--wm-radius-24);
+  --wm-radius-sheet-top: var(--wm-radius-32);
+
+  /* Legacy raw values — aliased to ladder (do not use in new code) */
+  --wm-radius-14: var(--wm-radius-chip);
+  --wm-radius-18: var(--wm-radius-chip);
+  --wm-radius-22: var(--wm-radius-employee-card);
+  --wm-radius-28: var(--wm-radius-employer-card);
+
+  /* ------------------------------------------------ */
+  /* Spacing � Step 4 grid lock                         */
+  /* ------------------------------------------------ */
+  --wm-space-4: 4px;
+  --wm-space-6: 6px;
   --wm-space-8: 8px;
+  --wm-space-10: 10px;
   --wm-space-12: 12px;
+  --wm-space-14: 14px;
   --wm-space-16: 16px;
+  --wm-space-18: 18px;
   --wm-space-20: 20px;
+  --wm-space-24: 24px;
+  --wm-space-28: 28px;
+  --wm-space-32: 32px;
 
-  /* Shadow: subtle only */
+  --wm-stack-gap: var(--wm-space-16);
+  --wm-card-padding: var(--wm-space-16);
+
+  /* ------------------------------------------------ */
+  /* Typography � Step 4 strict scale                   */
+  /* ------------------------------------------------ */
+  --wm-font-xs: 11px;
+  --wm-font-sm: 12px;
+  --wm-font-md: 13px;
+  --wm-font-lg: 14px;
+  --wm-font-xl: 16px;
+  --wm-font-2xl: 18px;
+  --wm-font-3xl: 22px;
+
+  --wm-weight-regular: 400;
+  --wm-weight-medium: 600;
+  --wm-weight-bold: 700;
+  --wm-weight-heavy: 800;
+  --wm-weight-black: 900;
+
+  --wm-type-hero-size: var(--wm-font-3xl);
+  --wm-type-hero-weight: var(--wm-weight-heavy);
+  --wm-type-card-title-size: var(--wm-font-xl);
+  --wm-type-card-title-weight: var(--wm-weight-bold);
+  --wm-type-section-title-size: var(--wm-font-xl);
+  --wm-type-section-title-weight: var(--wm-weight-bold);
+  --wm-type-helper-size: var(--wm-font-sm);
+  --wm-type-helper-size-md: var(--wm-font-md);
+  --wm-type-helper-weight: var(--wm-weight-regular);
+  --wm-type-helper-color: var(--wm-neutral-500);
+
+  /* ------------------------------------------------ */
+  /* Elevation                                        */
+  /* ------------------------------------------------ */
+  --wm-shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
   --wm-shadow-soft: 0 6px 16px rgba(17, 24, 39, 0.06);
+  --wm-shadow-sm: 0 8px 18px rgba(15, 23, 42, 0.055);
+  --wm-shadow-md: 0 14px 34px rgba(15, 23, 42, 0.08);
+  --wm-shadow-lg: 0 22px 54px rgba(15, 23, 42, 0.11);
+  --wm-shadow-xl: 0 30px 80px rgba(15, 23, 42, 0.16);
 
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  --wm-shadow-shift: 0 12px 26px rgba(22, 163, 74, 0.2);
+  --wm-shadow-career: 0 12px 26px rgba(29, 78, 216, 0.18);
+  --wm-shadow-warning: 0 12px 26px rgba(217, 119, 6, 0.16);
+  --wm-shadow-danger: 0 12px 26px rgba(220, 38, 38, 0.16);
+
+  /* ------------------------------------------------ */
+  /* Material Engine � Step 2 (dual-tier glass)       */
+  /* ------------------------------------------------ */
+  --wm-glass-border: rgba(255, 255, 255, 0.4);
+  --wm-glass-saturate: saturate(140%);
+
+  /* Employee (Mitra Pro): flat frost, minimal lift */
+  --wm-emp-glass-bg: rgba(255, 255, 255, 0.8);
+  --wm-emp-glass-bg-strong: rgba(255, 255, 255, 0.8);
+  --wm-emp-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --wm-emp-surface-shadow: none;
+
+  /* Employer (Mitra Executive): depth and authority */
+  --wm-er-glass-bg: rgba(255, 255, 255, 0.9);
+  --wm-er-glass-bg-strong: rgba(255, 255, 255, 0.9);
+  --wm-er-elevation-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+  --wm-er-card-shadow: var(--wm-er-elevation-shadow);
+  --wm-er-surface-shadow: var(--wm-er-elevation-shadow);
+
+  /* Composed glass border for translucent surfaces */
+  --wm-material-glass-border: 1px solid var(--wm-glass-border);
+
+  /* ------------------------------------------------ */
+  /* Blur scale � locked to 3 tokens only             */
+  /* ------------------------------------------------ */
+  --wm-blur-sm: 8px;
+  --wm-blur-md: 16px;
+  --wm-blur-lg: 24px;
+
+  /* ------------------------------------------------ */
+  /* Motion / touch                                   */
+  /* ------------------------------------------------ */
+
+  --wm-motion-fast: 120ms;
+  --wm-motion-base: 180ms;
+  --wm-motion-slow: 260ms;
+  --wm-motion-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --wm-motion-spring: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --wm-touch-min: 44px;
+  --wm-touch-comfort: 48px;
+  --wm-safe-top: env(safe-area-inset-top, 0px);
+  --wm-safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
   line-height: 1.5;
   font-weight: 400;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-/* Global input readability — Session 7 */
+
+/* Global input readability */
 input,
 textarea,
 select {
   font-weight: 600;
-  color: #1e293b;
+  color: var(--wm-neutral-800);
   font-size: 15px;
 }
+
 input::placeholder,
 textarea::placeholder {
   font-weight: 400;
-  color: #9ca3af;
+  color: var(--wm-neutral-400);
   font-size: 14px;
 }

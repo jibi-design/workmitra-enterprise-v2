@@ -30,9 +30,20 @@ export function readAll(): EmploymentRecord[] {
   }
 }
 
+export type EmploymentStorageWriteResult = { ok: true } | { ok: false; reason: "storage_error" };
+
+export function writeAllChecked(records: EmploymentRecord[]): EmploymentStorageWriteResult {
+  try {
+    localStorage.setItem(EMPLOYMENT_KEY, JSON.stringify(records));
+    window.dispatchEvent(new Event(CHANGE_EVENT));
+    return { ok: true };
+  } catch {
+    return { ok: false, reason: "storage_error" };
+  }
+}
+
 export function writeAll(records: EmploymentRecord[]): void {
-  localStorage.setItem(EMPLOYMENT_KEY, JSON.stringify(records));
-  window.dispatchEvent(new Event(CHANGE_EVENT));
+  writeAllChecked(records);
 }
 
 /* ── Exit Log ── */
@@ -74,7 +85,8 @@ export function calcDuration(startMs: number, endMs: number): { days: number; di
   const days = totalDays % 30;
 
   let display: string;
-  if (months > 0 && days > 0) display = `${months} month${months > 1 ? "s" : ""}, ${days} day${days > 1 ? "s" : ""}`;
+  if (months > 0 && days > 0)
+    display = `${months} month${months > 1 ? "s" : ""}, ${days} day${days > 1 ? "s" : ""}`;
   else if (months > 0) display = `${months} month${months > 1 ? "s" : ""}`;
   else display = `${days} day${days > 1 ? "s" : ""}`;
 
@@ -82,7 +94,10 @@ export function calcDuration(startMs: number, endMs: number): { days: number; di
 }
 
 /* ── Last Working Day Calculator ── */
-export function calcLastWorkingDay(resignedAt: number, noticePeriodDays: NoticePeriodDays): number | null {
+export function calcLastWorkingDay(
+  resignedAt: number,
+  noticePeriodDays: NoticePeriodDays,
+): number | null {
   if (noticePeriodDays === 0) return null;
   return resignedAt + noticePeriodDays * 86_400_000;
 }

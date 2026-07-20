@@ -1,4 +1,4 @@
-﻿/* src/app/theme/buttons.css — Buttons, icon buttons, inputs, filter chips */
+/* src/app/theme/buttons.css ? Buttons, icon buttons, inputs, filter chips */
 
 /* ------------------------------------------------ */
 /* Icon button                                      */
@@ -6,25 +6,56 @@
 .wm-iconbtn {
   width: 40px;
   height: 40px;
-  border-radius: var(--wm-radius-14);
-  border: 1px solid var(--wm-emp-border);
-  background: #fff;
+  border-radius: var(--wm-radius-chip);
+  border: 1px solid var(--wm-glass-border);
+  background:
+    radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.95), transparent 60%),
+    var(--wm-emp-glass-bg-strong);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   position: relative;
+  box-shadow: var(--wm-emp-card-shadow);
+  transition:
+    transform var(--wm-motion-fast) var(--wm-motion-spring),
+    border-color var(--wm-motion-base) var(--wm-motion-spring),
+    box-shadow var(--wm-motion-base) var(--wm-motion-spring),
+    background var(--wm-motion-base) var(--wm-motion-spring);
 }
-.wm-iconbtn svg { display: block; }
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .wm-iconbtn {
+    backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
+    -webkit-backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
+  }
+}
+
+.wm-iconbtn svg {
+  display: block;
+}
+
+.wm-iconbtn:hover {
+  border-color: var(--wm-glass-border);
+  box-shadow: var(--wm-emp-card-shadow);
+}
+
+.wm-iconbtn:active {
+  transform: scale(0.96);
+}
 
 .wm-iconbtn:disabled,
 .wm-iconbtn[aria-disabled="true"] {
   opacity: 0.55;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
-.wm-iconbtnBadgeWrap { position: relative; }
+.wm-iconbtnBadgeWrap {
+  position: relative;
+}
+
 .wm-badgeDot {
   position: absolute;
   right: 9px;
@@ -32,48 +63,230 @@
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: var(--wm-brand-600);
+  background: var(--wm-shift-accent);
   border: 2px solid #fff;
+}
+
+/* ------------------------------------------------ */
+/* Shared button foundation                         */
+/* ------------------------------------------------ */
+.wm-primarybtn,
+.wm-outlineBtn,
+.wm-ghostBtn,
+.wm-dangerBtn {
+  min-height: var(--wm-touch-min);
+  border-radius: var(--wm-radius-button);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    transform var(--wm-motion-fast) var(--wm-motion-spring),
+    border-color var(--wm-motion-base) var(--wm-motion-spring),
+    box-shadow var(--wm-motion-base) var(--wm-motion-spring),
+    background var(--wm-motion-base) var(--wm-motion-spring),
+    color var(--wm-motion-base) var(--wm-motion-spring),
+    opacity var(--wm-motion-base) var(--wm-motion-spring);
 }
 
 /* ------------------------------------------------ */
 /* Primary button                                   */
 /* ------------------------------------------------ */
 .wm-primarybtn {
-  border: 0;
-  border-radius: var(--wm-radius-14);
-  padding: 10px 12px;
-  font-weight: 700;
-  cursor: pointer;
-  background: var(--wm-brand-600);
+  border: 1px solid rgba(29, 78, 216, 0.12);
+  padding: 0 15px;
+  background:
+    radial-gradient(circle at 25% 0%, rgba(255, 255, 255, 0.18), transparent 42%),
+    linear-gradient(135deg, var(--wm-brand-600), var(--wm-brand-700));
   color: #fff;
+  box-shadow:
+    0 16px 32px rgba(29, 78, 216, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
-.wm-primarybtn:hover { background: var(--wm-brand-700); }
-.wm-primarybtn:active { transform: translateY(1px); }
+
+.wm-primarybtn:hover {
+  background:
+    radial-gradient(circle at 25% 0%, rgba(255, 255, 255, 0.2), transparent 42%),
+    linear-gradient(135deg, var(--wm-brand-700), var(--wm-blue-800));
+}
+
+.wm-primarybtn:active {
+  transform: scale(0.96);
+}
+
 .wm-primarybtn[disabled],
 .wm-primarybtn[aria-disabled="true"] {
   opacity: 0.55;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 /* ------------------------------------------------ */
 /* Outline button                                   */
 /* ------------------------------------------------ */
 .wm-outlineBtn {
-  height: 40px;
-  border-radius: var(--wm-radius-14);
-  border: 1px solid var(--wm-er-border);
-  background: #fff;
+  min-height: 40px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background:
+    radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.96), transparent 60%),
+    rgba(255, 255, 255, 0.88);
   padding: 0 12px;
-  font-weight: 700;
-  cursor: pointer;
   color: var(--wm-er-text);
   white-space: nowrap;
+  box-shadow:
+    0 8px 18px rgba(15, 23, 42, 0.035),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
+
+.wm-outlineBtn:hover {
+  border-color: rgba(100, 116, 139, 0.32);
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.wm-outlineBtn:active {
+  transform: scale(0.96);
+}
+
 .wm-outlineBtn[disabled],
 .wm-outlineBtn[aria-disabled="true"] {
   opacity: 0.55;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ------------------------------------------------ */
+/* Ghost / danger buttons                           */
+/* ------------------------------------------------ */
+.wm-ghostBtn {
+  border: 1px solid transparent;
+  background: transparent;
+  padding: 0 12px;
+  color: var(--wm-neutral-600);
+  box-shadow: none;
+}
+
+.wm-ghostBtn:active {
+  transform: scale(0.96);
+}
+
+.wm-dangerBtn {
+  border: 1px solid rgba(220, 38, 38, 0.16);
+  background:
+    radial-gradient(circle at 25% 0%, rgba(255, 255, 255, 0.16), transparent 42%),
+    linear-gradient(135deg, var(--wm-red-600), var(--wm-red-700));
+  color: #fff;
+  padding: 0 14px;
+  box-shadow: var(--wm-shadow-danger);
+}
+
+.wm-dangerBtn:active {
+  transform: scale(0.96);
+}
+
+/* ------------------------------------------------ */
+/* Domain button overrides                          */
+/* ------------------------------------------------ */
+.wm-ee-vShift .wm-primarybtn,
+.wm-er-vShift .wm-primarybtn {
+  border-color: rgba(22, 163, 74, 0.18);
+  background:
+    radial-gradient(circle at 25% 0%, rgba(255, 255, 255, 0.2), transparent 42%),
+    linear-gradient(135deg, #16a34a, #12823b);
+  box-shadow:
+    0 18px 34px rgba(22, 163, 74, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.wm-ee-vShift .wm-primarybtn:hover,
+.wm-er-vShift .wm-primarybtn:hover {
+  background:
+    radial-gradient(circle at 25% 0%, rgba(255, 255, 255, 0.22), transparent 42%),
+    linear-gradient(135deg, #15803d, #166534);
+}
+
+.wm-ee-vCareer .wm-primarybtn,
+.wm-er-vCareer .wm-primarybtn,
+.wm-career-btn {
+  border-color: rgba(29, 78, 216, 0.16);
+  background:
+    radial-gradient(circle at 25% 0%, rgba(255, 255, 255, 0.18), transparent 42%),
+    linear-gradient(135deg, var(--wm-career-accent), var(--wm-career-accent-strong));
+  color: #fff;
+  box-shadow: var(--wm-shadow-career);
+}
+
+.wm-ee-vCareer .wm-primarybtn:hover,
+.wm-er-vCareer .wm-primarybtn:hover,
+.wm-career-btn:hover {
+  background:
+    radial-gradient(circle at 25% 0%, rgba(255, 255, 255, 0.2), transparent 42%),
+    linear-gradient(135deg, var(--wm-career-accent-strong), var(--wm-blue-800));
+}
+
+.wm-er-vWorkforce .wm-primarybtn {
+  border-color: rgba(180, 83, 9, 0.16);
+  background:
+    radial-gradient(circle at 25% 0%, rgba(255, 255, 255, 0.16), transparent 42%),
+    linear-gradient(135deg, var(--wm-workforce-accent), var(--wm-workforce-accent-strong));
+  box-shadow: var(--wm-shadow-warning);
+}
+
+.wm-er-vWorkforce .wm-primarybtn:hover {
+  background:
+    radial-gradient(circle at 25% 0%, rgba(255, 255, 255, 0.18), transparent 42%),
+    linear-gradient(135deg, var(--wm-workforce-accent-strong), var(--wm-amber-800));
+}
+
+.wm-ee-vShift .wm-outlineBtn,
+.wm-er-vShift .wm-outlineBtn {
+  border-color: rgba(22, 163, 74, 0.24);
+  background:
+    radial-gradient(circle at 24% 0%, rgba(255, 255, 255, 0.95), transparent 58%),
+    rgba(255, 255, 255, 0.88);
+  color: var(--wm-neutral-800);
+}
+
+.wm-er-vShift .wm-outlineBtn {
+  background:
+    radial-gradient(circle at 24% 0%, rgba(255, 255, 255, 0.95), transparent 58%),
+    rgba(255, 255, 255, 0.66);
+}
+
+.wm-ee-vPlanner .wm-primarybtn {
+  border-color: rgba(8, 145, 178, 0.2);
+  background:
+    radial-gradient(circle at 25% 0%, rgba(255, 255, 255, 0.2), transparent 42%),
+    linear-gradient(135deg, var(--wm-planner-accent), var(--wm-planner-accent-strong));
+  box-shadow:
+    0 18px 34px rgba(8, 145, 178, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.wm-ee-vPlanner .wm-primarybtn:hover {
+  background:
+    radial-gradient(circle at 25% 0%, rgba(255, 255, 255, 0.22), transparent 42%),
+    linear-gradient(135deg, var(--wm-planner-accent-strong), #0c6178);
+}
+
+.wm-ee-vPlanner .wm-outlineBtn {
+  border-color: rgba(8, 145, 178, 0.28);
+  background:
+    radial-gradient(circle at 24% 0%, rgba(255, 255, 255, 0.95), transparent 58%),
+    rgba(255, 255, 255, 0.88);
+  color: var(--wm-planner-accent-strong);
+}
+
+.wm-er-vCareer .wm-outlineBtn {
+  border-color: rgba(29, 78, 216, 0.22);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.wm-er-vWorkforce .wm-outlineBtn {
+  border-color: rgba(180, 83, 9, 0.22);
+  background: rgba(255, 255, 255, 0.72);
 }
 
 /* ------------------------------------------------ */
@@ -81,39 +294,95 @@
 /* ------------------------------------------------ */
 .wm-input {
   width: 100%;
-  height: 42px;
+  min-height: 42px;
   border-radius: var(--wm-radius-14);
-  border: 1px solid var(--wm-er-border);
-  background: #fff;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(255, 255, 255, 0.94);
   padding: 0 12px;
-  color: var(--wm-er-text);
+  color: var(--wm-neutral-800);
   outline: none;
+  transition:
+    border-color var(--wm-motion-base) var(--wm-motion-ease),
+    box-shadow var(--wm-motion-base) var(--wm-motion-ease),
+    background var(--wm-motion-base) var(--wm-motion-ease);
 }
+
 .wm-input:focus,
 .wm-input:focus-visible {
-  border-color: rgba(29, 78, 216, 0.22);
-  box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.10);
+  border-color: rgba(29, 78, 216, 0.28);
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
+  background: #fff;
+}
+
+.wm-ee-vShift .wm-input:focus,
+.wm-ee-vShift .wm-input:focus-visible,
+.wm-er-vShift .wm-input:focus,
+.wm-er-vShift .wm-input:focus-visible {
+  border-color: rgba(22, 163, 74, 0.36);
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+}
+
+.wm-ee-vPlanner .wm-input:focus,
+.wm-ee-vPlanner .wm-input:focus-visible {
+  border-color: rgba(8, 145, 178, 0.36);
+  box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.12);
 }
 
 /* ------------------------------------------------ */
 /* Filter chips                                     */
 /* ------------------------------------------------ */
-.wm-chipRow { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.wm-chipRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: var(--wm-stack-gap);
+}
+
 .wm-chipBtn {
-  height: 32px;
+  min-height: 32px;
   border-radius: 999px;
   padding: 0 12px;
-  border: 1px solid rgba(17, 24, 39, 0.10);
-  background: #fff;
+  border: 1px solid rgba(17, 24, 39, 0.1);
+  background: rgba(255, 255, 255, 0.92);
   color: rgba(17, 24, 39, 0.78);
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
+  transition:
+    transform var(--wm-motion-fast) var(--wm-motion-ease),
+    border-color var(--wm-motion-base) var(--wm-motion-ease),
+    background var(--wm-motion-base) var(--wm-motion-ease),
+    color var(--wm-motion-base) var(--wm-motion-ease);
 }
-.wm-chipBtn:hover { border-color: rgba(17, 24, 39, 0.16); color: rgba(17, 24, 39, 0.90); }
+
+.wm-chipBtn:hover {
+  border-color: rgba(17, 24, 39, 0.16);
+  color: rgba(17, 24, 39, 0.9);
+}
+
+.wm-chipBtn:active {
+  transform: scale(0.975);
+}
+
 .wm-chipBtn.isActive {
-  border-color: rgba(17, 24, 39, 0.14);
-  background: rgba(17, 24, 39, 0.07);
-  color: var(--wm-er-text);
-  font-weight: 700;
+  border-color: rgba(22, 163, 74, 0.22);
+  background: rgba(22, 163, 74, 0.1);
+  color: var(--wm-green-700);
+  font-weight: 800;
+}
+
+.wm-ee-vPlanner .wm-chipBtn.isActive {
+  border-color: rgba(8, 145, 178, 0.28);
+  background: rgba(8, 145, 178, 0.12);
+  color: var(--wm-planner-accent-strong);
+  font-weight: 800;
+}
+
+@media (max-width: 640px) {
+  .wm-primarybtn,
+  .wm-outlineBtn,
+  .wm-ghostBtn,
+  .wm-dangerBtn {
+    min-height: var(--wm-touch-comfort);
+  }
 }

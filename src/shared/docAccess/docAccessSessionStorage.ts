@@ -1,18 +1,21 @@
-// src/shared/docAccess/docAccessSessionStorage.ts
+// App: Job Mitra / WorkMitra_Enterprise_v2
+// File: docAccessSessionStorage.ts
+// Path: C:\projects\WorkMitra_Enterprise_v2\src\shared\docAccess\docAccessSessionStorage.ts
+
 //
 // Document Access Session Storage — Shift Jobs + Career Jobs.
 // 30 minute session after OTP verified.
 // Access log for both employer and employee sides.
 // SEPARATE from HR session system.
 
-import { SESSION_DURATION_MS } from "../../features/employee/workVault/constants/vaultConstants";
+import { DOC_ACCESS_SESSION_DURATION_MS } from "./docAccessConstants";
 
 /* ------------------------------------------------ */
 /* Storage Keys                                     */
 /* ------------------------------------------------ */
-const SESSION_KEY    = "wm_doc_access_session_v1";
+const SESSION_KEY = "wm_doc_access_session_v1";
 const ACCESS_LOG_KEY = "wm_doc_access_log_v1";
-const CHANGED_EVENT  = "wm:doc-access-session-changed";
+const CHANGED_EVENT = "wm:doc-access-session-changed";
 
 /* ------------------------------------------------ */
 /* Types                                            */
@@ -50,15 +53,23 @@ function safeReadSession(): DocAccessSession | null {
     const raw = localStorage.getItem(SESSION_KEY);
     if (!raw) return null;
     return JSON.parse(raw) as DocAccessSession;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
-function safeWriteSession(s: DocAccessSession | null) {
+function safeWriteSession(session: DocAccessSession | null) {
   try {
-    if (s === null) localStorage.removeItem(SESSION_KEY);
-    else localStorage.setItem(SESSION_KEY, JSON.stringify(s));
+    if (session === null) {
+      localStorage.removeItem(SESSION_KEY);
+    } else {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    }
+
     window.dispatchEvent(new Event(CHANGED_EVENT));
-  } catch { /* safe */ }
+  } catch {
+    // Safe localStorage guard for Phase-0 demo mode.
+  }
 }
 
 function readLog(): DocAccessLogEntry[] {
@@ -66,13 +77,17 @@ function readLog(): DocAccessLogEntry[] {
     const raw = localStorage.getItem(ACCESS_LOG_KEY);
     if (!raw) return [];
     return JSON.parse(raw) as DocAccessLogEntry[];
-  } catch { return []; }
+  } catch {
+    return [];
+  }
 }
 
 function writeLog(entries: DocAccessLogEntry[]) {
   try {
     localStorage.setItem(ACCESS_LOG_KEY, JSON.stringify(entries.slice(0, 100)));
-  } catch { /* safe */ }
+  } catch {
+    // Safe localStorage guard for Phase-0 demo mode.
+  }
 }
 
 function pushLog(entry: Omit<DocAccessLogEntry, "id">) {
@@ -80,29 +95,32 @@ function pushLog(entry: Omit<DocAccessLogEntry, "id">) {
   writeLog([{ id: uid(), ...entry }, ...existing]);
 }
 
-function pushEmployeeNotification(title: string, body: string) {
+function pushEmployeeNotification(title: string, body: string, domain: "shift" | "career") {
   try {
-    const KEY = "wm_employee_notifications_v1";
-    const existing = JSON.parse(localStorage.getItem(KEY) ?? "[]") as object[];
+    const key = "wm_employee_notifications_v1";
+    const existing = JSON.parse(localStorage.getItem(key) ?? "[]") as object[];
+
     const note = {
       id: `n_das_${Date.now().toString(16)}`,
-      domain: "shift",
+      domain,
       title,
       body,
       createdAt: Date.now(),
       isRead: false,
       route: "/employee/vault",
     };
-    localStorage.setItem(KEY, JSON.stringify([note, ...existing].slice(0, 100)));
+
+    localStorage.setItem(key, JSON.stringify([note, ...existing].slice(0, 100)));
     window.dispatchEvent(new Event("wm:employee-notifications-changed"));
-  } catch { /* safe */ }
+  } catch {
+    // Safe localStorage guard for Phase-0 demo mode.
+  }
 }
 
 /* ------------------------------------------------ */
 /* Public API                                       */
 /* ------------------------------------------------ */
 export const docAccessSessionStorage = {
-  /** Create session after OTP verified */
   createSession(params: {
     employerId: string;
     employerName: string;
@@ -110,107 +128,118 @@ export const docAccessSessionStorage = {
     domain: "shift" | "career";
   }): DocAccessSession {
     const now = Date.now();
+
     const session: DocAccessSession = {
       id: uid(),
       ...params,
       startedAt: now,
-      expiresAt: now + SESSION_DURATION_MS,
+      expiresAt: now + DOC_ACCESS_SESSION_DURATION_MS,
       revoked: false,
     };
+
     safeWriteSession(session);
 
-    /* Notify employee */
     pushEmployeeNotification(
       "Documents being viewed",
       `${params.employerName} is viewing your documents. Access expires in 30 minutes. Go to Work Vault to revoke.`,
+      params.domain,
     );
 
-    /* Log access */
     pushLog({
-      employerId:   params.employerId,
+      employerId: params.employerId,
       employerName: params.employerName,
-      workerWmId:   params.workerWmId,
-      domain:       params.domain,
-      accessedAt:   now,
-      status:       "viewed",
+      workerWmId: params.workerWmId,
+      domain: params.domain,
+      accessedAt: now,
+      status: "viewed",
     });
 
     return session;
   },
 
-  /** Get current active session */
   getActiveSession(): DocAccessSession | null {
-    const s = safeReadSession();
-    if (!s) return null;
-    if (s.revoked) return null;
-    if (Date.now() > s.expiresAt) {
-      /* Auto-expire */
+    const session = safeReadSession();
+
+    if (!session) return null;
+    if (session.revoked) return null;
+
+    if (Date.now() > session.expiresAt) {
       this.expireSession();
       return null;
     }
-    return s;
+
+    return session;
   },
 
-  /** Check if session is valid */
   isSessionValid(): boolean {
     return this.getActiveSession() !== null;
   },
 
-  /** Remaining ms in session */
   getRemainingMs(): number {
-    const s = safeReadSession();
-    if (!s || s.revoked) return 0;
-    const r = s.expiresAt - Date.now();
-    return r > 0 ? r : 0;
+    const session = safeReadSession();
+
+    if (!session || session.revoked) return 0;
+
+    const remainingMs = session.expiresAt - Date.now();
+
+    return remainingMs > 0 ? remainingMs : 0;
   },
 
-  /** Employee revokes access */
   revokeSession(): void {
-    const s = safeReadSession();
-    if (!s) return;
-    safeWriteSession({ ...s, revoked: true });
+    const session = safeReadSession();
 
-    /* Update log */
+    if (!session) return;
+
+    safeWriteSession({ ...session, revoked: true });
+
     const log = readLog();
-    writeLog(log.map((e) =>
-      e.employerId === s.employerId && e.status === "viewed"
-        ? { ...e, status: "revoked" as const }
-        : e,
-    ));
+
+    writeLog(
+      log.map((entry) =>
+        entry.employerId === session.employerId && entry.status === "viewed"
+          ? { ...entry, status: "revoked" as const }
+          : entry,
+      ),
+    );
 
     pushEmployeeNotification(
       "Access revoked",
-      `You revoked ${s.employerName}'s access to your documents.`,
+      `You revoked ${session.employerName}'s access to your documents.`,
+      session.domain,
     );
   },
 
-  /** Auto-expire session */
   expireSession(): void {
-    const s = safeReadSession();
-    if (!s) return;
+    const session = safeReadSession();
+
+    if (!session) return;
+
     safeWriteSession(null);
 
     const log = readLog();
-    writeLog(log.map((e) =>
-      e.employerId === s.employerId && e.status === "viewed"
-        ? { ...e, status: "expired" as const }
-        : e,
-    ));
+
+    writeLog(
+      log.map((entry) =>
+        entry.employerId === session.employerId && entry.status === "viewed"
+          ? { ...entry, status: "expired" as const }
+          : entry,
+      ),
+    );
   },
 
-  /** Get access log (employee sees this) */
   getAccessLog(): DocAccessLogEntry[] {
     return readLog();
   },
 
-  /** Subscribe to session changes */
   subscribe(cb: () => void): () => void {
-    const h = () => cb();
-    window.addEventListener(CHANGED_EVENT, h);
-    window.addEventListener("storage", h);
+    const handler = () => cb();
+
+    window.addEventListener(CHANGED_EVENT, handler);
+    window.addEventListener("storage", handler);
+
     return () => {
-      window.removeEventListener(CHANGED_EVENT, h);
-      window.removeEventListener("storage", h);
+      window.removeEventListener(CHANGED_EVENT, handler);
+      window.removeEventListener("storage", handler);
     };
   },
 

@@ -1,5 +1,7 @@
-// src/features/employer/careerJobs/helpers/careerStorageUtils.ts
-//
+// App name: Job Mitra
+// File name: careerStorageUtils.ts
+// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\careerJobs\helpers\careerStorageUtils.ts
+
 // Shared localStorage utilities for Career Jobs domain.
 // All service files import from here — single source of truth for keys & events.
 
@@ -12,7 +14,8 @@ export const CAREER_APPS_KEY = "wm_employee_career_applications_v1";
 export const CAREER_WORKSPACES_KEY = "wm_employee_career_workspaces_v1";
 export const CAREER_ACTIVITY_KEY = "wm_employer_career_activity_log_v1";
 export const EMPLOYEE_SEARCH_CAREER_KEY = "wm_employee_career_posts_search_v1";
-export const EMPLOYEE_NOTES_KEY = "wm_employee_notifications_v1";
+export const EMPLOYEE_CAREER_SAVED_JOBS_KEY = "wm_employee_career_saved_jobs_v1";
+export const EMPLOYEE_CAREER_RECENT_JOBS_KEY = "wm_employee_career_recent_jobs_v1";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Custom Events (same-tab real-time sync)
@@ -23,6 +26,8 @@ export const CAREER_APPS_CHANGED = "wm:employee-career-applications-changed";
 export const CAREER_WORKSPACES_CHANGED = "wm:employee-career-workspaces-changed";
 export const CAREER_ACTIVITY_CHANGED = "wm:employer-career-activity-changed";
 export const EMPLOYEE_NOTES_CHANGED = "wm:employee-notifications-changed";
+export const EMPLOYEE_CAREER_SAVED_JOBS_CHANGED = "wm:employee-career-saved-jobs-changed";
+export const EMPLOYEE_CAREER_RECENT_JOBS_CHANGED = "wm:employee-career-recent-jobs-changed";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Type Guard
@@ -68,11 +73,14 @@ export function safeParse<T>(raw: string | null): T[] {
   }
 }
 
-export function safeWrite(key: string, value: unknown): void {
+export type CareerStorageWriteResult = { ok: true } | { ok: false; reason: "storage_error" };
+
+export function safeWrite(key: string, value: unknown): CareerStorageWriteResult {
   try {
     localStorage.setItem(key, JSON.stringify(value));
+    return { ok: true };
   } catch {
-    // demo-safe: ignore quota / private mode errors
+    return { ok: false, reason: "storage_error" };
   }
 }
 
@@ -114,6 +122,14 @@ export function notifyCareerActivityChanged(): void {
 
 export function notifyEmployeeNotesChanged(): void {
   safeDispatch(EMPLOYEE_NOTES_CHANGED);
+}
+
+export function notifyEmployeeCareerSavedJobsChanged(): void {
+  safeDispatch(EMPLOYEE_CAREER_SAVED_JOBS_CHANGED);
+}
+
+export function notifyEmployeeCareerRecentJobsChanged(): void {
+  safeDispatch(EMPLOYEE_CAREER_RECENT_JOBS_CHANGED);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

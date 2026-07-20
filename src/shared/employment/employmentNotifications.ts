@@ -1,121 +1,137 @@
-// src/shared/employment/employmentNotifications.ts
-// Session 17: Direct notification push for employment lifecycle events.
-// Pushes cross-role: employer acts → employee notified, and vice versa.
-// Domain: "career" — employment lifecycle is part of Career Jobs mini-HR.
-// Pattern: Same as careerNotifications.ts — direct localStorage write.
+// App name: Job Mitra
+// File name: employmentNotifications.ts
+// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\shared\employment\employmentNotifications.ts
+
+// Employment lifecycle notifications — routed through the global notification bridge
+// so bells use the employment domain and pulse can activate on key lifecycle events.
 
 import { ROUTE_PATHS } from "../../app/router/routePaths";
+import { handleIncomingNotification } from "../../features/pulse/pulseEventBridge";
+import { employeeNotificationsStorage } from "../../features/employee/notifications/storage/employeeNotifications.storage";
+import { employerNotificationsStorage } from "../../features/employer/notifications/storage/employerNotifications.storage";
 
-/* ── Storage Keys & Events (match existing notification storages) ── */
-const EMPLOYEE_NOTIF_KEY = "wm_employee_notifications_v1";
-const EMPLOYER_NOTIF_KEY = "wm_employer_notifications_v1";
-const EMPLOYEE_NOTIF_EVENT = "wm:employee-notifications-changed";
-const EMPLOYER_NOTIF_EVENT = "wm:employer-notifications-changed";
-const MAX_ITEMS = 200;
-
-/* ── Notification Shape ── */
-type NotifEntry = {
-  readonly id: string;
-  readonly domain: string;
-  readonly title: string;
-  readonly body: string;
-  readonly createdAt: number;
-  readonly isRead: boolean;
-  readonly route: string;
-};
-
-/* ── Internal Helpers ── */
-function makeId(): string {
-  return `en_${Math.random().toString(16).slice(2)}_${Date.now().toString(16)}`;
+function buildEmploymentRatePromptSignature(careerPostId: string): string {
+  return `[EMPLOYMENT_PLEASE_RATE:${careerPostId}]`;
 }
 
-function pushTo(key: string, event: string, title: string, body: string, route: string): void {
-  try {
-    const raw = localStorage.getItem(key);
-    const existing: NotifEntry[] = raw ? (JSON.parse(raw) as NotifEntry[]) : [];
-    const entry: NotifEntry = {
-      id: makeId(),
-      domain: "career",
-      title,
-      body,
-      createdAt: Date.now(),
-      isRead: false,
-      route,
-    };
-    localStorage.setItem(key, JSON.stringify([entry, ...existing].slice(0, MAX_ITEMS)));
-    window.dispatchEvent(new Event(event));
-  } catch { /* storage-safe — non-critical */ }
+function employmentRatePromptAlreadySent(
+  role: "employee" | "employer",
+  signature: string,
+): boolean {
+  const notifications =
+    role === "employee"
+      ? employeeNotificationsStorage.getAll()
+      : employerNotificationsStorage.getAll();
+
+  return notifications.some((note) => (note.body ?? "").includes(signature));
 }
 
-function toEmployee(title: string, body: string): void {
-  pushTo(EMPLOYEE_NOTIF_KEY, EMPLOYEE_NOTIF_EVENT, title, body, ROUTE_PATHS.employeeCareerHome);
+function notifyEmployee(
+  type: Parameters<typeof handleIncomingNotification>[0]["type"],
+  title: string,
+  body: string,
+): void {
+  handleIncomingNotification({
+    type,
+    domain: "employment",
+    affectedUserRole: "employee",
+    title,
+    body,
+    route: ROUTE_PATHS.employeeCareerHome,
+  });
 }
 
-function toEmployer(title: string, body: string): void {
-  pushTo(EMPLOYER_NOTIF_KEY, EMPLOYER_NOTIF_EVENT, title, body, ROUTE_PATHS.employerCareerHome);
+function notifyEmployer(
+  type: Parameters<typeof handleIncomingNotification>[0]["type"],
+  title: string,
+  body: string,
+): void {
+  handleIncomingNotification({
+    type,
+    domain: "employment",
+    affectedUserRole: "employer",
+    title,
+    body,
+    route: ROUTE_PATHS.employerCareerHome,
+  });
 }
 
-/* ── Notification Triggers ── */
-
-/** Employer marked employee as joined → notify employee. */
 export function notifyEmployeeJoined(jobTitle: string, companyName: string): void {
-  toEmployee(
+  notifyEmployee(
+    "EMPLOYMENT_JOINED",
     "You have been marked as joined",
-    `${jobTitle}${companyName ? " at " + companyName : ""} — your employment is now active.`,
+    `${jobTitle}${companyName ? " at " + companyName : ""} - your employment is now active.`,
   );
 }
 
-/** Employee resigned → notify employer. */
 export function notifyEmployerResignation(employeeName: string, jobTitle: string): void {
-  toEmployer(
+  notifyEmployer(
+    "EMPLOYMENT_RESIGNATION_SUBMITTED",
     "Employee resignation received",
     `${employeeName} has submitted resignation from ${jobTitle}.`,
   );
 }
 
-/** Employee withdrew resignation → notify employer. */
 export function notifyEmployerWithdrawal(employeeName: string, jobTitle: string): void {
-  toEmployer(
+  notifyEmployer(
+    "EMPLOYMENT_RESIGNATION_WITHDRAWN",
     "Resignation withdrawn",
     `${employeeName} has withdrawn resignation from ${jobTitle}.`,
   );
 }
 
-/** Employer confirmed resignation → notify employee. */
 export function notifyEmployeeResignConfirmed(jobTitle: string, companyName: string): void {
-  toEmployee(
+  notifyEmployee(
+    "EMPLOYMENT_RESIGNATION_CONFIRMED",
     "Resignation confirmed",
     `Your resignation from ${jobTitle}${companyName ? " at " + companyName : ""} has been confirmed.`,
   );
 }
 
-/** Employer terminated employee → notify employee. */
 export function notifyEmployeeTerminated(jobTitle: string, companyName: string): void {
-  toEmployee(
+  notifyEmployee(
+    "EMPLOYMENT_TERMINATED",
     "Employment terminated",
     `Your employment as ${jobTitle}${companyName ? " at " + companyName : ""} has been terminated.`,
   );
 }
 
-/** Employment completed → both sides get "Please rate" reminder. */
 export function notifyBothPleaseRate(
   employeeName: string,
   companyName: string,
   jobTitle: string,
+  careerPostId: string,
 ): void {
-  toEmployee(
-    "Please rate your experience",
-    `Rate your experience as ${jobTitle}${companyName ? " at " + companyName : ""}.`,
-  );
-  toEmployer(
-    "Please rate your employee",
-    `Rate ${employeeName}'s work as ${jobTitle}.`,
-  );
+  const signature = buildEmploymentRatePromptSignature(careerPostId);
+
+  if (!employmentRatePromptAlreadySent("employee", signature)) {
+    handleIncomingNotification({
+      type: "EMPLOYMENT_PLEASE_RATE",
+      domain: "employment",
+      affectedUserRole: "employee",
+      targetId: careerPostId,
+      title: "Please rate your experience",
+      body: `Rate your experience as ${jobTitle}${companyName ? " at " + companyName : ""}. ${signature}`,
+      route: ROUTE_PATHS.employeeCareerHome,
+    });
+  }
+
+  if (!employmentRatePromptAlreadySent("employer", signature)) {
+    handleIncomingNotification({
+      type: "EMPLOYMENT_PLEASE_RATE",
+      domain: "employment",
+      affectedUserRole: "employer",
+      targetId: careerPostId,
+      title: "Please rate your employee",
+      body: `Rate ${employeeName}'s work as ${jobTitle}. ${signature}`,
+      route: ROUTE_PATHS.employerCareerHome,
+    });
+  }
 }
 
-/** Employee force-completed employment → notify employer. */
 export function notifyEmployerForceCompleted(employeeName: string, jobTitle: string): void {
-  toEmployer(
+  notifyEmployer(
+    "EMPLOYMENT_FORCE_COMPLETED",
     "Employment auto-completed",
     `${employeeName}'s employment as ${jobTitle} has been completed automatically. Resignation was not confirmed within the allowed period.`,
   );

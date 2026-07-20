@@ -1,0 +1,576 @@
+/* Job Mitra | shift-planner.css | Teal Demand Planner subdomain */
+
+.wm-planner-page {
+  --wm-planner-accent: #0891b2;
+  --wm-planner-accent-strong: #0e7490;
+  --wm-planner-soft: rgba(8, 145, 178, 0.08);
+  --wm-planner-border: rgba(8, 145, 178, 0.22);
+  min-height: 100%;
+}
+
+.wm-planner-hero {
+  border-radius: var(--wm-radius-employer-card);
+  padding: 18px 16px;
+  background: linear-gradient(135deg, #ecfeff, #f0fdfa);
+  border: 1px solid var(--wm-planner-border);
+  box-shadow: 0 14px 34px rgba(8, 145, 178, 0.08);
+}
+
+.wm-planner-heroTitle {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--wm-neutral-900);
+  letter-spacing: -0.02em;
+}
+
+.wm-planner-heroSub {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--wm-neutral-500);
+  line-height: 1.45;
+}
+
+.wm-planner-kpiStrip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: var(--wm-stack-gap);
+}
+
+@media (min-width: 520px) {
+  .wm-planner-kpiStrip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.wm-planner-kpiTile {
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--wm-planner-border);
+}
+
+.wm-planner-kpiLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--wm-neutral-500);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.wm-planner-kpiValue {
+  margin-top: 4px;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--wm-planner-accent-strong);
+}
+
+.wm-planner-card {
+  margin-top: var(--wm-stack-gap);
+  border-radius: var(--wm-radius-employee-card);
+  padding: var(--wm-card-padding);
+  background: #fff;
+  border: 1px solid var(--wm-planner-border);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+}
+
+.wm-planner-btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 12px;
+  background: var(--wm-planner-accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.wm-planner-btnPrimary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.wm-planner-btnGhost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--wm-planner-border);
+  background: #fff;
+  color: var(--wm-planner-accent-strong);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.wm-planner-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  background: var(--wm-planner-soft);
+  color: var(--wm-planner-accent-strong);
+  border: 1px solid var(--wm-planner-border);
+}
+
+.wm-er-vPlanner .wm-planner-card {
+  border-radius: var(--wm-radius-employer-card);
+}
+
+.wm-planner-teaser {
+  margin-top: var(--wm-stack-gap);
+  border-radius: var(--wm-radius-employee-card);
+  padding: var(--wm-card-padding);
+  background: linear-gradient(135deg, rgba(236, 254, 255, 0.95), rgba(240, 253, 250, 0.98));
+  border: 1px solid var(--wm-planner-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--wm-stack-gap);
+}
+
+.wm-planner-teaserTitle {
+  font-size: var(--wm-type-card-title-size);
+  font-weight: var(--wm-type-card-title-weight);
+  color: var(--wm-neutral-900);
+}
+
+.wm-planner-teaserSub {
+  margin-top: 4px;
+  font-size: var(--wm-type-helper-size);
+  font-weight: var(--wm-type-helper-weight);
+  color: var(--wm-type-helper-color);
+  line-height: 1.45;
+}
+
+/* Employee Find Shifts — Gig Projects block (teal island inside shift page) */
+.wm-planner-gigSection {
+  margin: 0 0 var(--wm-space-32, 32px);
+  padding: 16px 14px 14px;
+  border-radius: var(--wm-radius-employer-card);
+  border: 1px solid var(--wm-planner-border);
+  background: linear-gradient(135deg, #ecfeff 0%, #f0fdfa 52%, #ffffff 100%);
+  box-shadow:
+    0 16px 36px rgba(8, 145, 178, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.wm-planner-gigSectionHead {
+  margin-bottom: 12px;
+}
+
+.wm-planner-gigSectionEyebrow {
+  font-size: 10px;
+  font-weight: 750;
+  color: var(--wm-planner-accent-strong);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.wm-planner-gigSectionTitle {
+  margin-top: 2px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--wm-neutral-900);
+  letter-spacing: -0.02em;
+}
+
+.wm-ee-vPlanner .wm-planner-btnPrimary,
+.wm-planner-gigSection .wm-planner-btnPrimary {
+  background: var(--wm-planner-accent);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(8, 145, 178, 0.24);
+}
+
+.wm-ee-vPlanner .wm-planner-btnPrimary:hover,
+.wm-planner-gigSection .wm-planner-btnPrimary:hover {
+  background: var(--wm-planner-accent-strong);
+}
+
+.wm-ee-vPlanner .wm-planner-btnGhost,
+.wm-planner-gigSection .wm-planner-btnGhost {
+  border-color: var(--wm-planner-border);
+  color: var(--wm-planner-accent-strong);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.wm-ee-vPlanner .wm-planner-megaCard,
+.wm-planner-gigSection .wm-planner-megaCard {
+  border-color: rgba(8, 145, 178, 0.32);
+  box-shadow: 0 10px 26px rgba(8, 145, 178, 0.12);
+}
+
+.wm-ee-vPlanner .wm-planner-megaCardHeader,
+.wm-planner-gigSection .wm-planner-megaCardHeader {
+  background: rgba(8, 145, 178, 0.1);
+}
+
+.wm-ee-vPlanner .wm-planner-badge,
+.wm-planner-gigSection .wm-planner-badge {
+  background: rgba(8, 145, 178, 0.14);
+  color: var(--wm-planner-accent-strong);
+  border-color: rgba(8, 145, 178, 0.28);
+}
+
+.wm-planner-megaCard {
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1.5px solid var(--wm-planner-border);
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(8, 145, 178, 0.08);
+}
+
+.wm-planner-megaCardHeader {
+  padding: 12px 14px;
+  background: var(--wm-planner-soft);
+  border-bottom: 1px solid var(--wm-planner-border);
+}
+
+.wm-planner-calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: var(--wm-stack-gap);
+}
+
+.wm-planner-calendarDay {
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px solid var(--wm-neutral-200);
+  background: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--wm-neutral-800);
+  cursor: pointer;
+}
+
+.wm-planner-calendarDay[data-selected="true"] {
+  border-color: var(--wm-planner-accent);
+  background: rgba(8, 145, 178, 0.14);
+  color: var(--wm-planner-accent-strong);
+  box-shadow:
+    0 0 0 1px rgba(8, 145, 178, 0.25),
+    0 0 14px rgba(8, 145, 178, 0.18);
+}
+
+.wm-planner-quartz {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(var(--wm-blur-sm)) var(--wm-glass-saturate);
+  -webkit-backdrop-filter: blur(var(--wm-blur-sm)) var(--wm-glass-saturate);
+  box-shadow:
+    0 18px 40px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  background-image:
+    radial-gradient(circle at 20% 0%, rgba(8, 145, 178, 0.06), transparent 42%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+.wm-planner-morphShell {
+  transition: min-height 0.55s var(--wm-motion-spring);
+}
+
+.wm-planner-morphPanel {
+  animation: wmPlannerMorphIn 0.55s var(--wm-motion-spring);
+}
+
+@keyframes wmPlannerMorphIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.wm-planner-stepTitle {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--wm-planner-accent-strong);
+  margin-bottom: 16px;
+}
+
+.wm-planner-stepActions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.wm-planner-stepActions--split {
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.wm-planner-errorBox {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(220, 38, 38, 0.04);
+  border: 1px solid rgba(220, 38, 38, 0.15);
+  font-size: 12px;
+  color: var(--wm-error, #dc2626);
+}
+
+.wm-planner-blindDemand {
+  margin-top: var(--wm-stack-gap);
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(16, 185, 129, 0.18);
+  background: rgba(240, 253, 244, 0.75);
+}
+
+.wm-planner-blindDemand--active {
+  border-color: rgba(16, 185, 129, 0.35);
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.08);
+}
+
+.wm-planner-blindDemandCopy {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #065f46;
+}
+
+.wm-planner-blindDemandCopy--muted {
+  color: var(--wm-neutral-500);
+}
+
+.wm-planner-megaCard--shimmer {
+  position: relative;
+  border-left: 4px solid var(--wm-planner-accent);
+  overflow: hidden;
+}
+
+.wm-planner-megaCard--shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 60%
+  );
+  transform: translateX(-120%);
+  animation: wmPlannerMegaShimmer 4.5s ease-in-out infinite;
+}
+
+@keyframes wmPlannerMegaShimmer {
+  0%,
+  70% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+.wm-planner-pickChooseToolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.wm-planner-pickChooseToolbarBtn {
+  font-size: 11px;
+  padding: 6px 10px;
+}
+
+.wm-planner-dayMeta {
+  font-size: 9px;
+  margin-top: 2px;
+}
+
+.wm-planner-dayMeta--conflict {
+  color: #dc2626;
+}
+
+.wm-planner-dayMeta--pay {
+  font-weight: 800;
+}
+
+.wm-planner-earningsCapsule {
+  position: sticky;
+  bottom: 0;
+  margin-top: var(--wm-stack-gap);
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
+  box-shadow: 0 12px 28px rgba(8, 145, 178, 0.12);
+}
+
+.wm-planner-earningsCapsuleRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.wm-planner-earningsCapsuleLabel {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--wm-planner-accent-strong);
+}
+
+.wm-planner-earningsCapsuleBar {
+  margin-top: 8px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(8, 145, 178, 0.12);
+  overflow: hidden;
+}
+
+.wm-planner-earningsCapsuleBarFill {
+  height: 100%;
+  background: var(--wm-planner-accent);
+  transition: width 0.32s var(--wm-motion-spring);
+}
+
+.wm-planner-earningsCapsuleSub,
+.wm-planner-earningsCapsuleDisclaimer {
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--wm-neutral-400);
+}
+
+.wm-planner-earningsCapsuleStreak {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #b45309;
+}
+
+.wm-planner-odometer {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 900;
+  color: var(--wm-planner-accent-strong);
+  font-size: 18px;
+  transform-origin: center bottom;
+}
+
+.wm-planner-odometer--bump {
+  animation: wm-planner-odometer-bump 0.32s var(--wm-motion-spring);
+}
+
+@keyframes wm-planner-odometer-bump {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.wm-planner-odometerDigit {
+  display: inline-block;
+  min-width: 0.62em;
+  text-align: center;
+  transition: transform 0.28s var(--wm-motion-spring);
+}
+
+.wm-planner-odometerDigit[data-settled="true"] {
+  transform: scale(1.04);
+}
+
+.wm-planner-odometerSep {
+  opacity: 0.65;
+}
+
+.wm-pulse-glowSwapHost {
+  border-color: transparent !important;
+  transition: border-color 0.32s var(--wm-motion-spring);
+}
+
+.wm-planner-calendarDay[data-conflict="true"] {
+  border-color: rgba(220, 38, 38, 0.35);
+  background: rgba(254, 242, 242, 0.9);
+}
+
+.wm-planner-calendarDay[data-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.wm-er-bg.wm-er-vPlanner {
+  background:
+    radial-gradient(circle at 8% -2%, rgba(8, 145, 178, 0.14), transparent 34%),
+    linear-gradient(180deg, #f4fbfd 0%, #edf4f8 50%, #f8fafc 100%);
+}
+
+/* Employee Gig Projects — teal subdomain (never shift green on planner surfaces) */
+.wm-ee-vPlanner {
+  --wm-ee-accent: var(--wm-planner-accent);
+  --wm-ee-accent-strong: var(--wm-planner-accent-strong);
+  --wm-ee-wash: var(--wm-planner-soft);
+}
+
+.wm-ee-vPlanner.wm-planner-page {
+  min-height: 0;
+  padding-bottom: 4px;
+  background:
+    radial-gradient(circle at 8% -2%, rgba(8, 145, 178, 0.14), transparent 34%),
+    linear-gradient(180deg, #f4fbfd 0%, #edf4f8 50%, #f8fafc 100%);
+}
+
+.wm-planner-gigSection.wm-ee-vPlanner.wm-planner-page {
+  min-height: 0;
+  padding-bottom: 14px;
+}
+
+.wm-ee-vPlanner .wm-ee-card {
+  border-color: var(--wm-planner-border);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(8, 145, 178, 0.05), transparent 32%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(255, 255, 255, 0.94));
+}
+
+.wm-ee-vPlanner .wm-primarybtn {
+  background: var(--wm-planner-accent);
+  border-color: var(--wm-planner-accent);
+}
+
+.wm-ee-vPlanner .wm-primarybtn:hover {
+  background: var(--wm-planner-accent-strong);
+  border-color: var(--wm-planner-accent-strong);
+}
+
+.wm-ee-vPlanner .wm-outlineBtn {
+  border-color: var(--wm-planner-border);
+  color: var(--wm-planner-accent-strong);
+}
+
+.wm-planner-calendarDay[data-day-status="applied"] {
+  border-color: var(--wm-planner-border);
+  background: var(--wm-planner-soft);
+  color: var(--wm-planner-accent-strong);
+}
+
+.wm-planner-calendarDay[data-day-status="confirmed"] {
+  border-color: var(--wm-planner-accent);
+  background: rgba(8, 145, 178, 0.14);
+  color: var(--wm-planner-accent-strong);
+}

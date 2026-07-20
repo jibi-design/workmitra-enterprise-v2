@@ -1,18 +1,60 @@
-﻿/* src/index.css — Job Mitra Enterprise: CSS entry point (imports only) */
+/* src/index.css — Job Mitra Enterprise: CSS entry point (imports only) */
 @import "./app/theme/tokens.css";
 @import "./app/theme/base.css";
 @import "./app/theme/buttons.css";
 @import "./app/theme/employee.css";
 @import "./app/theme/employer.css";
+@import "./app/theme/shift-employer-posts.css";
+@import "./app/theme/domain-governance.css";
+@import "./app/theme/shift-employee-home.css";
+@import "./app/theme/shift-direct-invite.css";
+@import "./app/theme/shift-employer-home.css";
+@import "./app/theme/shift-create-wizard.css";
+@import "./app/theme/shift-planner.css";
+@import "./app/theme/shift-metric-states.css";
+@import "./app/theme/shift-dashboard-analysis.css";
+@import "./app/theme/analytics-dashboard.css";
 @import "./app/theme/admin.css";
 @import "./app/theme/components.css";
+
 /* Hide number input spinners */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
 input[type="number"] {
   -moz-appearance: textfield;
   appearance: textfield;
+}
+
+/* ------------------------------------------------ */
+/* Global mobile scroll restoration guard           */
+/* ------------------------------------------------ */
+html {
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+body {
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: auto;
+  touch-action: pan-y;
+}
+
+#root {
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: visible;
+}
+
+button,
+a,
+[role="button"] {
+  touch-action: manipulation;
 }

@@ -1,0 +1,6 @@
+{
+  "*.{ts,tsx}": ["prettier --write", "eslint --fix --max-warnings 0"],
+  "*.{json,css}": ["prettier --write"],
+  "docs/**/*.md": ["prettier --write"],
+  "workmitra-master-docs/**/*.md": ["prettier --write"]
+}

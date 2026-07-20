@@ -2,11 +2,7 @@
 //
 // Offer lifecycle: move to HR → send offer → accept/reject.
 
-import type {
-  HRCandidateRecord,
-  OfferLetter,
-  OnboardingItem,
-} from "../types/hrManagement.types";
+import type { HRCandidateRecord, OfferLetter, OnboardingItem } from "../types/hrManagement.types";
 import { DEFAULT_ONBOARDING_ITEMS } from "../types/hrManagement.types";
 import {
   readAll,
@@ -45,14 +41,92 @@ export function hrMoveToHR(data: {
     department: data.department,
     location: data.location,
     status: "offer_pending",
-    statusHistory: [{
-      id: genId(),
-      from: "interview_cleared",
-      to: "offer_pending",
-      changedAt: now,
-      changedBy: "system",
-      note: "Moved to HR after clearing all interview rounds",
-    }],
+    statusHistory: [
+      {
+        id: genId(),
+        from: "interview_cleared",
+        to: "offer_pending",
+        changedAt: now,
+        changedBy: "system",
+        note: "Moved to HR after clearing all interview rounds",
+      },
+    ],
+    movedToHRAt: now,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  const all = readAll();
+  writeAll([record, ...all]);
+  return record.id;
+}
+
+/* ------------------------------------------------ */
+/* Career hire activation (offer accepted via funnel) */
+/* ------------------------------------------------ */
+export function hrActivateFromCareerHire(data: {
+  careerPostId: string;
+  applicationId: string;
+  employeeUniqueId: string;
+  employeeName: string;
+  jobTitle: string;
+  department: string;
+  location: string;
+}): string {
+  const existing = hrFindByApplication(data.careerPostId, data.applicationId);
+  const now = Date.now();
+
+  const defaultItems: OnboardingItem[] = DEFAULT_ONBOARDING_ITEMS.map((item) => ({
+    id: genItemId(),
+    label: item.label,
+    isDefault: true,
+  }));
+
+  if (existing) {
+    if (
+      existing.status === "hired" ||
+      existing.status === "onboarding" ||
+      existing.status === "active"
+    ) {
+      return existing.id;
+    }
+
+    hrUpdate(existing.id, {
+      status: "hired",
+      onboarding: existing.onboarding ?? { items: defaultItems, startedAt: now },
+      statusHistory: pushStatusChange(
+        existing,
+        existing.status,
+        "hired",
+        "system",
+        "Hired via Career funnel",
+      ),
+    });
+
+    return existing.id;
+  }
+
+  const record: HRCandidateRecord = {
+    id: genId(),
+    careerPostId: data.careerPostId,
+    applicationId: data.applicationId,
+    employeeUniqueId: data.employeeUniqueId,
+    employeeName: data.employeeName,
+    jobTitle: data.jobTitle,
+    department: data.department,
+    location: data.location,
+    status: "hired",
+    statusHistory: [
+      {
+        id: genId(),
+        from: "career_hire",
+        to: "hired",
+        changedAt: now,
+        changedBy: "system",
+        note: "Auto-created from Career hire activation",
+      },
+    ],
+    onboarding: { items: defaultItems, startedAt: now },
     movedToHRAt: now,
     createdAt: now,
     updatedAt: now,
@@ -78,7 +152,13 @@ export function hrSendOffer(
   return hrUpdate(id, {
     status: "offered",
     offerLetter: fullOffer,
-    statusHistory: pushStatusChange(rec, "offer_pending", "offered", "employer", "Offer letter sent"),
+    statusHistory: pushStatusChange(
+      rec,
+      "offer_pending",
+      "offered",
+      "employer",
+      "Offer letter sent",
+    ),
   });
 }
 
@@ -128,6 +208,12 @@ export function hrRejectOffer(id: string, reason?: string): boolean {
   return hrUpdate(id, {
     status: "offer_rejected",
     offerLetter: updatedOffer,
-    statusHistory: pushStatusChange(rec, "offered", "offer_rejected", "system", reason ? `Rejected: ${reason}` : "Employee rejected offer"),
+    statusHistory: pushStatusChange(
+      rec,
+      "offered",
+      "offer_rejected",
+      "system",
+      reason ? `Rejected: ${reason}` : "Employee rejected offer",
+    ),
   });
 }

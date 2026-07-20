@@ -7,42 +7,55 @@ import { useEffect, type ReactNode } from "react";
 interface CenterModalProps {
   /** Controls visibility */
   open: boolean;
-  /** Called when backdrop is clicked (optional — omit to disable backdrop close) */
+  /** Called when backdrop is clicked or Escape is pressed */
   onBackdropClose?: () => void;
   /** Accessible label for the dialog */
   ariaLabel?: string;
-  /** Max width of the modal card (default: 520px) */
+  /** Max width of the modal card in pixels */
   maxWidth?: number;
+  /** Use when the child component provides its own full modal surface */
+  surface?: "default" | "bare";
   children: ReactNode;
 }
 
 /* ------------------------------------------------ */
 /* Component                                        */
 /* ------------------------------------------------ */
-export function CenterModal(props: CenterModalProps) {
-  const { open, onBackdropClose, ariaLabel = "Dialog", maxWidth = 520, children } = props;
-
-  // Lock body scroll when modal is open
+export function CenterModal({
+  open,
+  onBackdropClose,
+  ariaLabel = "Dialog",
+  maxWidth = 520,
+  surface = "default",
+  children,
+}: CenterModalProps) {
   useEffect(() => {
     if (!open) return;
-    const prev = document.body.style.overflow;
+
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+
     return () => {
-      document.body.style.overflow = prev;
+      document.body.style.overflow = previousOverflow;
     };
   }, [open]);
 
-  // Close on Escape key
   useEffect(() => {
     if (!open || !onBackdropClose) return;
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onBackdropClose!();
+
+    function handleKey(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onBackdropClose?.();
+      }
     }
+
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [open, onBackdropClose]);
 
   if (!open) return null;
+
+  const isBare = surface === "bare";
 
   return (
     <div
@@ -53,9 +66,9 @@ export function CenterModal(props: CenterModalProps) {
       onClick={onBackdropClose}
     >
       <div
-        className="wm-modal-card"
+        className={isBare ? "wm-modal-bare" : "wm-modal-card"}
         style={{ maxWidth }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={(event) => event.stopPropagation()}
       >
         {children}
       </div>

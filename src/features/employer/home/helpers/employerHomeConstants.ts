@@ -47,7 +47,7 @@ export const CARD_INNER_ROW: CSSProperties = {
 
 export const CARD_TITLE: CSSProperties = {
   fontWeight: 700,
-  fontSize: 14,
+  fontSize: 16,
   color: "var(--wm-er-text)",
 };
 

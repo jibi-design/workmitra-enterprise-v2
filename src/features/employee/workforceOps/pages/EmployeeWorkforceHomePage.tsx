@@ -1,6 +1,6 @@
-// src/features/employee/workforceOps/pages/EmployeeWorkforceHomePage.tsx
+﻿// src/features/employee/workforceOps/pages/EmployeeWorkforceHomePage.tsx
 //
-// Workforce Ops Hub — Employee Home.
+// Workforce Ops Hub â€” Employee Home.
 // KPIs, open announcements feed, my active groups, timesheet link, not-added-yet state.
 
 import { useMemo, useCallback } from "react";
@@ -12,7 +12,7 @@ import {
   IconAnnounce,
   IconEmpty,
   IconArrowRight,
-} from "../../../employer/workforceOps/components/workforceIcons";
+} from "../../../../shared/domains/workforce/ui/workforceIcons";
 import {
   AMBER,
   AMBER_BG,
@@ -22,11 +22,11 @@ import {
   emptyStateStyle,
   stepCircleStyle,
   statusBadgeStyle,
-} from "../../../employer/workforceOps/components/workforceStyles";
+} from "../../../../shared/domains/workforce/ui/workforceStyles";
 
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Component                                                                  */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 export function EmployeeWorkforceHomePage() {
   const summary = useMemo(() => employeeWorkforceHelpers.getHomeSummary(), []);
@@ -42,9 +42,14 @@ export function EmployeeWorkforceHomePage() {
   }, [categories]);
 
   const nav = useNavigate();
-  const navTo = useCallback((path: string) => { nav(path); }, [nav]);
+  const navTo = useCallback(
+    (path: string) => {
+      nav(path);
+    },
+    [nav],
+  );
 
-  /* ── Not added as staff ── */
+  /* â”€â”€ Not added as staff â”€â”€ */
   if (!summary.isStaff) {
     return (
       <div className="wm-ee-vWorkforce" style={{ padding: "0 16px" }}>
@@ -61,15 +66,20 @@ export function EmployeeWorkforceHomePage() {
             <div style={{ fontSize: 15, fontWeight: 800, color: "var(--wm-er-text)" }}>
               You're not added to any company yet
             </div>
-            <div style={{ fontSize: 13, color: "var(--wm-er-muted)", maxWidth: 300, lineHeight: 1.5 }}>
-              When an employer adds you to their staff directory using your unique ID, their announcements and work groups will appear here.
+            <div
+              style={{ fontSize: 13, color: "var(--wm-er-muted)", maxWidth: 300, lineHeight: 1.5 }}
+            >
+              When an employer adds you to their staff directory using your unique ID, their
+              announcements and work groups will appear here.
             </div>
           </div>
         </div>
 
         {/* How it works for employees */}
         <div className="wm-er-card" style={{ marginTop: 14, marginBottom: 24 }}>
-          <div style={{ fontWeight: 900, fontSize: 14, color: "var(--wm-er-text)" }}>How it works</div>
+          <div style={{ fontWeight: 900, fontSize: 14, color: "var(--wm-er-text)" }}>
+            How it works
+          </div>
           <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
             {[
               "Share your unique ID with employers you want to work with",
@@ -91,7 +101,7 @@ export function EmployeeWorkforceHomePage() {
 
   return (
     <div className="wm-ee-vWorkforce" style={{ padding: "0 16px" }}>
-      {/* ── Header ── */}
+      {/* â”€â”€ Header â”€â”€ */}
       <div className="wm-pageHead">
         <div>
           <div className="wm-pageTitle">Workforce Ops Hub</div>
@@ -99,11 +109,14 @@ export function EmployeeWorkforceHomePage() {
         </div>
       </div>
 
-      {/* ── KPI Tiles ── */}
+      {/* â”€â”€ KPI Tiles â”€â”€ */}
       <div className="wm-er-tiles" style={{ marginTop: 14 }}>
         <div className="wm-er-tile">
           <div className="wm-er-tileLabel">Open</div>
-          <div className="wm-er-tileValue" style={{ color: summary.openAnnouncements > 0 ? AMBER : undefined }}>
+          <div
+            className="wm-er-tileValue"
+            style={{ color: summary.openAnnouncements > 0 ? AMBER : undefined }}
+          >
             {summary.openAnnouncements}
           </div>
         </div>
@@ -113,13 +126,16 @@ export function EmployeeWorkforceHomePage() {
         </div>
         <div className="wm-er-tile">
           <div className="wm-er-tileLabel">Groups</div>
-          <div className="wm-er-tileValue" style={{ color: summary.activeGroups > 0 ? "var(--wm-success)" : undefined }}>
+          <div
+            className="wm-er-tileValue"
+            style={{ color: summary.activeGroups > 0 ? "var(--wm-success)" : undefined }}
+          >
             {summary.activeGroups}
           </div>
         </div>
       </div>
 
-      {/* ── My Timesheet Link ── */}
+      {/* â”€â”€ My Timesheet Link â”€â”€ */}
       <button
         type="button"
         style={{
@@ -139,16 +155,20 @@ export function EmployeeWorkforceHomePage() {
       >
         <div>
           <div style={{ fontSize: 14, fontWeight: 800, color: AMBER }}>My Timesheet</div>
-          <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginTop: 2 }}>View monthly hours, days worked, and attendance history</div>
+          <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginTop: 2 }}>
+            View monthly hours, days worked, and attendance history
+          </div>
         </div>
-        <span style={{ color: AMBER, fontSize: 18 }}>→</span>
+        <span style={{ color: AMBER, fontSize: 18 }}>â†’</span>
       </button>
 
-      {/* ── My Active Groups ── */}
+      {/* â”€â”€ My Active Groups â”€â”€ */}
       {myGroups.length > 0 && (
         <div style={{ marginTop: 14 }}>
           <div style={sectionTitleStyle}>
-            <div style={sectionIconWrapStyle}><IconGroup /></div>
+            <div style={sectionIconWrapStyle}>
+              <IconGroup />
+            </div>
             My Active Groups
           </div>
           <div style={{ display: "grid", gap: 8 }}>
@@ -160,17 +180,29 @@ export function EmployeeWorkforceHomePage() {
                 onClick={() => navTo(`/employee/workforce/group/${group.id}`)}
               >
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-er-text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <div
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 700,
+                      color: "var(--wm-er-text)",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
                     {group.name}
                   </div>
                   <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginTop: 2 }}>
-                    {group.date} · {member.assignedShiftIds.length} shift{member.assignedShiftIds.length !== 1 ? "s" : ""}
-                    {group.location && ` · ${group.location}`}
+                    {group.date} Â· {member.assignedShiftIds.length} shift
+                    {member.assignedShiftIds.length !== 1 ? "s" : ""}
+                    {group.location && ` Â· ${group.location}`}
                   </div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
                   <span style={{ ...statusBadgeStyle, color: "var(--wm-success)" }}>Active</span>
-                  <span style={{ color: "var(--wm-er-muted)" }}><IconArrowRight /></span>
+                  <span style={{ color: "var(--wm-er-muted)" }}>
+                    <IconArrowRight />
+                  </span>
                 </div>
               </button>
             ))}
@@ -178,10 +210,12 @@ export function EmployeeWorkforceHomePage() {
         </div>
       )}
 
-      {/* ── Open Announcements Feed ── */}
+      {/* â”€â”€ Open Announcements Feed â”€â”€ */}
       <div style={{ marginTop: 14 }}>
         <div style={sectionTitleStyle}>
-          <div style={sectionIconWrapStyle}><IconAnnounce /></div>
+          <div style={sectionIconWrapStyle}>
+            <IconAnnounce />
+          </div>
           Open Announcements
         </div>
 
@@ -216,9 +250,11 @@ export function EmployeeWorkforceHomePage() {
         )}
       </div>
 
-      {/* ── My Categories ── */}
+      {/* â”€â”€ My Categories â”€â”€ */}
       <div className="wm-er-card" style={{ marginTop: 14, marginBottom: 24 }}>
-        <div style={{ fontSize: 13, fontWeight: 900, color: "var(--wm-er-text)", marginBottom: 6 }}>My Categories</div>
+        <div style={{ fontSize: 13, fontWeight: 900, color: "var(--wm-er-text)", marginBottom: 6 }}>
+          My Categories
+        </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
           {employeeWorkforceHelpers.getMyCategoryNames().map((name, i) => (
             <span

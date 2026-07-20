@@ -1,82 +1,252 @@
-// src/features/employer/careerJobs/components/CareerCreatePageControls.tsx
-//
-// Progress bar + validation errors + action buttons for career create wizard.
+// App name: Job Mitra
+// File name: CareerCreatePageControls.tsx
+// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\careerJobs\components\CareerCreatePageControls.tsx
 
 import { CAREER_CREATE_STEPS } from "../helpers/careerCreateFormHelpers";
+import type { CSSProperties } from "react";
 
-function IconArrowLeft() { return <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2Z" /></svg>; }
-function IconArrowRight() { return <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8Z" /></svg>; }
-function IconCheck() { return <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17Z" /></svg>; }
+const CAREER_BLUE = "var(--wm-er-accent-career, #2563eb)";
+const CAREER_BLUE_DEEP = "#1e40af";
+const CAREER_TEXT = "var(--wm-er-text, #0f172a)";
+const CAREER_MUTED = "var(--wm-er-muted, #475569)";
 
-/* ── Progress Bar ──────────────────────────────── */
+function IconArrowLeft() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m15 18-6-6 6-6" />
+    </svg>
+  );
+}
 
-export function CareerCreateProgressBar({ step, onGoToStep }: {
+function IconArrowRight() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m9 18 6-6-6-6" />
+    </svg>
+  );
+}
+
+function IconCheck() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
+function IconSave() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+      <polyline points="17 21 17 13 7 13 7 21" />
+      <polyline points="7 3 7 8 15 8" />
+    </svg>
+  );
+}
+
+// PREMIUM BUTTON STYLES
+const BTN_PRIMARY: CSSProperties = {
+  minHeight: 46,
+  padding: "0 20px",
+  borderRadius: 14,
+  border: "1px solid rgba(255,255,255,0.15)",
+  background: "linear-gradient(180deg, #3b82f6 0%, #2563eb 100%)",
+  color: "#fff",
+  fontSize: 13.5,
+  fontWeight: 700,
+  cursor: "pointer",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  boxShadow: "inset 0 1px 1px rgba(255,255,255,0.3), 0 8px 16px -4px rgba(37, 99, 235, 0.25)",
+  textShadow: "0 1px 2px rgba(0,0,0,0.1)",
+  transition: "all 0.2s var(--wm-motion-spring)",
+};
+
+const BTN_SECONDARY: CSSProperties = {
+  minHeight: 46,
+  padding: "0 20px",
+  borderRadius: 14,
+  border: "1px solid rgba(15, 23, 42, 0.08)",
+  background: "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)",
+  color: CAREER_TEXT,
+  fontSize: 13.5,
+  fontWeight: 700,
+  cursor: "pointer",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.03), inset 0 1px 1px rgba(255,255,255,1)",
+  transition: "all 0.2s var(--wm-motion-spring)",
+};
+
+export function CareerCreateProgressBar({
+  step,
+  onGoToStep,
+}: {
   step: number;
-  onGoToStep: (s: number) => void;
+  onGoToStep: (stepNumber: number) => void;
 }) {
   return (
-    <div style={{
-      marginTop: 12, display: "flex", gap: 0, borderRadius: "var(--wm-radius-14)",
-      border: "1px solid var(--wm-er-border)", overflow: "hidden", background: "var(--wm-er-card)",
-    }}>
-      {CAREER_CREATE_STEPS.map((s) => {
-        const isActive = s.num === step;
-        const isDone = s.num < step;
+    <section
+      style={{
+        marginTop: 16,
+        display: "grid",
+        gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+        gap: 8,
+      }}
+    >
+      {CAREER_CREATE_STEPS.map((item) => {
+        const isActive = item.num === step;
+        const isDone = item.num < step;
+
         return (
-          <button key={s.num} type="button"
-            onClick={() => { if (s.num < step) onGoToStep(s.num); }}
+          <button
+            key={item.num}
+            type="button"
+            onClick={() => {
+              if (item.num <= step) onGoToStep(item.num);
+            }}
             style={{
-              flex: 1, padding: "12px 8px", border: "none",
-              borderRight: s.num < 3 ? "1px solid var(--wm-er-border)" : "none",
-              background: isActive ? "rgba(55,48,163,0.08)" : isDone ? "rgba(22,163,74,0.06)" : "transparent",
-              cursor: s.num < step ? "pointer" : "default",
-              display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-              transition: "background 0.2s ease",
-            }}>
-            <div style={{
-              width: 24, height: 24, borderRadius: "50%",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 11, fontWeight: 700,
-              color: isDone ? "#fff" : isActive ? "var(--wm-er-accent-career)" : "var(--wm-er-muted)",
-              background: isDone ? "var(--wm-success)" : isActive ? "rgba(55,48,163,0.15)" : "rgba(0,0,0,0.06)",
-            }}>
-              {isDone ? <IconCheck /> : s.num}
+              minWidth: 0,
+              padding: "10px 6px",
+              borderRadius: 16,
+              border: isActive
+                ? "1px solid rgba(37, 99, 235, 0.3)"
+                : isDone
+                  ? "1px solid rgba(37, 99, 235, 0.15)"
+                  : "1px solid rgba(255, 255, 255, 0.9)",
+              background: isActive
+                ? "linear-gradient(135deg, rgba(239,246,255,0.95), rgba(219,234,254,0.7))"
+                : isDone
+                  ? "rgba(255,255,255,0.9)"
+                  : "rgba(255,255,255,0.6)",
+              cursor: item.num <= step ? "pointer" : "default",
+              boxShadow: isActive
+                ? "0 8px 16px rgba(37,99,235,0.1), inset 0 1px 2px rgba(255,255,255,0.9)"
+                : "0 4px 12px rgba(15,23,42,0.03)",
+              backdropFilter: "blur(var(--wm-blur-md))",
+              transition: "all var(--wm-motion-base) var(--wm-motion-spring)",
+            }}
+          >
+            <div
+              style={{
+                width: 24,
+                height: 24,
+                margin: "0 auto",
+                borderRadius: 12,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 11,
+                fontWeight: 800,
+                color: isDone ? "#fff" : isActive ? CAREER_BLUE : CAREER_MUTED,
+                background: isDone ? CAREER_BLUE : isActive ? "#fff" : "rgba(15,23,42,0.04)",
+                boxShadow: isActive || isDone ? "0 2px 6px rgba(37,99,235,0.2)" : "none",
+              }}
+            >
+              {isDone ? <IconCheck /> : item.num}
             </div>
-            <div style={{
-              fontSize: 11, fontWeight: isActive ? 700 : 600,
-              color: isActive ? "var(--wm-er-accent-career)" : isDone ? "var(--wm-success)" : "var(--wm-er-muted)",
-            }}>
-              {s.label}
+
+            <div
+              style={{
+                marginTop: 6,
+                fontSize: 11,
+                fontWeight: isActive ? 800 : 700,
+                color: isActive ? CAREER_BLUE_DEEP : isDone ? CAREER_BLUE_DEEP : CAREER_MUTED,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {item.label}
             </div>
           </button>
         );
       })}
-    </div>
+    </section>
   );
 }
-
-/* ── Validation Errors ─────────────────────────── */
 
 export function CareerCreateValidationErrors({ errors }: { errors: string[] }) {
   if (errors.length === 0) return null;
+
   return (
-    <div style={{
-      marginTop: 12, padding: 14, borderRadius: "var(--wm-radius-14)",
-      border: "1px solid rgba(220,38,38,0.2)", background: "rgba(220,38,38,0.04)",
-    }}>
-      <div style={{ fontWeight: 700, fontSize: 13, color: "var(--wm-error)" }}>
-        Please fix before continuing:
+    <section
+      style={{
+        marginTop: 16,
+        padding: 16,
+        borderRadius: 20,
+        border: "1px solid rgba(245, 158, 11, 0.2)",
+        background: "linear-gradient(135deg, rgba(254, 252, 232, 0.95), rgba(255, 255, 255, 0.9))",
+        backdropFilter: "blur(12px)",
+        boxShadow: "0 8px 24px rgba(245, 158, 11, 0.05)",
+      }}
+    >
+      <div style={{ fontWeight: 800, fontSize: 13.5, color: "#92400e" }}>
+        Complete required fields before continuing
       </div>
-      <div style={{ marginTop: 6, fontSize: 12, color: "var(--wm-er-muted)", lineHeight: 1.6 }}>
-        {errors.map((err) => <div key={err}>— {err}</div>)}
+
+      <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
+        {errors.map((error) => (
+          <div
+            key={error}
+            style={{ fontSize: 12.5, color: "#b45309", lineHeight: 1.45, fontWeight: 500 }}
+          >
+            • {error}
+          </div>
+        ))}
       </div>
-    </div>
+    </section>
   );
 }
 
-/* ── Action Buttons ────────────────────────────── */
-
-export function CareerCreateActions({ step, isCurrentValid, isAllValid, onBack, onNext, onCancel, onCreate }: {
+export function CareerCreateActions({
+  step,
+  isCurrentValid,
+  isAllValid,
+  onBack,
+  onNext,
+  onCancel,
+  onCreate,
+  onSaveDraft,
+}: {
   step: number;
   isCurrentValid: boolean;
   isAllValid: boolean;
@@ -84,29 +254,72 @@ export function CareerCreateActions({ step, isCurrentValid, isAllValid, onBack, 
   onNext: () => void;
   onCancel: () => void;
   onCreate: () => void;
+  onSaveDraft: () => void;
 }) {
   return (
-    <div style={{ marginTop: 16, display: "flex", gap: 10, justifyContent: "space-between", paddingBottom: 32 }}>
+    <div
+      style={{
+        marginTop: 20,
+        display: "grid",
+        gridTemplateColumns: "auto 1fr auto",
+        gap: 12,
+        alignItems: "center",
+        paddingBottom: 40,
+      }}
+    >
       <div>
         {step === 1 ? (
-          <button className="wm-outlineBtn" type="button" onClick={onCancel}>Cancel</button>
+          <button type="button" onClick={onCancel} style={BTN_SECONDARY}>
+            Cancel
+          </button>
         ) : (
-          <button className="wm-outlineBtn" type="button" onClick={onBack}
-            style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <button type="button" onClick={onBack} style={BTN_SECONDARY}>
             <IconArrowLeft /> Back
           </button>
         )}
       </div>
+
+      <button
+        type="button"
+        onClick={onSaveDraft}
+        style={{
+          ...BTN_SECONDARY,
+          justifyContent: "center",
+          color: CAREER_BLUE_DEEP,
+          background: "rgba(255,255,255,0.7)",
+          backdropFilter: "blur(12px)",
+        }}
+      >
+        <IconSave /> Save Draft
+      </button>
+
       <div>
-        {step < 3 ? (
-          <button className="wm-primarybtn" type="button" onClick={onNext} disabled={!isCurrentValid}
-            style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+        {step < 4 ? (
+          <button
+            type="button"
+            onClick={onNext}
+            disabled={!isCurrentValid}
+            style={{
+              ...BTN_PRIMARY,
+              opacity: isCurrentValid ? 1 : 0.5,
+              cursor: isCurrentValid ? "pointer" : "not-allowed",
+            }}
+          >
             Next <IconArrowRight />
           </button>
         ) : (
-          <button className="wm-primarybtn" type="button" onClick={onCreate} disabled={!isAllValid}
-            style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-            <IconCheck /> Create Post
+          <button
+            type="button"
+            onClick={onCreate}
+            disabled={!isAllValid}
+            style={{
+              ...BTN_PRIMARY,
+              opacity: isAllValid ? 1 : 0.5,
+              cursor: isAllValid ? "pointer" : "not-allowed",
+              background: "linear-gradient(180deg, #10b981 0%, #d97706 100%)", // Distinct color for publish
+            }}
+          >
+            <IconCheck /> Publish Job
           </button>
         )}
       </div>

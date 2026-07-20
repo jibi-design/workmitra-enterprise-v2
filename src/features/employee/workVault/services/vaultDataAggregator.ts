@@ -10,6 +10,7 @@ import {
   aggregateCareerExperience,
   aggregateCareerStats,
   aggregateCareerReferences,
+  aggregateCareerRatings,
   detectCareerEmploymentStatus,
 } from "./vaultCareerAggregator";
 
@@ -164,10 +165,11 @@ export function getVaultSectionData(): VaultSectionData {
   }));
 
   // ── Section 7: Performance ──
+  const careerRatings = aggregateCareerRatings();
   const shiftRatings = aggregateShiftRatings();
   const wfRatings = aggregateWorkforceRatings();
 
-  const allRatings = [...shiftRatings.ratings, ...wfRatings.ratings];
+  const allRatings = [...careerRatings.ratings, ...shiftRatings.ratings, ...wfRatings.ratings];
   if (wfRatings.staffRating !== null) {
     allRatings.push(wfRatings.staffRating);
   }
@@ -189,7 +191,7 @@ export function getVaultSectionData(): VaultSectionData {
   // ── Section 9: Achievements ──
   const achievements = computeAchievements(workStats, performance);
 
-   // ── Section 10: Activity ──
+  // ── Section 10: Activity ──
   const activity: VaultActivityData = {
     memberSince: profile.createdAt ?? Date.now(),
     lastActive: Date.now(),

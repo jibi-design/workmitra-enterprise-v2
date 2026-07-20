@@ -1,0 +1,134 @@
+/** Job Mitra | BottomNav.module.css | src/components/layout/BottomNav/BottomNav.module.css */
+
+.navContainer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+
+  /* Premium neutral glass — no domain tint */
+  background: var(--wm-emp-glass-bg-strong);
+  backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
+  -webkit-backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
+
+  /* Elegant white-alpha glass separator */
+  border-top: 1px solid var(--wm-glass-border);
+
+  /* Safe Area Padding — pb-safe equivalent */
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom)) 0;
+
+  z-index: 1000;
+  box-shadow: var(--wm-emp-card-shadow);
+  will-change: transform;
+}
+
+:global(.wm-shellEmployer) .navContainer {
+  background: var(--wm-er-glass-bg);
+  box-shadow: var(--wm-er-elevation-shadow);
+}
+
+.navItem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: var(--wm-neutral-400);
+  flex: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform var(--wm-motion-fast) var(--wm-motion-spring),
+    color 0.2s var(--wm-motion-spring);
+}
+
+@media (hover: hover) {
+  .navItem:not(.navItemActive):hover {
+    transform: scale(1.05);
+    color: var(--wm-neutral-500);
+  }
+}
+
+.navItemActive {
+  color: var(--nav-theme-color);
+}
+
+.iconBox {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 28px;
+  margin-bottom: 2px;
+}
+
+.icon {
+  transition: transform var(--wm-motion-base) var(--wm-motion-spring);
+}
+
+.navItemActive .icon {
+  transform: translateY(-1px);
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  opacity: 0.8;
+  transition:
+    color var(--wm-motion-base) var(--wm-motion-spring),
+    font-weight var(--wm-motion-base) var(--wm-motion-spring);
+}
+
+.navItemActive .label {
+  opacity: 1;
+  font-weight: 700;
+}
+
+/* ── Pulse-aware tab dot ───────────────────────────────────────── */
+
+@keyframes wmTabPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.65;
+    box-shadow: 0 0 4px var(--nav-theme-color);
+  }
+  50% {
+    transform: scale(1.45);
+    opacity: 1;
+    box-shadow: 0 0 8px var(--nav-theme-color);
+  }
+}
+
+.pulseDot {
+  position: absolute;
+  top: 1px;
+  right: 4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--nav-theme-color);
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  animation: wmTabPulse 1.6s ease-in-out infinite;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.unreadDot {
+  position: absolute;
+  top: 2px;
+  right: 5px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  z-index: 3;
+  pointer-events: none;
+}

@@ -1,15 +1,18 @@
-// src/features/employer/workforceOps/components/AnnounceApplicationCard.tsx
+﻿// src/features/employer/workforceOps/components/AnnounceApplicationCard.tsx
 //
 // Reusable application card for Announcement Dashboard.
 // Shows applicant info, rating, shifts, conflict warning, action buttons.
 
-import type { WorkforceApplication, AnnouncementShift } from "../types/workforceTypes";
-import { IconStar } from "./workforceIcons";
-import { AMBER } from "./workforceStyles";
+import type {
+  WorkforceApplication,
+  AnnouncementShift,
+} from "../../../../shared/domains/workforce/types/workforceTypes";
+import { IconStar } from "../../../../shared/domains/workforce/ui/workforceIcons";
+import { AMBER } from "../../../../shared/domains/workforce/ui/workforceStyles";
 
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Props                                                                      */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 type Props = {
   application: WorkforceApplication;
@@ -22,35 +25,47 @@ type Props = {
   isSelectable?: boolean;
 };
 
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Status Colors                                                              */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 function statusColor(status: WorkforceApplication["status"]): string {
   switch (status) {
-    case "applied": return "var(--wm-er-muted)";
-    case "selected": return "var(--wm-success)";
-    case "waiting": return "var(--wm-warning)";
-    case "not_selected": return "var(--wm-error)";
-    case "confirmed": return AMBER;
-    case "cancelled": return "var(--wm-error)";
+    case "applied":
+      return "var(--wm-er-muted)";
+    case "selected":
+      return "var(--wm-success)";
+    case "waiting":
+      return "var(--wm-warning)";
+    case "not_selected":
+      return "var(--wm-error)";
+    case "confirmed":
+      return AMBER;
+    case "cancelled":
+      return "var(--wm-error)";
   }
 }
 
 function statusLabel(status: WorkforceApplication["status"]): string {
   switch (status) {
-    case "applied": return "Applied";
-    case "selected": return "Selected";
-    case "waiting": return "Waiting List";
-    case "not_selected": return "Not Selected";
-    case "confirmed": return "Confirmed";
-    case "cancelled": return "Cancelled";
+    case "applied":
+      return "Applied";
+    case "selected":
+      return "Selected";
+    case "waiting":
+      return "Waiting List";
+    case "not_selected":
+      return "Not Selected";
+    case "confirmed":
+      return "Confirmed";
+    case "cancelled":
+      return "Cancelled";
   }
 }
 
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Component                                                                  */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 export function AnnounceApplicationCard({
   application,
@@ -74,11 +89,19 @@ export function AnnounceApplicationCard({
         padding: "12px 14px",
         borderRadius: "var(--wm-radius-10)",
         border: `1px solid ${application.status === "selected" ? "var(--wm-success)" : "var(--wm-er-border)"}`,
-        background: application.status === "selected" ? "rgba(22,163,74,0.04)" : "var(--wm-er-card)",
+        background:
+          application.status === "selected" ? "rgba(22,163,74,0.04)" : "var(--wm-er-card)",
       }}
     >
       {/* Top Row: Rank + Name + Status */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          gap: 8,
+        }}
+      >
         <div style={{ display: "flex", alignItems: "flex-start", gap: 8, minWidth: 0, flex: 1 }}>
           {/* Rank Badge */}
           {rank !== undefined && (
@@ -102,11 +125,20 @@ export function AnnounceApplicationCard({
           )}
 
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-er-text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <div
+              style={{
+                fontSize: 14,
+                fontWeight: 700,
+                color: "var(--wm-er-text)",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
               {application.employeeName}
             </div>
             <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginTop: 2 }}>
-              {categoryName} · {shiftNames}
+              {categoryName} Â· {shiftNames}
             </div>
           </div>
         </div>
@@ -131,7 +163,16 @@ export function AnnounceApplicationCard({
       {/* Rating */}
       <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 8 }}>
         {application.rating !== null ? (
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 12, fontWeight: 700, color: AMBER }}>
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 3,
+              fontSize: 12,
+              fontWeight: 700,
+              color: AMBER,
+            }}
+          >
             <IconStar /> {application.rating.toFixed(1)}
           </span>
         ) : (
@@ -221,7 +262,8 @@ export function AnnounceApplicationCard({
       {/* Cancel Info */}
       {application.status === "cancelled" && application.cancelReason && (
         <div style={{ marginTop: 6, fontSize: 11, color: "var(--wm-error)" }}>
-          Reason: {application.cancelReason}{application.cancelNote ? ` — ${application.cancelNote}` : ""}
+          Reason: {application.cancelReason}
+          {application.cancelNote ? ` â€” ${application.cancelNote}` : ""}
         </div>
       )}
     </div>

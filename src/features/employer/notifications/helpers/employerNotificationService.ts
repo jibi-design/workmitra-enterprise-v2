@@ -66,49 +66,7 @@ function handleChange() {
 
   const curr = takeSnapshot();
 
-  // --- Shift Applications (NEW) ---
-  if (curr.shiftApps !== prevSnapshot.shiftApps) {
-    const oldList = safeParseArray(prevSnapshot.shiftApps);
-    const newList = safeParseArray(curr.shiftApps);
-    const oldApplied = countByField(oldList, "status", "applied");
-    const newApplied = countByField(newList, "status", "applied");
-
-    if (newApplied > oldApplied) {
-      const diff = newApplied - oldApplied;
-      employerNotificationsStorage.pushShift(
-        `${diff} new shift application${diff > 1 ? "s" : ""} received`,
-        "A worker has applied to your shift post.",
-        ROUTE_PATHS.employerShiftHome,
-      );
-    }
-
-    const oldWithdrawn = countByField(oldList, "status", "withdrawn");
-    const newWithdrawn = countByField(newList, "status", "withdrawn");
-    if (newWithdrawn > oldWithdrawn) {
-      employerNotificationsStorage.pushShift(
-        "A worker withdrew their shift application",
-        "Check your shift posts for updated applicant status.",
-        ROUTE_PATHS.employerShiftHome,
-      );
-    }
-  }
-
-  // --- Career Applications (NEW) ---
-  if (curr.careerApps !== prevSnapshot.careerApps) {
-    const oldList = safeParseArray(prevSnapshot.careerApps);
-    const newList = safeParseArray(curr.careerApps);
-    const oldApplied = countByField(oldList, "stage", "applied");
-    const newApplied = countByField(newList, "stage", "applied");
-
-    if (newApplied > oldApplied) {
-      const diff = newApplied - oldApplied;
-      employerNotificationsStorage.pushCareer(
-        `${diff} new career application${diff > 1 ? "s" : ""} received`,
-        "A candidate has applied to your job post.",
-        ROUTE_PATHS.employerCareerHome,
-      );
-    }
-  }
+  // Shift/career application status changes are routed via pulseEventBridge.
 
   // --- HR Management changes ---
   if (curr.hrRecords !== prevSnapshot.hrRecords) {

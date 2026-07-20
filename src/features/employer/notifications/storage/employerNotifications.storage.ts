@@ -1,9 +1,25 @@
-// src/features/employer/notifications/storage/employerNotifications.storage.ts
-//
-// Employer notification storage — supports all domains.
-// Domains: shift, career, hr, console, workforce
+// App name: Job Mitra
+// File name: employerNotifications.storage.ts
+// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\notifications\storage\employerNotifications.storage.ts
 
-export type EmployerNotificationDomain = "shift" | "career" | "hr" | "console" | "workforce";
+// Employer notification storage — supports all domains.
+// Domains: shift, career, hr, console, workforce.
+
+import {
+  cleanNotificationRoute,
+  cleanNotificationText,
+  cleanOptionalNotificationText,
+  DEFAULT_NOTIFICATION_DEDUPE_WINDOW_MS,
+  DEFAULT_NOTIFICATION_MAX_ITEMS,
+  DEFAULT_NOTIFICATION_TEXT_LIMITS,
+  hasRecentNotificationDuplicate,
+  normalizeNotificationInput,
+  parseNotificationJson,
+  uniqueLatestNotifications,
+} from "../../../../shared/notifications/guards";
+
+export type EmployerNotificationDomain =
+  "shift" | "career" | "hr" | "console" | "workforce" | "employment";
 
 export type EmployerNotification = {
   id: string;
@@ -17,73 +33,34 @@ export type EmployerNotification = {
 
 const KEY = "wm_employer_notifications_v1";
 const CHANGED_EVENT = "wm:employer-notifications-changed";
-const MAX_NOTIFICATIONS = 200;
+const MAX_NOTIFICATIONS = DEFAULT_NOTIFICATION_MAX_ITEMS;
 
-type UnknownRecord = Record<string, unknown>;
+const VALID_DOMAINS: readonly EmployerNotificationDomain[] = [
+  "shift",
+  "career",
+  "hr",
+  "console",
+  "workforce",
+  "employment",
+] as const;
 
-function isRecord(x: unknown): x is UnknownRecord {
-  return typeof x === "object" && x !== null;
-}
+let cacheRaw: string | null = null;
+let cacheList: EmployerNotification[] = [];
+let cacheUnread = 0;
 
-function getString(r: UnknownRecord, k: string): string | undefined {
-  const v = r[k];
-  return typeof v === "string" ? v : undefined;
-}
-
-function getNumber(r: UnknownRecord, k: string): number | undefined {
-  const v = r[k];
-  return typeof v === "number" && Number.isFinite(v) ? v : undefined;
-}
-
-function getBool(r: UnknownRecord, k: string): boolean | undefined {
-  const v = r[k];
-  return typeof v === "boolean" ? v : undefined;
-}
-
-function safeParseArray(raw: string | null): unknown[] {
-  if (!raw) return [];
+function safeRead(): string | null {
   try {
-    const parsed = JSON.parse(raw) as unknown;
-    return Array.isArray(parsed) ? parsed : [];
+    return localStorage.getItem(KEY);
   } catch {
-    return [];
+    return null;
   }
-}
-
-const VALID_DOMAINS: EmployerNotificationDomain[] = ["shift", "career", "hr", "console", "workforce"];
-
-function normalize(rawList: unknown[]): EmployerNotification[] {
-  const out: EmployerNotification[] = [];
-
-  for (const x of rawList) {
-    if (!isRecord(x)) continue;
-
-    const id = getString(x, "id");
-    const title = getString(x, "title");
-    const createdAt = getNumber(x, "createdAt");
-    const isRead = getBool(x, "isRead");
-
-    if (!id || !title || createdAt === undefined || isRead === undefined) continue;
-
-    const domainRaw = getString(x, "domain") as EmployerNotificationDomain | undefined;
-    const domain: EmployerNotificationDomain =
-      domainRaw && VALID_DOMAINS.includes(domainRaw) ? domainRaw : "shift";
-
-    const body = getString(x, "body");
-    const route = getString(x, "route");
-
-    out.push({ id, domain, title, body, createdAt, isRead, route });
-  }
-
-  out.sort((a, b) => b.createdAt - a.createdAt);
-  return out;
 }
 
 function safeWrite(list: EmployerNotification[]) {
   try {
-    localStorage.setItem(KEY, JSON.stringify(list));
+    localStorage.setItem(KEY, JSON.stringify(uniqueLatestNotifications(list, MAX_NOTIFICATIONS)));
   } catch {
-    // demo-safe ignore
+    // demo-safe
   }
 }
 
@@ -91,7 +68,7 @@ function safeDispatch(eventName: string) {
   try {
     window.dispatchEvent(new Event(eventName));
   } catch {
-    // ignore
+    // demo-safe
   }
 }
 
@@ -100,20 +77,21 @@ function makeId(prefix: string): string {
 }
 
 function unreadCountOf(list: EmployerNotification[]): number {
-  let n = 0;
-  for (const x of list) if (!x.isRead) n++;
-  return n;
+  let count = 0;
+
+  for (const item of list) {
+    if (!item.isRead) count++;
+  }
+
+  return count;
 }
 
-let cacheRaw: string | null = null;
-let cacheList: EmployerNotification[] = [];
-let cacheUnread = 0;
-
 function readAllCached(): EmployerNotification[] {
-  const raw = localStorage.getItem(KEY);
+  const raw = safeRead();
 
   if (raw === null) {
     if (cacheRaw === null && cacheList.length === 0) return cacheList;
+
     cacheRaw = null;
     cacheList = [];
     cacheUnread = 0;
@@ -123,9 +101,13 @@ function readAllCached(): EmployerNotification[] {
   if (raw === cacheRaw) return cacheList;
 
   cacheRaw = raw;
-  const list = normalize(safeParseArray(raw));
-  cacheList = list;
-  cacheUnread = unreadCountOf(list);
+  cacheList = uniqueLatestNotifications(
+    parseNotificationJson(raw)
+      .map((item) => normalizeNotificationInput<EmployerNotificationDomain>(item, VALID_DOMAINS))
+      .filter((item): item is EmployerNotification => item !== null),
+    MAX_NOTIFICATIONS,
+  );
+  cacheUnread = unreadCountOf(cacheList);
   return cacheList;
 }
 
@@ -135,28 +117,37 @@ function pushNotification(
   body?: string,
   route?: string,
 ) {
+  const cleanTitle = cleanNotificationText(title, DEFAULT_NOTIFICATION_TEXT_LIMITS.title);
+  if (!cleanTitle) return;
+
+  const existing = readAllCached();
+
   const note: EmployerNotification = {
     id: makeId("en"),
     domain,
-    title,
-    body,
+    title: cleanTitle,
+    body: cleanOptionalNotificationText(body, DEFAULT_NOTIFICATION_TEXT_LIMITS.body),
     createdAt: Date.now(),
     isRead: false,
-    route,
+    route: cleanNotificationRoute(route),
   };
 
-  const existing = readAllCached();
-  safeWrite([note, ...existing].slice(0, MAX_NOTIFICATIONS));
+  if (hasRecentNotificationDuplicate(existing, note, DEFAULT_NOTIFICATION_DEDUPE_WINDOW_MS)) return;
+
+  safeWrite([note, ...existing]);
+  cacheRaw = null;
   safeDispatch(CHANGED_EVENT);
 }
 
 export const employerNotificationsStorage = {
   subscribe(onStoreChange: () => void): () => void {
     const handler = () => onStoreChange();
+
     window.addEventListener("storage", handler);
     window.addEventListener(CHANGED_EVENT, handler);
     window.addEventListener("focus", handler);
     document.addEventListener("visibilitychange", handler);
+
     return () => {
       window.removeEventListener("storage", handler);
       window.removeEventListener(CHANGED_EVENT, handler);
@@ -179,20 +170,20 @@ export const employerNotificationsStorage = {
   },
 
   markRead(idVal: string) {
-    const list = readAllCached();
-    const next = list.map((n) => (n.id === idVal ? { ...n, isRead: true } : n));
-    safeWrite(next);
+    const cleanId = cleanNotificationText(idVal, 120);
+    if (!cleanId) return;
+
+    safeWrite(readAllCached().map((n) => (n.id === cleanId ? { ...n, isRead: true } : n)));
+    cacheRaw = null;
     safeDispatch(CHANGED_EVENT);
   },
 
   markAllRead() {
-    const list = readAllCached();
-    const next = list.map((n) => (n.isRead ? n : { ...n, isRead: true }));
-    safeWrite(next);
+    safeWrite(readAllCached().map((n) => (n.isRead ? n : { ...n, isRead: true })));
+    cacheRaw = null;
     safeDispatch(CHANGED_EVENT);
   },
 
-  // Domain-specific push methods
   pushShift(title: string, body?: string, route?: string) {
     pushNotification("shift", title, body, route);
   },
@@ -213,8 +204,17 @@ export const employerNotificationsStorage = {
     pushNotification("workforce", title, body, route);
   },
 
+  pushEmployment(title: string, body?: string, route?: string) {
+    pushNotification("employment", title, body, route);
+  },
+
   clearAll() {
-    try { localStorage.removeItem(KEY); } catch { /* safe */ }
+    try {
+      localStorage.removeItem(KEY);
+    } catch {
+      // demo-safe
+    }
+
     cacheRaw = null;
     cacheList = [];
     cacheUnread = 0;
@@ -222,8 +222,11 @@ export const employerNotificationsStorage = {
   },
 
   deleteOne(idVal: string) {
-    const list = readAllCached().filter((n) => n.id !== idVal);
-    safeWrite(list);
+    const cleanId = cleanNotificationText(idVal, 120);
+    if (!cleanId) return;
+
+    safeWrite(readAllCached().filter((n) => n.id !== cleanId));
+    cacheRaw = null;
     safeDispatch(CHANGED_EVENT);
   },
 
@@ -231,8 +234,10 @@ export const employerNotificationsStorage = {
     const cutoff = Date.now() - 30 * 86_400_000;
     const list = readAllCached();
     const cleaned = list.filter((n) => n.createdAt >= cutoff);
+
     if (cleaned.length < list.length) {
       safeWrite(cleaned);
+      cacheRaw = null;
       safeDispatch(CHANGED_EVENT);
     }
   },

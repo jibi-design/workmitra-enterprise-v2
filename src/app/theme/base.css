@@ -1,16 +1,62 @@
-﻿/* src/app/theme/base.css — Reset, shells, topbar, container, badges */
+/* src/app/theme/base.css — Reset, shells, topbar, container, badges */
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
-html, body { height: 100%; }
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+html,
+body {
+  overflow-y: auto;
+  overscroll-behavior-y: auto;
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   background: var(--wm-emp-bg);
   color: var(--wm-emp-text);
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
-a { color: inherit; text-decoration: none; }
-button, input, select { font: inherit; }
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgba(22, 163, 74, 0.22);
+  outline-offset: 3px;
+}
+
+.wm-ee-vPlanner button:focus-visible,
+.wm-planner-gigSection button:focus-visible {
+  outline: 3px solid rgba(8, 145, 178, 0.28);
+  outline-offset: 3px;
+}
 
 /* ------------------------------------------------ */
 /* Global input readability                         */
@@ -19,7 +65,7 @@ input,
 textarea,
 select {
   font-weight: 600;
-  color: #1e293b;
+  color: var(--wm-neutral-800);
   font-size: 15px;
 }
 
@@ -34,13 +80,14 @@ input:disabled,
 textarea:disabled,
 select:disabled {
   font-weight: 600;
-  color: #1e293b;
-  -webkit-text-fill-color: #1e293b;
+  color: var(--wm-neutral-800);
+  -webkit-text-fill-color: var(--wm-neutral-800);
   opacity: 1;
 }
-button { -webkit-tap-highlight-color: transparent; }
 
-.wm-app { min-height: 100vh; }
+.wm-app {
+  min-height: 100vh;
+}
 
 .wm-container {
   width: 100%;
@@ -49,35 +96,118 @@ button { -webkit-tap-highlight-color: transparent; }
   padding: var(--wm-space-16);
 }
 
+/* Shell-only bottom clearance above fixed BottomNav + safe area */
+.pb-safe-nav {
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+}
+
 /* ------------------------------------------------ */
 /* Shell roots                                      */
 /* ------------------------------------------------ */
-.wm-shellRoot { min-height: 100vh; }
-.wm-shellEmployee { background: var(--wm-emp-bg); color: var(--wm-emp-text); }
-.wm-shellEmployer { background: var(--wm-er-bg); color: var(--wm-er-text); }
-.wm-shellAdmin { background: var(--wm-ad-bg); color: var(--wm-ad-text); }
+.wm-shellRoot {
+  min-height: 100vh;
+}
+
+.wm-shellEmployee {
+  background:
+    radial-gradient(circle at 50% -8%, rgba(22, 163, 74, 0.08), transparent 28%),
+    linear-gradient(180deg, #f8fafc 0%, #ffffff 42%, #f8fafc 100%);
+  color: var(--wm-emp-text);
+}
+
+.wm-shellEmployer {
+  background:
+    radial-gradient(circle at 10% -4%, rgba(22, 163, 74, 0.15), transparent 32%),
+    radial-gradient(circle at 92% 2%, rgba(29, 78, 216, 0.1), transparent 30%),
+    linear-gradient(180deg, #f7fbfa 0%, #eef4f8 50%, #f8fafc 100%);
+  color: var(--wm-er-text);
+}
+
+.wm-shellAdmin {
+  background: var(--wm-ad-bg);
+  color: var(--wm-ad-text);
+}
 
 /* ------------------------------------------------ */
-/* Top bar (base)                                   */
+/* Top bar                                          */
 /* ------------------------------------------------ */
 .wm-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--wm-space-12);
   padding: var(--wm-space-12) var(--wm-space-16);
-  border-bottom: 1px solid var(--wm-emp-border);
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(10px);
-  position: sticky;
-  top: 0;
-  z-index: 5;
+  border-bottom: 1px solid var(--wm-glass-border);
+  background: var(--wm-emp-glass-bg);
+  box-shadow: var(--wm-emp-surface-shadow);
 }
-.wm-title { display: flex; flex-direction: column; gap: 2px; }
-.wm-title h1 { margin: 0; font-size: 16px; line-height: 1.2; letter-spacing: 0.2px; }
-.wm-title p { margin: 0; font-size: 12px; color: var(--wm-emp-muted); }
 
-.wm-topbarActions { display: inline-flex; align-items: center; gap: 10px; }
+.wm-shellEmployee .wm-topbar {
+  border-bottom: 1px solid var(--wm-glass-border);
+  background:
+    radial-gradient(circle at 50% -80%, rgba(255, 255, 255, 0.96), transparent 68%),
+    var(--wm-emp-glass-bg-strong);
+  box-shadow: var(--wm-emp-card-shadow);
+}
+
+.wm-shellEmployer .wm-topbar {
+  border-bottom: 1px solid var(--wm-glass-border);
+  background:
+    radial-gradient(circle at 50% -80%, rgba(255, 255, 255, 0.96), transparent 68%),
+    var(--wm-er-glass-bg);
+  box-shadow: var(--wm-er-elevation-shadow);
+}
+
+.wm-shellEmployee .wm-topbar .wm-iconbtn:hover,
+.wm-shellEmployer .wm-topbar .wm-iconbtn:hover {
+  border-color: var(--wm-glass-border);
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .wm-topbar,
+  .wm-shellEmployee .wm-topbar,
+  .wm-shellEmployer .wm-topbar {
+    backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
+    -webkit-backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
+  }
+}
+
+.wm-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wm-title h1 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: var(--wm-neutral-950);
+}
+
+.wm-title p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--wm-emp-muted);
+}
+
+.wm-shellEmployer .wm-title h1 {
+  color: var(--wm-er-text);
+}
+
+.wm-shellEmployer .wm-title p {
+  color: var(--wm-er-muted);
+}
+
+.wm-topbarActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
 
 /* ------------------------------------------------ */
 /* Demo role badge                                  */
@@ -88,13 +218,14 @@ button { -webkit-tap-highlight-color: transparent; }
   align-items: center;
   padding: 1px 7px;
   border-radius: 999px;
-  border: 1px solid rgba(17, 24, 39, 0.10);
+  border: 1px solid rgba(17, 24, 39, 0.1);
   background: rgba(17, 24, 39, 0.04);
   font-size: 10px;
-  color: rgba(17, 24, 39, 0.70);
-  font-weight: 900;
+  color: rgba(17, 24, 39, 0.7);
+  font-weight: 800;
   letter-spacing: 0.4px;
 }
+
 .wm-roleBadgeAdmin {
   border-color: rgba(234, 240, 255, 0.18);
   background: rgba(234, 240, 255, 0.08);
@@ -104,19 +235,99 @@ button { -webkit-tap-highlight-color: transparent; }
 /* ------------------------------------------------ */
 /* Enterprise utilities                             */
 /* ------------------------------------------------ */
-/* Hide horizontal scrollbar on tab bars */
-.wm-hideScrollbar { scrollbar-width: none; -ms-overflow-style: none; }
-.wm-hideScrollbar::-webkit-scrollbar { display: none; }
+.wm-hideScrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
 
+.wm-hideScrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.wm-safeTop {
+  padding-top: calc(var(--wm-safe-top) + var(--wm-space-12));
+}
+
+.wm-safeBottom {
+  padding-bottom: calc(var(--wm-safe-bottom) + var(--wm-space-16));
+}
+
+.wm-scrollArea {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ------------------------------------------------ */
+/* Page header                                      */
+/* ------------------------------------------------ */
 .wm-pageHead {
   margin-top: 2px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--wm-stack-gap);
 }
-.wm-pageTitle { font-size: 16px; font-weight: 900; color: var(--wm-er-text); }
-.wm-pageSub { margin-top: 4px; font-size: 12px; color: var(--wm-er-muted); }
 
-/* Lazy loading spinner */
-@keyframes wm-spin { to { transform: rotate(360deg); } }
+.wm-pageTitle {
+  font-size: var(--wm-type-hero-size);
+  font-weight: var(--wm-type-hero-weight);
+  color: var(--wm-er-text);
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+}
+
+.wm-pageSub {
+  margin-top: 4px;
+  font-size: var(--wm-type-helper-size);
+  font-weight: var(--wm-type-helper-weight);
+  color: var(--wm-type-helper-color);
+  line-height: 1.45;
+}
+
+/* ------------------------------------------------ */
+/* Lazy loading spinner                             */
+/* ------------------------------------------------ */
+@keyframes wm-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ------------------------------------------------ */
+/* Reduced motion accessibility                     */
+/* ------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  html,
+  body {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ------------------------------------------------ */
+/* Mobile comfort                                   */
+/* ------------------------------------------------ */
+@media (max-width: 640px) {
+  .wm-container {
+    padding: var(--wm-space-14);
+  }
+
+  .wm-pageHead {
+    gap: var(--wm-space-10);
+  }
+
+  .wm-pageTitle {
+    font-size: 17px;
+  }
+
+  .wm-pageSub {
+    font-size: 11px;
+  }
+}

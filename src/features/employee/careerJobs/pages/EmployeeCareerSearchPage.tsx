@@ -1,481 +1,486 @@
-// src/features/employee/careerJobs/pages/EmployeeCareerSearchPage.tsx
-//
-// Search & filter active career job posts.
-// Navigate to job details (P2) on click.
-// Indigo accent (career domain).
+// App name: Job Mitra
+// File name: EmployeeCareerSearchPage.tsx
+// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\careerJobs\pages\EmployeeCareerSearchPage.tsx
 
-import { useMemo, useState, useSyncExternalStore } from "react";
-import { useNavigate } from "react-router-dom";
-import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { useState } from "react";
+import { EmployeeCareerSearchFilters } from "../components/EmployeeCareerSearchFilters";
+import { EmployeeCareerSearchNotice } from "../components/EmployeeCareerSearchNotice";
+import { EmployeeCareerSearchResults } from "../components/EmployeeCareerSearchResults";
+import { useEmployeeCareerSearchPageState } from "../hooks/useEmployeeCareerSearchPageState";
 
-import {
-  getCareerSearchSnapshot,
-  subscribeCareerSearch,
-  filterCareerPosts,
-  fmtSalaryRange,
-  fmtExperience,
-  fmtJobType,
-  fmtWorkMode,
-} from "../helpers/careerSearchHelpers";
+const CAREER_BLUE = "var(--wm-er-accent-career, #2563eb)";
+const CAREER_TEXT = "#0f172a";
+const CAREER_MUTED = "#475569";
 
-import { jobAlertStorage } from "../../../../shared/utils/jobAlertStorage";
-import type { CareerAlertCriteria } from "../../../../shared/utils/jobAlertTypes";
-import { SavedSearchCard } from "../../../../shared/components/SavedSearchCard";
+type CareerSearchMainTab = "search" | "recent" | "saved" | "applied";
 
-import type {
-  CareerSearchPost,
-  JobTypeFilter,
-  WorkModeFilter,
-  ExperienceFilter,
-} from "../helpers/careerSearchHelpers";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Component
-// ─────────────────────────────────────────────────────────────────────────────
+const MAIN_TABS: { id: CareerSearchMainTab; label: string }[] = [
+  { id: "search", label: "Search" },
+  { id: "recent", label: "Recent" },
+  { id: "saved", label: "Saved" },
+  { id: "applied", label: "Applied" },
+];
 
 export function EmployeeCareerSearchPage() {
-  const nav = useNavigate();
+  const state = useEmployeeCareerSearchPageState();
+  const [activeTab, setActiveTab] = useState<CareerSearchMainTab>("search");
+  const [showFilters, setShowFilters] = useState(false);
 
-  const allPosts = useSyncExternalStore(
-    subscribeCareerSearch,
-    getCareerSearchSnapshot,
-    getCareerSearchSnapshot,
-  );
-
-  // ── Filter State ──
-  const [query, setQuery] = useState("");
-  const [jobType, setJobType] = useState<JobTypeFilter>("any");
-  const [workMode, setWorkMode] = useState<WorkModeFilter>("any");
-  const [experience, setExperience] = useState<ExperienceFilter>("any");
-  const [department, setDepartment] = useState("any");
-  const [notice, setNotice] = useState("");
-
-  // ── Dynamic departments from posts ──
-  const departments = useMemo(() => {
-    const set = new Set<string>();
-    for (const p of allPosts) {
-      if (p.department && p.department.trim()) set.add(p.department.trim());
-    }
-    return Array.from(set).sort();
-  }, [allPosts]);
-
-  // ── Filtered Results ──
-  const filtered = useMemo(
-    () => filterCareerPosts(allPosts, query, jobType, workMode, experience, department),
-    [allPosts, query, jobType, workMode, experience, department],
-  );
-
-  const hasFilters =
-    query.trim().length > 0 ||
-    jobType !== "any" ||
-    workMode !== "any" ||
-    experience !== "any" ||
-    department !== "any";
-
-  function clearFilters() {
-    setQuery("");
-    setJobType("any");
-    setWorkMode("any");
-    setExperience("any");
-    setDepartment("any");
-  }
-
-  function openDetails(postId: string) {
-    nav(ROUTE_PATHS.employeeCareerPostDetails.replace(":postId", postId));
-  }
+  const hasSearchText = state.query.trim().length > 0 || state.locationQuery.trim().length > 0;
 
   return (
-    <div>
-      {/* Page Header */}
-      <div className="wm-pageHead">
-        <div>
-          <div className="wm-pageTitle">Find Career Jobs</div>
-          <div className="wm-pageSub">Search permanent positions and apply.</div>
-        </div>
-      </div>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 20,
+        paddingBottom: 40,
+        paddingTop: 10,
+      }}
+    >
+      {/* Premium Header Section */}
+      <section
+        style={{
+          padding: "22px 18px",
+          borderRadius: 28,
+          border: "1px solid rgba(255, 255, 255, 0.9)",
+          background: "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(241,245,249,0.75))",
+          boxShadow: "0 20px 40px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255,255,255,1)",
+          backdropFilter: "blur(20px)",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            right: -40,
+            top: -60,
+            width: 180,
+            height: 180,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(37,99,235,0.08) 0%, rgba(37,99,235,0) 70%)",
+            pointerEvents: "none",
+          }}
+        />
 
-      {/* Search + Filters */}
-      <section className="wm-ee-card" style={{ marginTop: 12 }}>
-        <div style={{ marginBottom: 12 }}>
-          <input
-            className="wm-input"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by title, company, location, or skill..."
-            aria-label="Search career jobs"
-          />
-        </div>
-
-        {/* Job Type */}
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
-          {(["any", "full-time", "part-time", "contract"] as JobTypeFilter[]).map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => setJobType(t)}
-              style={{
-                fontSize: 12,
-                fontWeight: jobType === t ? 900 : 700,
-                padding: "6px 12px",
-                borderRadius: 999,
-                border: jobType === t
-                  ? "1.5px solid var(--wm-er-accent-career)"
-                  : "1px solid var(--wm-emp-border, rgba(15,23,42,0.10))",
-                background: jobType === t
-                  ? "rgba(29,78,216,0.08)"
-                  : "var(--wm-emp-bg, #fff)",
-                color: jobType === t
-                  ? "var(--wm-er-accent-career)"
-                  : "var(--wm-emp-muted, #6b7280)",
-                cursor: "pointer",
-                transition: "all 0.15s",
-              }}
+        <div
+          style={{
+            position: "relative",
+            zIndex: 1,
+            display: "flex",
+            alignItems: "flex-start",
+            gap: 14,
+          }}
+        >
+          <div
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: 16,
+              background: "linear-gradient(135deg, #eff6ff, #dbeafe)",
+              border: "1px solid rgba(255, 255, 255, 0.8)",
+              color: CAREER_BLUE,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              boxShadow: "0 8px 16px rgba(37,99,235,0.12), inset 0 2px 4px rgba(255,255,255,0.8)",
+            }}
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              {t === "any" ? "All types" : fmtJobType(t)}
-            </button>
-          ))}
-        </div>
-
-        {/* Work Mode */}
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
-          {(["any", "on-site", "remote", "hybrid"] as WorkModeFilter[]).map((m) => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => setWorkMode(m)}
-              style={{
-                fontSize: 12,
-                fontWeight: workMode === m ? 900 : 700,
-                padding: "6px 12px",
-                borderRadius: 999,
-                border: workMode === m
-                  ? "1.5px solid var(--wm-er-accent-career)"
-                  : "1px solid var(--wm-emp-border, rgba(15,23,42,0.10))",
-                background: workMode === m
-                  ? "rgba(29,78,216,0.08)"
-                  : "var(--wm-emp-bg, #fff)",
-                color: workMode === m
-                  ? "var(--wm-er-accent-career)"
-                  : "var(--wm-emp-muted, #6b7280)",
-                cursor: "pointer",
-                transition: "all 0.15s",
-              }}
-            >
-              {m === "any" ? "All modes" : fmtWorkMode(m)}
-            </button>
-          ))}
-        </div>
-
-        {/* Experience */}
-        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
-          {(["any", "0-1", "1-3", "3-7", "7+"] as ExperienceFilter[]).map((e) => {
-            const labels: Record<ExperienceFilter, string> = {
-              any: "Any experience",
-              "0-1": "0-1 yr",
-              "1-3": "1-3 yrs",
-              "3-7": "3-7 yrs",
-              "7+": "7+ yrs",
-            };
-            return (
-              <button
-                key={e}
-                type="button"
-                onClick={() => setExperience(e)}
-                style={{
-                  fontSize: 12,
-                  fontWeight: experience === e ? 900 : 700,
-                  padding: "6px 12px",
-                  borderRadius: 999,
-                  border: experience === e
-                    ? "1.5px solid var(--wm-er-accent-career)"
-                    : "1px solid var(--wm-emp-border, rgba(15,23,42,0.10))",
-                  background: experience === e
-                    ? "rgba(29,78,216,0.08)"
-                    : "var(--wm-emp-bg, #fff)",
-                  color: experience === e
-                    ? "var(--wm-er-accent-career)"
-                    : "var(--wm-emp-muted, #6b7280)",
-                  cursor: "pointer",
-                  transition: "all 0.15s",
-                }}
-              >
-                {labels[e]}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Department (dynamic) */}
-        {departments.length > 0 && (
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
-            <button
-              type="button"
-              onClick={() => setDepartment("any")}
-              style={{
-                fontSize: 12,
-                fontWeight: department === "any" ? 900 : 700,
-                padding: "6px 12px",
-                borderRadius: 999,
-                border: department === "any"
-                  ? "1.5px solid var(--wm-er-accent-career)"
-                  : "1px solid var(--wm-emp-border, rgba(15,23,42,0.10))",
-                background: department === "any"
-                  ? "rgba(29,78,216,0.08)"
-                  : "var(--wm-emp-bg, #fff)",
-                color: department === "any"
-                  ? "var(--wm-er-accent-career)"
-                  : "var(--wm-emp-muted, #6b7280)",
-                cursor: "pointer",
-                transition: "all 0.15s",
-              }}
-            >
-              All departments
-            </button>
-            {departments.map((d) => (
-              <button
-                key={d}
-                type="button"
-                onClick={() => setDepartment(d)}
-                style={{
-                  fontSize: 12,
-                  fontWeight: department === d ? 900 : 700,
-                  padding: "6px 12px",
-                  borderRadius: 999,
-                  border: department === d
-                    ? "1.5px solid var(--wm-er-accent-career)"
-                    : "1px solid var(--wm-emp-border, rgba(15,23,42,0.10))",
-                  background: department === d
-                    ? "rgba(29,78,216,0.08)"
-                    : "var(--wm-emp-bg, #fff)",
-                  color: department === d
-                    ? "var(--wm-er-accent-career)"
-                    : "var(--wm-emp-muted, #6b7280)",
-                  cursor: "pointer",
-                  transition: "all 0.15s",
-                }}
-              >
-                {d}
-              </button>
-            ))}
+              <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+            </svg>
           </div>
-        )}
 
-        {/* Clear all */}
-        {hasFilters && (
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <button
-              type="button"
-              onClick={clearFilters}
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div
               style={{
-                fontSize: 12,
+                display: "inline-block",
+                padding: "5px 12px",
+                borderRadius: 20,
+                background: "rgba(37, 99, 235, 0.08)",
+                border: "1px solid rgba(37, 99, 235, 0.12)",
+                fontSize: 10.5,
                 fontWeight: 800,
-                padding: "4px 10px",
-                border: "none",
-                background: "none",
-                color: "var(--wm-error, #dc2626)",
-                cursor: "pointer",
+                letterSpacing: 0.6,
+                color: "#1e40af",
+                textTransform: "uppercase",
               }}
             >
-              Clear all filters
-            </button>
+              Career Search
+            </div>
+
+            <h1
+              style={{
+                margin: "10px 0 0",
+                fontSize: 22,
+                fontWeight: 800,
+                color: CAREER_TEXT,
+                lineHeight: 1.2,
+                letterSpacing: "-0.02em",
+              }}
+            >
+              Find your next career
+            </h1>
+
+            <p
+              style={{
+                margin: "6px 0 0",
+                fontSize: 13,
+                color: CAREER_MUTED,
+                fontWeight: 500,
+                lineHeight: 1.5,
+              }}
+            >
+              Search, save, and review career jobs from one clean workspace.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Premium Search Container */}
+      <section
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+          background: "rgba(255, 255, 255, 0.65)",
+          padding: 16,
+          borderRadius: 24,
+          border: "1px solid rgba(255, 255, 255, 0.9)",
+          boxShadow: "0 8px 24px rgba(15, 23, 42, 0.04)",
+          backdropFilter: "blur(16px)",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: 10,
+          }}
+        >
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: CAREER_TEXT }}>
+              Search workspace
+            </div>
+            <div style={{ marginTop: 4, fontSize: 12, color: CAREER_MUTED, fontWeight: 500 }}>
+              Search by job and location for cleaner results.
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={state.saveSearch}
+            style={{
+              flexShrink: 0,
+              padding: "8px 12px",
+              borderRadius: 20,
+              background:
+                hasSearchText || state.hasFilters
+                  ? "rgba(37, 99, 235, 0.08)"
+                  : "rgba(15, 23, 42, 0.04)",
+              color: hasSearchText || state.hasFilters ? CAREER_BLUE : CAREER_MUTED,
+              border:
+                hasSearchText || state.hasFilters
+                  ? "1px solid rgba(37, 99, 235, 0.12)"
+                  : "1px solid transparent",
+              cursor: "pointer",
+              fontSize: 11.5,
+              fontWeight: 700,
+              transition: "all 0.2s ease",
+            }}
+          >
+            Save Search
+          </button>
+        </div>
+
+        <SearchInput
+          icon="search"
+          placeholder="Job title, skill, or company"
+          value={state.query}
+          onChange={state.setQuery}
+        />
+
+        <div style={{ display: "flex", gap: 10 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <SearchInput
+              icon="location"
+              placeholder="Location"
+              value={state.locationQuery}
+              onChange={state.setLocationQuery}
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowFilters((value) => !value)}
+            style={{
+              padding: "0 16px",
+              borderRadius: 16,
+              background:
+                state.hasFilters || showFilters
+                  ? "rgba(37, 99, 235, 0.08)"
+                  : "rgba(255,255,255,0.8)",
+              color: state.hasFilters || showFilters ? CAREER_BLUE : CAREER_MUTED,
+              border:
+                state.hasFilters || showFilters
+                  ? `1px solid rgba(37, 99, 235, 0.2)`
+                  : "1px solid rgba(15, 23, 42, 0.08)",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+              fontSize: 13,
+              fontWeight: 700,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.02)",
+            }}
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+            </svg>
+            Filters
+          </button>
+        </div>
+
+        {showFilters && (
+          <div
+            style={{ marginTop: 8, paddingTop: 16, borderTop: "1px solid rgba(15, 23, 42, 0.06)" }}
+          >
+            <EmployeeCareerSearchFilters
+              query={state.query}
+              resultCount={state.filtered.length}
+              jobType={state.jobType}
+              workMode={state.workMode}
+              experience={state.experience}
+              hasFilters={state.hasFilters}
+              onQueryChange={state.setQuery}
+              onJobTypeChange={state.setJobType}
+              onWorkModeChange={state.setWorkMode}
+              onExperienceChange={state.setExperience}
+              onClearFilters={state.clearFilters}
+              onSavePreference={state.saveSearch}
+            />
           </div>
         )}
       </section>
 
-      {/* Save Search + Alerts */}
-      {hasFilters && (
-        <button
-          type="button"
-          onClick={() => {
-            const criteria: CareerAlertCriteria = {
-              domain: "career",
-              query: query.trim() || undefined,
-              jobType: jobType !== "any" ? jobType : undefined,
-              workMode: workMode !== "any" ? workMode : undefined,
-              experience: experience !== "any" ? experience : undefined,
-              department: department !== "any" ? department : undefined,
-            };
-            const result = jobAlertStorage.save("career", criteria);
-            setNotice(result.success
-              ? "Search saved! You'll be notified of new matches."
-              : result.reason ?? "Could not save alert.");
-          }}
-          style={{
-            marginTop: 10, width: "100%", padding: "10px 16px", borderRadius: 10,
-            border: "1px solid rgba(29,78,216,0.3)", background: "rgba(29,78,216,0.06)",
-            color: "var(--wm-er-accent-career)", fontSize: 12, fontWeight: 700, cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-          }}
-        >
-          Save this search
-        </button>
-      )}
-      <SavedSearchCard />
-
-      {/* Results Count */}
-      <div style={{ marginTop: 12, fontSize: 12, color: "var(--wm-emp-muted, #6b7280)", fontWeight: 900 }}>
-        {filtered.length} {filtered.length === 1 ? "job" : "jobs"} found
-      </div>
-
-      {/* Result Cards */}
-      <div style={{ marginTop: 10, display: "grid", gap: 10, marginBottom: 24 }}>
-        {filtered.length === 0 && (
-          <div className="wm-ee-card" style={{ textAlign: "center", padding: 24 }}>
-            <div style={{ fontWeight: 900, fontSize: 14 }}>No jobs found</div>
-            <div style={{ marginTop: 6, fontSize: 13, color: "var(--wm-emp-muted, #6b7280)", lineHeight: 1.5 }}>
-              {hasFilters
-                ? "Try changing your filters or search query."
-                : "No career jobs available right now. Check back later."}
-            </div>
-            {hasFilters && (
-              <button
-                className="wm-outlineBtn"
-                type="button"
-                onClick={clearFilters}
-                style={{ marginTop: 12 }}
-              >
-                Clear filters
-              </button>
-            )}
-          </div>
-        )}
-
-        {filtered.map((p) => (
-          <JobCard key={p.id} post={p} onOpen={openDetails} />
+      {/* Clean Tabs */}
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          padding: "0 4px",
+          borderBottom: "1px solid rgba(15, 23, 42, 0.08)",
+          overflowX: "auto",
+        }}
+      >
+        {MAIN_TABS.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setActiveTab(tab.id)}
+            style={{
+              padding: "10px 14px",
+              background: "transparent",
+              border: "none",
+              borderBottom:
+                activeTab === tab.id ? `2px solid ${CAREER_BLUE}` : "2px solid transparent",
+              color: activeTab === tab.id ? CAREER_BLUE : CAREER_MUTED,
+              fontWeight: activeTab === tab.id ? 800 : 600,
+              fontSize: 14,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              transition: "all 0.2s ease",
+            }}
+          >
+            {tab.label}
+          </button>
         ))}
       </div>
-      {notice && (
-        <div style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", padding: "10px 20px", borderRadius: 10, background: "var(--wm-er-accent-career)", color: "#fff", fontSize: 13, fontWeight: 700, zIndex: 100, boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}>
-          {notice}
-        </div>
-      )}
+
+      {/* Results Section */}
+      <section style={{ padding: "0 4px" }}>
+        {activeTab === "search" && (
+          <EmployeeCareerSearchResults
+            posts={state.visiblePosts}
+            savedPosts={state.savedPosts}
+            recentPosts={state.recentPosts}
+            appliedPosts={state.appliedPosts}
+            savedJobIds={state.savedJobIds}
+            applicationStatusByPostId={state.applicationStatusByPostId}
+            activeTab={state.activeTab}
+            resultTitle={hasSearchText ? "Search results" : "Recommended for you"}
+            hasFilters={state.hasFilters}
+            query={state.query}
+            onOpen={state.openDetails}
+            onOpenApplications={state.openApplications}
+            onToggleSaved={state.toggleSaved}
+            onClearFilters={state.clearFilters}
+          />
+        )}
+
+        {activeTab === "recent" && (
+          <EmployeeCareerSearchResults
+            posts={state.recentPosts}
+            savedPosts={[]}
+            recentPosts={[]}
+            appliedPosts={[]}
+            savedJobIds={state.savedJobIds}
+            applicationStatusByPostId={state.applicationStatusByPostId}
+            activeTab="recent"
+            resultTitle={`Recently viewed (${state.recentPosts.length})`}
+            hasFilters={false}
+            query=""
+            onOpen={state.openDetails}
+            onOpenApplications={state.openApplications}
+            onToggleSaved={state.toggleSaved}
+            onClearFilters={state.clearFilters}
+          />
+        )}
+
+        {activeTab === "saved" && (
+          <EmployeeCareerSearchResults
+            posts={state.savedPosts}
+            savedPosts={[]}
+            recentPosts={[]}
+            appliedPosts={[]}
+            savedJobIds={state.savedJobIds}
+            applicationStatusByPostId={state.applicationStatusByPostId}
+            activeTab="saved"
+            resultTitle={`Saved jobs (${state.savedPosts.length})`}
+            hasFilters={false}
+            query=""
+            onOpen={state.openDetails}
+            onOpenApplications={state.openApplications}
+            onToggleSaved={state.toggleSaved}
+            onClearFilters={state.clearFilters}
+          />
+        )}
+
+        {activeTab === "applied" && (
+          <EmployeeCareerSearchResults
+            posts={state.appliedPosts}
+            savedPosts={[]}
+            recentPosts={[]}
+            appliedPosts={[]}
+            savedJobIds={state.savedJobIds}
+            applicationStatusByPostId={state.applicationStatusByPostId}
+            activeTab="applied"
+            resultTitle={`Applied jobs (${state.appliedPosts.length})`}
+            hasFilters={false}
+            query=""
+            onOpen={state.openDetails}
+            onOpenApplications={state.openApplications}
+            onToggleSaved={state.toggleSaved}
+            onClearFilters={state.clearFilters}
+          />
+        )}
+      </section>
+
+      <EmployeeCareerSearchNotice notice={state.notice} />
     </div>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Job Card Sub-component
-// ─────────────────────────────────────────────────────────────────────────────
-
-function JobCard({
-  post,
-  onOpen,
+function SearchInput({
+  icon,
+  placeholder,
+  value,
+  onChange,
 }: {
-  post: CareerSearchPost;
-  onOpen: (id: string) => void;
+  icon: "search" | "location";
+  placeholder: string;
+  value: string;
+  onChange: (value: string) => void;
 }) {
-  const salary = fmtSalaryRange(post.salaryMin, post.salaryMax, post.salaryPeriod);
-  const exp = fmtExperience(post.experienceMin, post.experienceMax);
-
   return (
-    <button
-      type="button"
-      onClick={() => onOpen(post.id)}
-      style={{
-        width: "100%",
-        textAlign: "left",
-        padding: 14,
-        borderRadius: 14,
-        border: "1px solid rgba(29,78,216,0.12)",
-        background: "var(--wm-emp-surface, #fff)",
-        cursor: "pointer",
-        transition: "border-color 0.15s",
-      }}
-      aria-label={`Open ${post.jobTitle} at ${post.companyName}`}
-    >
-      {/* Title + Company */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-        <div>
-          <div style={{ fontSize: 14, fontWeight: 1000, color: "var(--wm-er-accent-career)" }}>
-            {post.jobTitle}
-          </div>
-          <div style={{ fontSize: 12, fontWeight: 800, color: "var(--wm-emp-text, #111827)", marginTop: 2 }}>
-            {post.companyName}
-            {post.department ? ` — ${post.department}` : ""}
-          </div>
-        </div>
-        <span
-          style={{
-            fontSize: 11,
-            fontWeight: 800,
-            color: "var(--wm-er-accent-career)",
-            whiteSpace: "nowrap",
-          }}
-        >
-          View
-        </span>
-      </div>
-
-      {/* Tags Row */}
-      <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
-        <TagPill label={fmtJobType(post.jobType)} />
-        <TagPill label={fmtWorkMode(post.workMode)} />
-        {post.location && <TagPill label={post.location} />}
-      </div>
-
-      {/* Details Row */}
-      <div
+    <div style={{ position: "relative" }}>
+      <span
+        aria-hidden="true"
         style={{
-          marginTop: 8,
+          position: "absolute",
+          left: 14,
+          top: "50%",
+          transform: "translateY(-50%)",
+          color: "#64748b",
           display: "flex",
-          gap: 14,
-          flexWrap: "wrap",
-          fontSize: 12,
-          color: "var(--wm-emp-muted, #6b7280)",
+          alignItems: "center",
         }}
       >
-        <span>Salary: {salary}</span>
-        <span>Exp: {exp}</span>
-        <span>Rounds: {post.interviewRounds}</span>
-      </div>
+        {icon === "search" ? (
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+        ) : (
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+        )}
+      </span>
 
-      {/* Skills */}
-      {post.skills.length > 0 && (
-        <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
-          {post.skills.slice(0, 5).map((s) => (
-            <span
-              key={s}
-              style={{
-                fontSize: 11,
-                fontWeight: 800,
-                padding: "2px 8px",
-                borderRadius: 999,
-                background: "rgba(29,78,216,0.08)",
-                color: "var(--wm-er-accent-career)",
-              }}
-            >
-              {s}
-            </span>
-          ))}
-          {post.skills.length > 5 && (
-            <span style={{ fontSize: 11, color: "var(--wm-emp-muted, #6b7280)" }}>
-              +{post.skills.length - 5} more
-            </span>
-          )}
-        </div>
-      )}
-    </button>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Tag Pill
-// ─────────────────────────────────────────────────────────────────────────────
-
-function TagPill({ label }: { label: string }) {
-  return (
-    <span
-      style={{
-        fontSize: 11,
-        fontWeight: 800,
-        padding: "2px 8px",
-        borderRadius: 999,
-        background: "rgba(29,78,216,0.06)",
-        border: "1px solid rgba(29,78,216,0.12)",
-        color: "var(--wm-emp-muted, #6b7280)",
-      }}
-    >
-      {label}
-    </span>
+      <input
+        type="text"
+        placeholder={placeholder}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        style={{
+          width: "100%",
+          padding: "14px 14px 14px 42px",
+          borderRadius: 16,
+          border: "1px solid rgba(15, 23, 42, 0.08)",
+          fontSize: 14,
+          fontWeight: 600,
+          color: "#0f172a",
+          outline: "none",
+          boxSizing: "border-box",
+          background: "rgba(255,255,255,0.85)",
+          boxShadow: "inset 0 2px 4px rgba(0,0,0,0.01)",
+          transition: "border-color 0.2s ease",
+        }}
+      />
+    </div>
   );
 }

@@ -1,4 +1,4 @@
-/** Job Mitra | uniqueIdGenerator.ts | C:\projects\WorkMitra_Enterprise_v2\src\shared\identity\generators\uniqueIdGenerator.ts */
+/** Job Mitra | uniqueIdGenerator.ts — Mitra Labs ML identity generator */
 
 import {
   ID_CHARSET,
@@ -9,18 +9,12 @@ import {
   ID_SEPARATOR,
 } from "../constants/idConstants";
 
-/**
- * Generates a cryptographically random character from ID_CHARSET.
- */
 function randomChar(): string {
   const array = new Uint8Array(1);
   crypto.getRandomValues(array);
   return ID_CHARSET[array[0] % ID_CHARSET.length];
 }
 
-/**
- * Generates a random block of specified length.
- */
 function randomBlock(length: number): string {
   let block = "";
   for (let i = 0; i < length; i++) {
@@ -31,9 +25,6 @@ function randomBlock(length: number): string {
 
 /**
  * Derives the 3-character center block from a name.
- * - Strips non-A-Z characters.
- * - Takes first 3 uppercase letters.
- * - Pads with "X" if fewer than 3 letters.
  */
 export function deriveNameBlock(name: string): string {
   const letters = name
@@ -45,41 +36,18 @@ export function deriveNameBlock(name: string): string {
 }
 
 /**
- * Computes a single check character from the raw ID characters.
- */
-function charToChecksumSafe(ch: string): string {
-  if (ch === "I") return "J";
-  if (ch === "O") return "P";
-  return ch;
-}
-
-function computeCheckChar(block1: string, nameBlock: string, block3Partial: string): string {
-  const raw = block1 + nameBlock + block3Partial;
-  let sum = 0;
-  for (let i = 0; i < raw.length; i++) {
-    const safeCh = charToChecksumSafe(raw[i]);
-    const charIndex = ID_CHARSET.indexOf(safeCh);
-    const safeIndex = charIndex >= 0 ? charIndex : 0;
-    sum += safeIndex * (i + 1);
-  }
-  return ID_CHARSET[sum % ID_CHARSET.length];
-}
-
-/**
- * Generates a single Job Mitra unique ID.
+ * Generates a single Mitra Labs unique ID.
  *
- * Format: JM-XXXX-ABC-XXXX
- *   - JM      = fixed prefix
- *   - XXXX    = 4 random characters (block 1)
- *   - ABC     = first 3 letters of name
- *   - XXX+C   = 3 random characters + 1 check character (block 3)
+ * Format: ML-XXXX-ABC-XXXX
+ *   - ML   = Mitra Labs prefix
+ *   - XXXX = 4 random alphanumeric characters
+ *   - ABC  = first 3 letters of name (padded)
+ *   - XXXX = 4 random alphanumeric characters
  */
 export function generateRawId(name: string): string {
   const block1 = randomBlock(ID_BLOCK_LENGTH);
   const nameBlock = deriveNameBlock(name);
-  const block3Partial = randomBlock(ID_BLOCK_LENGTH - 1);
-  const checkChar = computeCheckChar(block1, nameBlock, block3Partial);
-  const block3 = block3Partial + checkChar;
+  const block3 = randomBlock(ID_BLOCK_LENGTH);
 
   return [ID_PREFIX, block1, nameBlock, block3].join(ID_SEPARATOR);
 }

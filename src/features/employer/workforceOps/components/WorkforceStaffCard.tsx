@@ -1,18 +1,23 @@
-// src/features/employer/workforceOps/components/WorkforceStaffCard.tsx
+﻿// src/features/employer/workforceOps/components/WorkforceStaffCard.tsx
 //
 // Reusable staff card for Workforce Ops Hub.
 // Displays staff info in a clickable card format.
 
 import { useMemo } from "react";
 import { workforceCategoryService } from "../services/workforceCategoryService";
-import type { WorkforceStaff } from "../types/workforceTypes";
-import { IconStar, IconArrowRight } from "./workforceIcons";
+import type { WorkforceStaff } from "../../../../shared/domains/workforce/types/workforceTypes";
+import { IconStar, IconArrowRight } from "../../../../shared/domains/workforce/ui/workforceIcons";
 import { RatingPendingBadge } from "../../../../shared/components/RatingPendingBadge";
-import { AMBER, AMBER_BG, staffCardStyle, timeAgo } from "./workforceStyles";
+import {
+  AMBER,
+  AMBER_BG,
+  staffCardStyle,
+  timeAgo,
+} from "../../../../shared/domains/workforce/ui/workforceStyles";
 
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Props                                                                      */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 type Props = {
   staff: WorkforceStaff;
@@ -24,9 +29,9 @@ type Props = {
   compact?: boolean;
 };
 
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Component                                                                  */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 export function WorkforceStaffCard({
   staff,
@@ -52,7 +57,14 @@ export function WorkforceStaffCard({
       style={{ ...staffCardStyle, padding: cardPadding, cursor: onClick ? "pointer" : "default" }}
       onClick={onClick}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          gap: 8,
+        }}
+      >
         {/* Left: Info */}
         <div style={{ minWidth: 0, flex: 1 }}>
           {/* Name */}
@@ -72,7 +84,7 @@ export function WorkforceStaffCard({
           {/* ID + City */}
           <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginTop: 2 }}>
             ID: {staff.employeeUniqueId}
-            {staff.employeeCity && ` · ${staff.employeeCity}`}
+            {staff.employeeCity && ` Â· ${staff.employeeCity}`}
           </div>
 
           {/* Category chips */}
@@ -98,17 +110,29 @@ export function WorkforceStaffCard({
 
           {/* Rating + Added time */}
           {(showRating || showAddedTime) && (
-            <div style={{ marginTop: compact ? 4 : 6, display: "flex", alignItems: "center", gap: 10 }}>
-              {showRating && (
-                staff.rating !== null && staff.ratingCount > 0 ? (
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 12, fontWeight: 700, color: AMBER }}>
+            <div
+              style={{ marginTop: compact ? 4 : 6, display: "flex", alignItems: "center", gap: 10 }}
+            >
+              {showRating &&
+                (staff.rating !== null && staff.ratingCount > 0 ? (
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 3,
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: AMBER,
+                    }}
+                  >
                     <IconStar /> {staff.rating.toFixed(1)}
-                    <span style={{ fontWeight: 500, color: "var(--wm-er-muted)" }}>({staff.ratingCount})</span>
+                    <span style={{ fontWeight: 500, color: "var(--wm-er-muted)" }}>
+                      ({staff.ratingCount})
+                    </span>
                   </span>
                 ) : (
                   <RatingPendingBadge accentColor={AMBER} />
-                )
-              )}
+                ))}
               {showAddedTime && (
                 <span style={{ fontSize: 11, color: "var(--wm-er-muted)" }}>
                   Added {timeAgo(staff.addedAt)}

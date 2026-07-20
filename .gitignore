@@ -6,7 +6,12 @@ dist-ssr
 Thumbs.db
 *.log
 .env
-.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production
+# .env.example is intentionally NOT ignored — commit it as a template for new developers
 src/index.css.__tmp
 
 # Local backups

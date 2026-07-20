@@ -1,9 +1,12 @@
-// src/features/employee/employment/components/EmploymentResignationSection.tsx
-//
-// Resignation pending/notice period info + important notice + resign button.
+// App name: Job Mitra
+// File name: EmploymentResignationSection.tsx
+// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\employment\components\EmploymentResignationSection.tsx
 
 import type { EmploymentRecord } from "../storage/employmentLifecycle.storage";
 import { formatDate } from "../helpers/employmentDetailHelpers";
+
+const TEXT = "var(--wm-emp-text, var(--wm-er-text, #1e293b))";
+const MUTED = "var(--wm-emp-muted, var(--wm-er-muted, #64748b))";
 
 function IconWarning() {
   return (
@@ -23,64 +26,100 @@ export function EmploymentResignationSection({ record, onResign }: Props) {
 
   return (
     <>
-      {/* Resignation pending */}
       {record.status === "resignation_pending" && (
         <div className="wm-ee-card" style={{ borderLeft: "4px solid #d97706" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#d97706", fontWeight: 900, fontSize: 14, marginBottom: 8 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              color: "#d97706",
+              fontWeight: 950,
+              fontSize: 14,
+              marginBottom: 8,
+            }}
+          >
             <IconWarning /> Resignation Submitted
           </div>
+
           {record.resignationNote && (
-            <div style={{ fontSize: 12, color: "var(--wm-emp-text, var(--wm-er-text))", marginBottom: 6 }}>
-              <span style={{ fontWeight: 700, color: "var(--wm-emp-muted, var(--wm-er-muted))" }}>Your note: </span>{record.resignationNote}
+            <div style={{ fontSize: 12, color: TEXT, marginBottom: 6, lineHeight: 1.5 }}>
+              <span style={{ fontWeight: 800, color: MUTED }}>Your note: </span>
+              {record.resignationNote}
             </div>
           )}
+
           {record.preferredLastDate && (
-            <div style={{ fontSize: 12, color: "var(--wm-emp-muted, var(--wm-er-muted))" }}>
-              Preferred last date: <span style={{ fontWeight: 800, color: "var(--wm-emp-text, var(--wm-er-text))" }}>{formatDate(record.preferredLastDate)}</span>
+            <div style={{ fontSize: 12, color: MUTED }}>
+              Preferred last date:{" "}
+              <span style={{ fontWeight: 850, color: TEXT }}>
+                {formatDate(record.preferredLastDate)}
+              </span>
             </div>
           )}
-          <div style={{ fontSize: 11, color: "#d97706", marginTop: 10, fontWeight: 700 }}>Waiting for employer to accept your resignation.</div>
+
+          <div style={{ fontSize: 11.5, color: "#d97706", marginTop: 10, fontWeight: 850 }}>
+            Waiting for employer to accept your resignation.
+          </div>
         </div>
       )}
 
-      {/* Notice period */}
       {record.status === "notice_period" && (
         <div className="wm-ee-card" style={{ borderLeft: "4px solid #d97706" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#d97706", fontWeight: 900, fontSize: 14 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              color: "#d97706",
+              fontWeight: 950,
+              fontSize: 14,
+            }}
+          >
             <IconWarning /> Notice Period Active
           </div>
-          <div style={{ fontSize: 12, color: "var(--wm-emp-muted, var(--wm-er-muted))", marginTop: 8 }}>
-            Your employer has accepted your resignation. Complete any pending handover and wait for exit processing.
+
+          <div style={{ fontSize: 12, color: MUTED, marginTop: 8, lineHeight: 1.55 }}>
+            Your employer has accepted your resignation. Complete any pending handover and wait for
+            exit processing.
           </div>
         </div>
       )}
 
-      {/* Important notice */}
       {canResign && (
-        <div style={{ background: "rgba(37,99,235,0.05)", border: "1px solid rgba(37,99,235,0.12)", borderRadius: 12, padding: 14 }}>
-          <div style={{ fontWeight: 900, fontSize: 12, color: "#2563eb", marginBottom: 4 }}>Important</div>
-          <div style={{ fontSize: 11, color: "var(--wm-emp-text, var(--wm-er-text))", lineHeight: 1.6 }}>
-            When you leave this job, your employer must complete the exit process. Only then will your verified work history be updated automatically.
+        <div
+          style={{
+            padding: 14,
+            borderRadius: 18,
+            background:
+              "radial-gradient(circle at 100% 0%, rgba(220,38,38,0.045), transparent 34%), linear-gradient(135deg, rgba(255,255,255,1), rgba(248,250,252,0.98))",
+            border: "1px solid rgba(220,38,38,0.12)",
+            boxShadow: "0 10px 22px rgba(15,23,42,0.045)",
+          }}
+        >
+          <div style={{ fontWeight: 950, fontSize: 12.5, color: "#1e40af", marginBottom: 5 }}>
+            Important
           </div>
-        </div>
-      )}
 
-      {/* Resign button */}
-      {canResign && (
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <div style={{ fontSize: 11.5, color: TEXT, lineHeight: 1.6 }}>
+            When you leave this job, your employer must complete the exit process. Only then will
+            your verified work history be updated automatically.
+          </div>
+
           <button
             type="button"
             onClick={onResign}
             style={{
-              padding: "10px 20px",
-              borderRadius: 10,
-              border: "1.5px solid #dc2626",
-              background: "rgba(220,38,38,0.04)",
+              width: "100%",
+              marginTop: 12,
+              padding: "11px 18px",
+              borderRadius: 13,
+              border: "1.5px solid rgba(220,38,38,0.34)",
+              background: "rgba(220,38,38,0.055)",
               color: "#dc2626",
-              fontWeight: 900,
-              fontSize: 12,
+              fontWeight: 950,
+              fontSize: 12.5,
               cursor: "pointer",
-              transition: "background 0.15s",
             }}
           >
             Submit Resignation

@@ -1,27 +1,38 @@
-﻿/** Job Mitra | EmployerShell.tsx | C:\projects\WorkMitra_Enterprise_v2\src\app\shells\EmployerShell.tsx */
+/** Job Mitra | EmployerShell.tsx | C:\projects\WorkMitra_Enterprise_v2\src\app\shells\EmployerShell.tsx */
 
 import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { roleStorage, type AppRole } from "../storage/roleStorage";
+import { logoutApp, postLogoutRoute } from "../../shared/auth/logoutApp";
 import { ROUTE_PATHS } from "../router/routePaths";
 import { employerNotificationsStorage } from "../../features/employer/notifications/storage/employerNotifications.storage";
 import { initEmployerNotificationService } from "../../features/employer/notifications/helpers/employerNotificationService";
 import { employerSettingsStorage } from "../../features/employer/company/storage/employerSettings.storage";
-import { QuickSettingsSheet } from "../../shared/components/QuickSettingsSheet";
+import { AccountMenuSheet } from "../../shared/components/AccountMenuSheet";
 import { ConfirmModal, type ConfirmData } from "../../shared/components/ConfirmModal";
+import { usePulseEventBridgeConsumer } from "../../features/pulse/pulseEventBridge";
+import { showPhase2Features } from "../../shared/config/featureFlags";
+import BottomNav from "../../components/layout/BottomNav/BottomNav";
 
-function IconSettings() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="currentColor" d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.2 7.2 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 1h-3.8a.5.5 0 0 0-.49.42l-.36 2.54c-.58.24-1.12.55-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 7.48a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94L2.83 14.52a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.31.6.22l2.39-.96c.5.39 1.05.7 1.63.94l.36 2.54c.04.24.25.42.49.42h3.8c.24 0 .45-.18.49-.42l.36-2.54c.58-.24 1.12-.55 1.63-.94l2.39.96c.22.09.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z" />
-    </svg>
-  );
+type EmployerRouteState = {
+  backTo?: string;
+};
+
+function getInitials(name: string): string {
+  const trimmed = name.trim();
+  if (!trimmed) return "?";
+  const parts = trimmed.split(/\s+/).filter(Boolean);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
 function IconBell() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="currentColor" d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6V11a7 7 0 0 0-5-6.71V3a2 2 0 0 0-4 0v1.29A7 7 0 0 0 5 11v5l-2 2v1h20v-1l-2-2Z" />
+      <path
+        fill="currentColor"
+        d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6V11a7 7 0 0 0-5-6.71V3a2 2 0 0 0-4 0v1.29A7 7 0 0 0 5 11v5l-2 2v1h20v-1l-2-2Z"
+      />
     </svg>
   );
 }
@@ -54,6 +65,17 @@ function safeCanGoBack(): boolean {
   }
 }
 
+function getEmployerBackTarget(state: unknown): string | null {
+  if (!state || typeof state !== "object") return null;
+
+  const maybeBackTo = (state as Partial<EmployerRouteState>).backTo;
+
+  if (typeof maybeBackTo !== "string") return null;
+  if (!maybeBackTo.startsWith("/employer")) return null;
+
+  return maybeBackTo;
+}
+
 export function EmployerShell() {
   const role = useRole();
   const unread = useEmployerUnread();
@@ -67,17 +89,17 @@ export function EmployerShell() {
     if (role === "employer") return initEmployerNotificationService();
   }, [role]);
 
+  usePulseEventBridgeConsumer(role === "employer" ? "employer" : null);
+
   const handleOpenSettings = useCallback(() => {
+    setShowSheet(false);
     nav(ROUTE_PATHS.employerSettings);
   }, [nav]);
 
-  const handleOpenCompany = useCallback(() => {
-    nav(ROUTE_PATHS.employerSettings, { state: { scrollTo: "company-profile" } });
+  const handleOpenProfile = useCallback(() => {
+    setShowSheet(false);
+    nav(ROUTE_PATHS.employerProfile);
   }, [nav]);
-
-  const handleSwitchRole = useCallback(() => {
-    roleStorage.set("employee");
-  }, []);
 
   const handleLogoutRequest = useCallback(() => {
     setShowSheet(false);
@@ -92,8 +114,9 @@ export function EmployerShell() {
 
   const handleLogoutConfirm = useCallback(() => {
     setLogoutConfirm(null);
-    roleStorage.clear();
-    nav(ROUTE_PATHS.landing, { replace: true });
+    void logoutApp().then(() => {
+      nav(postLogoutRoute(), { replace: true });
+    });
   }, [nav]);
 
   const handleOpenNotifications = useCallback(() => {
@@ -118,41 +141,112 @@ export function EmployerShell() {
   }
 
   const isHome = loc.pathname === ROUTE_PATHS.employerHome;
+  const isPlannerSubdomain = loc.pathname.startsWith("/employer/planner");
+  const shouldShowBack = !isHome;
+  const explicitBackTarget = getEmployerBackTarget(loc.state);
   const profile = employerSettingsStorage.get();
   const displayName = profile.companyName || profile.fullName || "Employer";
+  const initials = getInitials(displayName);
 
   function goHome() {
     nav(ROUTE_PATHS.employerHome);
   }
 
   function goBack() {
-    if (safeCanGoBack()) nav(-1);
-    else goHome();
+    if (safeCanGoBack()) {
+      nav(-1);
+      return;
+    }
+
+    if (explicitBackTarget) {
+      nav(explicitBackTarget, { replace: true });
+      return;
+    }
+
+    goHome();
   }
 
   return (
-    <div className="wm-shellRoot wm-shellEmployer">
-      <div className="wm-topbar wm-er-topbar">
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {!isHome && (
-            <button className="wm-iconbtn" type="button" aria-label="Back" title="Back" onClick={goBack}>
-              <IconBack />
-            </button>
-          )}
+    <div
+      className={`wm-shellRoot wm-shellEmployer${isPlannerSubdomain ? " wm-er-shellPlanner" : ""}`}
+    >
+      <div className={`wm-topbar wm-er-topbar${isPlannerSubdomain ? " wm-er-topbarPlanner" : ""}`}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: shouldShowBack ? 10 : 0,
+            minWidth: 0,
+            flex: "1 1 auto",
+          }}
+        >
+          <button
+            className="wm-iconbtn"
+            type="button"
+            aria-label="Back"
+            title="Back"
+            aria-hidden={!shouldShowBack}
+            disabled={!shouldShowBack}
+            tabIndex={shouldShowBack ? 0 : -1}
+            onClick={shouldShowBack ? goBack : undefined}
+            style={{
+              flex: shouldShowBack ? "0 0 40px" : "0 0 0px",
+              width: shouldShowBack ? 40 : 0,
+              minWidth: shouldShowBack ? 40 : 0,
+              height: 40,
+              padding: shouldShowBack ? undefined : 0,
+              opacity: shouldShowBack ? 1 : 0,
+              visibility: shouldShowBack ? "visible" : "hidden",
+              pointerEvents: shouldShowBack ? "auto" : "none",
+              borderColor: shouldShowBack ? undefined : "transparent",
+              background: shouldShowBack ? undefined : "transparent",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              position: "relative",
+              zIndex: 2,
+            }}
+          >
+            <IconBack />
+          </button>
+
           <div
             className="wm-title"
-            style={{ marginLeft: isHome ? 0 : 4, cursor: isHome ? "default" : "pointer" }}
+            style={{
+              marginLeft: isHome ? 0 : 4,
+              cursor: isHome ? "default" : "pointer",
+              minWidth: 0,
+              flex: "1 1 auto",
+              overflow: "hidden",
+            }}
             onClick={isHome ? undefined : goHome}
-            onKeyDown={isHome ? undefined : (e) => { if (e.key === "Enter") goHome(); }}
+            onKeyDown={
+              isHome
+                ? undefined
+                : (event) => {
+                    if (event.key === "Enter") goHome();
+                  }
+            }
             role={isHome ? undefined : "button"}
             tabIndex={isHome ? undefined : 0}
           >
             <h1>Job Mitra</h1>
-            <p style={{ color: "var(--wm-text-muted, #64748b)" }}>Smart hiring starts with the right tools.</p>
+            <p style={{ color: "var(--wm-text-muted, #64748b)" }}>
+              Smart hiring starts with the right tools.
+            </p>
           </div>
         </div>
 
-        <div className="wm-topbarActions" aria-label="Top actions" style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        <div
+          className="wm-topbarActions"
+          aria-label="Top actions"
+          style={{
+            display: "flex",
+            gap: 10,
+            alignItems: "center",
+            flex: "0 0 auto",
+          }}
+        >
           <button
             className="wm-iconbtn wm-iconbtnBadgeWrap"
             type="button"
@@ -190,29 +284,66 @@ export function EmployerShell() {
             </div>
           </button>
 
-          <button className="wm-iconbtn" type="button" aria-label="Settings" title="Settings" onClick={handleOpenSheet}>
-            <IconSettings />
+          <button
+            type="button"
+            aria-label="Open account menu"
+            title="Account menu"
+            onClick={handleOpenSheet}
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: "50%",
+              border: "2px solid rgba(124,58,237,0.22)",
+              cursor: "pointer",
+              background: "rgba(124,58,237,0.10)",
+              color: "#7c3aed",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 13,
+              fontWeight: 800,
+              letterSpacing: -0.5,
+              flexShrink: 0,
+              padding: 0,
+            }}
+          >
+            {initials}
           </button>
         </div>
       </div>
 
-      <div className="wm-container">
+      <div className="wm-container pb-safe-nav">
         <Outlet />
       </div>
 
-      <QuickSettingsSheet
+      <BottomNav />
+
+      <AccountMenuSheet
         open={showSheet}
         onClose={handleCloseSheet}
         currentRole="employer"
         userName={displayName}
-        uniqueId=""
-        onOpenCompany={handleOpenCompany}
-        onSwitchRole={handleSwitchRole}
-        onLogout={handleLogoutRequest}
+        userPhoto={profile.companyLogo}
+        onOpenProfile={handleOpenProfile}
         onOpenSettings={handleOpenSettings}
+        onOpenGigProjects={() => nav(ROUTE_PATHS.employerPlannerHome)}
+        onOpenWorkforce={
+          showPhase2Features ? () => nav(ROUTE_PATHS.employerWorkforceHome) : undefined
+        }
+        onOpenHrManagement={
+          showPhase2Features ? () => nav(ROUTE_PATHS.employerHRManagement) : undefined
+        }
+        onOpenManagerConsole={
+          showPhase2Features ? () => nav(ROUTE_PATHS.employerConsole) : undefined
+        }
+        onLogout={handleLogoutRequest}
       />
 
-      <ConfirmModal confirm={logoutConfirm} onConfirm={handleLogoutConfirm} onCancel={handleCancelLogout} />
+      <ConfirmModal
+        confirm={logoutConfirm}
+        onConfirm={handleLogoutConfirm}
+        onCancel={handleCancelLogout}
+      />
     </div>
   );
 }

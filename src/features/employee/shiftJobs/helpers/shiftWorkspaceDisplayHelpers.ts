@@ -8,7 +8,7 @@ import type { CSSProperties } from "react";
 import type {
   ShiftWorkspace,
   ShiftWorkspaceStatus,
-} from "../storage/shiftWorkspaces.storage";
+} from "../../shiftJobs/storage/shiftWorkspaces.storage";
 
 /* ── Types ─────────────────────────────────────── */
 
@@ -23,9 +23,14 @@ type UpdateKind = ShiftWorkspace["updates"][number]["kind"];
 export function fmtTime(ts: number): string {
   try {
     return new Date(ts).toLocaleString(undefined, {
-      month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
-  } catch { return ""; }
+  } catch {
+    return "";
+  }
 }
 
 export function fmtDateRange(startAt: number, endAt: number): string {
@@ -36,7 +41,9 @@ export function fmtDateRange(startAt: number, endAt: number): string {
     const sTxt = s.toLocaleDateString(undefined, { month: "short", day: "numeric" });
     const eTxt = e.toLocaleDateString(undefined, { month: "short", day: "numeric" });
     return sameDay ? sTxt : `${sTxt} — ${eTxt}`;
-  } catch { return "Date"; }
+  } catch {
+    return "Date";
+  }
 }
 
 export function clampText(raw: string, max: number): string {
@@ -61,11 +68,14 @@ function replacedReasonLabel(r: ReplacedReason): string {
 /* ── Status helpers ────────────────────────────── */
 
 export function isReadOnlyStatus(status: ShiftWorkspaceStatus): boolean {
-  return status === "left" || status === "replaced" || status === "completed";
+  return (
+    status === "left" || status === "replaced" || status === "completed" || status === "cancelled"
+  );
 }
 
 export function statusBadgeLabel(status: ShiftWorkspaceStatus): string {
   if (status === "replaced") return "REPLACED";
+  if (status === "cancelled") return "CANCELLED";
   if (status === "left") return "LEFT";
   if (status === "completed") return "COMPLETED";
   if (status === "upcoming") return "UPCOMING";
@@ -77,16 +87,36 @@ export function statusTone(status: ShiftWorkspaceStatus): BadgeTone {
   if (status === "upcoming") return "neutral";
   if (status === "completed") return "neutral";
   if (status === "replaced") return "warn";
+  if (status === "cancelled") return "bad";
   return "bad";
 }
 
 /* ── Badge / explanation styles ────────────────── */
 
 export function badgeStyle(tone: BadgeTone): CSSProperties {
-  if (tone === "good") return { border: "1px solid rgba(15,118,110,0.35)", background: "rgba(15,118,110,0.10)", color: "#115e59" };
-  if (tone === "warn") return { border: "1px solid rgba(217,119,6,0.30)", background: "rgba(217,119,6,0.10)", color: "#92400e" };
-  if (tone === "bad") return { border: "1px solid rgba(220,38,38,0.30)", background: "rgba(220,38,38,0.10)", color: "#991b1b" };
-  return { border: "1px solid rgba(17,24,39,0.10)", background: "rgba(17,24,39,0.04)", color: "var(--wm-er-muted)" };
+  if (tone === "good")
+    return {
+      border: "1px solid rgba(15,118,110,0.35)",
+      background: "rgba(15,118,110,0.10)",
+      color: "#115e59",
+    };
+  if (tone === "warn")
+    return {
+      border: "1px solid rgba(217,119,6,0.30)",
+      background: "rgba(217,119,6,0.10)",
+      color: "#92400e",
+    };
+  if (tone === "bad")
+    return {
+      border: "1px solid rgba(220,38,38,0.30)",
+      background: "rgba(220,38,38,0.10)",
+      color: "#991b1b",
+    };
+  return {
+    border: "1px solid rgba(17,24,39,0.10)",
+    background: "rgba(17,24,39,0.04)",
+    color: "var(--wm-er-muted)",
+  };
 }
 
 export function explanationBorderColor(tone: BadgeTone): string {
@@ -106,7 +136,9 @@ export function explanationBgColor(tone: BadgeTone): string {
 /* ── Status explanation builder ────────────────── */
 
 export function buildStatusExplanation(ws: ShiftWorkspace): {
-  title: string; body: string; tone: BadgeTone;
+  title: string;
+  body: string;
+  tone: BadgeTone;
 } | null {
   if (ws.status === "replaced") {
     const parts: string[] = ["Employer replaced your assignment."];
@@ -123,10 +155,25 @@ export function buildStatusExplanation(ws: ShiftWorkspace): {
     return { title: "Left", body: parts.join(" "), tone: "bad" };
   }
   if (ws.status === "completed") {
-    return { title: "Completed", body: "This job is completed. This workspace is read-only.", tone: "neutral" };
+    return {
+      title: "Completed",
+      body: "This job is completed. This workspace is read-only.",
+      tone: "neutral",
+    };
+  }
+  if (ws.status === "cancelled") {
+    return {
+      title: "Project cancelled",
+      body: "The employer cancelled this project plan. This workspace is now read-only.",
+      tone: "bad",
+    };
   }
   if (ws.status === "upcoming") {
-    return { title: "Upcoming", body: `This job starts on ${fmtDateRange(ws.startAt, ws.endAt)}. Employer updates will appear here.`, tone: "neutral" };
+    return {
+      title: "Upcoming",
+      body: `This job starts on ${fmtDateRange(ws.startAt, ws.endAt)}. Employer updates will appear here.`,
+      tone: "neutral",
+    };
   }
   return null;
 }
@@ -149,8 +196,10 @@ export function detectSenderTag(
 ): { text: string; tone: BadgeTone } | null {
   const t = (u.title ?? "").toLowerCase();
   const b = (u.body ?? "").toLowerCase();
-  if (u.kind === "direct" && (t.includes("reply (employee)") || b.includes("reply (employee)"))) return { text: "YOU", tone: "neutral" };
-  if (u.kind === "direct" && (t.includes("reply (employer)") || b.includes("reply (employer)"))) return { text: "EMPLOYER", tone: "good" };
+  if (u.kind === "direct" && (t.includes("reply (employee)") || b.includes("reply (employee)")))
+    return { text: "YOU", tone: "neutral" };
+  if (u.kind === "direct" && (t.includes("reply (employer)") || b.includes("reply (employer)")))
+    return { text: "EMPLOYER", tone: "good" };
   if (u.kind === "broadcast") return { text: "EMPLOYER", tone: "neutral" };
   if (u.kind === "system") return { text: "SYSTEM", tone: "neutral" };
   if (u.kind === "direct") return { text: "DIRECT", tone: "good" };
@@ -158,9 +207,12 @@ export function detectSenderTag(
 }
 
 export function updateRowStyle(u: ShiftWorkspace["updates"][number]): {
-  border: string; bg: string;
+  border: string;
+  bg: string;
 } {
-  if (u.kind === "broadcast") return { border: "1px solid var(--wm-er-divider)", bg: "rgba(15,118,110,0.04)" };
-  if (u.kind === "direct") return { border: "1px solid rgba(15,118,110,0.22)", bg: "rgba(15,118,110,0.06)" };
+  if (u.kind === "broadcast")
+    return { border: "1px solid var(--wm-er-divider)", bg: "rgba(15,118,110,0.04)" };
+  if (u.kind === "direct")
+    return { border: "1px solid rgba(15,118,110,0.22)", bg: "rgba(15,118,110,0.06)" };
   return { border: "1px solid var(--wm-er-divider)", bg: "rgba(17,24,39,0.02)" };
 }

@@ -29,28 +29,46 @@ function formatDateInput(ts: number): string {
 /* Shared Styles                                    */
 /* ------------------------------------------------ */
 const OVERLAY: CSSProperties = {
-  position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)",
-  display: "flex", alignItems: "center", justifyContent: "center",
-  padding: 16, zIndex: 50,
+  position: "fixed",
+  inset: 0,
+  background: "rgba(0,0,0,0.55)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 16,
+  zIndex: 50,
 };
 
 const CARD: CSSProperties = {
-  width: "100%", maxWidth: 420, background: "#fff",
-  borderRadius: 16, padding: 20, boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+  width: "100%",
+  maxWidth: 420,
+  background: "#fff",
+  borderRadius: 16,
+  padding: 20,
+  boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
 };
 
 const CANCEL_BTN: CSSProperties = {
-  padding: "10px 18px", borderRadius: 10, border: "1.5px solid rgba(0,0,0,0.12)",
-  background: "transparent", fontWeight: 800, fontSize: 13,
-  color: "var(--wm-er-text)", cursor: "pointer",
+  padding: "10px 18px",
+  borderRadius: 10,
+  border: "1.5px solid rgba(0,0,0,0.12)",
+  background: "transparent",
+  fontWeight: 800,
+  fontSize: 13,
+  color: "var(--wm-er-text)",
+  cursor: "pointer",
 };
 
 function nextBtnStyle(enabled: boolean): CSSProperties {
   return {
-    padding: "10px 18px", borderRadius: 10, border: "none",
+    padding: "10px 18px",
+    borderRadius: 10,
+    border: "none",
     background: enabled ? "#dc2626" : "#e5e7eb",
     color: enabled ? "#fff" : "#9ca3af",
-    fontWeight: 900, fontSize: 13, cursor: enabled ? "pointer" : "not-allowed",
+    fontWeight: 900,
+    fontSize: 13,
+    cursor: enabled ? "pointer" : "not-allowed",
   };
 }
 
@@ -64,50 +82,82 @@ export function ExitProcessingModal({ employeeName, jobTitle, onComplete, onClos
   const [dateStr, setDateStr] = useState(() => formatDateInput(Date.now()));
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
+  const [exitNote, setExitNote] = useState("");
 
   const todayStr = formatDateInput(nowMs);
   const parsedDate = new Date(dateStr + "T00:00:00").getTime();
   const dateValid = !Number.isNaN(parsedDate);
 
   return (
-    <div role="dialog" aria-modal="true" style={OVERLAY} onClick={onClose}>
-      <div style={CARD} onClick={(e) => e.stopPropagation()}>
+    <div role="dialog" aria-modal="true" style={OVERLAY}>
+      <div style={CARD}>
         {step === 1 && (
           <ExitStep1
-            employeeName={employeeName} jobTitle={jobTitle}
-            reason={reason} onReasonChange={setReason}
-            onNext={() => { if (reason) setStep(2); }}
+            employeeName={employeeName}
+            jobTitle={jobTitle}
+            reason={reason}
+            onReasonChange={setReason}
+            exitNote={exitNote}
+            onExitNoteChange={setExitNote}
+            onNext={() => {
+              if (reason) setStep(2);
+            }}
             onCancel={onClose}
-            cancelBtn={CANCEL_BTN} nextBtn={nextBtnStyle}
+            cancelBtn={CANCEL_BTN}
+            nextBtn={nextBtnStyle}
           />
         )}
 
         {step === 2 && (
           <ExitStep2
-            employeeName={employeeName} jobTitle={jobTitle}
-            dateStr={dateStr} onDateChange={setDateStr}
-            todayStr={todayStr} dateValid={dateValid}
-            onNext={() => { if (dateValid) setStep(3); }}
+            employeeName={employeeName}
+            jobTitle={jobTitle}
+            dateStr={dateStr}
+            onDateChange={setDateStr}
+            todayStr={todayStr}
+            dateValid={dateValid}
+            onNext={() => {
+              if (dateValid) setStep(3);
+            }}
             onBack={() => setStep(1)}
-            cancelBtn={CANCEL_BTN} nextBtn={nextBtnStyle}
+            cancelBtn={CANCEL_BTN}
+            nextBtn={nextBtnStyle}
           />
         )}
 
         {step === 3 && (
           <ExitStep3
-            employeeName={employeeName} jobTitle={jobTitle}
-            rating={rating} onRatingChange={setRating}
-            comment={comment} onCommentChange={setComment}
-            onNext={() => { if (rating > 0) setStep(4); }}
+            employeeName={employeeName}
+            jobTitle={jobTitle}
+            rating={rating}
+            onRatingChange={setRating}
+            comment={comment}
+            onCommentChange={setComment}
+            onNext={() => {
+              if (rating > 0) setStep(4);
+            }}
             onBack={() => setStep(2)}
-            cancelBtn={CANCEL_BTN} nextBtn={nextBtnStyle}
+            cancelBtn={CANCEL_BTN}
+            nextBtn={nextBtnStyle}
           />
         )}
 
         {step === 4 && (
           <ExitStep4
             employeeName={employeeName}
-            onDone={() => onComplete(reason as StaffExitReason, parsedDate, rating, comment.trim())}
+            onDone={() =>
+              onComplete(
+                reason as StaffExitReason,
+                parsedDate,
+                rating,
+                [
+                  exitNote.trim() ? `Exit note: ${exitNote.trim()}` : "",
+                  comment.trim() ? `Rating comment: ${comment.trim()}` : "",
+                ]
+                  .filter(Boolean)
+                  .join("\n\n"),
+              )
+            }
           />
         )}
       </div>

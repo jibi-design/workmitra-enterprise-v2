@@ -1,114 +1,266 @@
-﻿/* src/app/theme/employee.css — Employee Home, cards, tiles, domain overrides */
-/* v3.0: All fontWeight max 700. Never 800, 900, 1000. */
+/* src/app/theme/employee.css ? Employee Home, cards, tiles, domain overrides */
+/* Step 14C-1: Visible Employee Shift Apple-clean polish. */
 
 /* ------------------------------------------------ */
-/* Employee tiles — BASE (used everywhere)          */
+/* Employee domain roots                            */
+/* ------------------------------------------------ */
+.wm-ee-vShift {
+  --wm-ee-accent: var(--wm-shift-accent);
+  --wm-ee-accent-strong: var(--wm-shift-accent-strong);
+  --wm-ee-wash: rgba(22, 163, 74, 0.075);
+  background:
+    radial-gradient(circle at 50% -6%, rgba(22, 163, 74, 0.1), transparent 30%),
+    linear-gradient(180deg, #f8fafc 0%, #ffffff 46%, #f8fafc 100%);
+}
+
+.wm-ee-vCareer {
+  --wm-ee-accent: var(--wm-career-accent);
+  --wm-ee-accent-strong: var(--wm-career-accent-strong);
+  --wm-ee-wash: var(--wm-er-career-wash);
+}
+
+.wm-ee-vWorkforce {
+  --wm-ee-accent: var(--wm-workforce-accent);
+  --wm-ee-accent-strong: var(--wm-workforce-accent-strong);
+  --wm-ee-wash: var(--wm-er-workforce-wash);
+}
+
+.wm-ee-vPlanner {
+  --wm-ee-accent: var(--wm-planner-accent);
+  --wm-ee-accent-strong: var(--wm-planner-accent-strong);
+  --wm-ee-wash: var(--wm-planner-soft);
+  background:
+    radial-gradient(circle at 50% -6%, rgba(8, 145, 178, 0.14), transparent 32%),
+    linear-gradient(180deg, #f4fbfd 0%, #ffffff 46%, #f4fbfd 100%);
+}
+
+.wm-ee-vPlanner .wm-ee-card {
+  border-color: rgba(8, 145, 178, 0.2);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(8, 145, 178, 0.06), transparent 32%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(255, 255, 255, 0.94));
+}
+
+.wm-ee-vPlanner .wm-ee-card:hover {
+  border-color: rgba(8, 145, 178, 0.28);
+}
+
+.wm-ee-vPlanner .wm-ee-accentCard::before {
+  background: linear-gradient(180deg, var(--wm-planner-accent), rgba(8, 145, 178, 0.42));
+  box-shadow: 0 0 0 1px rgba(8, 145, 178, 0.1);
+}
+
+.wm-ee-vPlanner .wm-ee-headTint {
+  border-bottom-color: rgba(8, 145, 178, 0.14);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(8, 145, 178, 0.1), transparent 34%),
+    linear-gradient(180deg, rgba(236, 254, 255, 0.9), rgba(255, 255, 255, 0.78));
+}
+
+.wm-ee-vPlanner .wm-ee-domainIcon {
+  border-color: rgba(8, 145, 178, 0.18);
+  background:
+    radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.95), transparent 58%),
+    rgba(8, 145, 178, 0.1);
+  color: var(--wm-planner-accent);
+  box-shadow:
+    0 8px 18px rgba(8, 145, 178, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.wm-ee-vPlanner .wm-ee-tile::before {
+  background: var(--wm-planner-accent);
+}
+
+.wm-ee-vPlanner .wm-ee-insights {
+  border-color: rgba(8, 145, 178, 0.16);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(8, 145, 178, 0.05), transparent 32%),
+    rgba(255, 255, 255, 0.96);
+}
+
+/* ------------------------------------------------ */
+/* Employee tiles ? BASE                            */
 /* ------------------------------------------------ */
 .wm-ee-tiles {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--wm-space-12);
+  gap: var(--wm-stack-gap);
   margin-top: 0;
 }
+
 .wm-ee-dashTiles {
   grid-template-columns: 1fr 1fr;
 }
+
 .wm-ee-tile {
-  border: 1px solid var(--wm-er-border);
-  background: #fff;
-  border-radius: var(--wm-radius-14);
-  padding: 14px;
+  border: 1px solid var(--wm-glass-border);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 1), transparent 60%),
+    var(--wm-emp-glass-bg-strong);
+  border-radius: var(--wm-radius-20);
+  padding: var(--wm-card-padding);
   position: relative;
   overflow: hidden;
   text-align: center;
+  box-shadow: var(--wm-emp-card-shadow);
+  transition:
+    transform var(--wm-motion-base) var(--wm-motion-spring),
+    box-shadow var(--wm-motion-base) var(--wm-motion-spring),
+    border-color var(--wm-motion-base) var(--wm-motion-spring),
+    background var(--wm-motion-base) var(--wm-motion-spring);
 }
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .wm-ee-tile {
+    backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
+    -webkit-backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
+  }
+}
+
+.wm-ee-tile:active {
+  transform: scale(0.98);
+}
+
 .wm-ee-tile::before {
   content: "";
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
+  left: 18px;
+  right: 18px;
   height: 3px;
-  background: var(--wm-er-accent-shift, #16a34a);
+  border-radius: 999px;
+  background: var(--wm-ee-accent, var(--wm-shift-accent));
+  opacity: 0.78;
 }
-.wm-ee-vCareer .wm-ee-tile::before {
-  background: var(--wm-er-accent-career, #1d4ed8);
-}
+
 .wm-ee-tileTop {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
 }
-.wm-ee-tileLabel { font-size: 12px; color: var(--wm-er-muted); }
+
+.wm-ee-tileLabel {
+  font-size: 12px;
+  color: var(--wm-emp-muted);
+  font-weight: 700;
+}
+
 .wm-ee-tileValue {
   margin-top: 6px;
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--wm-er-text);
+  font-size: 23px;
+  font-weight: 800;
+  color: var(--wm-emp-text);
+  letter-spacing: -0.03em;
 }
-.wm-ee-tileValue.is-zero { color: var(--wm-er-text); }
+
+.wm-ee-tileValue.is-zero {
+  color: var(--wm-zero-text);
+}
+
 .wm-ee-tileIcon {
-  width: 32px;
-  height: 32px;
-  border-radius: 12px;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--wm-radius-14);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--wm-er-divider);
-  background: #fff;
-  color: var(--wm-er-muted);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--wm-emp-muted);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
-.wm-ee-tileIcon svg { display: block; }
+
+.wm-ee-tileIcon svg {
+  display: block;
+}
 
 /* ------------------------------------------------ */
-/* DASHBOARD ONLY tiles — green border + centered   */
-/* Scoped to .wm-ee-dashTiles (EmployeeHomePage)    */
+/* Dashboard tiles                                  */
 /* ------------------------------------------------ */
 .wm-ee-dashTiles .wm-ee-tile {
   text-align: center;
 }
+
 .wm-ee-dashTiles .wm-ee-tileTop {
   justify-content: center;
 }
+
 .wm-ee-dashTiles .wm-ee-tileValue {
   text-align: center;
 }
+
 .wm-ee-dashTiles .wm-ee-tileIcon {
   border: none;
-  background: var(--wm-er-shift-wash, rgba(22,163,74,0.08));
-  color: var(--wm-er-accent-shift, #16a34a);
+  background:
+    radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.95), transparent 58%),
+    var(--wm-ee-wash, rgba(22, 163, 74, 0.08));
+  color: var(--wm-ee-accent, var(--wm-shift-accent));
 }
 
 /* ------------------------------------------------ */
 /* Employee cards                                   */
 /* ------------------------------------------------ */
 .wm-ee-card {
-  border: 1px solid var(--wm-er-border);
-  background: #fff;
-  border-radius: var(--wm-radius-14);
-  padding: 16px;
+  border: 1px solid var(--wm-glass-border);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(22, 163, 74, 0.035), transparent 32%),
+    var(--wm-emp-card);
+  border-radius: var(--wm-radius-employee-card);
+  padding: var(--wm-card-padding);
   position: relative;
   overflow: hidden;
+  box-shadow: var(--wm-emp-card-shadow);
+  transition:
+    transform var(--wm-motion-base) var(--wm-motion-spring),
+    box-shadow var(--wm-motion-base) var(--wm-motion-spring),
+    border-color var(--wm-motion-base) var(--wm-motion-spring),
+    background var(--wm-motion-base) var(--wm-motion-spring);
 }
-.wm-ee-card + .wm-ee-card { margin-top: var(--wm-space-12); }
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .wm-ee-card {
+    backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
+    -webkit-backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
+  }
+}
+
+.wm-ee-card:hover {
+  border-color: var(--wm-glass-border);
+  box-shadow: var(--wm-emp-card-shadow);
+}
+
+.wm-ee-card + .wm-ee-card {
+  margin-top: var(--wm-stack-gap);
+}
+
+.wm-ee-card:active {
+  transform: scale(0.98);
+}
 
 .wm-ee-helperText {
   margin-top: 6px;
-  font-size: 13px;
-  color: var(--wm-er-muted);
+  font-size: var(--wm-type-helper-size-md);
+  font-weight: var(--wm-type-helper-weight);
+  color: var(--wm-type-helper-color);
+  line-height: 1.45;
 }
 
 .wm-ee-linkBtn {
   border: 0;
   background: transparent;
-  color: var(--wm-brand-600);
-  font-weight: 700;
+  color: var(--wm-ee-accent, var(--wm-brand-600));
+  font-weight: 800;
   cursor: pointer;
   padding: 0;
   line-height: 1;
 }
-.wm-ee-linkBtn:hover { color: var(--wm-brand-700); }
+
+.wm-ee-linkBtn:hover {
+  color: var(--wm-ee-accent-strong, var(--wm-brand-700));
+}
+
 .wm-ee-linkBtn[disabled],
 .wm-ee-linkBtn[aria-disabled="true"] {
   opacity: 0.55;
@@ -122,57 +274,72 @@
   content: "";
   position: absolute;
   left: 0;
-  top: 0;
-  bottom: 0;
+  top: 16px;
+  bottom: 16px;
   width: 4px;
-  background: var(--wm-ee-accent, var(--wm-brand-600));
-  border-top-left-radius: var(--wm-radius-14);
-  border-bottom-left-radius: var(--wm-radius-14);
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--wm-ee-accent), rgba(22, 163, 74, 0.42));
+  box-shadow: 0 0 0 1px rgba(22, 163, 74, 0.08);
 }
+
 .wm-ee-headTint {
-  margin-left: -16px;
-  margin-right: -16px;
-  margin-top: -16px;
-  padding: 12px 16px 12px 16px;
-  border-bottom: 1px solid var(--wm-er-divider);
-  background: var(--wm-ee-wash, transparent);
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 0;
+  padding: 13px 16px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.82);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(22, 163, 74, 0.08), transparent 34%),
+    linear-gradient(180deg, rgba(240, 253, 244, 0.75), rgba(255, 255, 255, 0.74));
 }
 
 .wm-ee-cardHead {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--wm-space-12);
+  gap: var(--wm-stack-gap);
 }
+
 .wm-ee-titleRow {
   display: flex;
   align-items: center;
   gap: 10px;
 }
+
 .wm-ee-domainIcon {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--wm-radius-14);
+  width: 38px;
+  height: 38px;
+  border-radius: var(--wm-radius-16);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--wm-er-divider);
-  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(22, 163, 74, 0.14);
+  background:
+    radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.95), transparent 58%),
+    rgba(22, 163, 74, 0.08);
   color: var(--wm-ee-accent, var(--wm-brand-600));
+  box-shadow:
+    0 8px 18px rgba(22, 163, 74, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
-.wm-ee-domainIcon svg { display: block; }
+
+.wm-ee-domainIcon svg {
+  display: block;
+}
 
 .wm-ee-cardTitle {
   margin: 0;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--wm-er-text);
-  line-height: 1.2;
+  font-size: var(--wm-type-card-title-size);
+  font-weight: var(--wm-type-card-title-weight);
+  color: var(--wm-emp-text);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
 }
+
 .wm-ee-cardSub {
   margin-top: 4px;
   font-size: 12px;
-  color: var(--wm-er-muted);
+  color: var(--wm-emp-muted);
   line-height: 1.4;
 }
 
@@ -180,104 +347,110 @@
 /* Employee chips                                   */
 /* ------------------------------------------------ */
 .wm-ee-chips {
-  margin-top: 12px;
+  margin-top: var(--wm-stack-gap);
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
+
 .wm-ee-chip {
-  height: 28px;
+  min-height: 28px;
   border-radius: 999px;
   padding: 0 12px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: #f4f6f8;
-  border: 1px solid #e5e7eb;
+  background: rgba(248, 250, 252, 0.92);
+  border: 1px solid rgba(226, 232, 240, 0.92);
   font-size: 12px;
-  color: var(--wm-er-text);
+  color: var(--wm-emp-text);
 }
-.wm-ee-chip .n { font-weight: 700; color: inherit; }
+
+.wm-ee-chip .n {
+  font-weight: 800;
+  color: inherit;
+}
 
 /* ------------------------------------------------ */
 /* Employee insights                                */
 /* ------------------------------------------------ */
 .wm-ee-insights {
-  margin-top: var(--wm-space-12);
-  border: 1px solid var(--wm-er-border);
-  background: #fff;
-  border-radius: var(--wm-radius-14);
+  margin-top: var(--wm-stack-gap);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(22, 163, 74, 0.04), transparent 32%),
+    rgba(255, 255, 255, 0.96);
+  border-radius: var(--wm-radius-employee-card);
   padding: 16px;
+  box-shadow:
+    0 12px 28px rgba(15, 23, 42, 0.045),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88);
 }
+
 .wm-ee-insightsHead {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
 }
+
 .wm-ee-insightsTitle {
   margin: 0;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--wm-er-text);
+  font-size: var(--wm-type-card-title-size);
+  font-weight: var(--wm-type-card-title-weight);
+  color: var(--wm-emp-text);
   display: inline-flex;
   align-items: center;
   gap: 8px;
   line-height: 1;
 }
-.wm-ee-insightsTitle svg { display: block; }
+
+.wm-ee-insightsTitle svg {
+  display: block;
+}
+
 .wm-ee-kpis {
   margin-top: 10px;
   display: grid;
   gap: 10px;
 }
+
 .wm-ee-kpiRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding-top: 10px;
-  border-top: 1px solid var(--wm-er-divider);
-}
-.wm-ee-kpiRow:first-child { border-top: 0; padding-top: 0; }
-.wm-ee-kpiLabel { font-size: 12px; color: var(--wm-er-muted); }
-.wm-ee-kpiValue { font-size: 14px; font-weight: 700; color: var(--wm-er-text); }
-.wm-ee-kpiValue.is-zero { color: var(--wm-er-text); }
-
-/* ------------------------------------------------ */
-/* Employee domain mapping                          */
-/* ------------------------------------------------ */
-.wm-ee-vShift { --wm-ee-accent: var(--wm-er-accent-shift); --wm-ee-wash: var(--wm-er-shift-wash); }
-.wm-ee-vCareer { --wm-ee-accent: var(--wm-er-accent-career); --wm-ee-wash: var(--wm-er-career-wash); }
-.wm-ee-vWorkforce { --wm-ee-accent: var(--wm-er-accent-workforce); --wm-ee-wash: var(--wm-er-workforce-wash); }
-
-/* ------------------------------------------------ */
-/* Employee Shift green overrides                   */
-/* ------------------------------------------------ */
-.wm-ee-vShift .wm-primarybtn { background: var(--wm-er-accent-shift); }
-.wm-ee-vShift .wm-primarybtn:hover { background: #115e59; }
-
-.wm-ee-vShift .wm-outlineBtn {
-  height: 40px;
-  border-radius: var(--wm-radius-14);
-  border: 1px solid var(--wm-er-border);
-  background: #fff;
-  padding: 0 12px;
-  font-weight: 700;
-  cursor: pointer;
-  color: var(--wm-er-text);
-  white-space: nowrap;
+  border-top: 1px solid rgba(226, 232, 240, 0.86);
 }
 
-.wm-ee-vShift .wm-ee-linkBtn { color: var(--wm-er-accent-shift); }
-.wm-ee-vShift .wm-ee-linkBtn:hover { color: #115e59; }
-
-/* Career blue button override */
-.wm-ee-vCareer .wm-primarybtn,
-.wm-career-btn {
-  background: var(--wm-er-accent-career, #1d4ed8);
-  color: #fff;
+.wm-ee-kpiRow:first-child {
+  border-top: 0;
+  padding-top: 0;
 }
-.wm-ee-vCareer .wm-primarybtn:hover,
-.wm-career-btn:hover {
-  background: #1e40af;
+
+.wm-ee-kpiLabel {
+  font-size: 12px;
+  color: var(--wm-emp-muted);
+}
+
+.wm-ee-kpiValue {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--wm-emp-text);
+}
+
+.wm-ee-kpiValue.is-zero {
+  color: var(--wm-zero-text);
+}
+
+@media (max-width: 420px) {
+  .wm-ee-tiles {
+    gap: var(--wm-space-10);
+  }
+
+  .wm-ee-tile,
+  .wm-ee-card,
+  .wm-ee-insights {
+    border-radius: var(--wm-radius-20);
+  }
 }

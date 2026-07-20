@@ -30,7 +30,9 @@ function StarRow({ count }: { count: number }) {
   return (
     <span style={{ fontSize: 18, letterSpacing: 2 }} aria-label={`${count} out of 5 stars`}>
       {[1, 2, 3, 4, 5].map((i) => (
-        <span key={i} style={{ color: i <= count ? "#f59e0b" : "#d1d5db" }}>&#9733;</span>
+        <span key={i} style={{ color: i <= count ? "#f59e0b" : "#d1d5db" }}>
+          &#9733;
+        </span>
       ))}
     </span>
   );
@@ -39,7 +41,15 @@ function StarRow({ count }: { count: number }) {
 /* ------------------------------------------------ */
 /* Component                                        */
 /* ------------------------------------------------ */
-export function RatingDisplayCard({ jobId, jobTitle, raterWmId, targetWmId, targetName, ratingType, domain }: Props) {
+export function RatingDisplayCard({
+  jobId,
+  jobTitle,
+  raterWmId,
+  targetWmId,
+  targetName,
+  ratingType,
+  domain,
+}: Props) {
   const fetchRating = () =>
     ratingType === "employer"
       ? ratingStorage.getEmployerRatingForJob(raterWmId, jobId, targetWmId)
@@ -50,9 +60,10 @@ export function RatingDisplayCard({ jobId, jobTitle, raterWmId, targetWmId, targ
 
   if (!rating) return null;
 
-  const canEdit = ratingType === "employer"
-    ? ratingStorage.canEditEmployerRating(raterWmId, jobId, targetWmId)
-    : ratingStorage.canEditWorkerRating(raterWmId, jobId, targetWmId);
+  const canEdit =
+    ratingType === "employer"
+      ? ratingStorage.canEditEmployerRating(raterWmId, jobId, targetWmId)
+      : ratingStorage.canEditWorkerRating(raterWmId, jobId, targetWmId);
 
   function handleEditDone() {
     setEditOpen(false);
@@ -60,20 +71,40 @@ export function RatingDisplayCard({ jobId, jobTitle, raterWmId, targetWmId, targ
   }
 
   const dateStr = new Date(rating.createdAt).toLocaleDateString(undefined, {
-    month: "short", day: "numeric", year: "numeric",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
 
-  const accentColor = domain === "career" ? "var(--wm-er-accent-career, #1d4ed8)" : "var(--wm-er-accent-shift, #16a34a)";
+  const accentColor =
+    domain === "career"
+      ? "var(--wm-er-accent-career, #1d4ed8)"
+      : "var(--wm-er-accent-shift, #16a34a)";
 
   return (
     <>
-      <div style={{
-        marginTop: 10, padding: "14px 16px", borderRadius: 14,
-        background: domain === "career" ? "rgba(29,78,216,0.04)" : "rgba(22,163,74,0.04)",
-        border: domain === "career" ? "1px solid rgba(29,78,216,0.15)" : "1px solid rgba(22,163,74,0.15)",
-      }}>
+      <div
+        style={{
+          marginTop: 10,
+          padding: "14px 16px",
+          borderRadius: 14,
+          background: domain === "career" ? "rgba(29,78,216,0.04)" : "rgba(22,163,74,0.04)",
+          border:
+            domain === "career"
+              ? "1px solid rgba(29,78,216,0.15)"
+              : "1px solid rgba(22,163,74,0.15)",
+        }}
+      >
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 8,
+            flexWrap: "wrap",
+          }}
+        >
           <div style={{ fontSize: 13, fontWeight: 700, color: "var(--wm-er-text)" }}>
             Your review of {targetName}
           </div>
@@ -83,18 +114,26 @@ export function RatingDisplayCard({ jobId, jobTitle, raterWmId, targetWmId, targ
         {/* Stars */}
         <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8 }}>
           <StarRow count={rating.stars} />
-          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--wm-er-text)" }}>{rating.stars}/5</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--wm-er-text)" }}>
+            {rating.stars}/5
+          </span>
         </div>
 
         {/* Tags */}
         {rating.tags.length > 0 && (
           <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
             {rating.tags.map((tag) => (
-              <span key={tag} style={{
-                fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 999,
-                background: domain === "career" ? "rgba(29,78,216,0.08)" : "rgba(22,163,74,0.08)",
-                color: accentColor,
-              }}>
+              <span
+                key={tag}
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: "3px 10px",
+                  borderRadius: 999,
+                  background: domain === "career" ? "rgba(29,78,216,0.08)" : "rgba(22,163,74,0.08)",
+                  color: accentColor,
+                }}
+              >
                 {tag}
               </span>
             ))}
@@ -103,22 +142,44 @@ export function RatingDisplayCard({ jobId, jobTitle, raterWmId, targetWmId, targ
 
         {/* Comment */}
         {rating.comment && (
-          <div style={{ marginTop: 8, fontSize: 12, color: "var(--wm-er-muted)", fontStyle: "italic", lineHeight: 1.5 }}>
+          <div
+            style={{
+              marginTop: 8,
+              fontSize: 12,
+              color: "var(--wm-er-muted)",
+              fontStyle: "italic",
+              lineHeight: 1.5,
+            }}
+          >
             &ldquo;{rating.comment}&rdquo;
           </div>
         )}
 
         {/* Footer: timestamp + edit button */}
-        <div style={{ marginTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+        <div
+          style={{
+            marginTop: 10,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 8,
+            flexWrap: "wrap",
+          }}
+        >
           <div style={{ fontSize: 11, color: "var(--wm-er-muted)" }}>Rated on {dateStr}</div>
           {canEdit && (
             <button
               type="button"
               onClick={() => setEditOpen(true)}
               style={{
-                fontSize: 12, fontWeight: 600, padding: "5px 14px", borderRadius: 8,
-                border: `1px solid ${accentColor}`, background: "transparent",
-                color: accentColor, cursor: "pointer",
+                fontSize: 12,
+                fontWeight: 600,
+                padding: "5px 14px",
+                borderRadius: 8,
+                border: `1px solid ${accentColor}`,
+                background: "transparent",
+                color: accentColor,
+                cursor: "pointer",
               }}
             >
               Edit review
@@ -129,7 +190,7 @@ export function RatingDisplayCard({ jobId, jobTitle, raterWmId, targetWmId, targ
         {/* Edit hint */}
         {canEdit && (
           <div style={{ marginTop: 6, fontSize: 11, color: "var(--wm-er-muted)" }}>
-            You can edit this review once within 48 hours
+            You can edit this review once within 24 hours
           </div>
         )}
       </div>
@@ -137,20 +198,30 @@ export function RatingDisplayCard({ jobId, jobTitle, raterWmId, targetWmId, targ
       {/* Edit Modal */}
       {editOpen && ratingType === "employer" && (
         <EmployerRateWorkerModal
-          isOpen editMode
-          jobId={jobId} jobTitle={jobTitle}
-          employerWmId={raterWmId} workerWmId={targetWmId} workerName={targetName}
+          isOpen
+          editMode
+          jobId={jobId}
+          jobTitle={jobTitle}
+          employerWmId={raterWmId}
+          workerWmId={targetWmId}
+          workerName={targetName}
           domain={domain}
-          onSubmitted={handleEditDone} onClose={() => setEditOpen(false)}
+          onSubmitted={handleEditDone}
+          onClose={() => setEditOpen(false)}
         />
       )}
       {editOpen && ratingType === "worker" && (
         <WorkerRateEmployerModal
-          isOpen editMode
-          jobId={jobId} jobTitle={jobTitle}
-          workerWmId={raterWmId} employerWmId={targetWmId} companyName={targetName}
+          isOpen
+          editMode
+          jobId={jobId}
+          jobTitle={jobTitle}
+          workerWmId={raterWmId}
+          employerWmId={targetWmId}
+          companyName={targetName}
           domain={domain}
-          onSubmitted={handleEditDone} onClose={() => setEditOpen(false)}
+          onSubmitted={handleEditDone}
+          onClose={() => setEditOpen(false)}
         />
       )}
     </>

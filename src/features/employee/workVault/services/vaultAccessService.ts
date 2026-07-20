@@ -20,9 +20,12 @@ function getAllSessions(): VaultSession[] {
 /**
  * Writes all sessions to storage.
  */
-function saveSessions(sessions: VaultSession[]): void {
-  writeStorage(VAULT_STORAGE_KEYS.sessions, sessions);
+function saveSessions(sessions: VaultSession[]): boolean {
+  return writeStorage(VAULT_STORAGE_KEYS.sessions, sessions).ok;
 }
+
+export type CreateSessionResult =
+  { ok: true; session: VaultSession } | { ok: false; reason: "storage_error" };
 
 /**
  * Creates a new viewing session after successful OTP verification.
@@ -31,7 +34,7 @@ function saveSessions(sessions: VaultSession[]): void {
 export function createSession(
   employerIdentifier: string,
   employerName: string,
-): VaultSession {
+): CreateSessionResult {
   const now = Date.now();
   const visibleFolderIds = getVisibleFolders().map((f) => f.id);
 
@@ -46,11 +49,16 @@ export function createSession(
   };
 
   const sessions = getAllSessions();
-  saveSessions([...sessions, session]);
+  if (!saveSessions([...sessions, session])) {
+    return { ok: false, reason: "storage_error" };
+  }
 
-  addAccessLogEntry(session);
+  if (!addAccessLogEntry(session)) {
+    saveSessions(sessions);
+    return { ok: false, reason: "storage_error" };
+  }
 
-  return session;
+  return { ok: true, session };
 }
 
 /**
@@ -60,9 +68,7 @@ export function getActiveSession(): VaultSession | null {
   const now = Date.now();
   const sessions = getAllSessions();
 
-  const active = sessions.find(
-    (s) => s.status === "active" && now <= s.expiresAt,
-  );
+  const active = sessions.find((s) => s.status === "active" && now <= s.expiresAt);
 
   if (!active) return null;
   return active;
@@ -100,7 +106,7 @@ export function revokeSession(sessionId: string): boolean {
   if (index === -1) return false;
 
   sessions[index] = { ...sessions[index], status: "revoked" };
-  saveSessions(sessions);
+  if (!saveSessions(sessions)) return false;
 
   updateAccessLogStatus(sessionId, "revoked");
   return true;
@@ -142,7 +148,7 @@ export function getAccessLog(): VaultAccessEntry[] {
 /**
  * Adds a new entry to the access log (called when session is created).
  */
-function addAccessLogEntry(session: VaultSession): void {
+function addAccessLogEntry(session: VaultSession): boolean {
   const log = getAccessLog();
 
   const entry: VaultAccessEntry = {
@@ -155,7 +161,7 @@ function addAccessLogEntry(session: VaultSession): void {
     status: session.status,
   };
 
-  writeStorage(VAULT_STORAGE_KEYS.accessLog, [...log, entry]);
+  return writeStorage(VAULT_STORAGE_KEYS.accessLog, [...log, entry]).ok;
 }
 
 /**

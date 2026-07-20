@@ -35,7 +35,9 @@ beforeEach(() => {
 /* ── Create ── */
 describe("employmentStorage.create", () => {
   it("creates a record with correct initial state", () => {
-    const rec = employmentStorage.create(makeParams());
+    const created = employmentStorage.create(makeParams());
+    expect(created).not.toBeNull();
+    const rec = created!;
 
     expect(rec.id).toMatch(/^emp_post_001_/);
     expect(rec.status).toBe("selected");
@@ -70,9 +72,11 @@ describe("employmentStorage.create", () => {
   });
 
   it("generates unique IDs for different posts", () => {
-    const r1 = employmentStorage.create(makeParams({ careerPostId: "post_a" }));
-    const r2 = employmentStorage.create(makeParams({ careerPostId: "post_b" }));
-    expect(r1.id).not.toBe(r2.id);
+    const created1 = employmentStorage.create(makeParams({ careerPostId: "post_a" }));
+    const created2 = employmentStorage.create(makeParams({ careerPostId: "post_b" }));
+    expect(created1).not.toBeNull();
+    expect(created2).not.toBeNull();
+    expect(created1!.id).not.toBe(created2!.id);
   });
 
   it("dispatches change event", () => {

@@ -1,91 +1,152 @@
-// src/features/employer/shiftJobs/components/ShiftRatingSection.tsx
-//
-// Mandatory rating flow — employer must rate ALL confirmed workers
-// before shift can be marked complete.
-// Shows one worker at a time via EmployerRateWorkerModal.
+// App: Job Mitra / WorkMitra_Enterprise_v2
+// File: ShiftRatingSection.tsx
+// Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\components\ShiftRatingSection.tsx
 
-import { useState, useMemo } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { EmployerRateWorkerModal } from "../../../../shared/components/rating/EmployerRateWorkerModal";
-import { employerShiftStorage } from "../storage/employerShift.storage";
-import type { EmployeeShiftApplication, ShiftPost } from "../storage/employerShift.storage";
+import { ratingStorage } from "../../../../shared/rating/ratingStorage";
+import { employerSettingsStorage } from "../..//company/storage/employerSettings.storage";
+import { employerShiftStorage } from "../../shiftJobs/storage/employerShift.storage";
+import type {
+  EmployeeShiftApplication,
+  ShiftPost,
+} from "../../shiftJobs/storage/employerShift.storage";
 
-/* ------------------------------------------------ */
-/* Props                                            */
-/* ------------------------------------------------ */
 type Props = {
   post: ShiftPost;
   confirmedApps: EmployeeShiftApplication[];
   onShiftClosed: () => void;
 };
 
-/* ------------------------------------------------ */
-/* Component                                        */
-/* ------------------------------------------------ */
-export function ShiftRatingSection({ post, confirmedApps, onShiftClosed }: Props) {
-  const [ratingIndex, setRatingIndex] = useState(0);
-  const [ratedIds, setRatedIds]       = useState<Set<string>>(new Set());
-  const [modalOpen, setModalOpen]     = useState(false);
+function getWorkerWmId(app: EmployeeShiftApplication): string {
+  return app.profileSnapshot?.uniqueId?.trim() || app.id;
+}
 
-  const unratedApps = useMemo(
-    () => confirmedApps.filter((a) => !ratedIds.has(a.id)),
-    [confirmedApps, ratedIds],
+function getWorkerName(app: EmployeeShiftApplication): string {
+  return app.profileSnapshot?.fullName?.trim() || `Worker ${app.id.slice(-4).toUpperCase()}`;
+}
+
+export function ShiftRatingSection({ post, confirmedApps, onShiftClosed }: Props) {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [activeAppId, setActiveAppId] = useState<string | null>(null);
+  const [closeError, setCloseError] = useState<string | null>(null);
+
+  const employerWmId = useMemo(() => {
+    const profile = employerSettingsStorage.get();
+    return profile.uniqueId?.trim() || "employer_local_demo";
+  }, []);
+
+  const employerRatings = useSyncExternalStore(
+    ratingStorage.subscribe,
+    ratingStorage.getAllERRatings,
+    ratingStorage.getAllERRatings,
   );
 
-  const currentApp = unratedApps[ratingIndex] ?? null;
-  const totalWorkers = confirmedApps.length;
-  const ratedCount = ratedIds.size;
-  const allRated = ratedCount >= totalWorkers && totalWorkers > 0;
+  const ratedWorkerIds = useMemo(() => {
+    const ids = new Set<string>();
 
-  function handleStartRating() {
-    setRatingIndex(0);
+    for (const app of confirmedApps) {
+      const workerWmId = getWorkerWmId(app);
+
+      const hasRating = employerRatings.some(
+        (rating) =>
+          rating.domain === "shift" &&
+          rating.employerWmId === employerWmId &&
+          rating.jobId === post.id &&
+          rating.workerWmId === workerWmId,
+      );
+
+      if (hasRating) ids.add(app.id);
+    }
+
+    return ids;
+  }, [confirmedApps, employerRatings, employerWmId, post.id]);
+
+  const unratedApps = useMemo(
+    () => confirmedApps.filter((app) => !ratedWorkerIds.has(app.id)),
+    [confirmedApps, ratedWorkerIds],
+  );
+
+  const currentApp =
+    (activeAppId ? unratedApps.find((app) => app.id === activeAppId) : null) ??
+    unratedApps[0] ??
+    null;
+
+  const totalWorkers = confirmedApps.length;
+  const ratedCount = ratedWorkerIds.size;
+  const allRated = totalWorkers > 0 && unratedApps.length === 0;
+  const isCompleted = post.status === "completed";
+
+  function openRatingFor(app: EmployeeShiftApplication) {
+    setActiveAppId(app.id);
     setModalOpen(true);
   }
 
+  function handleStartRating() {
+    if (!unratedApps[0]) return;
+
+    openRatingFor(unratedApps[0]);
+  }
+
   function handleRated() {
-    if (!currentApp) return;
-
-    const newRated = new Set(ratedIds);
-    newRated.add(currentApp.id);
-    setRatedIds(newRated);
     setModalOpen(false);
-
-    const remaining = confirmedApps.filter((a) => !newRated.has(a.id));
-    if (remaining.length > 0) {
-      // Advance to next unrated worker
-      setRatingIndex((prev) => prev + 1);
-    }
+    setActiveAppId(null);
   }
 
   function handleCloseModal() {
-    /* Rating is mandatory — modal cannot be dismissed without submitting.
-       onClose is only called if user somehow closes (ESC).
-       We keep modal closed but don't advance index. */
     setModalOpen(false);
+    setActiveAppId(null);
   }
 
   function handleCloseShift() {
     if (!allRated) return;
-    employerShiftStorage.completePost(post.id);
+
+    setCloseError(null);
+
+    const result = employerShiftStorage.completePost(post.id);
+
+    if (!result.ok) {
+      if (result.reason === "vault_finalize_error") {
+        setCloseError(
+          "Could not finalize work history records. Your shift was not marked complete. Please try again.",
+        );
+        return;
+      }
+
+      if (result.reason === "post_write_error") {
+        setCloseError("Could not save shift completion. Please try again.");
+        return;
+      }
+
+      if (result.reason === "already_completed") {
+        onShiftClosed();
+        return;
+      }
+
+      setCloseError("Could not complete this shift. Please try again.");
+      return;
+    }
+
     onShiftClosed();
   }
 
   if (totalWorkers === 0) return null;
 
-  const isCompleted = post.status === "completed";
-
-  /* ── Already completed ── */
   if (isCompleted) {
     return (
-      <div style={{
-        marginTop: 12, padding: "14px 16px", borderRadius: 14,
-        background: "rgba(22,163,74,0.06)",
-        border: "1px solid rgba(22,163,74,0.2)",
-      }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "#15803d" }}>
-          &#10003; Shift Completed
-        </div>
+      <div
+        style={{
+          marginTop: 12,
+          padding: "14px 16px",
+          borderRadius: 14,
+          background: "rgba(22,163,74,0.06)",
+          border: "1px solid rgba(22,163,74,0.2)",
+        }}
+      >
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#15803d" }}>Shift Completed</div>
+
         <div style={{ fontSize: 12, color: "var(--wm-er-muted)", marginTop: 4 }}>
-          All workers have been rated and this shift is closed.
+          All required worker ratings are completed and this shift is closed.
         </div>
       </div>
     );
@@ -93,40 +154,49 @@ export function ShiftRatingSection({ post, confirmedApps, onShiftClosed }: Props
 
   return (
     <>
-      {/* Rating Modal */}
       {modalOpen && currentApp && (
         <EmployerRateWorkerModal
           isOpen={modalOpen}
           jobId={post.id}
           jobTitle={post.jobName}
-          employerWmId=""
-          workerWmId={currentApp.profileSnapshot?.uniqueId ?? currentApp.id}
-          workerName={currentApp.profileSnapshot?.fullName ?? `Worker ${currentApp.id.slice(-4).toUpperCase()}`}
+          employerWmId={employerWmId}
+          workerWmId={getWorkerWmId(currentApp)}
+          workerName={getWorkerName(currentApp)}
           domain="shift"
           onSubmitted={handleRated}
           onClose={handleCloseModal}
         />
       )}
 
-      {/* Rating Banner */}
-      <div style={{
-        marginTop: 12, padding: "14px 16px", borderRadius: 14,
-        background: allRated ? "rgba(22,163,74,0.06)" : "rgba(217,119,6,0.06)",
-        border: allRated
-          ? "1px solid rgba(22,163,74,0.2)"
-          : "1px solid rgba(217,119,6,0.25)",
-      }}>
-        {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+      <div
+        style={{
+          marginTop: 12,
+          padding: "14px 16px",
+          borderRadius: 14,
+          background: allRated ? "rgba(22,163,74,0.06)" : "rgba(202,138,4,0.06)",
+          border: allRated ? "1px solid rgba(22,163,74,0.2)" : "1px solid rgba(202,138,4,0.25)",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 8,
+            flexWrap: "wrap",
+          }}
+        >
           <div>
-            <div style={{
-              fontSize: 13, fontWeight: 700,
-              color: allRated ? "#15803d" : "#92400e",
-            }}>
-              {allRated
-                ? "All Workers Rated \u2014 Ready to Close"
-                : "Rate Workers to Close Shift"}
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: allRated ? "#15803d" : "#854d0e",
+              }}
+            >
+              {allRated ? "All Workers Rated - Ready to Close" : "Rate Workers to Close Shift"}
             </div>
+
             <div style={{ fontSize: 12, color: "var(--wm-er-muted)", marginTop: 3 }}>
               {allRated
                 ? "Tap the button below to mark this shift as complete."
@@ -134,61 +204,82 @@ export function ShiftRatingSection({ post, confirmedApps, onShiftClosed }: Props
             </div>
           </div>
 
-          {/* Rating progress pill */}
-          <span style={{
-            fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 999,
-            background: allRated ? "rgba(22,163,74,0.12)" : "rgba(217,119,6,0.12)",
-            color: allRated ? "#15803d" : "#92400e",
-            border: allRated ? "1px solid rgba(22,163,74,0.3)" : "1px solid rgba(217,119,6,0.3)",
-            whiteSpace: "nowrap",
-          }}>
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              padding: "3px 10px",
+              borderRadius: 999,
+              background: allRated ? "rgba(22,163,74,0.12)" : "rgba(202,138,4,0.12)",
+              color: allRated ? "#15803d" : "#854d0e",
+              border: allRated ? "1px solid rgba(22,163,74,0.3)" : "1px solid rgba(202,138,4,0.3)",
+              whiteSpace: "nowrap",
+            }}
+          >
             {ratedCount}/{totalWorkers} Rated
           </span>
         </div>
 
-        {/* Progress bar */}
-        {totalWorkers > 0 && (
-          <div style={{
-            marginTop: 10, height: 6, borderRadius: 999,
-            background: "var(--wm-er-divider, #e5e7eb)", overflow: "hidden",
-          }}>
-            <div style={{
-              height: "100%", borderRadius: 999,
+        <div
+          style={{
+            marginTop: 10,
+            height: 6,
+            borderRadius: 999,
+            background: "var(--wm-er-divider, #e5e7eb)",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              height: "100%",
+              borderRadius: 999,
               width: `${(ratedCount / totalWorkers) * 100}%`,
-              background: allRated ? "#16a34a" : "#d97706",
+              background: allRated ? "#16a34a" : "#ca8a04",
               transition: "width 0.3s ease",
-            }} />
-          </div>
-        )}
+            }}
+          />
+        </div>
 
-        {/* Worker list — unrated */}
         {!allRated && unratedApps.length > 0 && (
           <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
-            {unratedApps.map((a, idx) => (
-              <div key={a.id} style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                padding: "8px 12px", borderRadius: 10,
-                background: "var(--wm-er-bg)", border: "1px solid var(--wm-er-border)",
-              }}>
+            {unratedApps.map((app, index) => (
+              <div
+                key={app.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "8px 12px",
+                  borderRadius: 10,
+                  background: "var(--wm-er-bg)",
+                  border: "1px solid var(--wm-er-border)",
+                }}
+              >
                 <div>
                   <div style={{ fontSize: 12, fontWeight: 700, color: "var(--wm-er-text)" }}>
-                    {a.profileSnapshot?.fullName ?? `Worker ${a.id.slice(-4).toUpperCase()}`}
+                    {getWorkerName(app)}
                   </div>
-                  {a.profileSnapshot?.uniqueId && (
+
+                  {app.profileSnapshot?.uniqueId && (
                     <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginTop: 2 }}>
-                      {a.profileSnapshot.uniqueId}
+                      {app.profileSnapshot.uniqueId}
                     </div>
                   )}
                 </div>
-                {idx === 0 && !modalOpen && (
+
+                {index === 0 && !modalOpen && (
                   <button
                     type="button"
-                    onClick={() => { setRatingIndex(0); setModalOpen(true); }}
+                    onClick={() => openRatingFor(app)}
                     style={{
-                      fontSize: 12, fontWeight: 600, padding: "5px 12px",
-                      borderRadius: 8, border: "none",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      padding: "5px 12px",
+                      borderRadius: 8,
+                      border: "none",
                       background: "var(--wm-er-accent-shift, #16a34a)",
-                      color: "#fff", cursor: "pointer",
+                      color: "#fff",
+                      cursor: "pointer",
                     }}
                   >
                     Rate Now
@@ -199,34 +290,67 @@ export function ShiftRatingSection({ post, confirmedApps, onShiftClosed }: Props
           </div>
         )}
 
-        {/* Actions */}
-        <div style={{ marginTop: 12, display: "flex", gap: 8, justifyContent: "flex-end" }}>
+        <div
+          style={{
+            marginTop: 12,
+            display: "flex",
+            gap: 8,
+            justifyContent: "flex-end",
+            flexWrap: "wrap",
+          }}
+        >
+          {closeError && (
+            <div
+              style={{
+                width: "100%",
+                fontSize: 12,
+                fontWeight: 600,
+                color: "#b91c1c",
+                padding: "8px 12px",
+                borderRadius: 10,
+                background: "rgba(220,38,38,0.06)",
+                border: "1px solid rgba(220,38,38,0.2)",
+              }}
+            >
+              {closeError}
+            </div>
+          )}
+
           {!allRated && !modalOpen && (
             <button
               type="button"
               onClick={handleStartRating}
               style={{
-                fontSize: 13, fontWeight: 600, padding: "9px 18px",
-                borderRadius: 10, border: "none",
+                fontSize: 13,
+                fontWeight: 600,
+                padding: "9px 18px",
+                borderRadius: 10,
+                border: "none",
                 background: "var(--wm-er-accent-shift, #16a34a)",
-                color: "#fff", cursor: "pointer",
+                color: "#fff",
+                cursor: "pointer",
               }}
             >
               Start Rating ({unratedApps.length} remaining)
             </button>
           )}
+
           {allRated && (
             <button
               type="button"
               onClick={handleCloseShift}
               style={{
-                fontSize: 13, fontWeight: 600, padding: "9px 18px",
-                borderRadius: 10, border: "none",
+                fontSize: 13,
+                fontWeight: 600,
+                padding: "9px 18px",
+                borderRadius: 10,
+                border: "none",
                 background: "#15803d",
-                color: "#fff", cursor: "pointer",
+                color: "#fff",
+                cursor: "pointer",
               }}
             >
-              Mark Shift as Complete &#10003;
+              Mark Shift as Complete
             </button>
           )}
         </div>

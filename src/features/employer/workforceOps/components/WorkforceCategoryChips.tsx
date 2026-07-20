@@ -1,17 +1,21 @@
-// src/features/employer/workforceOps/components/WorkforceCategoryChips.tsx
+﻿// src/features/employer/workforceOps/components/WorkforceCategoryChips.tsx
 //
 // Reusable category chip selector for Workforce Ops Hub.
 // Two modes: display (read-only chips) and select (toggle chips with counts).
 
 import { useMemo } from "react";
 import { workforceCategoryService } from "../services/workforceCategoryService";
-import type { WorkforceCategory } from "../types/workforceTypes";
-import { IconPlus } from "./workforceIcons";
-import { AMBER, AMBER_BG, categoryChipStyle } from "./workforceStyles";
+import type { WorkforceCategory } from "../../../../shared/domains/workforce/types/workforceTypes";
+import { IconPlus } from "../../../../shared/domains/workforce/ui/workforceIcons";
+import {
+  AMBER,
+  AMBER_BG,
+  categoryChipStyle,
+} from "../../../../shared/domains/workforce/ui/workforceStyles";
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* Display Mode — Read-only chips for showing assigned categories             */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Display Mode â€” Read-only chips for showing assigned categories             */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 type DisplayProps = {
   categoryIds: string[];
@@ -30,9 +34,8 @@ export function WorkforceCategoryDisplay({ categoryIds, size = "md" }: DisplayPr
     return <span style={{ fontSize: 12, color: "var(--wm-er-muted)" }}>No categories</span>;
   }
 
-  const chipSize = size === "sm"
-    ? { padding: "2px 8px", fontSize: 10 }
-    : { padding: "4px 10px", fontSize: 11 };
+  const chipSize =
+    size === "sm" ? { padding: "2px 8px", fontSize: 10 } : { padding: "4px 10px", fontSize: 11 };
 
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: size === "sm" ? 4 : 6 }}>
@@ -56,9 +59,9 @@ export function WorkforceCategoryDisplay({ categoryIds, size = "md" }: DisplayPr
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* Select Mode — Toggle chips for selecting categories                        */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Select Mode â€” Toggle chips for selecting categories                        */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 type SelectProps = {
   selected: string[];
@@ -106,7 +109,8 @@ export function WorkforceCategorySelect({
             color: isAllSelected ? "#fff" : AMBER,
           }}
         >
-          {allLabel}{allCount !== undefined ? ` (${allCount})` : ""}
+          {allLabel}
+          {allCount !== undefined ? ` (${allCount})` : ""}
         </button>
       )}
 
@@ -126,7 +130,13 @@ export function WorkforceCategorySelect({
               color: isActive ? "#fff" : AMBER,
             }}
           >
-            {isActive ? "✓ " : <><IconPlus /> </>}
+            {isActive ? (
+              "âœ“ "
+            ) : (
+              <>
+                <IconPlus />{" "}
+              </>
+            )}
             {cat.name}
             {count !== undefined ? ` (${count})` : ""}
           </button>
@@ -136,9 +146,9 @@ export function WorkforceCategorySelect({
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────── */
-/* Filter Mode — Single-select filter (for staff list, announcement list)     */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Filter Mode â€” Single-select filter (for staff list, announcement list)     */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 type FilterProps = {
   selectedId: string | null;
@@ -186,7 +196,8 @@ export function WorkforceCategoryFilter({
               color: isActive ? "#fff" : AMBER,
             }}
           >
-            {cat.name}{count !== undefined ? ` (${count})` : ""}
+            {cat.name}
+            {count !== undefined ? ` (${count})` : ""}
           </button>
         );
       })}

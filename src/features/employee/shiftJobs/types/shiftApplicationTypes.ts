@@ -1,6 +1,6 @@
-// src/features/employee/shiftJobs/types/shiftApplicationTypes.ts
-//
-// Types for employee shift applications and related shift posts.
+// App name: Job Mitra
+// File name: shiftApplicationTypes.ts
+// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\types\shiftApplicationTypes.ts
 
 export type ExperienceLabel = "helper" | "fresher_ok" | "experienced";
 
@@ -23,6 +23,8 @@ export type ShiftPostData = {
   experience: ExperienceLabel;
   payPerDay: number;
   locationName: string;
+  locationAddress?: string;
+  mapsLink?: string;
   startAt: number;
   endAt: number;
   isHiddenFromSearch?: boolean;
@@ -38,8 +40,12 @@ export type ShiftApplicationData = {
   goodToHaveAnswers: Record<string, AnswerState>;
   notes: Record<string, string>;
   withdrawnAt?: number;
+  attendanceConfirmedAt?: number;
   replacedAt?: number;
   replacedReason?: "no_show" | "schedule_change" | "quality_issue" | "other";
+  planId?: string;
+  planApplyBatchId?: string;
+  selectedDates?: string[];
 };
 
 export type ApplicationTab = "all" | "active" | "confirmed" | "closed";

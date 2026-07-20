@@ -14,11 +14,19 @@ export function readStorage<T>(key: string): T | null {
   }
 }
 
+export type VaultStorageWriteResult = { ok: true } | { ok: false; reason: "storage_error" };
+
 /**
  * Generic localStorage write helper.
+ * Returns typed result so security-critical writes (OTP mark-used) can be checked.
  */
-export function writeStorage<T>(key: string, data: T): void {
-  localStorage.setItem(key, JSON.stringify(data));
+export function writeStorage<T>(key: string, data: T): VaultStorageWriteResult {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+    return { ok: true };
+  } catch {
+    return { ok: false, reason: "storage_error" };
+  }
 }
 
 /**

@@ -1,17 +1,20 @@
-// src/features/employer/workforceOps/components/AnnounceStepVacancy.tsx
+﻿// src/features/employer/workforceOps/components/AnnounceStepVacancy.tsx
 //
-// Step 3: Set vacancy per category × per shift.
+// Step 3: Set vacancy per category Ã— per shift.
 // Grid layout with + / - controls and waiting buffer setting.
 
 import { useMemo, useState, useCallback } from "react";
 import { workforceCategoryService } from "../services/workforceCategoryService";
-import type { AnnouncementShift, WorkforceCategory } from "../types/workforceTypes";
-import { validateAnnouncementStep2 } from "../helpers/workforceValidation";
-import { AMBER, AMBER_BG } from "./workforceStyles";
+import type {
+  AnnouncementShift,
+  WorkforceCategory,
+} from "../../../../shared/domains/workforce/types/workforceTypes";
+import { validateAnnouncementStep2 } from "../../../../shared/domains/workforce/validation/workforceValidation";
+import { AMBER, AMBER_BG } from "../../../../shared/domains/workforce/ui/workforceStyles";
 
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Props                                                                      */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 type Props = {
   targetCategories: string[];
@@ -22,9 +25,9 @@ type Props = {
   onNext: () => void;
 };
 
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Styles                                                                     */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 const counterBtnStyle: React.CSSProperties = {
   width: 30,
@@ -49,11 +52,18 @@ const countDisplayStyle: React.CSSProperties = {
   color: AMBER,
 };
 
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Component                                                                  */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
-export function AnnounceStepVacancy({ targetCategories, shifts, vacancyMap, waitingBuffer, onChange, onNext }: Props) {
+export function AnnounceStepVacancy({
+  targetCategories,
+  shifts,
+  vacancyMap,
+  waitingBuffer,
+  onChange,
+  onNext,
+}: Props) {
   const categories = useMemo(() => workforceCategoryService.getAll(), []);
   const categoryMap = useMemo(() => {
     const map = new Map<string, WorkforceCategory>();
@@ -63,23 +73,32 @@ export function AnnounceStepVacancy({ targetCategories, shifts, vacancyMap, wait
 
   const [errors, setErrors] = useState<string[]>([]);
 
-  const getCount = useCallback((catId: string, shiftId: string): number => {
-    return vacancyMap[catId]?.[shiftId] ?? 0;
-  }, [vacancyMap]);
+  const getCount = useCallback(
+    (catId: string, shiftId: string): number => {
+      return vacancyMap[catId]?.[shiftId] ?? 0;
+    },
+    [vacancyMap],
+  );
 
-  const setCount = useCallback((catId: string, shiftId: string, value: number) => {
-    const clamped = Math.max(0, Math.min(99, value));
-    const updated = { ...vacancyMap };
-    if (!updated[catId]) updated[catId] = {};
-    updated[catId] = { ...updated[catId], [shiftId]: clamped };
-    onChange(updated, waitingBuffer);
-    setErrors([]);
-  }, [vacancyMap, waitingBuffer, onChange]);
+  const setCount = useCallback(
+    (catId: string, shiftId: string, value: number) => {
+      const clamped = Math.max(0, Math.min(99, value));
+      const updated = { ...vacancyMap };
+      if (!updated[catId]) updated[catId] = {};
+      updated[catId] = { ...updated[catId], [shiftId]: clamped };
+      onChange(updated, waitingBuffer);
+      setErrors([]);
+    },
+    [vacancyMap, waitingBuffer, onChange],
+  );
 
-  const setBuffer = useCallback((value: number) => {
-    const clamped = Math.max(0, Math.min(20, value));
-    onChange(vacancyMap, clamped);
-  }, [vacancyMap, onChange]);
+  const setBuffer = useCallback(
+    (value: number) => {
+      const clamped = Math.max(0, Math.min(20, value));
+      onChange(vacancyMap, clamped);
+    },
+    [vacancyMap, onChange],
+  );
 
   /* Total vacancy */
   const totalVacancy = useMemo(() => {
@@ -111,7 +130,7 @@ export function AnnounceStepVacancy({ targetCategories, shifts, vacancyMap, wait
           How many staff do you need for each category and shift?
         </div>
 
-        {/* Grid: Category × Shift */}
+        {/* Grid: Category Ã— Shift */}
         <div style={{ display: "grid", gap: 14 }}>
           {targetCategories.map((catId) => {
             const cat = categoryMap.get(catId);
@@ -139,8 +158,14 @@ export function AnnounceStepVacancy({ targetCategories, shifts, vacancyMap, wait
                         }}
                       >
                         <div>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: "var(--wm-er-text)" }}>{shift.name}</div>
-                          <div style={{ fontSize: 10, color: "var(--wm-er-muted)" }}>{shift.startTime} — {shift.endTime}</div>
+                          <div
+                            style={{ fontSize: 13, fontWeight: 600, color: "var(--wm-er-text)" }}
+                          >
+                            {shift.name}
+                          </div>
+                          <div style={{ fontSize: 10, color: "var(--wm-er-muted)" }}>
+                            {shift.startTime} â€” {shift.endTime}
+                          </div>
                         </div>
 
                         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
@@ -150,7 +175,7 @@ export function AnnounceStepVacancy({ targetCategories, shifts, vacancyMap, wait
                             disabled={count === 0}
                             style={{ ...counterBtnStyle, opacity: count === 0 ? 0.3 : 1 }}
                           >
-                            −
+                            âˆ’
                           </button>
                           <div style={countDisplayStyle}>{count}</div>
                           <button
@@ -177,7 +202,8 @@ export function AnnounceStepVacancy({ targetCategories, shifts, vacancyMap, wait
           Waiting List Buffer
         </div>
         <div style={{ fontSize: 12, color: "var(--wm-er-muted)", marginBottom: 10 }}>
-          Extra applicants to keep as backup per category per shift. If someone cancels, the next person moves up automatically.
+          Extra applicants to keep as backup per category per shift. If someone cancels, the next
+          person moves up automatically.
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <button
@@ -186,7 +212,7 @@ export function AnnounceStepVacancy({ targetCategories, shifts, vacancyMap, wait
             disabled={waitingBuffer === 0}
             style={{ ...counterBtnStyle, opacity: waitingBuffer === 0 ? 0.3 : 1 }}
           >
-            −
+            âˆ’
           </button>
           <div style={countDisplayStyle}>{waitingBuffer}</div>
           <button
@@ -196,13 +222,26 @@ export function AnnounceStepVacancy({ targetCategories, shifts, vacancyMap, wait
           >
             +
           </button>
-          <span style={{ fontSize: 12, color: "var(--wm-er-muted)", marginLeft: 4 }}>per category per shift</span>
+          <span style={{ fontSize: 12, color: "var(--wm-er-muted)", marginLeft: 4 }}>
+            per category per shift
+          </span>
         </div>
       </div>
 
       {/* Summary */}
-      <div style={{ padding: 12, borderRadius: 10, background: AMBER_BG, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--wm-er-text)" }}>Total Vacancies</div>
+      <div
+        style={{
+          padding: 12,
+          borderRadius: 10,
+          background: AMBER_BG,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--wm-er-text)" }}>
+          Total Vacancies
+        </div>
         <div style={{ fontSize: 20, fontWeight: 900, color: AMBER }}>{totalVacancy}</div>
       </div>
 
@@ -210,7 +249,9 @@ export function AnnounceStepVacancy({ targetCategories, shifts, vacancyMap, wait
       {errors.length > 0 && (
         <div style={{ padding: 10, borderRadius: 8, background: "rgba(220,38,38,0.06)" }}>
           {errors.map((e, i) => (
-            <div key={i} style={{ fontSize: 12, color: "var(--wm-error)" }}>{e}</div>
+            <div key={i} style={{ fontSize: 12, color: "var(--wm-error)" }}>
+              {e}
+            </div>
           ))}
         </div>
       )}
@@ -228,7 +269,7 @@ export function AnnounceStepVacancy({ targetCategories, shifts, vacancyMap, wait
           padding: "12px",
         }}
       >
-        Next — Announcement Details
+        Next â€” Announcement Details
       </button>
     </div>
   );

@@ -1,10 +1,10 @@
-// src/features/employee/workforceOps/components/WorkforceAnnounceFeedCard.tsx
+﻿// src/features/employee/workforceOps/components/WorkforceAnnounceFeedCard.tsx
 //
 // Reusable announcement card for Employee Workforce feed.
 
-import type { WorkforceAnnouncement } from "../../../employer/workforceOps/types/workforceTypes";
-import { IconArrowRight } from "../../../employer/workforceOps/components/workforceIcons";
-import { AMBER, AMBER_BG } from "../../../employer/workforceOps/components/workforceStyles";
+import type { WorkforceAnnouncement } from "../../../../shared/domains/workforce/types/workforceTypes";
+import { IconArrowRight } from "../../../../shared/domains/workforce/ui/workforceIcons";
+import { AMBER, AMBER_BG } from "../../../../shared/domains/workforce/ui/workforceStyles";
 
 type Props = {
   announcement: WorkforceAnnouncement;
@@ -53,16 +53,29 @@ export function WorkforceAnnounceFeedCard({
     >
       <div style={{ minWidth: 0, flex: 1 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-er-text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <div
+            style={{
+              fontSize: 14,
+              fontWeight: 700,
+              color: "var(--wm-er-text)",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
             {announcement.title}
           </div>
-          {isPreferredCompany && (
-            <span style={{ color: AMBER, fontSize: 12 }}>★</span>
-          )}
+          {isPreferredCompany && <span style={{ color: AMBER, fontSize: 12 }}>â˜…</span>}
         </div>
 
         <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginTop: 3 }}>
-          {new Date(announcement.date + "T00:00:00").toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })} · {announcement.shifts.length} shift{announcement.shifts.length !== 1 ? "s" : ""} · {totalVacancy} {totalVacancy === 1 ? "vacancy" : "vacancies"}
+          {new Date(announcement.date + "T00:00:00").toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}{" "}
+          Â· {announcement.shifts.length} shift{announcement.shifts.length !== 1 ? "s" : ""} Â·{" "}
+          {totalVacancy} {totalVacancy === 1 ? "vacancy" : "vacancies"}
         </div>
 
         <div style={{ marginTop: 4, display: "flex", flexWrap: "wrap", gap: 4 }}>
@@ -85,7 +98,7 @@ export function WorkforceAnnounceFeedCard({
 
         {hasApplied && (
           <div style={{ marginTop: 4, fontSize: 11, fontWeight: 800, color: "var(--wm-success)" }}>
-            ✓ Applied
+            âœ“ Applied
           </div>
         )}
       </div>

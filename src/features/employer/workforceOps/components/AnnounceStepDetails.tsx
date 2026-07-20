@@ -1,14 +1,14 @@
-// src/features/employer/workforceOps/components/AnnounceStepDetails.tsx
+﻿// src/features/employer/workforceOps/components/AnnounceStepDetails.tsx
 //
-// Step 4: Announcement details — title, work date, time, location, description, auto-replace.
+// Step 4: Announcement details â€” title, work date, time, location, description, auto-replace.
 
 import { useState } from "react";
-import { validateAnnouncementStep3 } from "../helpers/workforceValidation";
-import { AMBER } from "./workforceStyles";
+import { validateAnnouncementStep3 } from "../../../../shared/domains/workforce/validation/workforceValidation";
+import { AMBER } from "../../../../shared/domains/workforce/ui/workforceStyles";
 
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Props                                                                      */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 type Props = {
   title: string;
@@ -17,20 +17,22 @@ type Props = {
   location: string;
   description: string;
   autoReplace: boolean;
-  onChange: (patch: Partial<{
-    title: string;
-    date: string;
-    time: string;
-    location: string;
-    description: string;
-    autoReplace: boolean;
-  }>) => void;
+  onChange: (
+    patch: Partial<{
+      title: string;
+      date: string;
+      time: string;
+      location: string;
+      description: string;
+      autoReplace: boolean;
+    }>,
+  ) => void;
   onNext: () => void;
 };
 
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Styles                                                                     */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 const labelStyle: React.CSSProperties = {
   fontSize: 12,
@@ -71,11 +73,20 @@ const toggleKnobStyle = (active: boolean): React.CSSProperties => ({
   boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
 });
 
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Component                                                                  */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
-export function AnnounceStepDetails({ title, date, time, location, description, autoReplace, onChange, onNext }: Props) {
+export function AnnounceStepDetails({
+  title,
+  date,
+  time,
+  location,
+  description,
+  autoReplace,
+  onChange,
+  onNext,
+}: Props) {
   const [errors, setErrors] = useState<string[]>([]);
 
   function handleNext() {
@@ -92,20 +103,27 @@ export function AnnounceStepDetails({ title, date, time, location, description, 
   return (
     <div style={{ display: "grid", gap: 16 }}>
       <div className="wm-er-card">
-        <div style={{ fontSize: 14, fontWeight: 900, color: "var(--wm-er-text)", marginBottom: 12 }}>
+        <div
+          style={{ fontSize: 14, fontWeight: 900, color: "var(--wm-er-text)", marginBottom: 12 }}
+        >
           Announcement Details
         </div>
 
         <div style={{ display: "grid", gap: 14 }}>
           {/* Title */}
           <div>
-            <label style={labelStyle}>Title <span style={{ color: "var(--wm-error)" }}>*</span></label>
+            <label style={labelStyle}>
+              Title <span style={{ color: "var(--wm-error)" }}>*</span>
+            </label>
             <input
               type="text"
               className="wm-input"
               placeholder="e.g. Weekend Staff Required, Site Work - Block A"
               value={title}
-              onChange={(e) => { onChange({ title: e.target.value }); setErrors([]); }}
+              onChange={(e) => {
+                onChange({ title: e.target.value });
+                setErrors([]);
+              }}
               style={{ width: "100%", fontSize: 13 }}
               maxLength={100}
             />
@@ -114,12 +132,17 @@ export function AnnounceStepDetails({ title, date, time, location, description, 
           {/* Date + Time */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <div>
-              <label style={labelStyle}>Work Date <span style={{ color: "var(--wm-error)" }}>*</span></label>
+              <label style={labelStyle}>
+                Work Date <span style={{ color: "var(--wm-error)" }}>*</span>
+              </label>
               <input
                 type="date"
                 className="wm-input"
                 value={date}
-                onChange={(e) => { onChange({ date: e.target.value }); setErrors([]); }}
+                onChange={(e) => {
+                  onChange({ date: e.target.value });
+                  setErrors([]);
+                }}
                 style={{ width: "100%", fontSize: 13 }}
               />
             </div>
@@ -190,7 +213,9 @@ export function AnnounceStepDetails({ title, date, time, location, description, 
       {errors.length > 0 && (
         <div style={{ padding: 10, borderRadius: 8, background: "rgba(220,38,38,0.06)" }}>
           {errors.map((e, i) => (
-            <div key={i} style={{ fontSize: 12, color: "var(--wm-error)" }}>{e}</div>
+            <div key={i} style={{ fontSize: 12, color: "var(--wm-error)" }}>
+              {e}
+            </div>
           ))}
         </div>
       )}
@@ -208,7 +233,7 @@ export function AnnounceStepDetails({ title, date, time, location, description, 
           padding: "12px",
         }}
       >
-        Next — Preview & Send
+        Next â€” Preview & Send
       </button>
     </div>
   );

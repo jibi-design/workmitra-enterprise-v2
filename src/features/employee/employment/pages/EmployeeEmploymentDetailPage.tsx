@@ -1,10 +1,9 @@
-// src/features/employee/employment/pages/EmployeeEmploymentDetailPage.tsx
-//
-// My Current Employment — main page. Orchestrator only.
-// Domain: Manager Console Ocean Blue #0369a1
+// App name: Job Mitra
+// File name: EmployeeEmploymentDetailPage.tsx
+// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\employment\pages\EmployeeEmploymentDetailPage.tsx
 
 import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   employmentLifecycleStorage,
   type EmploymentRecord,
@@ -14,9 +13,6 @@ import { EmploymentHeroCard } from "../components/EmploymentHeroCard";
 import { EmploymentDetailsCard } from "../components/EmploymentDetailsCard";
 import { EmploymentLeaveSection } from "../components/EmploymentLeaveSection";
 import { EmployeePerformanceReviewSection } from "../components/EmployeePerformanceReviewSection";
-import { EmploymentRatingSection } from "../components/EmploymentRatingSection";
-import { EmploymentResignationSection } from "../components/EmploymentResignationSection";
-import { ResignationModal } from "../components/ResignationModal";
 import { LeaveApplyModal } from "../components/LeaveApplyModal";
 import { WorkDiarySection } from "../components/WorkDiarySection";
 import { EmployeeIncidentReportSection } from "../components/EmployeeIncidentReportSection";
@@ -24,19 +20,44 @@ import { EmployeeAvailabilitySection } from "../components/EmployeeAvailabilityS
 import { EmployeeScheduleSection } from "../components/EmployeeScheduleSection";
 import { EmployeeTaskViewSection } from "../components/EmployeeTaskViewSection";
 import { WorkDiaryQuickReport } from "../components/WorkDiaryQuickReport";
+import { EmploymentPrimarySwitcher } from "../components/EmploymentPrimarySwitcher";
+import { EmploymentRatingSection } from "../components/EmploymentRatingSection";
+import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
+import {
+  careerEmploymentFeedbackStorage,
+  type CareerEmploymentFeedbackCompletedSnapshot,
+} from "../../../../shared/employmentFeedback/careerEmploymentFeedback.storage";
+import { WorkFeedbackSummaryCard } from "../../../../shared/employmentFeedback/WorkFeedbackSummaryCard";
+import { LAUNCH_VISIBILITY } from "../../../../shared/launch/launchVisibility";
 
-/* ------------------------------------------------ */
-/* Helpers                                          */
-/* ------------------------------------------------ */
+type EmploymentPageSnapshot = {
+  records: EmploymentRecord[];
+  activeRecords: EmploymentRecord[];
+  primaryId: string | null;
+};
+
 function findHRCandidateId(careerPostId: string): string | null {
   const all = hrManagementStorage.getAll();
-  const found = all.find((r) => r.careerPostId === careerPostId && r.status === "active");
+  const found = all.find(
+    (record) => record.careerPostId === careerPostId && record.status === "active",
+  );
   return found?.id ?? null;
 }
 
-/* ------------------------------------------------ */
-/* Icons                                            */
-/* ------------------------------------------------ */
+function parseCompletedFeedbackSnapshot(raw: string): CareerEmploymentFeedbackCompletedSnapshot {
+  try {
+    const parsed = JSON.parse(raw) as CareerEmploymentFeedbackCompletedSnapshot;
+    return { task: parsed.task ?? null };
+  } catch {
+    return { task: null };
+  }
+}
+
+function getEmployeeUniqueId(): string {
+  const profile = employeeProfileStorage.get();
+  return profile.uniqueId || "Employee ID not available";
+}
+
 function IconBriefcase() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
@@ -48,64 +69,113 @@ function IconBriefcase() {
   );
 }
 
-/* ------------------------------------------------ */
-/* Component                                        */
-/* ------------------------------------------------ */
 export function EmployeeEmploymentDetailPage() {
   const { employmentId } = useParams<{ employmentId: string }>();
-  const [showResignModal, setShowResignModal] = useState(false);
+  const navigate = useNavigate();
   const [showLeaveModal, setShowLeaveModal] = useState(false);
 
   const subscribe = useCallback(
-    (cb: () => void) => employmentLifecycleStorage.subscribe(cb),
+    (callback: () => void) => employmentLifecycleStorage.subscribe(callback),
+    [],
+  );
+
+  const feedbackSubscribe = useCallback(
+    (callback: () => void) => careerEmploymentFeedbackStorage.subscribe(callback),
     [],
   );
 
   const recordRef = useCallback(() => {
-    const all = employmentLifecycleStorage.getAll();
-    return JSON.stringify(all);
+    const snapshot: EmploymentPageSnapshot = {
+      records: employmentLifecycleStorage.getAll(),
+      activeRecords: employmentLifecycleStorage.getActiveList(),
+      primaryId: employmentLifecycleStorage.getPrimaryActiveId(),
+    };
+
+    return JSON.stringify(snapshot);
   }, []);
 
   const raw = useSyncExternalStore(subscribe, recordRef, recordRef);
 
-  const record = useMemo(() => {
+  const parsed = useMemo<EmploymentPageSnapshot>(() => {
     try {
-      const all: EmploymentRecord[] = JSON.parse(raw);
-      return all.find((r) => r.id === employmentId) ?? null;
-    } catch { return null; }
-  }, [raw, employmentId]);
+      const value = JSON.parse(raw) as EmploymentPageSnapshot;
+
+      return {
+        records: Array.isArray(value.records) ? value.records : [],
+        activeRecords: Array.isArray(value.activeRecords) ? value.activeRecords : [],
+        primaryId: value.primaryId ?? null,
+      };
+    } catch {
+      return { records: [], activeRecords: [], primaryId: null };
+    }
+  }, [raw]);
+
+  const record = useMemo(() => {
+    return parsed.records.find((item) => item.id === employmentId) ?? null;
+  }, [parsed.records, employmentId]);
+
+  const employeeUniqueId = useMemo(() => getEmployeeUniqueId(), []);
+  const careerPostId = record?.careerPostId ?? "";
+
+  const feedbackRaw = useSyncExternalStore(
+    feedbackSubscribe,
+    () => careerEmploymentFeedbackStorage.getCompletedCareerPostSnapshot(careerPostId),
+    () => careerEmploymentFeedbackStorage.getCompletedCareerPostSnapshot(careerPostId),
+  );
+
+  const completedFeedback = useMemo(
+    () => parseCompletedFeedbackSnapshot(feedbackRaw).task,
+    [feedbackRaw],
+  );
 
   const hrCandidateId = useMemo(() => {
     if (!record) return null;
     return findHRCandidateId(record.careerPostId);
   }, [record]);
 
-  /* ---- Not found ---- */
+  const handleSetPrimaryEmployment = (nextEmploymentId: string) => {
+    const success = employmentLifecycleStorage.setPrimaryActiveId(nextEmploymentId);
+
+    if (success) {
+      navigate(`/employee/employment/${nextEmploymentId}`, { replace: true });
+    }
+  };
+
   if (!record) {
     return (
       <div>
-        {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
-            background: "rgba(3,105,161,0.08)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: "50%",
+              flexShrink: 0,
+              background: "rgba(3,105,161,0.08)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             <IconBriefcase />
           </div>
+
           <div>
             <div style={{ fontSize: 16, fontWeight: 700, color: "var(--wm-er-text, #1e293b)" }}>
               My Employment
             </div>
+
             <div style={{ fontSize: 12, color: "var(--wm-er-muted, #64748b)", marginTop: 2 }}>
               Employment record not found
             </div>
           </div>
         </div>
+
         <div className="wm-ee-card" style={{ textAlign: "center", padding: 32 }}>
           <div style={{ fontWeight: 700, fontSize: 16, color: "var(--wm-er-text, #1e293b)" }}>
             Employment Not Found
           </div>
+
           <div style={{ fontSize: 12, color: "var(--wm-er-muted, #64748b)", marginTop: 8 }}>
             This employment record may have been removed or the link is invalid.
           </div>
@@ -114,60 +184,71 @@ export function EmployeeEmploymentDetailPage() {
     );
   }
 
-  const canApplyLeave = hrCandidateId && (record.status === "active" || record.status === "probation");
+  const isClosedEmployment = record.status === "exited";
+  const showHrEmploymentTools =
+    !isClosedEmployment && !!hrCandidateId && LAUNCH_VISIBILITY.employerHrManagement;
 
-  function handleResignSubmit(note: string, preferredLastDate: number) {
-    if (!record) return;
-    employmentLifecycleStorage.submitResignation(record.id, note, preferredLastDate);
-    setShowResignModal(false);
-  }
+  const showManagerEmploymentTools =
+    !isClosedEmployment && !!hrCandidateId && LAUNCH_VISIBILITY.employerManagerConsole;
+
+  const canApplyLeave =
+    showHrEmploymentTools && (record.status === "active" || record.status === "probation");
 
   return (
     <div>
-      {/* Page Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-        <div style={{
-          width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
-          background: "rgba(3,105,161,0.08)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-        }}>
-          <IconBriefcase />
-        </div>
-        <div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: "var(--wm-er-text, #1e293b)" }}>
-            My Employment
-          </div>
-          <div style={{ fontSize: 12, color: "var(--wm-er-muted, #64748b)", marginTop: 2 }}>
-            {record.companyName} &middot; {record.jobTitle}
-          </div>
-        </div>
-      </div>
-
-      {/* Sections */}
       <div style={{ display: "grid", gap: 12, paddingBottom: 32 }}>
         <EmploymentHeroCard record={record} />
+
+        {!isClosedEmployment && (
+          <EmploymentPrimarySwitcher
+            currentRecord={record}
+            activeEmployments={parsed.activeRecords}
+            primaryId={parsed.primaryId}
+            onSetPrimary={handleSetPrimaryEmployment}
+          />
+        )}
+
         <EmploymentDetailsCard record={record} />
 
-        <WorkDiarySection employmentId={record.id} />
-        <WorkDiaryQuickReport employmentId={record.id} />
-
-        {hrCandidateId && (
-          <EmployeeTaskViewSection hrCandidateId={hrCandidateId} />
+        {completedFeedback?.selectedTags && completedFeedback.selectedTags.length > 0 && (
+          <WorkFeedbackSummaryCard
+            tags={completedFeedback.selectedTags}
+            companyName={completedFeedback.companyName}
+            jobTitle={completedFeedback.jobTitle}
+            givenTo={employeeUniqueId}
+            recordedAt={completedFeedback.completedAt ?? record.exitedAt ?? record.updatedAt}
+            displayMode="protectedRecord"
+          />
         )}
 
-        {hrCandidateId && (
-          <EmployeeAvailabilitySection hrCandidateId={hrCandidateId} />
-        )}
+        <EmploymentRatingSection record={record} />
 
-        {hrCandidateId && (
-          <EmployeeScheduleSection hrCandidateId={hrCandidateId} />
-        )}
-
-        <EmployeeIncidentReportSection
+        <WorkDiarySection
+          key={record.id}
           employmentId={record.id}
-          hrCandidateId={hrCandidateId}
-          employeeName={record.jobTitle}
+          jobTitle={record.jobTitle}
+          companyName={record.companyName}
+          activeEmployments={parsed.activeRecords}
+          readOnly={isClosedEmployment}
         />
+
+        <WorkDiaryQuickReport
+          employmentId={record.id}
+          jobTitle={record.jobTitle}
+          companyName={record.companyName}
+        />
+
+        {showHrEmploymentTools && <EmployeeTaskViewSection hrCandidateId={hrCandidateId} />}
+        {showHrEmploymentTools && <EmployeeAvailabilitySection hrCandidateId={hrCandidateId} />}
+        {showHrEmploymentTools && <EmployeeScheduleSection hrCandidateId={hrCandidateId} />}
+
+        {showManagerEmploymentTools && (
+          <EmployeeIncidentReportSection
+            employmentId={record.id}
+            hrCandidateId={hrCandidateId}
+            employeeName={record.jobTitle}
+          />
+        )}
 
         {canApplyLeave && hrCandidateId && (
           <EmploymentLeaveSection
@@ -176,29 +257,12 @@ export function EmployeeEmploymentDetailPage() {
           />
         )}
 
-        {hrCandidateId && (
+        {showHrEmploymentTools && (
           <EmployeePerformanceReviewSection hrCandidateId={hrCandidateId} />
         )}
-
-        <EmploymentRatingSection record={record} />
-
-        <EmploymentResignationSection
-          record={record}
-          onResign={() => setShowResignModal(true)}
-        />
       </div>
 
-      {/* Modals */}
-      {showResignModal && (
-        <ResignationModal
-          companyName={record.companyName}
-          jobTitle={record.jobTitle}
-          onSubmit={handleResignSubmit}
-          onClose={() => setShowResignModal(false)}
-        />
-      )}
-
-      {showLeaveModal && hrCandidateId && (
+      {showLeaveModal && canApplyLeave && hrCandidateId && (
         <LeaveApplyModal
           open={showLeaveModal}
           onClose={() => setShowLeaveModal(false)}

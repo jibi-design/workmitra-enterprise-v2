@@ -1,0 +1,45 @@
+---
+description: End every reply with one plain-text copy block for Google AI Studio paste
+alwaysApply: true
+---
+
+# AI Studio Copy Packet
+
+The operator copies Cursor output into Google AI Studio. Every assistant response **must** end with a copy-friendly packet.
+
+## Required ending (every response)
+
+1. After the normal answer, add a horizontal rule or blank line, then this heading exactly:
+
+   `## AI STUDIO COPY`
+
+2. Immediately below, one fenced block using the `text` language tag.
+
+3. Inside that block: the **full substantive answer** as plain text — same facts, decisions, lists, and commands as the main reply.
+
+4. The block must be **self-contained** so one Copy click → one paste into AI Studio is enough.
+
+## Copy block rules
+
+- Use exactly **one** outer fence: ` ```text ` … ` ``` `.
+- **No nested triple-backticks** inside the copy block. For code or paths, write them as plain lines or prefix with spaces.
+- Include: what was done, what passed/failed, file paths, commands run, and clear next step if any.
+- Do **not** put secrets, `.env` values, or tokens in the copy block.
+- Keep Malayalam or English matching the user's language in the main reply.
+- If the main reply is very short (e.g. "OK"), the copy block may repeat that one line only.
+
+## Example shape
+
+```markdown
+## AI STUDIO COPY
+
+```text
+[Full plain-text duplicate of the answer for Google AI Studio]
+```
+```
+
+(The example above uses an extra fence only in this rule file — real replies use a single live `text` fence.)
+
+## Priority
+
+This packet does not override Job Mitra domain, pulse, or permission rules. It only adds the mandatory copy ending.

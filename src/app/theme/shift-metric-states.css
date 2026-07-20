@@ -1,0 +1,142 @@
+/* src/app/theme/shift-metric-states.css */
+/*
+  Shift metric state governance.
+
+  Rule:
+  - Zero values should look disabled / inactive.
+  - Positive values should become visually active.
+  - Applies to Employee Shift + Employer Shift KPI/count cards.
+  - Topbar/admin/career untouched.
+*/
+
+/* ------------------------------------------------ */
+/* Zero metric state                                */
+/* ------------------------------------------------ */
+.wm-shiftEmployeeStatsTile:not(.isPositive) .wm-shiftEmployeeStatsValue,
+.wm-shiftHomeKpiTile.isZero .wm-shiftHomeKpiValue,
+.wm-shiftPostsKpiTile.isZero .wm-er-tileValue,
+.wm-shiftHomeMiniMetric.isZero .wm-shiftHomeMiniMetricValue,
+.wm-ee-tileValue.is-zero,
+.wm-er-tileValue.is-zero {
+  color: var(--wm-neutral-400);
+  opacity: 0.86;
+}
+
+.wm-shiftEmployeeStatsTile:not(.isPositive),
+.wm-shiftHomeKpiTile.isZero,
+.wm-shiftPostsKpiTile.isZero,
+.wm-shiftHomeMiniMetric.isZero {
+  border-color: rgba(148, 163, 184, 0.16);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.96), transparent 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.88));
+}
+
+.wm-shiftHomeKpiTile.isZero .wm-shiftHomeKpiLabel,
+.wm-shiftPostsKpiTile.isZero .wm-er-tileLabel,
+.wm-shiftEmployeeStatsTile:not(.isPositive) .wm-shiftEmployeeStatsLabel,
+.wm-shiftHomeMiniMetric.isZero .wm-shiftHomeMiniMetricLabel {
+  color: var(--wm-neutral-500);
+  opacity: 0.82;
+}
+
+.wm-shiftPostsKpiTile.isZero::before {
+  background: rgba(148, 163, 184, 0.34);
+}
+
+/* ------------------------------------------------ */
+/* Positive Employee Shift metric state             */
+/* ------------------------------------------------ */
+.wm-shiftEmployeeStatsTile.isPositive .wm-shiftEmployeeStatsValue {
+  color: var(--wm-shift-accent);
+  opacity: 1;
+}
+
+/* ------------------------------------------------ */
+/* Positive Employer Shift Home metric state        */
+/* ------------------------------------------------ */
+.wm-shiftHomeKpiTile:not(.isZero).isShift .wm-shiftHomeKpiValue {
+  color: var(--wm-er-accent-shift);
+  opacity: 1;
+}
+
+.wm-shiftHomeKpiTile:not(.isZero).isSuccess .wm-shiftHomeKpiValue {
+  color: var(--wm-success);
+  opacity: 1;
+}
+
+.wm-shiftHomeKpiTile:not(.isZero).isWarning .wm-shiftHomeKpiValue {
+  color: var(--wm-warning);
+  opacity: 1;
+}
+
+.wm-shiftHomeKpiTile:not(.isZero):not(.isShift):not(.isSuccess):not(.isWarning)
+  .wm-shiftHomeKpiValue {
+  color: var(--wm-er-text);
+  opacity: 1;
+}
+
+/* ------------------------------------------------ */
+/* Positive Employer Shift Posts metric state       */
+/* ------------------------------------------------ */
+.wm-shiftPostsKpiTile:not(.isZero).isShift .wm-er-tileValue {
+  color: var(--wm-er-accent-shift);
+  opacity: 1;
+}
+
+.wm-shiftPostsKpiTile:not(.isZero).isSuccess .wm-er-tileValue {
+  color: var(--wm-success);
+  opacity: 1;
+}
+
+.wm-shiftPostsKpiTile:not(.isZero).isPositive:not(.isShift):not(.isSuccess) .wm-er-tileValue {
+  color: var(--wm-er-text);
+  opacity: 1;
+}
+
+.wm-shiftPostsKpiTile:not(.isZero).isShift::before {
+  background: var(--wm-er-accent-shift);
+}
+
+.wm-shiftPostsKpiTile:not(.isZero).isSuccess::before {
+  background: var(--wm-success);
+}
+
+/* ------------------------------------------------ */
+/* Positive Recent Post mini metric state           */
+/* ------------------------------------------------ */
+.wm-shiftHomeMiniMetric.isPositive.isShift .wm-shiftHomeMiniMetricValue {
+  color: var(--wm-er-accent-shift);
+  opacity: 1;
+}
+
+.wm-shiftHomeMiniMetric.isPositive.isWarning .wm-shiftHomeMiniMetricValue {
+  color: var(--wm-warning);
+  opacity: 1;
+}
+
+.wm-shiftHomeMiniMetric.isPositive.isSuccess .wm-shiftHomeMiniMetricValue {
+  color: var(--wm-success);
+  opacity: 1;
+}
+
+.wm-shiftHomeMiniMetric.isPositive.isShift {
+  border-color: rgba(22, 163, 74, 0.18);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(22, 163, 74, 0.07), transparent 36%),
+    rgba(255, 255, 255, 0.92);
+}
+
+.wm-shiftHomeMiniMetric.isPositive.isWarning {
+  border-color: rgba(217, 119, 6, 0.18);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(217, 119, 6, 0.07), transparent 36%),
+    rgba(255, 255, 255, 0.92);
+}
+
+.wm-shiftHomeMiniMetric.isPositive.isSuccess {
+  border-color: rgba(22, 163, 74, 0.18);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(22, 163, 74, 0.07), transparent 36%),
+    rgba(255, 255, 255, 0.92);
+}

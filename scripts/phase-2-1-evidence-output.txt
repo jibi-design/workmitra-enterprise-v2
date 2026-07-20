@@ -1,0 +1,50 @@
+﻿node : 'true' is not recognized as an internal or external command,
+At C:\Users\Project\AppData\Local\Temp\ps-script-51355a84-e1f6-4d02-9335-acb096136346.ps1:86 char:1
++ node scripts/phase-2-1-evidence.mjs 2>&1 | Out-File -FilePath scripts ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ('true' is not r...ternal command,:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+operable program or batch file.
+
+=== Phase 2.1 Evidence Collection ===
+
+[PASS          ] 1.3 memory auth forbidden in production ΓÇö exit=1 stderr=npm warn Unknown env config "devdir". This will stop working in the next major version of npm.
+node:internal/process/promises:394
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+
+[PASS          ] 1.4 WM_ALLOW_DEMO_AUTH forbidden in production ΓÇö exit=1 stderr=npm warn Unknown env config "devdir". This will stop working in the next major version of npm.
+node:internal/process/promises:394
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+
+[PASS          ] 2.1 WM_SESSION_HASH_PEPPER required in production ΓÇö exit=1 stderr=npm warn Unknown env config "devdir". This will stop working in the next major version of npm.
+node:internal/process/promises:394
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+
+[PASS          ] 2.2 .env in .gitignore ΓÇö found
+[PASS          ] 3.1 wm_session cookie name ΓÇö auth.routes.ts
+[PASS          ] 3.2 HttpOnly ΓÇö auth.routes.ts
+[PASS          ] 3.3 SameSite=Lax ΓÇö auth.routes.ts
+[PASS          ] 3.6 logout Max-Age=0 ΓÇö auth.routes.ts
+[PASS          ] 3.5 session_token_hash in DB ΓÇö migration
+[PASS          ] 4.2 no wildcard CORS ΓÇö server/index.ts
+[PASS          ] 4.6 Vary Origin ΓÇö server/index.ts
+[PASS          ] 5.2 no user enumeration message ΓÇö auth.service.db.ts
+[PASS          ] 1.5 seed default staging emails ΓÇö seed.ts requires env passwords
+[PASS          ] 2.4 no VITE_ secret names in src ΓÇö none
+[NEEDS_OPERATOR] 6.5 DB session cleanup job ΓÇö no scheduled cleanup job in repo yet
+[NEEDS_OPERATOR] 7.5 audit retention sweep ΓÇö no retention job in repo yet ΓÇö document/runbook required
+[NEEDS_OPERATOR] 8.1 Supabase backup enabled ΓÇö requires Supabase dashboard evidence
+[NEEDS_OPERATOR] 8.3 restore drill ΓÇö requires operator sign-off
+[NEEDS_OPERATOR] 1.1 separate Supabase projects ΓÇö project IDs in secret manager only
+[NEEDS_OPERATOR] 1.2 AUTH_USER_SOURCE=db staging/prod ΓÇö deploy env config
+[NEEDS_OPERATOR] 2.5 unique prod pepper ΓÇö secret manager comparison
+[ABSENT        ] runtime DATABASE_URL ΓÇö skip live auth/CORS tests in this run
+
+Summary: 14 PASS, 0 FAIL, 7 NEEDS_OPERATOR

@@ -3,12 +3,17 @@
 import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { roleStorage, type AppRole } from "../storage/roleStorage";
+import { logoutApp, postLogoutRoute } from "../../shared/auth/logoutApp";
 import { ROUTE_PATHS } from "../router/routePaths";
 import { employeeNotificationsStorage } from "../../features/employee/notifications/storage/employeeNotifications.storage";
 import { initEmployeeNotificationService } from "../../features/employee/notifications/helpers/employeeNotificationService";
-import { QuickSettingsSheet } from "../../shared/components/QuickSettingsSheet";
+import { employeeProfileStorage } from "../../features/employee/profile/storage/employeeProfile.storage";
+import { AccountMenuSheet } from "../../shared/components/AccountMenuSheet";
 import { jobAlertStorage } from "../../shared/utils/jobAlertStorage";
 import { ConfirmModal, type ConfirmData } from "../../shared/components/ConfirmModal";
+import { usePulseEventBridgeConsumer } from "../../features/pulse/pulseEventBridge";
+import { showPhase2Features } from "../../shared/config/featureFlags";
+import BottomNav from "../../components/layout/BottomNav/BottomNav";
 
 function IconBack() {
   return (
@@ -21,17 +26,20 @@ function IconBack() {
 function IconBell() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="currentColor" d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6V11a7 7 0 0 0-5-6.71V3a2 2 0 0 0-4 0v1.29A7 7 0 0 0 5 11v5l-2 2v1h20v-1l-2-2Z" />
+      <path
+        fill="currentColor"
+        d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6V11a7 7 0 0 0-5-6.71V3a2 2 0 0 0-4 0v1.29A7 7 0 0 0 5 11v5l-2 2v1h20v-1l-2-2Z"
+      />
     </svg>
   );
 }
 
-function IconSettings() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="currentColor" d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.2 7.2 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 1h-3.8a.5.5 0 0 0-.49.42l-.36 2.54c-.58.24-1.12.55-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 7.48a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94L2.83 14.52a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.31.6.22l2.39-.96c.5.39 1.05.7 1.63.94l.36 2.54c.04.24.25.42.49.42h3.8c.24 0 .45-.18.49-.42l.36-2.54c.58-.24 1.12-.55 1.63-.94l2.39.96c.22.09.47 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z" />
-    </svg>
-  );
+function getInitials(name: string): string {
+  const trimmed = name.trim();
+  if (!trimmed) return "?";
+  const parts = trimmed.split(/\s+/).filter(Boolean);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
 function useRole(): AppRole | null {
@@ -67,21 +75,21 @@ export function EmployeeShell() {
     if (role === "employee") return initEmployeeNotificationService();
   }, [role]);
 
+  usePulseEventBridgeConsumer(role === "employee" ? "employee" : null);
+
   useEffect(() => {
     if (role === "employee") jobAlertStorage.checkAlerts();
   }, [role]);
 
   const handleOpenSettings = useCallback(() => {
+    setShowSheet(false);
     nav(ROUTE_PATHS.employeeSettings);
   }, [nav]);
 
   const handleOpenProfile = useCallback(() => {
+    setShowSheet(false);
     nav(ROUTE_PATHS.employeeProfile);
   }, [nav]);
-
-  const handleSwitchRole = useCallback(() => {
-    roleStorage.set("employer");
-  }, []);
 
   const handleLogoutRequest = useCallback(() => {
     setShowSheet(false);
@@ -96,8 +104,9 @@ export function EmployeeShell() {
 
   const handleLogoutConfirm = useCallback(() => {
     setLogoutConfirm(null);
-    roleStorage.clear();
-    nav(ROUTE_PATHS.landing, { replace: true });
+    void logoutApp().then(() => {
+      nav(postLogoutRoute(), { replace: true });
+    });
   }, [nav]);
 
   const handleOpenNotifications = useCallback(() => {
@@ -121,6 +130,11 @@ export function EmployeeShell() {
     return <Navigate to={target} replace />;
   }
 
+  const profile = employeeProfileStorage.get();
+  const displayName = profile.fullName || "Employee";
+  const userPhoto = profile.photoDataUrl;
+  const initials = getInitials(displayName);
+
   const isHome = loc.pathname === ROUTE_PATHS.employeeHome;
 
   function goHome() {
@@ -137,7 +151,13 @@ export function EmployeeShell() {
       <div className="wm-topbar">
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           {!isHome && (
-            <button className="wm-iconbtn" type="button" aria-label="Back" title="Back" onClick={goBack}>
+            <button
+              className="wm-iconbtn"
+              type="button"
+              aria-label="Back"
+              title="Back"
+              onClick={goBack}
+            >
               <IconBack />
             </button>
           )}
@@ -145,7 +165,13 @@ export function EmployeeShell() {
             className="wm-title"
             style={{ marginLeft: isHome ? 0 : 4, cursor: isHome ? "default" : "pointer" }}
             onClick={isHome ? undefined : goHome}
-            onKeyDown={isHome ? undefined : (e) => { if (e.key === "Enter") goHome(); }}
+            onKeyDown={
+              isHome
+                ? undefined
+                : (event) => {
+                    if (event.key === "Enter") goHome();
+                  }
+            }
             role={isHome ? undefined : "button"}
             tabIndex={isHome ? undefined : 0}
           >
@@ -154,7 +180,11 @@ export function EmployeeShell() {
           </div>
         </div>
 
-        <div className="wm-topbarActions" aria-label="Top actions" style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        <div
+          className="wm-topbarActions"
+          aria-label="Top actions"
+          style={{ display: "flex", gap: 10, alignItems: "center" }}
+        >
           <button
             className="wm-iconbtn wm-iconbtnBadgeWrap"
             type="button"
@@ -192,29 +222,70 @@ export function EmployeeShell() {
             </div>
           </button>
 
-          <button className="wm-iconbtn" type="button" aria-label="Settings" title="Settings" onClick={handleOpenSheet}>
-            <IconSettings />
+          <button
+            type="button"
+            aria-label="Open account menu"
+            title="Account menu"
+            onClick={handleOpenSheet}
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: "50%",
+              border: "2px solid rgba(22,163,74,0.22)",
+              cursor: "pointer",
+              background: "rgba(22,163,74,0.10)",
+              color: "#16a34a",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 13,
+              fontWeight: 800,
+              letterSpacing: -0.5,
+              flexShrink: 0,
+              overflow: "hidden",
+              padding: 0,
+            }}
+          >
+            {userPhoto ? (
+              <img
+                src={userPhoto}
+                alt={displayName}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            ) : (
+              initials
+            )}
           </button>
         </div>
       </div>
 
-      <div className="wm-container">
+      <div className="wm-container pb-safe-nav">
         <Outlet />
       </div>
 
-      <QuickSettingsSheet
+      <BottomNav />
+
+      <AccountMenuSheet
         open={showSheet}
         onClose={handleCloseSheet}
         currentRole="employee"
-        userName="Employee"
-        uniqueId=""
+        userName={displayName}
+        userPhoto={userPhoto}
+        uniqueId={employeeProfileStorage.get().uniqueId}
         onOpenProfile={handleOpenProfile}
-        onSwitchRole={handleSwitchRole}
-        onLogout={handleLogoutRequest}
         onOpenSettings={handleOpenSettings}
+        onOpenGigProjects={() => nav(ROUTE_PATHS.employeePlannerHome)}
+        onOpenWorkforce={
+          showPhase2Features ? () => nav(ROUTE_PATHS.employeeWorkforceHome) : undefined
+        }
+        onLogout={handleLogoutRequest}
       />
 
-      <ConfirmModal confirm={logoutConfirm} onConfirm={handleLogoutConfirm} onCancel={handleCancelLogout} />
+      <ConfirmModal
+        confirm={logoutConfirm}
+        onConfirm={handleLogoutConfirm}
+        onCancel={handleCancelLogout}
+      />
     </div>
   );
 }

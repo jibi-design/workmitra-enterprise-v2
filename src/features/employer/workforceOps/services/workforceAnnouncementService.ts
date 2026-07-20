@@ -1,7 +1,7 @@
-// src/features/employer/workforceOps/services/workforceAnnouncementService.ts
+﻿// src/features/employer/workforceOps/services/workforceAnnouncementService.ts
 //
 // Announcement CRUD + status transitions for Workforce Ops Hub.
-// Manages the full lifecycle: create → open → analyzing → confirmed → completed / cancelled.
+// Manages the full lifecycle: create â†’ open â†’ analyzing â†’ confirmed â†’ completed / cancelled.
 
 import type {
   WorkforceAnnouncement,
@@ -10,7 +10,7 @@ import type {
   WorkforceTemplate,
   WorkforceActivityEntry,
   WorkforceActivityKind,
-} from "../types/workforceTypes";
+} from "../../../../shared/domains/workforce/types/workforceTypes";
 
 import {
   WF_ANNOUNCEMENTS_KEY,
@@ -22,24 +22,24 @@ import {
   safeWrite,
   safeDispatch,
   uid,
-} from "../helpers/workforceStorageUtils";
+} from "../../../../shared/domains/workforce/storage/workforceStorageUtils";
 
 import {
   readAnnouncements,
   readTemplates,
   readActivity,
-} from "../helpers/workforceNormalizers";
+} from "../../../../shared/domains/workforce/helpers/workforceNormalizers";
 
 import {
   validateAnnouncementStep1,
   validateAnnouncementStep2,
   validateAnnouncementStep3,
   validateShifts,
-} from "../helpers/workforceValidation";
+} from "../../../../shared/domains/workforce/validation/workforceValidation";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Types — Create Payload
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Types â€” Create Payload
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type CreateAnnouncementPayload = {
   title: string;
@@ -54,9 +54,9 @@ export type CreateAnnouncementPayload = {
   autoReplace: boolean;
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Internal Helpers
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function read(): WorkforceAnnouncement[] {
   return readAnnouncements(WF_ANNOUNCEMENTS_KEY);
@@ -67,9 +67,9 @@ function write(announcements: WorkforceAnnouncement[]): void {
   safeDispatch(WF_ANNOUNCEMENTS_CHANGED);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Activity Log Helper
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function logActivity(
   kind: WorkforceActivityKind,
@@ -90,9 +90,9 @@ function logActivity(
   safeDispatch(WF_ACTIVITY_CHANGED);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Status Transition Map (one-directional)
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const VALID_TRANSITIONS: Record<AnnouncementStatus, AnnouncementStatus[]> = {
   open: ["analyzing", "cancelled"],
@@ -106,12 +106,12 @@ function canTransition(from: AnnouncementStatus, to: AnnouncementStatus): boolea
   return VALID_TRANSITIONS[from]?.includes(to) ?? false;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Public API
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const workforceAnnouncementService = {
-  // ── Reads ──────────────────────────────────────────────────────────────
+  // â”€â”€ Reads â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   getAll(): WorkforceAnnouncement[] {
     return read();
@@ -133,11 +133,9 @@ export const workforceAnnouncementService = {
     return read().filter((a) => a.date === date && a.status === "confirmed");
   },
 
-  // ── Create ─────────────────────────────────────────────────────────────
+  // â”€â”€ Create â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  create(
-    payload: CreateAnnouncementPayload,
-  ): { success: boolean; id?: string; errors?: string[] } {
+  create(payload: CreateAnnouncementPayload): { success: boolean; id?: string; errors?: string[] } {
     const allErrors: string[] = [];
 
     const step1 = validateAnnouncementStep1(payload.targetCategories);
@@ -190,7 +188,7 @@ export const workforceAnnouncementService = {
     return { success: true, id: announcement.id };
   },
 
-  // ── Clone from existing announcement ───────────────────────────────────
+  // â”€â”€ Clone from existing announcement â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   clone(
     sourceId: string,
@@ -219,16 +217,14 @@ export const workforceAnnouncementService = {
 
     if (result.success && result.id) {
       const all = read();
-      const updated = all.map((a) =>
-        a.id === result.id ? { ...a, clonedFrom: sourceId } : a,
-      );
+      const updated = all.map((a) => (a.id === result.id ? { ...a, clonedFrom: sourceId } : a));
       write(updated);
     }
 
     return result;
   },
 
-  // ── Clone from template ────────────────────────────────────────────────
+  // â”€â”€ Clone from template â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   createFromTemplate(
     templateId: string,
@@ -256,7 +252,7 @@ export const workforceAnnouncementService = {
     return this.create(payload);
   },
 
-  // ── Status Transitions ─────────────────────────────────────────────────
+  // â”€â”€ Status Transitions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   updateStatus(
     announcementId: string,
@@ -271,9 +267,7 @@ export const workforceAnnouncementService = {
     if (!canTransition(target.status, newStatus)) {
       return {
         success: false,
-        errors: [
-          `Cannot change status from "${target.status}" to "${newStatus}".`,
-        ],
+        errors: [`Cannot change status from "${target.status}" to "${newStatus}".`],
       };
     }
 
@@ -308,7 +302,7 @@ export const workforceAnnouncementService = {
     return { success: true };
   },
 
-  // ── Toggle Auto-Replace ────────────────────────────────────────────────
+  // â”€â”€ Toggle Auto-Replace â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   toggleAutoReplace(announcementId: string): { success: boolean; errors?: string[] } {
     const all = read();
@@ -331,7 +325,7 @@ export const workforceAnnouncementService = {
     return { success: true };
   },
 
-  // ── Save as Template (IMP-2) ───────────────────────────────────────────
+  // â”€â”€ Save as Template (IMP-2) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   saveAsTemplate(
     announcementId: string,
@@ -376,16 +370,14 @@ export const workforceAnnouncementService = {
 
     const allAnnouncements = read();
     const updatedAnnouncements = allAnnouncements.map((a) =>
-      a.id === announcementId
-        ? { ...a, isTemplate: true, templateName: trimmedName }
-        : a,
+      a.id === announcementId ? { ...a, isTemplate: true, templateName: trimmedName } : a,
     );
     write(updatedAnnouncements);
 
     return { success: true, templateId: template.id };
   },
 
-  // ── Counts / Analytics Helpers ─────────────────────────────────────────
+  // â”€â”€ Counts / Analytics Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   countByStatus(): Record<AnnouncementStatus, number> {
     const all = read();
@@ -416,7 +408,7 @@ export const workforceAnnouncementService = {
     return total;
   },
 
-  // ── Events ─────────────────────────────────────────────────────────────
+  // â”€â”€ Events â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   _events: {
     changed: WF_ANNOUNCEMENTS_CHANGED,

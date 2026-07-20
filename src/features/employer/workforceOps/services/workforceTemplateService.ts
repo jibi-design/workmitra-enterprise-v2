@@ -1,21 +1,24 @@
-// src/features/employer/workforceOps/services/workforceTemplateService.ts
+﻿// src/features/employer/workforceOps/services/workforceTemplateService.ts
 //
 // Template CRUD for Workforce Ops Hub (IMP-2).
 // Save/load/delete announcement templates for quick reuse.
 
-import type { WorkforceTemplate, AnnouncementShift } from "../types/workforceTypes";
+import type {
+  WorkforceTemplate,
+  AnnouncementShift,
+} from "../../../../shared/domains/workforce/types/workforceTypes";
 import {
   WF_TEMPLATES_KEY,
   WF_TEMPLATES_CHANGED,
   safeWrite,
   safeDispatch,
   uid,
-} from "../helpers/workforceStorageUtils";
-import { readTemplates } from "../helpers/workforceNormalizers";
+} from "../../../../shared/domains/workforce/storage/workforceStorageUtils";
+import { readTemplates } from "../../../../shared/domains/workforce/helpers/workforceNormalizers";
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Internal
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function read(): WorkforceTemplate[] {
   return readTemplates(WF_TEMPLATES_KEY);
@@ -26,9 +29,9 @@ function write(templates: WorkforceTemplate[]): void {
   safeDispatch(WF_TEMPLATES_CHANGED);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Public API
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const workforceTemplateService = {
   getAll(): WorkforceTemplate[] {
@@ -60,9 +63,7 @@ export const workforceTemplateService = {
     }
 
     const existing = read();
-    const duplicate = existing.find(
-      (t) => t.name.toLowerCase() === trimmedName.toLowerCase(),
-    );
+    const duplicate = existing.find((t) => t.name.toLowerCase() === trimmedName.toLowerCase());
     if (duplicate) {
       return { success: false, errors: ["A template with this name already exists."] };
     }
@@ -99,7 +100,7 @@ export const workforceTemplateService = {
     );
     if (duplicate) return { success: false, errors: ["A template with this name already exists."] };
 
-    write(existing.map((t) => t.id === templateId ? { ...t, name: trimmed } : t));
+    write(existing.map((t) => (t.id === templateId ? { ...t, name: trimmed } : t)));
     return { success: true };
   },
 

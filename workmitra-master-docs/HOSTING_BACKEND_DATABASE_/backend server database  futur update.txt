@@ -1,0 +1,49 @@
+1. Users കൂടുമ്പോൾ
+Render plan / database plan upgrade ചെയ്യണം.
+
+2. New features add ചെയ്യുമ്പോൾ
+New API, new database tables, new permissions വേണം.
+
+3. Security update
+Login, password, admin, API protection improve ചെയ്യണം.
+
+4. Bug fix
+App ശരിയായി work ചെയ്യാൻ backend fix വേണം.
+
+5. Performance issue
+Search slow ആയാൽ database index / query optimization വേണം.
+
+6. Storage increase
+Photos/files കൂടുമ്പോൾ storage plan upgrade വേണം.
+
+7. Policy/Play Store safety
+Fake wording, payment, notification, privacy changes വരുമ്പോൾ backend logic update വേണം.
+
+8. Migration later
+Render/Supabase നിന്ന് Google Cloud-ലേക്ക് move ചെയ്യുമ്പോൾ update വേണം.
+
+
+Simple ആയി:
+
+App update = user കാണുന്ന screen/features update
+
+Backend update = server logic, API, security, database connection update
+
+Database update = new tables/fields, backup, performance, indexes
+
+Hosting/server update = plan upgrade, memory/CPU, deployment settings
+
+
+Small fixes:
+as needed
+
+Security:
+regularly check
+
+New features:
+when feature release
+
+Scaling:
+when users/load increase
+
+

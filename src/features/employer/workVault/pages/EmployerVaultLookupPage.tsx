@@ -1,13 +1,34 @@
-/** Job Mitra | EmployerVaultLookupPage.tsx | C:\projects\WorkMitra_Enterprise_v2\src\features\employer\workVault\pages\EmployerVaultLookupPage.tsx */
+// App name: Job Mitra
+// File name: EmployerVaultLookupPage.tsx
+// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\workVault\pages\EmployerVaultLookupPage.tsx
 
-import { useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
+import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { ratingStorage } from "../../../../shared/rating/ratingStorage";
 import { VAULT_ACCENT } from "../../../employee/workVault/constants/vaultConstants";
 import type { IdRegistryEntry } from "../../../../shared/identity/types/identityTypes";
 import { getVaultSectionData } from "../../../employee/workVault/services/vaultDataAggregator";
 import type { VaultSectionData } from "../../../employee/workVault/services/vaultDataAggregator";
+import { employerSettingsStorage } from "../../company/storage/employerSettings.storage";
+import {
+  getWorkspacesSnapshot,
+  subscribeWorkspaces,
+} from "../../shiftJobs/storage/shiftWorkspaceStorage";
+import { EmployerVaultAccessSessions } from "../components/accessSessions/EmployerVaultAccessSessions";
 import { EmployerVaultLookup } from "../components/EmployerVaultLookup";
 import { EmployerVaultProfileView } from "../components/EmployerVaultProfileView";
+import { EmployerFutureVerificationPanel } from "../components/futureVerification/EmployerFutureVerificationPanel";
+import { EmployerTrustRecordsPanel } from "../components/trustRecords/EmployerTrustRecordsPanel";
+
+type TabId = "trust" | "verify";
+
+const TAB_LABELS: Record<TabId, string> = {
+  trust: "Trust Records",
+  verify: "Verify Worker",
+};
+
+const TAB_ORDER: TabId[] = ["trust", "verify"];
 
 function IconShield() {
   return (
@@ -33,8 +54,50 @@ function IconUnlock() {
 
 export function EmployerVaultLookupPage() {
   const nav = useNavigate();
+
+  const [activeTab, setActiveTab] = useState<TabId>("trust");
   const [foundEntry, setFoundEntry] = useState<IdRegistryEntry | null>(null);
   const [sectionData, setSectionData] = useState<VaultSectionData | null>(null);
+
+  const workspaces = useSyncExternalStore(
+    subscribeWorkspaces,
+    getWorkspacesSnapshot,
+    getWorkspacesSnapshot,
+  );
+
+  const workerReviews = useSyncExternalStore(
+    ratingStorage.subscribe,
+    ratingStorage.getAllWRRatings,
+    ratingStorage.getAllWRRatings,
+  );
+
+  const employerWorkerRatings = useSyncExternalStore(
+    ratingStorage.subscribe,
+    ratingStorage.getAllERRatings,
+    ratingStorage.getAllERRatings,
+  );
+
+  const receivedWorkerReviews = useMemo(() => {
+    const employerWmId = employerSettingsStorage.get().uniqueId ?? "";
+    const workspacePostIds = new Set(workspaces.map((workspace) => workspace.postId));
+
+    return workerReviews.filter((review) => {
+      if (review.domain !== "shift") return false;
+      if (employerWmId && review.employerWmId === employerWmId) return true;
+      return workspacePostIds.has(review.jobId);
+    });
+  }, [workerReviews, workspaces]);
+
+  const givenWorkerRatings = useMemo(() => {
+    const employerWmId = employerSettingsStorage.get().uniqueId ?? "";
+    const workspacePostIds = new Set(workspaces.map((workspace) => workspace.postId));
+
+    return employerWorkerRatings.filter((rating) => {
+      if (rating.domain !== "shift") return false;
+      if (employerWmId && rating.employerWmId === employerWmId) return true;
+      return workspacePostIds.has(rating.jobId);
+    });
+  }, [employerWorkerRatings, workspaces]);
 
   function handleEmployeeFound(entry: IdRegistryEntry) {
     setFoundEntry(entry);
@@ -46,6 +109,10 @@ export function EmployerVaultLookupPage() {
     nav(`/employer/vault/view/${foundEntry.id}`);
   }
 
+  function handleOpenWorkspace(workspaceId: string) {
+    nav(ROUTE_PATHS.employerShiftWorkspace.replace(":workspaceId", workspaceId));
+  }
+
   return (
     <div>
       <div className="wm-pageHead">
@@ -54,66 +121,129 @@ export function EmployerVaultLookupPage() {
             <span style={{ color: VAULT_ACCENT }}>
               <IconShield />
             </span>
-            Verify Employee
+            Employer Trust Vault
           </div>
+
           <div className="wm-pageSub">
-            Look up an employee by their Job Mitra ID to view their profile and documents.
+            Permanent trust records, worker feedback, and worker access tools.
           </div>
         </div>
       </div>
 
-      <section
-        className="wm-ee-card"
+      <div
         style={{
-          marginTop: 16,
-          padding: "16px",
-          borderRadius: 14,
-          border: `1px solid ${VAULT_ACCENT}12`,
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 8,
+          marginTop: 14,
+          padding: 5,
+          borderRadius: 18,
+          background: "rgba(248,250,252,0.94)",
+          border: "1px solid rgba(226,232,240,0.9)",
         }}
       >
-        <EmployerVaultLookup onEmployeeFound={handleEmployeeFound} />
-      </section>
+        {TAB_ORDER.map((tab) => {
+          const active = activeTab === tab;
 
-      {foundEntry && sectionData && (
-        <div style={{ marginTop: 16 }}>
-          <EmployerVaultProfileView data={sectionData} unlocked={false} />
+          return (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => setActiveTab(tab)}
+              style={{
+                minHeight: 40,
+                border: active ? `1px solid ${VAULT_ACCENT}33` : "1px solid transparent",
+                borderRadius: 14,
+                background: active
+                  ? "linear-gradient(180deg, rgba(245,243,255,0.96), rgba(255,255,255,0.98))"
+                  : "transparent",
+                color: active ? VAULT_ACCENT : "var(--wm-er-muted)",
+                fontSize: 12,
+                fontWeight: active ? 950 : 800,
+                cursor: "pointer",
+                boxShadow: active ? "0 8px 18px rgba(124,58,237,0.08)" : "none",
+              }}
+            >
+              {TAB_LABELS[tab]}
+            </button>
+          );
+        })}
+      </div>
 
-          <button
-            type="button"
-            onClick={handleUnlockProfile}
+      {activeTab === "trust" && (
+        <EmployerTrustRecordsPanel
+          reviews={receivedWorkerReviews}
+          workerRatings={givenWorkerRatings}
+          workspaces={workspaces}
+          onOpenWorkspace={handleOpenWorkspace}
+        />
+      )}
+
+      {activeTab === "verify" && (
+        <>
+          <section
+            className="wm-ee-card"
             style={{
-              width: "100%",
-              marginTop: 20,
-              height: 48,
-              borderRadius: 14,
-              border: "none",
-              background: VAULT_ACCENT,
-              color: "#fff",
-              fontWeight: 700,
-              fontSize: 14,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
+              marginTop: 16,
+              padding: "16px",
+              borderRadius: 18,
+              border: `1px solid ${VAULT_ACCENT}22`,
+              background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
+              boxShadow: "0 10px 24px rgba(15,23,42,0.045)",
             }}
           >
-            <IconUnlock />
-            Unlock Full Profile (OTP Required)
-          </button>
+            <EmployerVaultLookup onEmployeeFound={handleEmployeeFound} />
+          </section>
 
-          <div
-            style={{
-              marginTop: 8,
-              textAlign: "center",
-              fontSize: 11,
-              color: "var(--wm-er-muted)",
-              lineHeight: 1.5,
-            }}
-          >
-            Ask the employee to share their 6-digit access code from the Job Mitra app.
+          {foundEntry && sectionData && (
+            <div style={{ marginTop: 16 }}>
+              <EmployerVaultProfileView data={sectionData} unlocked={false} />
+
+              <button
+                type="button"
+                onClick={handleUnlockProfile}
+                style={{
+                  width: "100%",
+                  marginTop: 20,
+                  height: 48,
+                  borderRadius: 14,
+                  border: "none",
+                  background: VAULT_ACCENT,
+                  color: "#fff",
+                  fontWeight: 850,
+                  fontSize: 14,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  boxShadow: "0 12px 24px rgba(124,58,237,0.18)",
+                }}
+              >
+                <IconUnlock />
+                Unlock Full Profile
+              </button>
+
+              <div
+                style={{
+                  marginTop: 8,
+                  textAlign: "center",
+                  fontSize: 11,
+                  color: "var(--wm-er-muted)",
+                  lineHeight: 1.5,
+                }}
+              >
+                Ask the employee to share their 6-digit access code from the Job Mitra app.
+              </div>
+            </div>
+          )}
+
+          <EmployerFutureVerificationPanel />
+
+          <div style={{ marginTop: 14 }}>
+            <EmployerVaultAccessSessions />
           </div>
-        </div>
+        </>
       )}
 
       <div style={{ height: 80 }} />

@@ -1,0 +1,60 @@
+# ==============================================================================
+# JOB MITRA | CURSOR IGNORE FILE
+# Purpose: prevent Cursor AI from indexing/accessing heavy, generated, or secret files.
+# ==============================================================================
+
+# Android & iOS generated/system directories
+android/
+ios/
+.gradle/
+
+# Build outputs & distributions
+dist/
+dev-dist/
+build/
+out/
+coverage/
+.cache/
+.vite/
+temp/
+_dev_backups/
+
+# Environment / secrets
+.env
+.env.*
+*.jks
+*.keystore
+*.p12
+*.pem
+*.key
+*.crt
+credentials.json
+service-account.json
+
+# Heavy dependency folders
+node_modules/
+.pnpm-store/
+.pnp/
+.pnp.*
+
+# Temporary and system log files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Large generated archives/media
+*.zip
+*.7z
+*.rar
+*.tar
+*.gz
+*.mp4
+*.mov
+*.avi
+
+# Generated local reports
+employee_tree.txt

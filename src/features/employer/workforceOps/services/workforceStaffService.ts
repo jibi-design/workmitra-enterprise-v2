@@ -1,9 +1,12 @@
-// src/features/employer/workforceOps/services/workforceStaffService.ts
+﻿// src/features/employer/workforceOps/services/workforceStaffService.ts
 //
 // Staff directory CRUD for Workforce Ops Hub.
 // Add/remove staff, assign categories, rate (weighted average), bio/notes.
 
-import type { WorkforceStaff, WorkforceActivityEntry } from "../types/workforceTypes";
+import type {
+  WorkforceStaff,
+  WorkforceActivityEntry,
+} from "../../../../shared/domains/workforce/types/workforceTypes";
 import {
   WF_STAFF_KEY,
   WF_STAFF_CHANGED,
@@ -16,13 +19,19 @@ import {
   safeParse,
   safeRead,
   uid,
-} from "../helpers/workforceStorageUtils";
-import { readStaff, readActivity } from "../helpers/workforceNormalizers";
-import { validateAddStaff, validateStaffRating } from "../helpers/workforceValidation";
+} from "../../../../shared/domains/workforce/storage/workforceStorageUtils";
+import {
+  readStaff,
+  readActivity,
+} from "../../../../shared/domains/workforce/helpers/workforceNormalizers";
+import {
+  validateAddStaff,
+  validateStaffRating,
+} from "../../../../shared/domains/workforce/validation/workforceValidation";
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Internal Helpers
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function read(): WorkforceStaff[] {
   return readStaff(WF_STAFF_KEY);
@@ -59,9 +68,9 @@ function pushEmployeeNotification(title: string, body: string, route?: string): 
   safeDispatch(EMPLOYEE_NOTIF_CHANGED);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Employee Profile Lookup (Phase-0: from localStorage)
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type EmployeeSnapshot = {
   found: boolean;
@@ -75,7 +84,8 @@ function lookupEmployee(uniqueId: string): EmployeeSnapshot {
     const raw = localStorage.getItem("wm_employee_profile_v1");
     if (!raw) return { found: false, fullName: "", city: "", skills: [] };
     const profile = JSON.parse(raw) as Record<string, unknown>;
-    if (typeof profile !== "object" || profile === null) return { found: false, fullName: "", city: "", skills: [] };
+    if (typeof profile !== "object" || profile === null)
+      return { found: false, fullName: "", city: "", skills: [] };
 
     const profileId = typeof profile["uniqueId"] === "string" ? profile["uniqueId"] : "";
     if (profileId !== uniqueId) return { found: false, fullName: "", city: "", skills: [] };
@@ -93,9 +103,9 @@ function lookupEmployee(uniqueId: string): EmployeeSnapshot {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Public API
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const workforceStaffService = {
   getAll(): WorkforceStaff[] {
@@ -111,7 +121,9 @@ export const workforceStaffService = {
   },
 
   getByEmployeeId(employeeUniqueId: string): WorkforceStaff | null {
-    return read().find((s) => s.employeeUniqueId === employeeUniqueId && s.status === "active") ?? null;
+    return (
+      read().find((s) => s.employeeUniqueId === employeeUniqueId && s.status === "active") ?? null
+    );
   },
 
   getByCategory(categoryId: string): WorkforceStaff[] {
@@ -145,7 +157,8 @@ export const workforceStaffService = {
       employeeCity: snapshot.city,
       employeeSkills: snapshot.skills,
       categories: input.categories,
-      rating: input.rating !== undefined && input.rating >= 1 && input.rating <= 5 ? input.rating : null,
+      rating:
+        input.rating !== undefined && input.rating >= 1 && input.rating <= 5 ? input.rating : null,
       ratingCount: input.rating !== undefined ? 1 : 0,
       ratingComment: input.ratingComment?.trim() ?? "",
       plusPoints: input.plusPoints?.trim() ?? "",
@@ -172,16 +185,23 @@ export const workforceStaffService = {
 
   updateCategories(staffId: string, categories: string[]): void {
     const list = read();
-    write(list.map((s) => s.id === staffId ? { ...s, categories } : s));
+    write(list.map((s) => (s.id === staffId ? { ...s, categories } : s)));
   },
 
   updateBio(staffId: string, bio: string, plusPoints: string, ratingComment: string): void {
     const list = read();
-    write(list.map((s) =>
-      s.id === staffId
-        ? { ...s, bio: bio.trim(), plusPoints: plusPoints.trim(), ratingComment: ratingComment.trim() }
-        : s,
-    ));
+    write(
+      list.map((s) =>
+        s.id === staffId
+          ? {
+              ...s,
+              bio: bio.trim(),
+              plusPoints: plusPoints.trim(),
+              ratingComment: ratingComment.trim(),
+            }
+          : s,
+      ),
+    );
   },
 
   rate(staffId: string, newRating: number): { success: boolean; errors?: string[] } {
@@ -194,15 +214,16 @@ export const workforceStaffService = {
 
     const oldRating = staff.rating ?? 0;
     const oldCount = staff.ratingCount ?? 0;
-    const weightedAvg = oldCount > 0
-      ? Math.round(((oldRating * oldCount + newRating) / (oldCount + 1)) * 10) / 10
-      : newRating;
+    const weightedAvg =
+      oldCount > 0
+        ? Math.round(((oldRating * oldCount + newRating) / (oldCount + 1)) * 10) / 10
+        : newRating;
 
-    write(list.map((s) =>
-      s.id === staffId
-        ? { ...s, rating: weightedAvg, ratingCount: oldCount + 1 }
-        : s,
-    ));
+    write(
+      list.map((s) =>
+        s.id === staffId ? { ...s, rating: weightedAvg, ratingCount: oldCount + 1 } : s,
+      ),
+    );
 
     pushActivity({
       kind: "staff_rated",
@@ -218,11 +239,11 @@ export const workforceStaffService = {
     const staff = list.find((s) => s.id === staffId);
     if (!staff) return;
 
-    write(list.map((s) =>
-      s.id === staffId
-        ? { ...s, status: "removed" as const, removedAt: Date.now() }
-        : s,
-    ));
+    write(
+      list.map((s) =>
+        s.id === staffId ? { ...s, status: "removed" as const, removedAt: Date.now() } : s,
+      ),
+    );
 
     pushActivity({
       kind: "staff_removed",

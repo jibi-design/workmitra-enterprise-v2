@@ -82,12 +82,18 @@ export function ResignationModal({ companyName, jobTitle, onSubmit, onClose }: P
 
   if (step === "form") {
     return (
-      <div role="dialog" aria-modal="true" style={overlayStyle} onClick={onClose}>
-        <div style={cardStyle} onClick={(e) => e.stopPropagation()}>
+      <div role="dialog" aria-modal="true" style={overlayStyle}>
+        <div style={cardStyle}>
           <div style={{ fontWeight: 900, fontSize: 16, color: "#dc2626", marginBottom: 4 }}>
             Submit Resignation
           </div>
-          <div style={{ fontSize: 13, color: "var(--wm-emp-muted, var(--wm-er-muted))", marginBottom: 16 }}>
+          <div
+            style={{
+              fontSize: 13,
+              color: "var(--wm-emp-muted, var(--wm-er-muted))",
+              marginBottom: 16,
+            }}
+          >
             {jobTitle} at {companyName}
           </div>
 
@@ -155,8 +161,8 @@ export function ResignationModal({ companyName, jobTitle, onSubmit, onClose }: P
   }
 
   return (
-    <div role="dialog" aria-modal="true" style={overlayStyle} onClick={onClose}>
-      <div style={cardStyle} onClick={(e) => e.stopPropagation()}>
+    <div role="dialog" aria-modal="true" style={overlayStyle}>
+      <div style={cardStyle}>
         <div
           style={{
             display: "flex",
@@ -188,7 +194,8 @@ export function ResignationModal({ companyName, jobTitle, onSubmit, onClose }: P
           <div style={{ fontWeight: 900, marginBottom: 6 }}>Please read carefully:</div>
           <div>Your employer must accept your resignation for the exit to be processed.</div>
           <div style={{ marginTop: 4 }}>
-            Your verified work history will update <strong>only after</strong> your employer confirms the exit.
+            Your verified work history will update <strong>only after</strong> your employer
+            confirms the exit.
           </div>
           <div style={{ marginTop: 4 }}>
             Until then, your Work Vault profile will continue to show this as an active employment.

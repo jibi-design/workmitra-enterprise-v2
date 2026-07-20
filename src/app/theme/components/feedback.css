@@ -1,0 +1,148 @@
+/* src/app/theme/components/feedback.css — Toast, StateOverlay, Skeleton */
+
+/* ------------------------------------------------ */
+/* Global toast                                     */
+/* ------------------------------------------------ */
+.wm-globalToast {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  width: min(90%, 360px);
+  padding: 14px 16px;
+  border-radius: var(--wm-radius-18);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow: var(--wm-shadow-lg);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: wm-toastIn var(--wm-motion-slow) var(--wm-motion-spring);
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .wm-globalToast {
+    backdrop-filter: blur(var(--wm-blur-sm)) var(--wm-glass-saturate);
+    -webkit-backdrop-filter: blur(var(--wm-blur-sm)) var(--wm-glass-saturate);
+  }
+}
+
+.wm-globalToast-success {
+  --wm-toast-tone: var(--wm-green-600);
+}
+
+.wm-globalToast-error {
+  --wm-toast-tone: var(--wm-red-600);
+}
+
+.wm-globalToast-info {
+  --wm-toast-tone: var(--wm-blue-600);
+}
+
+.wm-globalToast-warn {
+  --wm-toast-tone: var(--wm-amber-600);
+}
+
+.wm-globalToastDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--wm-toast-tone);
+  box-shadow: 0 0 8px var(--wm-toast-tone);
+  flex-shrink: 0;
+}
+
+.wm-globalToastMessage {
+  flex: 1;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--wm-er-text);
+  line-height: 1.35;
+}
+
+.wm-globalToastClose {
+  border: none;
+  background: transparent;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--wm-neutral-400);
+  border-radius: var(--wm-radius-8);
+}
+
+/* ------------------------------------------------ */
+/* State overlay                                    */
+/* ------------------------------------------------ */
+.wm-stateOverlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 32px;
+  text-align: center;
+  flex: 1;
+}
+
+.wm-stateOverlaySpinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid var(--wm-neutral-200);
+  border-top-color: var(--wm-shift-accent);
+  animation: wm-spin 0.8s linear infinite;
+}
+
+.wm-stateOverlayIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--wm-radius-20);
+  background: var(--wm-neutral-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  color: var(--wm-neutral-400);
+}
+
+.wm-stateOverlay-error .wm-stateOverlayIcon {
+  background: var(--wm-red-50);
+  color: var(--wm-red-600);
+}
+
+.wm-stateOverlayTitle {
+  margin: 16px 0 8px;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--wm-er-text);
+}
+
+.wm-stateOverlayMessage {
+  margin: 0;
+  font-size: 14px;
+  color: var(--wm-er-muted);
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+.wm-stateOverlayAction {
+  margin-top: 24px;
+}
+
+/* ------------------------------------------------ */
+/* Skeleton loading                                 */
+/* ------------------------------------------------ */
+.wm-skeleton {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--wm-radius-14);
+  background: linear-gradient(90deg, #eef2f7 0%, #f8fafc 48%, #eef2f7 100%);
+  background-size: 220% 100%;
+  animation: wm-skeleton 1.25s ease-in-out infinite;
+}
+
+@media (max-width: 420px) {
+  .wm-globalToast {
+    top: 14px;
+    width: min(94%, 360px);
+  }
+}

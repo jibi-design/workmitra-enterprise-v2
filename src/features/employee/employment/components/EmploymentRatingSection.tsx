@@ -1,146 +1,194 @@
 // src/features/employee/employment/components/EmploymentRatingSection.tsx
 //
-// Employer's rating of employee + employee rates employer.
-// Domain: Manager Console Ocean Blue for Career employment.
+// Protected Career employment feedback section.
+// Keeps employer-to-employee feedback and employee-to-employer feedback separated.
 
-import { useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
+import {
+  careerEmployerFeedbackStorage,
+  type CareerEmployerFeedbackRecordSnapshot,
+  type CareerEmployerFeedbackTag,
+} from "../../../../shared/employmentFeedback/careerEmployerFeedback.storage";
+import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
 import type { EmploymentRecord } from "../storage/employmentLifecycle.storage";
-import { employmentLifecycleStorage } from "../storage/employmentLifecycle.storage";
-import { StarDisplay } from "./EmploymentSharedUI";
+import {
+  EmployeeEmployerFeedbackForm,
+  type FeedbackConfirmationState,
+} from "./feedback/EmployeeEmployerFeedbackForm";
+import { EmployeeEmployerFeedbackConfirmModal } from "./feedback/EmployeeEmployerFeedbackConfirmModal";
+import { EmployeeEmployerFeedbackExpiredCard } from "./feedback/EmployeeEmployerFeedbackExpiredCard";
+import { EmployeeEmployerFeedbackSubmittedCard } from "./feedback/EmployeeEmployerFeedbackSubmittedCard";
+import { EmployerFeedbackAboutEmployeeCard } from "./feedback/EmployerFeedbackAboutEmployeeCard";
 
-/* ------------------------------------------------ */
-/* Props                                            */
-/* ------------------------------------------------ */
 type Props = {
   record: EmploymentRecord;
 };
 
-/* ------------------------------------------------ */
-/* Component                                        */
-/* ------------------------------------------------ */
+function parseFeedbackSnapshot(raw: string): CareerEmployerFeedbackRecordSnapshot {
+  try {
+    const parsed = JSON.parse(raw) as CareerEmployerFeedbackRecordSnapshot;
+
+    return {
+      task: parsed.task ?? null,
+      canSubmit: Boolean(parsed.canSubmit),
+      canEdit: Boolean(parsed.canEdit),
+      isExpired: Boolean(parsed.isExpired),
+      daysLeft: Number(parsed.daysLeft) || 0,
+    };
+  } catch {
+    return {
+      task: null,
+      canSubmit: false,
+      canEdit: false,
+      isExpired: false,
+      daysLeft: 0,
+    };
+  }
+}
+
+function toggleTag(
+  current: CareerEmployerFeedbackTag[],
+  next: CareerEmployerFeedbackTag,
+): CareerEmployerFeedbackTag[] {
+  return current.includes(next) ? current.filter((tag) => tag !== next) : [...current, next];
+}
+
+function hasSensitiveWarningText(comment: string): boolean {
+  const value = comment.toLowerCase();
+  const warningWords = [
+    "fraud",
+    "cheat",
+    "abuse",
+    "threat",
+    "illegal",
+    "harass",
+    "scam",
+    "criminal",
+  ];
+
+  return warningWords.some((word) => value.includes(word));
+}
+
+function emptyConfirmations(): FeedbackConfirmationState {
+  return {
+    realExperience: false,
+    fairTruthful: false,
+    lockUnderstood: false,
+  };
+}
+
+function allConfirmed(value: FeedbackConfirmationState): boolean {
+  return value.realExperience && value.fairTruthful && value.lockUnderstood;
+}
+
+function getSubmittedByLabel(): string {
+  const profile = employeeProfileStorage.get();
+
+  return profile.uniqueId || "Employee ID not available";
+}
+
 export function EmploymentRatingSection({ record }: Props) {
-  const [pendingRating, setPendingRating] = useState(0);
-  const [pendingComment, setPendingComment] = useState("");
-  const [ratingSubmitted, setRatingSubmitted] = useState(false);
+  const [selectedTags, setSelectedTags] = useState<CareerEmployerFeedbackTag[]>([]);
+  const [privateComment, setPrivateComment] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [confirmations, setConfirmations] = useState<FeedbackConfirmationState>(() =>
+    emptyConfirmations(),
+  );
+  const [showFinalConfirm, setShowFinalConfirm] = useState(false);
+
+  const snapshotRaw = useSyncExternalStore(
+    careerEmployerFeedbackStorage.subscribe,
+    () => careerEmployerFeedbackStorage.getRecordSnapshot(record),
+    () => careerEmployerFeedbackStorage.getRecordSnapshot(record),
+  );
+
+  const snapshot = useMemo(() => parseFeedbackSnapshot(snapshotRaw), [snapshotRaw]);
+  const submittedBy = useMemo(() => getSubmittedByLabel(), []);
 
   const isExited = record.status === "exited";
-  const needsEmployeeRating = isExited && typeof record.employeeRating !== "number" && !ratingSubmitted;
-  const hasEmployeeRating = isExited && (typeof record.employeeRating === "number" || ratingSubmitted);
+  const completedTask = snapshot.task?.state === "completed" ? snapshot.task : null;
+  const showForm = isExited && snapshot.canSubmit && (!completedTask || isEditing);
+  const canContinue = selectedTags.length > 0 && allConfirmed(confirmations);
+  const shouldShowSensitiveWarning = hasSensitiveWarningText(privateComment);
 
-  function handleRatingSubmit() {
-    if (pendingRating === 0) return;
-    employmentLifecycleStorage.update(record.id, {
-      employeeRating: pendingRating,
-      employeeComment: pendingComment.trim() || undefined,
-    });
-    setRatingSubmitted(true);
+  function resetFormState() {
+    setIsEditing(false);
+    setSelectedTags([]);
+    setPrivateComment("");
+    setConfirmations(emptyConfirmations());
+    setShowFinalConfirm(false);
+  }
+
+  function handleFinalSubmit() {
+    if (!canContinue) return;
+
+    const success = careerEmployerFeedbackStorage.submit(record, selectedTags, privateComment);
+
+    if (success) {
+      resetFormState();
+    }
+  }
+
+  function handleEdit() {
+    if (!completedTask || !snapshot.canEdit) return;
+
+    setSelectedTags(completedTask.selectedTags ?? []);
+    setPrivateComment(completedTask.privateComment ?? "");
+    setConfirmations(emptyConfirmations());
+    setIsEditing(true);
+  }
+
+  function updateConfirmation(key: keyof FeedbackConfirmationState, checked: boolean) {
+    setConfirmations((current) => ({ ...current, [key]: checked }));
   }
 
   return (
     <>
-      {/* Employer's rating of you */}
       {isExited && typeof record.employerRating === "number" && (
-        <div className="wm-ee-card" style={{ borderLeft: "4px solid #f59e0b" }}>
-          <div style={{ fontWeight: 700, fontSize: 14, color: "var(--wm-er-text, #1e293b)", marginBottom: 8 }}>
-            Employer&rsquo;s Rating
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-            <StarDisplay rating={record.employerRating} />
-            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--wm-er-text, #1e293b)" }}>
-              {record.employerRating}/5
-            </span>
-          </div>
-          {record.employerComment && (
-            <div style={{ fontSize: 12, color: "var(--wm-er-muted, #64748b)", marginTop: 4, fontStyle: "italic" }}>
-              &ldquo;{record.employerComment}&rdquo;
-            </div>
-          )}
-        </div>
+        <EmployerFeedbackAboutEmployeeCard
+          rating={record.employerRating}
+          comment={record.employerComment}
+          companyName={record.companyName}
+          careerPostId={record.careerPostId}
+          jobTitle={record.jobTitle}
+          employeeUniqueId={submittedBy}
+          recordedAt={record.exitedAt ?? record.updatedAt}
+        />
       )}
 
-      {/* Rate your employer — mandatory after exit */}
-      {needsEmployeeRating && (
-        <div className="wm-ee-card" style={{ borderLeft: "4px solid var(--wm-er-accent-career, #1d4ed8)" }}>
-          <div style={{ fontWeight: 700, fontSize: 14, color: "var(--wm-er-accent-career, #1d4ed8)", marginBottom: 4 }}>
-            Rate Your Employer
-          </div>
-          <div style={{ fontSize: 12, color: "var(--wm-er-muted, #64748b)", marginBottom: 12, lineHeight: 1.5 }}>
-            Your rating helps other employees make informed decisions. This cannot be changed after submission.
-          </div>
-          <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                type="button"
-                onClick={() => setPendingRating(star)}
-                aria-label={`${star} star${star !== 1 ? "s" : ""}`}
-                style={{
-                  fontSize: 28, background: "none", border: "none",
-                  cursor: "pointer", padding: 2,
-                  color: star <= pendingRating ? "#f59e0b" : "#d1d5db",
-                }}
-              >
-                &#9733;
-              </button>
-            ))}
-          </div>
-          <textarea
-            value={pendingComment}
-            onChange={(e) => setPendingComment(e.target.value)}
-            placeholder="Comment (optional, max 100 characters)"
-            maxLength={100}
-            rows={3}
-            style={{
-              width: "100%", padding: "10px 12px", borderRadius: 10,
-              border: "1.5px solid rgba(0,0,0,0.12)", fontSize: 12,
-              fontWeight: 600, color: "var(--wm-er-text, #1e293b)",
-              background: "var(--wm-er-card, #f8fafc)",
-              outline: "none", resize: "vertical", boxSizing: "border-box",
-            }}
-          />
-          <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
-            <button
-              type="button"
-              onClick={handleRatingSubmit}
-              disabled={pendingRating === 0}
-              style={{
-                padding: "10px 20px", borderRadius: 10, border: "none",
-                background: pendingRating > 0
-                  ? "var(--wm-er-accent-career, #1d4ed8)"
-                  : "#e5e7eb",
-                color: pendingRating > 0 ? "#fff" : "#9ca3af",
-                fontWeight: 600, fontSize: 13,
-                cursor: pendingRating > 0 ? "pointer" : "not-allowed",
-              }}
-            >
-              Submit Rating
-            </button>
-          </div>
-        </div>
+      {showForm && (
+        <EmployeeEmployerFeedbackForm
+          selectedTags={selectedTags}
+          privateComment={privateComment}
+          confirmations={confirmations}
+          daysLeft={snapshot.daysLeft}
+          isEditing={isEditing}
+          canContinue={canContinue}
+          shouldShowSensitiveWarning={shouldShowSensitiveWarning}
+          onToggleTag={(tag) => setSelectedTags((current) => toggleTag(current, tag))}
+          onCommentChange={setPrivateComment}
+          onConfirmationChange={updateConfirmation}
+          onCancelEdit={resetFormState}
+          onContinue={() => setShowFinalConfirm(true)}
+        />
       )}
 
-      {/* Rating submitted */}
-      {hasEmployeeRating && (
-        <div className="wm-ee-card" style={{ borderLeft: "4px solid var(--wm-er-accent-career, #1d4ed8)" }}>
-          <div style={{ fontWeight: 700, fontSize: 14, color: "var(--wm-er-text, #1e293b)", marginBottom: 8 }}>
-            Your Rating of Employer
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-            <StarDisplay rating={ratingSubmitted ? pendingRating : (record.employeeRating ?? 0)} />
-            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--wm-er-text, #1e293b)" }}>
-              {ratingSubmitted ? pendingRating : (record.employeeRating ?? 0)}/5
-            </span>
-          </div>
-          {(ratingSubmitted ? pendingComment.trim() : record.employeeComment) && (
-            <div style={{ fontSize: 12, color: "var(--wm-er-muted, #64748b)", marginTop: 4, fontStyle: "italic" }}>
-              &ldquo;{ratingSubmitted ? pendingComment.trim() : record.employeeComment}&rdquo;
-            </div>
-          )}
-          <div style={{ fontSize: 11, color: "#16a34a", fontWeight: 600, marginTop: 8 }}>
-            Rating submitted &mdash; cannot be changed
-          </div>
-        </div>
+      {completedTask && !isEditing && (
+        <EmployeeEmployerFeedbackSubmittedCard
+          task={completedTask}
+          canEdit={snapshot.canEdit}
+          submittedBy={submittedBy}
+          onEdit={handleEdit}
+        />
       )}
+
+      {isExited && snapshot.isExpired && !completedTask && <EmployeeEmployerFeedbackExpiredCard />}
+
+      <EmployeeEmployerFeedbackConfirmModal
+        open={showFinalConfirm}
+        onClose={() => setShowFinalConfirm(false)}
+        onConfirm={handleFinalSubmit}
+      />
     </>
   );
 }

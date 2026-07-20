@@ -1,0 +1,74 @@
+/* Direct invite safety modals — employee shift */
+.wm-shiftDirectInviteModal {
+  padding: 20px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.12);
+  max-width: 420px;
+  width: min(92vw, 420px);
+}
+
+.wm-shiftDirectInviteModal__title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.3;
+}
+
+.wm-shiftDirectInviteModal__body {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.55;
+}
+
+.wm-shiftDirectInviteModal__warn {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(254, 243, 199, 0.55);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  font-size: 12px;
+  font-weight: 650;
+  color: #92400e;
+  line-height: 1.45;
+}
+
+.wm-shiftDirectInviteModal__actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.wm-shiftDirectInviteModal__commitBtn {
+  background: #059669 !important;
+}
+
+.wm-shiftDirectInviteModal__declineBtn {
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(220, 38, 38, 0.1);
+  color: #b91c1c;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.wm-shiftDirectInviteVipBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(254, 243, 199, 0.85);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  font-size: 10.5px;
+  font-weight: 850;
+  color: #92400e;
+  line-height: 1.3;
+}

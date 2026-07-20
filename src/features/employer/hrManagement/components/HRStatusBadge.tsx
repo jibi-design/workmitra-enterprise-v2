@@ -55,6 +55,12 @@ const STATUS_MAP: Record<HRCandidateStatus, BadgeConfig> = {
     bg: "rgba(220, 38, 38, 0.08)",
     border: "rgba(220, 38, 38, 0.2)",
   },
+  exited: {
+    label: "Exited",
+    color: "#16a34a",
+    bg: "rgba(22, 163, 74, 0.08)",
+    border: "rgba(22, 163, 74, 0.2)",
+  },
 };
 
 type Props = {

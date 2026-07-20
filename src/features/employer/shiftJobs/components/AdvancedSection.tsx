@@ -1,7 +1,11 @@
-﻿// src/features/employer/shiftJobs/components/AdvancedSection.tsx
+// src/features/employer/shiftJobs/components/AdvancedSection.tsx
+
 import { useState } from "react";
-import type { EmployerShiftActivityEntry, ShiftPost } from "../storage/employerShift.storage";
-import { employerShiftStorage } from "../storage/employerShift.storage";
+import type {
+  EmployerShiftActivityEntry,
+  ShiftPost,
+} from "../../shiftJobs/storage/employerShift.storage";
+import { employerShiftStorage } from "../../shiftJobs/storage/employerShift.storage";
 import { fmtTime } from "../helpers/dashboardHelpers";
 
 type Props = {
@@ -17,46 +21,76 @@ export function AdvancedSection({ post, activity, isAnalyzed, onAnalyze, onReset
   const p = post;
 
   return (
-    <div className="wm-er-card" style={{ marginTop: 12 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-        <div style={{ fontWeight: 900, color: "var(--wm-er-text)" }}>Advanced</div>
-        <button className="wm-outlineBtn" type="button" onClick={() => setOpen((s) => !s)} style={{ fontSize: 11, height: 28, padding: "0 10px" }}>
+    <div className="wm-er-card wm-shiftAdvancedSection">
+      <div className="wm-shiftAdvancedHeader">
+        <div className="wm-shiftAdvancedTitle">Advanced</div>
+
+        <button
+          className="wm-outlineBtn wm-shiftAdvancedToggleBtn"
+          type="button"
+          onClick={() => setOpen((state) => !state)}
+        >
           {open ? "Hide" : "Show"}
         </button>
       </div>
 
       {open && (
-        <div style={{ marginTop: 12, display: "grid", gap: 12 }}>
-          {/* Activity Log */}
-          <div className="wm-er-card" style={{ margin: 0 }}>
-            <div style={{ fontWeight: 900, color: "var(--wm-er-text)" }}>Activity Log ({activity.length})</div>
-            <div style={{ marginTop: 10, display: "grid", gap: 8 }}>
-              {activity.length === 0 && <div style={{ fontSize: 12, color: "var(--wm-er-muted)" }}>No activity yet.</div>}
-              {activity.map((e) => (
-                <div key={e.id} style={{ padding: "8px 0", borderTop: "1px solid var(--wm-er-divider)", fontSize: 12 }}>
-                  <div style={{ fontWeight: 800, color: "var(--wm-er-text)" }}>{e.title}</div>
-                  {e.body && <div style={{ color: "var(--wm-er-muted)", marginTop: 2 }}>{e.body}</div>}
-                  <div style={{ color: "var(--wm-er-muted)", marginTop: 2, fontSize: 11 }}>{fmtTime(e.createdAt)}</div>
+        <div className="wm-shiftAdvancedBody">
+          <div className="wm-er-card wm-shiftAdvancedInnerCard">
+            <div className="wm-shiftAdvancedInnerTitle">Activity Log ({activity.length})</div>
+
+            <div className="wm-shiftAdvancedActivityList">
+              {activity.length === 0 && (
+                <div className="wm-shiftAdvancedEmptyText">No activity yet.</div>
+              )}
+
+              {activity.map((entry) => (
+                <div key={entry.id} className="wm-shiftAdvancedActivityItem">
+                  <div className="wm-shiftAdvancedActivityTitle">{entry.title}</div>
+
+                  {entry.body && <div className="wm-shiftAdvancedActivityBody">{entry.body}</div>}
+
+                  <div className="wm-shiftAdvancedActivityTime">{fmtTime(entry.createdAt)}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Analysis */}
-          <div className="wm-er-card wm-er-accentCard wm-er-vShift" style={{ margin: 0 }}>
+          <div className="wm-er-card wm-er-accentCard wm-er-vShift wm-shiftAdvancedAnalysisCard">
             <div className="wm-er-headTint">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                <div style={{ fontWeight: 900 }}>Analysis</div>
-                <div style={{ fontSize: 12, color: "var(--wm-er-muted)" }}>{p.analyzedAt ? `Last: ${fmtTime(p.analyzedAt)}` : "Not analyzed"}</div>
+              <div className="wm-shiftAdvancedAnalysisHead">
+                <div className="wm-shiftAdvancedAnalysisTitle">Analysis</div>
+
+                <div className="wm-shiftAdvancedAnalysisMeta">
+                  {p.analyzedAt ? `Last: ${fmtTime(p.analyzedAt)}` : "Not analyzed"}
+                </div>
               </div>
-              <div style={{ marginTop: 10, display: "flex", gap: 10, justifyContent: "flex-end", flexWrap: "wrap" }}>
-                <button className="wm-outlineBtn" type="button" onClick={() => employerShiftStorage.setHidden(p.id, !p.isHiddenFromSearch)}>
+
+              <div className="wm-shiftAdvancedAnalysisActions">
+                <button
+                  className="wm-outlineBtn"
+                  type="button"
+                  onClick={() => employerShiftStorage.setHidden(p.id, !p.isHiddenFromSearch)}
+                >
                   {p.isHiddenFromSearch ? "Show in search" : "Hide from search"}
                 </button>
-                <button className="wm-primarybtn" type="button" onClick={onAnalyze} disabled={isAnalyzed}>
+
+                <button
+                  className="wm-primarybtn wm-shiftAdvancedPrimaryBtn"
+                  type="button"
+                  onClick={onAnalyze}
+                  disabled={isAnalyzed}
+                >
                   {isAnalyzed ? "Analyzed" : "Find Best Candidates"}
                 </button>
-                <button className="wm-outlineBtn" type="button" onClick={onReset} style={{ color: "var(--wm-error)" }}>Reset</button>
+
+                <button
+                  className="wm-outlineBtn wm-shiftAdvancedResetBtn"
+                  type="button"
+                  onClick={onReset}
+                >
+                  Reset
+                </button>
               </div>
             </div>
           </div>

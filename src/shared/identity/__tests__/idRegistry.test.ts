@@ -11,7 +11,7 @@ import {
 } from "../registry/idRegistry";
 import { deriveNameBlock } from "../generators/uniqueIdGenerator";
 import { validateId, isValidId } from "../validators/idValidator";
-import { ID_REGISTRY_KEY, ID_DISPLAY_LENGTH } from "../constants/idConstants";
+import { ID_REGISTRY_KEY, ID_DISPLAY_LENGTH, ID_PREFIX } from "../constants/idConstants";
 
 /* ── Setup ── */
 beforeEach(() => {
@@ -28,7 +28,7 @@ describe("generateAndRegisterId", () => {
 
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.id).toMatch(/^WM-[A-Z2-9]{4}-RAH-[A-Z2-9]{4}$/);
+      expect(result.id).toMatch(/^ML-[A-Z2-9]{4}-RAH-[A-Z2-9]{4}$/);
       expect(result.id.length).toBe(ID_DISPLAY_LENGTH);
     }
   });
@@ -85,7 +85,7 @@ describe("generateAndRegisterId", () => {
 /* ── Lookup ── */
 describe("lookupById", () => {
   it("returns null for non-existent ID", () => {
-    expect(lookupById("WM-FAKE-XXX-1234")).toBeNull();
+    expect(lookupById(`${ID_PREFIX}-FAKE-XXX-1234`)).toBeNull();
   });
 
   it("finds registered ID", () => {
@@ -121,7 +121,7 @@ describe("removeFromRegistry", () => {
   });
 
   it("returns false for non-existent ID", () => {
-    expect(removeFromRegistry("WM-FAKE-XXX-1234")).toBe(false);
+    expect(removeFromRegistry(`${ID_PREFIX}-FAKE-XXX-1234`)).toBe(false);
   });
 });
 
@@ -210,7 +210,7 @@ describe("validateId", () => {
   });
 
   it("rejects wrong length", () => {
-    expect(validateId("WM-AB-C-D").valid).toBe(false);
+    expect(validateId("ML-AB-C-D").valid).toBe(false);
   });
 
   it("rejects wrong prefix", () => {
@@ -218,11 +218,11 @@ describe("validateId", () => {
   });
 
   it("rejects wrong separator count", () => {
-    expect(validateId("WM-ABCD-RAH1234X").valid).toBe(false);
+    expect(validateId("ML-ABCD-RAH1234X").valid).toBe(false);
   });
 
   it("rejects invalid characters (0, 1, lowercase)", () => {
-    const r = validateId("WM-0000-RAH-1111");
+    const r = validateId("ML-0000-RAH-1111");
     expect(r.valid).toBe(false);
   });
 
@@ -239,14 +239,22 @@ describe("validateId", () => {
     expect(validateId(`  ${result.id}  `).valid).toBe(true);
   });
 
-  it("detects check digit tampering", () => {
-    const result = generateAndRegisterId("Test", "employee");
-    if (!result.success) throw new Error("Failed");
-    // Flip the last character
-    const parts = result.id.split("-");
+  it("detects check digit tampering on legacy WM IDs only", () => {
+    const block1 = "ABCD";
+    const nameBlock = "TES";
+    const partial = "EFG";
+    let sum = 0;
+    const raw = block1 + nameBlock + partial;
+    const charset = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    for (let i = 0; i < raw.length; i++) {
+      const ch = raw[i];
+      sum += charset.indexOf(ch) * (i + 1);
+    }
+    const check = charset[sum % charset.length];
+    const legacyId = `WM-${block1}-${nameBlock}-${partial}${check}`;
+    const parts = legacyId.split("-");
     const block3 = parts[3];
-    const lastChar = block3[3];
-    const flipped = lastChar === "A" ? "B" : "A";
+    const flipped = block3[3] === "A" ? "B" : "A";
     parts[3] = block3.slice(0, 3) + flipped;
     const tampered = parts.join("-");
 

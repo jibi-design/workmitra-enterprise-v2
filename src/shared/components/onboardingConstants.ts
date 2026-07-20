@@ -6,7 +6,17 @@ export type OnboardingSlide = {
   icon: "welcome" | "profile" | "wmid" | "ready" | "company" | "postjob";
 };
 
+/**
+ * Legacy key kept for old installs.
+ * New role-specific onboarding should use EMPLOYEE_ONBOARDING_KEY / EMPLOYER_ONBOARDING_KEY.
+ */
 export const ONBOARDING_KEY = "wm_onboarding_complete_v1";
+
+export const EMPLOYEE_ONBOARDING_KEY = "wm_employee_onboarding_complete_v1";
+export const EMPLOYER_ONBOARDING_KEY = "wm_employer_onboarding_complete_v1";
+
+export const EMPLOYEE_HOME_WELCOME_KEY = "wm_employee_home_welcome_seen_v1";
+export const EMPLOYER_HOME_WELCOME_KEY = "wm_employer_home_welcome_seen_v1";
 
 export const EMPLOYEE_SLIDES: readonly OnboardingSlide[] = [
   {

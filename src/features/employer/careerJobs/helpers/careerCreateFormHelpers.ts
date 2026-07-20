@@ -7,9 +7,15 @@ export function clampInt(n: number, min: number, max: number): number {
 }
 
 export function normalizeTagInput(raw: string, maxItems: number): string[] {
-  const items = raw.split("\n").map((x) => x.trim()).filter(Boolean).map((x) => (x.length > 80 ? x.slice(0, 80) : x));
+  const items = raw
+    .split(/[\n,]/)
+    .map((x) => x.trim())
+    .filter(Boolean)
+    .map((x) => (x.length > 80 ? x.slice(0, 80) : x));
+
   const seen = new Set<string>();
   const out: string[] = [];
+
   for (const x of items) {
     const k = x.toLowerCase();
     if (seen.has(k)) continue;
@@ -17,6 +23,7 @@ export function normalizeTagInput(raw: string, maxItems: number): string[] {
     out.push(x);
     if (out.length >= maxItems) break;
   }
+
   return out;
 }
 
@@ -30,7 +37,8 @@ export function tomorrow30d(): number {
 export const CAREER_CREATE_STEPS = [
   { num: 1, label: "Basic Info" },
   { num: 2, label: "Requirements" },
-  { num: 3, label: "Interview & Review" },
+  { num: 3, label: "Interview" },
+  { num: 4, label: "Review" },
 ] as const;
 
 export const DEFAULT_INTERVIEW_ROUNDS: InterviewRoundConfig[] = [

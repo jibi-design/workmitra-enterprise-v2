@@ -40,6 +40,8 @@ export function durationText(fromMs: number, toMs: number): string {
 /* ------------------------------------------------ */
 export function statusMeta(status: StaffRecord["status"]): StatusMeta {
   switch (status) {
+    case "joining_pending":
+      return { label: "Joining Pending", color: "#1d4ed8" };
     case "active":
       return { label: "Active", color: "#16a34a" };
     case "probation":

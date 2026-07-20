@@ -2,15 +2,9 @@
 //
 // Shared filter tabs for notification pages.
 // Horizontal scroll, single row, never wraps.
-// Active = dark bg. Inactive = domain-colored or muted grey.
 
-import {
-  type NotificationTab,
-  type NotificationDomainStyle,
-  TAB_ACTIVE_BG,
-  TAB_ZERO_BORDER,
-  TAB_ZERO_TEXT,
-} from "./notificationTypes";
+import { type CSSProperties } from "react";
+import { type NotificationDomainStyle, type NotificationTab } from "./notificationTypes";
 
 /* ------------------------------------------------ */
 /* Props                                            */
@@ -26,71 +20,65 @@ type Props = {
 };
 
 /* ------------------------------------------------ */
-/* Styles                                           */
+/* CSS variables                                    */
 /* ------------------------------------------------ */
-const CONTAINER: React.CSSProperties = {
-  display: "flex",
-  gap: 6,
-  overflowX: "auto",
-  flexWrap: "nowrap",
-  paddingBottom: 12,
-  marginBottom: 14,
-  borderBottom: "1px solid var(--wm-er-border, #e5e7eb)",
-  scrollbarWidth: "none",          // Firefox
-  msOverflowStyle: "none",         // IE
-};
-
-const SCROLLBAR_HIDE = `
-  .wm-notif-tabs::-webkit-scrollbar { display: none; }
-`;
-
-const BASE_TAB: React.CSSProperties = {
-  fontSize: 12,
-  fontWeight: 600,
-  padding: "5px 12px",
-  borderRadius: 20,
-  border: "1px solid transparent",
-  cursor: "pointer",
-  flexShrink: 0,
-  whiteSpace: "nowrap",
-  lineHeight: 1.4,
-};
+type NotificationFilterTabStyle = CSSProperties &
+  Partial<{
+    "--wm-notification-tab-accent": string;
+    "--wm-notification-tab-bg": string;
+  }>;
 
 /* ------------------------------------------------ */
 /* Component                                        */
 /* ------------------------------------------------ */
-export function NotificationFilterTabs({ tabs, activeTab, onTabChange, domainCounts, domainStyles }: Props) {
+export function NotificationFilterTabs({
+  tabs,
+  activeTab,
+  onTabChange,
+  domainCounts,
+  domainStyles,
+}: Props) {
   return (
-    <>
-      <style>{SCROLLBAR_HIDE}</style>
-      <div className="wm-notif-tabs" style={CONTAINER} role="tablist" aria-label="Notification filters">
-        {tabs.map((tab) => {
-          const isActive = activeTab === tab.key;
-          const isAll = tab.key === "all";
-          const count = isAll ? 0 : (domainCounts[tab.key] ?? 0);
-          const ds = domainStyles[tab.key];
-          const hasItems = count > 0;
+    <div className="wm-notificationFilterTabs" role="tablist" aria-label="Notification filters">
+      {tabs.map((tab) => {
+        const isActive = activeTab === tab.key;
+        const isAll = tab.key === "all";
+        const count = isAll ? 0 : (domainCounts[tab.key] ?? 0);
+        const domainStyle = domainStyles[tab.key];
+        const hasItems = count > 0;
 
-          const style: React.CSSProperties = isActive
-            ? { ...BASE_TAB, background: TAB_ACTIVE_BG, color: "#fff", borderColor: TAB_ACTIVE_BG }
-            : hasItems && ds
-              ? { ...BASE_TAB, background: ds.bgTab, color: ds.color, borderColor: ds.color }
-              : { ...BASE_TAB, background: "transparent", color: TAB_ZERO_TEXT, borderColor: TAB_ZERO_BORDER };
+        const style: NotificationFilterTabStyle =
+          hasItems && domainStyle
+            ? {
+                "--wm-notification-tab-accent": domainStyle.color,
+                "--wm-notification-tab-bg": domainStyle.bgTab,
+              }
+            : {};
 
-          return (
-            <button
-              key={tab.key}
-              type="button"
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => onTabChange(tab.key)}
-              style={style}
-            >
-              {tab.label}{!isAll && hasItems ? ` ${count}` : ""}
-            </button>
-          );
-        })}
-      </div>
-    </>
+        const className = [
+          "wm-notificationFilterTab",
+          isActive ? "isActive" : "",
+          hasItems ? "hasItems" : "isZero",
+        ]
+          .filter(Boolean)
+          .join(" ");
+
+        return (
+          <button
+            key={tab.key}
+            type="button"
+            role="tab"
+            aria-selected={isActive}
+            onClick={() => onTabChange(tab.key)}
+            className={className}
+            style={style}
+          >
+            <span className="wm-notificationFilterLabel">{tab.label}</span>
+
+            {!isAll && hasItems && <span className="wm-notificationFilterCount">{count}</span>}
+          </button>
+        );
+      })}
+    </div>
   );
 }

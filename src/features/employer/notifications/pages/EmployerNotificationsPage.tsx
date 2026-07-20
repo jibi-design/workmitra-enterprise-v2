@@ -1,7 +1,10 @@
-// src/features/employer/notifications/pages/EmployerNotificationsPage.tsx
-//
+// App name: Job Mitra
+// File name: EmployerNotificationsPage.tsx
+// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\notifications\pages\EmployerNotificationsPage.tsx
+
 // Employer notifications — premium redesign.
 // Time-grouped, domain-colored filter tabs, swipe-to-delete, auto-cleanup 30d.
+// Launch guard hides future/internal domains from production UI.
 
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
@@ -25,10 +28,11 @@ import {
   countByDomain,
   type TimeGrouped,
 } from "../../../../shared/components/notifications/notificationHelpers";
+import {
+  filterLaunchVisibleEmployerNotifications,
+  getLaunchVisibleEmployerNotificationTabs,
+} from "../../../../shared/components/notifications/notificationLaunchFilters";
 
-/* ------------------------------------------------ */
-/* Constants                                        */
-/* ------------------------------------------------ */
 const FALLBACK_DOMAIN = EMPLOYER_DOMAINS["shift"];
 
 const GROUP_HEADER: React.CSSProperties = {
@@ -41,9 +45,6 @@ const GROUP_HEADER: React.CSSProperties = {
   marginBottom: 8,
 };
 
-/* ------------------------------------------------ */
-/* Bell SVG                                         */
-/* ------------------------------------------------ */
 function BellSvg() {
   return (
     <svg width={18} height={18} viewBox="0 0 24 24" style={{ display: "block" }}>
@@ -55,9 +56,6 @@ function BellSvg() {
   );
 }
 
-/* ------------------------------------------------ */
-/* Component                                        */
-/* ------------------------------------------------ */
 export function EmployerNotificationsPage() {
   const nav = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
@@ -68,26 +66,44 @@ export function EmployerNotificationsPage() {
     employerNotificationsStorage.getAll,
   );
 
-  /* Auto-cleanup notifications older than 30 days */
-  useEffect(() => { employerNotificationsStorage.autoCleanup(); }, []);
+  useEffect(() => {
+    employerNotificationsStorage.autoCleanup();
+  }, []);
+
+  const visibleTabs = useMemo(() => getLaunchVisibleEmployerNotificationTabs(EMPLOYER_TABS), []);
+
+  const visibleNotes = useMemo(() => filterLaunchVisibleEmployerNotifications(notes), [notes]);
+
+  const safeActiveTab = visibleTabs.some((tab) => tab.key === activeTab) ? activeTab : "all";
 
   const filtered = useMemo(
-    () => (activeTab === "all" ? notes : notes.filter((n) => n.domain === activeTab)),
-    [notes, activeTab],
+    () =>
+      safeActiveTab === "all"
+        ? visibleNotes
+        : visibleNotes.filter((n) => n.domain === safeActiveTab),
+    [safeActiveTab, visibleNotes],
   );
 
   const unread = useMemo(() => {
-    let c = 0;
-    for (const n of notes) if (!n.isRead) c++;
-    return c;
-  }, [notes]);
+    let count = 0;
 
-  const domainCounts = useMemo(() => countByDomain(notes), [notes]);
-  const groups: TimeGrouped<EmployerNotification>[] = useMemo(() => groupByTime(filtered), [filtered]);
+    for (const note of visibleNotes) {
+      if (!note.isRead) count++;
+    }
+
+    return count;
+  }, [visibleNotes]);
+
+  const domainCounts = useMemo(() => countByDomain(visibleNotes), [visibleNotes]);
+  const groups: TimeGrouped<EmployerNotification>[] = useMemo(
+    () => groupByTime(filtered),
+    [filtered],
+  );
 
   function handleTap(noteId: string) {
-    const note = notes.find((n) => n.id === noteId);
+    const note = visibleNotes.find((n) => n.id === noteId);
     if (!note) return;
+
     employerNotificationsStorage.markRead(noteId);
     if (note.route) nav(note.route);
   }
@@ -100,23 +116,31 @@ export function EmployerNotificationsPage() {
 
   return (
     <div>
-      {/* Page Title Section */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-        <div style={{
-          width: 36, height: 36, borderRadius: "50%",
-          background: BELL_CIRCLE_BG,
-          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-        }}>
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: "50%",
+            background: BELL_CIRCLE_BG,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
           <BellSvg />
         </div>
+
         <div>
           <div style={{ fontSize: 16, fontWeight: 700, color: "var(--wm-er-text, #1e293b)" }}>
             Notifications
           </div>
+
           <div style={{ fontSize: 12, marginTop: 2 }}>
             {unread > 0 ? (
               <span style={{ color: NOTIFICATION_CYAN, fontWeight: 600 }}>
-                {unread} unread &middot; {notes.length} total
+                {unread} unread &middot; {visibleNotes.length} total
               </span>
             ) : (
               <span style={{ color: SUCCESS_GREEN, fontWeight: 600 }}>All caught up</span>
@@ -125,16 +149,20 @@ export function EmployerNotificationsPage() {
         </div>
       </div>
 
-      {/* Clear All */}
-      {notes.length > 0 && (
+      {visibleNotes.length > 0 && (
         <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
           <button
             type="button"
             onClick={() => employerNotificationsStorage.clearAll()}
             style={{
-              fontSize: 12, fontWeight: 600, color: "#ef4444",
-              background: "none", border: "1px solid #fecaca",
-              borderRadius: 8, padding: "4px 12px", cursor: "pointer",
+              fontSize: 12,
+              fontWeight: 600,
+              color: "#ef4444",
+              background: "none",
+              border: "1px solid #fecaca",
+              borderRadius: 8,
+              padding: "4px 12px",
+              cursor: "pointer",
             }}
           >
             Clear All
@@ -142,51 +170,56 @@ export function EmployerNotificationsPage() {
         </div>
       )}
 
-      {/* Filter Tabs */}
       <NotificationFilterTabs
-        tabs={EMPLOYER_TABS}
-        activeTab={activeTab}
+        tabs={visibleTabs}
+        activeTab={safeActiveTab}
         onTabChange={setActiveTab}
         domainCounts={domainCounts}
         domainStyles={EMPLOYER_DOMAINS}
       />
 
-      {/* Empty State */}
       {isEmpty && <NotificationEmptyState />}
 
-      {/* Time-Grouped Notifications */}
-      {!isEmpty && groups.map((group) => (
-        <div key={group.key}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={GROUP_HEADER}>{group.key}</span>
-            {group.key === "TODAY" && unread > 0 && (
-              <button
-                type="button"
-                onClick={() => employerNotificationsStorage.markAllRead()}
-                style={{
-                  fontSize: 12, fontWeight: 600, color: NOTIFICATION_CYAN,
-                  background: "none", border: "none", cursor: "pointer", padding: "4px 0",
-                }}
-              >
-                Mark all read
-              </button>
-            )}
+      {!isEmpty &&
+        groups.map((group) => (
+          <div key={group.key}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={GROUP_HEADER}>{group.key}</span>
+
+              {group.key === "TODAY" && unread > 0 && (
+                <button
+                  type="button"
+                  onClick={() => employerNotificationsStorage.markAllRead()}
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: NOTIFICATION_CYAN,
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: "4px 0",
+                  }}
+                >
+                  Mark all read
+                </button>
+              )}
+            </div>
+
+            {group.items.map((note) => (
+              <NotificationCard
+                key={note.id}
+                id={note.id}
+                title={note.title}
+                body={note.body}
+                createdAt={note.createdAt}
+                isRead={note.isRead}
+                domainStyle={EMPLOYER_DOMAINS[note.domain] ?? FALLBACK_DOMAIN}
+                onTap={handleTap}
+                onDelete={handleDelete}
+              />
+            ))}
           </div>
-          {group.items.map((n) => (
-            <NotificationCard
-              key={n.id}
-              id={n.id}
-              title={n.title}
-              body={n.body}
-              createdAt={n.createdAt}
-              isRead={n.isRead}
-              domainStyle={EMPLOYER_DOMAINS[n.domain] ?? FALLBACK_DOMAIN}
-              onTap={handleTap}
-              onDelete={handleDelete}
-            />
-          ))}
-        </div>
-      ))}
+        ))}
 
       <div style={{ height: 32 }} />
     </div>

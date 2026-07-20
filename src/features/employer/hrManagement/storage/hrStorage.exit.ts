@@ -3,29 +3,31 @@
 // Exit processing: initiate → clearance → settlement → complete.
 
 import type { ExitTrigger } from "../types/exitProcessing.types";
-import {
-  genId,
-  pushStatusChange,
-  hrGetById,
-  hrUpdate,
-} from "./hrStorage.core";
+import { genId, pushStatusChange, hrGetById, hrUpdate } from "./hrStorage.core";
+import { hrCompleteExitSaga } from "./hrStorage.exitSaga";
+
+export { hrCompleteExitSaga, type HrCompleteExitSagaResult } from "./hrStorage.exitSaga";
 
 /* ------------------------------------------------ */
 /* Start Exit Processing                            */
 /* ------------------------------------------------ */
-export function hrStartExitProcessing(id: string, data: {
-  trigger: ExitTrigger;
-  triggerNote: string;
-  noticeDays: number;
-  waiveNotice: boolean;
-  waivedReason?: string;
-  clearanceItems: Array<{ id: string; label: string; isDefault: boolean }>;
-}): boolean {
+export function hrStartExitProcessing(
+  id: string,
+  data: {
+    trigger: ExitTrigger;
+    triggerNote: string;
+    noticeDays: number;
+    waiveNotice: boolean;
+    waivedReason?: string;
+    clearanceItems: Array<{ id: string; label: string; isDefault: boolean }>;
+  },
+): boolean {
   const rec = hrGetById(id);
   if (!rec || rec.status !== "active") return false;
 
   const now = Date.now();
-  const fromPhase = rec.employmentPhase === "confirmed" ? "active (confirmed)" : "active (probation)";
+  const fromPhase =
+    rec.employmentPhase === "confirmed" ? "active (confirmed)" : "active (probation)";
 
   const noticePeriod = {
     totalDays: data.waiveNotice ? 0 : data.noticeDays,
@@ -47,7 +49,13 @@ export function hrStartExitProcessing(id: string, data: {
   return hrUpdate(id, {
     status: "exit_processing",
     exitData,
-    statusHistory: pushStatusChange(rec, fromPhase, "exit_processing", "employer", `Exit initiated: ${data.triggerNote}`),
+    statusHistory: pushStatusChange(
+      rec,
+      fromPhase,
+      "exit_processing",
+      "employer",
+      `Exit initiated: ${data.triggerNote}`,
+    ),
   });
 }
 
@@ -127,14 +135,5 @@ export function hrMarkExperienceLetterSent(id: string): boolean {
 /* Complete Exit                                    */
 /* ------------------------------------------------ */
 export function hrCompleteExit(id: string): boolean {
-  const rec = hrGetById(id);
-  if (!rec || rec.status !== "exit_processing" || !rec.exitData) return false;
-
-  const allCleared = rec.exitData.clearanceItems.every((i) => i.completedAt);
-  if (!allCleared) return false;
-
-  return hrUpdate(id, {
-    exitData: { ...rec.exitData, exitCompletedAt: Date.now() },
-    statusHistory: pushStatusChange(rec, "exit_processing", "exited", "employer", "Exit process completed"),
-  });
+  return hrCompleteExitSaga(id).ok;
 }

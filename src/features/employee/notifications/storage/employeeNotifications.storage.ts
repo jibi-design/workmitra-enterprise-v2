@@ -1,7 +1,22 @@
-// src/features/employee/notifications/storage/employeeNotifications.storage.ts
-//
+// App name: Job Mitra
+// File name: employeeNotifications.storage.ts
+// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\notifications\storage\employeeNotifications.storage.ts
+
 // Employee notification storage — stable-reference cache for useSyncExternalStore.
 // Domains: shift, career, workforce, employment.
+
+import {
+  cleanNotificationRoute,
+  cleanNotificationText,
+  cleanOptionalNotificationText,
+  DEFAULT_NOTIFICATION_DEDUPE_WINDOW_MS,
+  DEFAULT_NOTIFICATION_MAX_ITEMS,
+  DEFAULT_NOTIFICATION_TEXT_LIMITS,
+  hasRecentNotificationDuplicate,
+  normalizeNotificationInput,
+  parseNotificationJson,
+  uniqueLatestNotifications,
+} from "../../../../shared/notifications/guards";
 
 export type EmployeeNotificationDomain = "shift" | "career" | "workforce" | "employment";
 
@@ -17,66 +32,64 @@ export type EmployeeNotification = {
 
 const KEY = "wm_employee_notifications_v1";
 const CHANGED_EVENT = "wm:employee-notifications-changed";
-const MAX_ITEMS = 200;
+const MAX_ITEMS = DEFAULT_NOTIFICATION_MAX_ITEMS;
 
-/* ── Stable-reference cache for useSyncExternalStore ── */
+const VALID_DOMAINS: readonly EmployeeNotificationDomain[] = [
+  "shift",
+  "career",
+  "workforce",
+  "employment",
+] as const;
+
 let _cacheRaw: string | null = null;
 let _cacheList: EmployeeNotification[] = [];
 let _cacheUnread = 0;
 
-/* ------------------------------------------------ */
-/* Guards                                           */
-/* ------------------------------------------------ */
-function isDomain(x: unknown): x is EmployeeNotificationDomain {
-  return x === "shift" || x === "career" || x === "workforce" || x === "employment";
-}
-
-/* ------------------------------------------------ */
-/* localStorage helpers                             */
-/* ------------------------------------------------ */
 function safeGet(): string | null {
-  try { return localStorage.getItem(KEY); } catch { return null; }
+  try {
+    return localStorage.getItem(KEY);
+  } catch {
+    return null;
+  }
 }
 
-function safeSet(v: string) {
-  try { localStorage.setItem(KEY, v); } catch { /* safe */ }
+function safeSet(value: string) {
+  try {
+    localStorage.setItem(KEY, value);
+  } catch {
+    // demo-safe
+  }
 }
 
 function notify() {
-  try { window.dispatchEvent(new Event(CHANGED_EVENT)); } catch { /* safe */ }
+  try {
+    window.dispatchEvent(new Event(CHANGED_EVENT));
+  } catch {
+    // demo-safe
+  }
 }
 
 function newId(): string {
   return `en_${Math.random().toString(16).slice(2)}_${Date.now().toString(16)}`;
 }
 
-/* ------------------------------------------------ */
-/* Parse                                            */
-/* ------------------------------------------------ */
 function safeParse(raw: string | null): EmployeeNotification[] {
-  if (!raw) return [];
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter((n): n is EmployeeNotification =>
-      !!n && typeof n === "object" &&
-      typeof (n as EmployeeNotification).id === "string" &&
-      isDomain((n as EmployeeNotification).domain) &&
-      typeof (n as EmployeeNotification).title === "string" &&
-      typeof (n as EmployeeNotification).createdAt === "number" &&
-      typeof (n as EmployeeNotification).isRead === "boolean",
-    );
-  } catch { return []; }
+  const parsed = parseNotificationJson(raw);
+
+  return uniqueLatestNotifications(
+    parsed
+      .map((item) => normalizeNotificationInput<EmployeeNotificationDomain>(item, VALID_DOMAINS))
+      .filter((item): item is EmployeeNotification => item !== null),
+    MAX_ITEMS,
+  );
 }
 
-/* ------------------------------------------------ */
-/* Cache read — stable reference                    */
-/* ------------------------------------------------ */
 function readCached(): EmployeeNotification[] {
   const raw = safeGet();
 
   if (raw === null) {
     if (_cacheRaw === null) return _cacheList;
+
     _cacheRaw = null;
     _cacheList = [];
     _cacheUnread = 0;
@@ -86,40 +99,38 @@ function readCached(): EmployeeNotification[] {
   if (raw === _cacheRaw) return _cacheList;
 
   _cacheRaw = raw;
-  _cacheList = safeParse(raw).sort((a, b) => b.createdAt - a.createdAt);
+  _cacheList = safeParse(raw);
   _cacheUnread = _cacheList.filter((n) => !n.isRead).length;
   return _cacheList;
 }
 
-/* ------------------------------------------------ */
-/* Write — always invalidates cache                 */
-/* ------------------------------------------------ */
 function write(list: EmployeeNotification[]) {
-  safeSet(JSON.stringify(list.slice(0, MAX_ITEMS)));
-  _cacheRaw = null; // force cache rebuild on next read
+  safeSet(JSON.stringify(uniqueLatestNotifications(list, MAX_ITEMS)));
+  _cacheRaw = null;
   notify();
 }
 
-/* ------------------------------------------------ */
-/* Push helper                                      */
-/* ------------------------------------------------ */
 function push(domain: EmployeeNotificationDomain, title: string, body?: string, route?: string) {
+  const cleanTitle = cleanNotificationText(title, DEFAULT_NOTIFICATION_TEXT_LIMITS.title);
+  if (!cleanTitle) return;
+
   const all = readCached();
+
   const item: EmployeeNotification = {
     id: newId(),
     domain,
-    title,
-    body,
+    title: cleanTitle,
+    body: cleanOptionalNotificationText(body, DEFAULT_NOTIFICATION_TEXT_LIMITS.body),
     createdAt: Date.now(),
     isRead: false,
-    route,
+    route: cleanNotificationRoute(route),
   };
+
+  if (hasRecentNotificationDuplicate(all, item, DEFAULT_NOTIFICATION_DEDUPE_WINDOW_MS)) return;
+
   write([item, ...all]);
 }
 
-/* ------------------------------------------------ */
-/* Storage API                                      */
-/* ------------------------------------------------ */
 export const employeeNotificationsStorage = {
   getAll(): EmployeeNotification[] {
     return readCached();
@@ -131,32 +142,45 @@ export const employeeNotificationsStorage = {
   },
 
   subscribe(listener: () => void): () => void {
-    const h = () => listener();
-    const onStorage = (e: StorageEvent) => { if (e.key === KEY || e.key === null) listener(); };
-    window.addEventListener(CHANGED_EVENT, h);
+    const handler = () => listener();
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === KEY || event.key === null) listener();
+    };
+
+    window.addEventListener(CHANGED_EVENT, handler);
     window.addEventListener("storage", onStorage);
+
     return () => {
-      window.removeEventListener(CHANGED_EVENT, h);
+      window.removeEventListener(CHANGED_EVENT, handler);
       window.removeEventListener("storage", onStorage);
     };
   },
 
   markRead(id: string) {
-    const next = readCached().map((n) => n.id === id ? { ...n, isRead: true } : n);
-    write(next);
+    const cleanId = cleanNotificationText(id, 120);
+    if (!cleanId) return;
+
+    write(readCached().map((n) => (n.id === cleanId ? { ...n, isRead: true } : n)));
   },
 
   markAllRead() {
-    const next = readCached().map((n) => n.isRead ? n : { ...n, isRead: true });
-    write(next);
+    write(readCached().map((n) => (n.isRead ? n : { ...n, isRead: true })));
   },
 
   deleteOne(id: string) {
-    write(readCached().filter((n) => n.id !== id));
+    const cleanId = cleanNotificationText(id, 120);
+    if (!cleanId) return;
+
+    write(readCached().filter((n) => n.id !== cleanId));
   },
 
   clearAll() {
-    try { localStorage.removeItem(KEY); } catch { /* safe */ }
+    try {
+      localStorage.removeItem(KEY);
+    } catch {
+      // demo-safe
+    }
+
     _cacheRaw = null;
     _cacheList = [];
     _cacheUnread = 0;
@@ -167,11 +191,23 @@ export const employeeNotificationsStorage = {
     const cutoff = Date.now() - 30 * 86_400_000;
     const all = readCached();
     const cleaned = all.filter((n) => n.createdAt >= cutoff);
+
     if (cleaned.length < all.length) write(cleaned);
   },
 
-  pushShift(title: string, body?: string, route?: string) { push("shift", title, body, route); },
-  pushCareer(title: string, body?: string, route?: string) { push("career", title, body, route); },
-  pushWorkforce(title: string, body?: string, route?: string) { push("workforce", title, body, route); },
-  pushEmployment(title: string, body?: string, route?: string) { push("employment", title, body, route); },
+  pushShift(title: string, body?: string, route?: string) {
+    push("shift", title, body, route);
+  },
+
+  pushCareer(title: string, body?: string, route?: string) {
+    push("career", title, body, route);
+  },
+
+  pushWorkforce(title: string, body?: string, route?: string) {
+    push("workforce", title, body, route);
+  },
+
+  pushEmployment(title: string, body?: string, route?: string) {
+    push("employment", title, body, route);
+  },
 } as const;

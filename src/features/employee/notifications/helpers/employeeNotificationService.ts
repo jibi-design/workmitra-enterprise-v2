@@ -9,6 +9,8 @@
 // Level 3 = Never Notify (employer-private — employee never sees)
 
 import { employeeNotificationsStorage } from "../storage/employeeNotifications.storage";
+import { handleIncomingNotification } from "../../../pulse/pulseEventBridge";
+import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 
 /* ------------------------------------------------ */
 /* Snapshot                                         */
@@ -26,14 +28,14 @@ type Snapshot = {
 
 function takeSnapshot(): Snapshot {
   return {
-    shiftApps:  localStorage.getItem("wm_employee_shift_applications_v1"),
+    shiftApps: localStorage.getItem("wm_employee_shift_applications_v1"),
     workspaces: localStorage.getItem("wm_employee_shift_workspaces_v1"),
     careerApps: localStorage.getItem("wm_career_applications_v1"),
-    leave:      localStorage.getItem("wm_hr_leave_requests_v1"),
-    tasks:      localStorage.getItem("wm_task_assignments_v1"),
-    roster:     localStorage.getItem("wm_roster_planner_v1"),
-    incidents:  localStorage.getItem("wm_incident_reports_v1"),
-    shiftPosts: localStorage.getItem("wm_employee_shift_posts_demo_v1"),
+    leave: localStorage.getItem("wm_hr_leave_requests_v1"),
+    tasks: localStorage.getItem("wm_task_assignments_v1"),
+    roster: localStorage.getItem("wm_roster_planner_v1"),
+    incidents: localStorage.getItem("wm_incident_reports_v1"),
+    shiftPosts: localStorage.getItem("wm_employer_shift_posts_v1"),
   };
 }
 
@@ -48,7 +50,9 @@ function safeArray(raw: string | null): Rec[] {
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
     return parsed.filter((x): x is Rec => typeof x === "object" && x !== null);
-  } catch { return []; }
+  } catch {
+    return [];
+  }
 }
 
 function countByField(items: Rec[], field: string, value: string): number {
@@ -68,7 +72,6 @@ function handleChange() {
 
   detectShiftChanges(curr);
   detectSmartMatch(curr);
-  detectCareerChanges(curr);
   detectLeaveChanges(curr);
   detectTaskChanges(curr);
   detectRosterChanges(curr);
@@ -81,17 +84,21 @@ function handleChange() {
 /* SMART MATCH — new shift matches worker profile   */
 /* ------------------------------------------------ */
 function getAppliedCategories(): Set<string> {
-  const apps  = safeArray(localStorage.getItem("wm_employee_shift_applications_v1"));
-  const posts = safeArray(localStorage.getItem("wm_employee_shift_posts_demo_v1"));
+  const apps = safeArray(localStorage.getItem("wm_employee_shift_applications_v1"));
+  const posts = safeArray(localStorage.getItem("wm_employer_shift_posts_v1"));
   const postMap = new Map<string, string>();
   for (const p of posts) {
-    const id  = p["id"];  const cat = p["category"];
+    const id = p["id"];
+    const cat = p["category"];
     if (typeof id === "string" && typeof cat === "string") postMap.set(id, cat);
   }
   const cats = new Set<string>();
   for (const a of apps) {
     const pid = a["postId"];
-    if (typeof pid === "string") { const c = postMap.get(pid); if (c) cats.add(c); }
+    if (typeof pid === "string") {
+      const c = postMap.get(pid);
+      if (c) cats.add(c);
+    }
   }
   return cats;
 }
@@ -103,24 +110,30 @@ function detectSmartMatch(curr: Snapshot) {
   if (newList.length <= oldList.length) return;
 
   const oldIds = new Set(oldList.map((p) => p["id"] as string));
-  const newPosts = newList.filter((p) => typeof p["id"] === "string" && !oldIds.has(p["id"] as string) && !p["isHiddenFromSearch"]);
+  const newPosts = newList.filter(
+    (p) =>
+      typeof p["id"] === "string" && !oldIds.has(p["id"] as string) && !p["isHiddenFromSearch"],
+  );
   if (newPosts.length === 0) return;
 
   const appliedCats = getAppliedCategories();
 
   for (const post of newPosts) {
-    const cat      = typeof post["category"] === "string" ? post["category"] : "";
-    const job      = typeof post["jobName"]  === "string" ? post["jobName"]  : "shift";
-    const company  = typeof post["companyName"] === "string" ? post["companyName"] : "";
-    const pay      = typeof post["payPerDay"] === "number" ? post["payPerDay"] : 0;
-    const loc      = typeof post["locationName"] === "string" ? post["locationName"] : "";
+    const cat = typeof post["category"] === "string" ? post["category"] : "";
+    const job = typeof post["jobName"] === "string" ? post["jobName"] : "shift";
+    const company = typeof post["companyName"] === "string" ? post["companyName"] : "";
+    const pay = typeof post["payPerDay"] === "number" ? post["payPerDay"] : 0;
+    const loc = typeof post["locationName"] === "string" ? post["locationName"] : "";
 
     if (appliedCats.size > 0 && cat && appliedCats.has(cat)) {
-      employeeNotificationsStorage.pushShift(
-        `New ${cat} shift matches your profile`,
-        `${job}${company ? " at " + company : ""}${loc ? " \u2014 " + loc : ""}${pay > 0 ? ". Pay: " + pay + "/day" : ""}`,
-        "/employee/shift/search",
-      );
+      handleIncomingNotification({
+        type: "SHIFT_POSTS_NEARBY",
+        domain: "shift",
+        affectedUserRole: "employee",
+        title: `New ${cat} shift matches your profile`,
+        body: `${job}${company ? " at " + company : ""}${loc ? " \u2014 " + loc : ""}${pay > 0 ? ". Pay: " + pay + "/day" : ""}`,
+        route: ROUTE_PATHS.employeeShiftSearch,
+      });
       break; /* max 1 smart match notification per batch */
     }
   }
@@ -129,11 +142,14 @@ function detectSmartMatch(curr: Snapshot) {
   if (appliedCats.size === 0 && newPosts.length > 0) {
     const avRaw = localStorage.getItem("wm_employee_availability_broadcast_v1");
     if (avRaw) {
-      employeeNotificationsStorage.pushShift(
-        `${newPosts.length} new shift${newPosts.length !== 1 ? "s" : ""} posted near you`,
-        "New shifts are available. Check them out.",
-        "/employee/shift/search",
-      );
+      handleIncomingNotification({
+        type: "SHIFT_POSTS_NEARBY",
+        domain: "shift",
+        affectedUserRole: "employee",
+        title: `${newPosts.length} new shift${newPosts.length !== 1 ? "s" : ""} posted near you`,
+        body: "New shifts are available. Check them out.",
+        route: ROUTE_PATHS.employeeShiftSearch,
+      });
     }
   }
 }
@@ -142,25 +158,7 @@ function detectSmartMatch(curr: Snapshot) {
 /* SHIFT domain detectors                           */
 /* ------------------------------------------------ */
 function detectShiftChanges(curr: Snapshot) {
-  if (!prev || curr.shiftApps === prev.shiftApps && curr.workspaces === prev.workspaces) return;
-
-  if (curr.shiftApps !== prev.shiftApps) {
-    const oldList = safeArray(prev.shiftApps);
-    const newList = safeArray(curr.shiftApps);
-
-    if (countByField(newList, "status", "confirmed") > countByField(oldList, "status", "confirmed")) {
-      employeeNotificationsStorage.pushShift("Shift application accepted", "You have been confirmed for a shift.");
-    }
-    if (countByField(newList, "status", "shortlisted") > countByField(oldList, "status", "shortlisted")) {
-      employeeNotificationsStorage.pushShift("You have been shortlisted", "Employer is reviewing your application.");
-    }
-    if (countByField(newList, "status", "rejected") > countByField(oldList, "status", "rejected")) {
-      employeeNotificationsStorage.pushShift("Shift application not selected", "Your application was not selected this time.");
-    }
-    if (countByField(newList, "status", "replaced") > countByField(oldList, "status", "replaced")) {
-      employeeNotificationsStorage.pushShift("Shift assignment was replaced", "Employer reassigned this position.");
-    }
-  }
+  if (!prev || curr.workspaces === prev.workspaces) return;
 
   if (curr.workspaces !== prev.workspaces) {
     const oldList = safeArray(prev.workspaces);
@@ -169,32 +167,31 @@ function detectShiftChanges(curr: Snapshot) {
     const oldUnread = sumField(oldList, "unreadCount");
     const newUnread = sumField(newList, "unreadCount");
     if (newUnread > oldUnread) {
-      employeeNotificationsStorage.pushShift("New workspace update", "You have a new message in your shift group.");
+      handleIncomingNotification({
+        type: "GROUP_UPDATE",
+        domain: "shift",
+        affectedUserRole: "employee",
+        title: "New workspace update",
+        body: "You have a new message in your shift group.",
+      });
     }
-    if (countByField(newList, "status", "completed") > countByField(oldList, "status", "completed")) {
-      employeeNotificationsStorage.pushShift("Shift completed", "A shift has been marked as completed.");
+    if (
+      countByField(newList, "status", "completed") > countByField(oldList, "status", "completed")
+    ) {
+      handleIncomingNotification({
+        type: "GROUP_UPDATE",
+        domain: "shift",
+        affectedUserRole: "employee",
+        title: "Shift completed",
+        body: "A shift has been marked as completed.",
+      });
     }
   }
 }
 
 /* ------------------------------------------------ */
-/* CAREER domain detectors                          */
+/* CAREER domain — routed via pulseEventBridge      */
 /* ------------------------------------------------ */
-function detectCareerChanges(curr: Snapshot) {
-  if (!prev || curr.careerApps === prev.careerApps) return;
-  const oldList = safeArray(prev.careerApps);
-  const newList = safeArray(curr.careerApps);
-
-  if (countByField(newList, "stage", "interview") > countByField(oldList, "stage", "interview")) {
-    employeeNotificationsStorage.pushCareer("Interview scheduled", "You have been moved to the interview stage.");
-  }
-  if (countByField(newList, "stage", "offered") > countByField(oldList, "stage", "offered")) {
-    employeeNotificationsStorage.pushCareer("Job offer received", "An employer has sent you a job offer.");
-  }
-  if (countByField(newList, "stage", "rejected") > countByField(oldList, "stage", "rejected")) {
-    employeeNotificationsStorage.pushCareer("Application not selected", "Your application was not selected this time.");
-  }
-}
 
 /* ------------------------------------------------ */
 /* EMPLOYMENT domain detectors (Level 1)            */
@@ -205,10 +202,16 @@ function detectLeaveChanges(curr: Snapshot) {
   const newList = safeArray(curr.leave);
 
   if (countByField(newList, "status", "approved") > countByField(oldList, "status", "approved")) {
-    employeeNotificationsStorage.pushEmployment("Leave approved", "Your leave request has been approved.");
+    employeeNotificationsStorage.pushEmployment(
+      "Leave approved",
+      "Your leave request has been approved.",
+    );
   }
   if (countByField(newList, "status", "rejected") > countByField(oldList, "status", "rejected")) {
-    employeeNotificationsStorage.pushEmployment("Leave not approved", "Your leave request was not approved.");
+    employeeNotificationsStorage.pushEmployment(
+      "Leave not approved",
+      "Your leave request was not approved.",
+    );
   }
 }
 
@@ -232,7 +235,10 @@ function detectRosterChanges(curr: Snapshot) {
   const newList = safeArray(curr.roster);
 
   if (newList.length > oldList.length) {
-    employeeNotificationsStorage.pushEmployment("Schedule updated", "You have been assigned to a new schedule.");
+    employeeNotificationsStorage.pushEmployment(
+      "Schedule updated",
+      "You have been assigned to a new schedule.",
+    );
   }
 }
 
@@ -241,11 +247,20 @@ function detectIncidentChanges(curr: Snapshot) {
   const oldList = safeArray(prev.incidents);
   const newList = safeArray(curr.incidents);
 
-  if (countByField(newList, "status", "investigating") > countByField(oldList, "status", "investigating")) {
-    employeeNotificationsStorage.pushEmployment("Incident update", "Your incident report is being investigated.");
+  if (
+    countByField(newList, "status", "investigating") >
+    countByField(oldList, "status", "investigating")
+  ) {
+    employeeNotificationsStorage.pushEmployment(
+      "Incident update",
+      "Your incident report is being investigated.",
+    );
   }
   if (countByField(newList, "status", "resolved") > countByField(oldList, "status", "resolved")) {
-    employeeNotificationsStorage.pushEmployment("Incident update", "Your incident report has been resolved.");
+    employeeNotificationsStorage.pushEmployment(
+      "Incident update",
+      "Your incident report has been resolved.",
+    );
   }
 }
 
@@ -271,7 +286,7 @@ export function initEmployeeNotificationService(): () => void {
   prev = takeSnapshot();
   initialized = true;
 
-   const EVENTS = [
+  const EVENTS = [
     "wm:employer-shift-posts-changed",
     "wm:employee-shift-applications-changed",
     "wm:employee-shift-workspaces-changed",

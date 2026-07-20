@@ -4,11 +4,11 @@
 
 /* ── Employment Statuses ── */
 export type EmploymentStatus =
-  | "selected"     // Employer offered, employee accepted
-  | "working"      // Employer marked as joined
-  | "notice"       // Employee resigned, notice period active
-  | "resigned"     // Employee resigned, pending employer confirm (no notice / notice ended)
-  | "completed";   // Employment ended (resign confirmed OR terminated), rating unlocked
+  | "selected" // Employer offered, employee accepted
+  | "working" // Employer marked as joined
+  | "notice" // Employee resigned, notice period active
+  | "resigned" // Employee resigned, pending employer confirm (no notice / notice ended)
+  | "completed"; // Employment ended (resign confirmed OR terminated), rating unlocked
 
 /** How the employment ended — null while still active. */
 export type ExitType = "resigned" | "terminated" | null;
@@ -50,7 +50,10 @@ export type EmployerTerminateReason =
   | "misconduct"
   | "other";
 
-export const EMPLOYER_TERMINATE_REASONS: readonly { value: EmployerTerminateReason; label: string }[] = [
+export const EMPLOYER_TERMINATE_REASONS: readonly {
+  value: EmployerTerminateReason;
+  label: string;
+}[] = [
   { value: "performance_issues", label: "Performance issues" },
   { value: "attendance_problems", label: "Attendance problems" },
   { value: "contract_ended", label: "Contract ended" },
@@ -144,29 +147,33 @@ export type StatusBadgeConfig = {
 };
 
 export const STATUS_BADGE_MAP: Readonly<Record<EmploymentStatus, StatusBadgeConfig>> = {
-  selected:  { label: "Selected",             color: "#1d4ed8", bgColor: "rgba(29,78,216,0.08)" },
-  working:   { label: "Currently Working",    color: "#16a34a", bgColor: "rgba(22,163,74,0.08)" },
-  notice:    { label: "Notice Period",         color: "#b45309", bgColor: "rgba(180,83,9,0.08)" },
-  resigned:  { label: "Resignation Pending",   color: "#b45309", bgColor: "rgba(180,83,9,0.08)" },
-  completed: { label: "Completed",             color: "#1d4ed8", bgColor: "rgba(29,78,216,0.08)" },
+  selected: { label: "Joining pending", color: "#1d4ed8", bgColor: "rgba(29,78,216,0.08)" },
+  working: { label: "Currently Working", color: "#16a34a", bgColor: "rgba(22,163,74,0.08)" },
+  notice: { label: "Notice Period", color: "#b45309", bgColor: "rgba(180,83,9,0.08)" },
+  resigned: { label: "Resignation Pending", color: "#b45309", bgColor: "rgba(180,83,9,0.08)" },
+  completed: { label: "Completed", color: "#1d4ed8", bgColor: "rgba(29,78,216,0.08)" },
 };
 
 /** Badge override when completed via termination. */
 export const TERMINATED_BADGE: StatusBadgeConfig = {
-  label: "Terminated", color: "#dc2626", bgColor: "rgba(220,38,38,0.08)",
+  label: "Terminated",
+  color: "#dc2626",
+  bgColor: "rgba(220,38,38,0.08)",
 };
 
 /** Badge override when force-completed by employee (employer unresponsive). */
 export const FORCE_COMPLETED_BADGE: StatusBadgeConfig = {
-  label: "Completed (unconfirmed)", color: "#b45309", bgColor: "rgba(180,83,9,0.08)",
+  label: "Completed (unconfirmed)",
+  color: "#b45309",
+  bgColor: "rgba(180,83,9,0.08)",
 };
 
 /* ── Valid Status Transitions ── */
 export const VALID_TRANSITIONS: Readonly<Record<EmploymentStatus, readonly EmploymentStatus[]>> = {
-  selected:  ["working"],
-  working:   ["notice", "resigned", "completed"],
-  notice:    ["completed", "working"],
-  resigned:  ["completed", "working"],
+  selected: ["working"],
+  working: ["notice", "resigned", "completed"],
+  notice: ["completed", "working"],
+  resigned: ["completed", "working"],
   completed: [],
 } as const;
 

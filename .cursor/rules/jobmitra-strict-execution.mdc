@@ -1,0 +1,50 @@
+---
+alwaysApply: true
+---
+
+# Job Mitra Strict Execution Rules
+
+## Permission Contract
+
+- Never edit, create, rename, move, or delete files without explicit user confirmation.
+- Only work on the exact task requested by the user.
+- Do not implement extra features.
+- Do not refactor unrelated directories.
+- If a file outside the requested scope needs modification, ask the user first.
+- Always explain the reason before requesting file changes.
+- Always show the exact files that must be modified before making changes.
+
+## Layout Safety Rule
+
+- If the user asks for layout, UI, component, page, or CSS changes, first inspect the existing file path and full file content.
+- Do not guess component structure.
+- Do not create replacement UI without checking the current layout.
+- Avoid layout shifts, CLS, full-card blinking, and visual regressions.
+
+## Job Mitra Domain Separation
+
+- Employer Shift Jobs and Employee Career Jobs must remain strictly separate.
+- Never mix Shift job state with Career job state.
+- Never combine Employer Shift Jobs and Employee Career Jobs in the same Zustand slice, same component, or same UI view.
+- Admin features must remain separate from Employer and Employee flows.
+
+## Pulse System Rules
+
+- Pulse is for action-required events only.
+- Bell notification is for information-only events.
+- Do not add full-card blinking.
+- Do not dim text.
+- Do not add right-edge pulse lights.
+- Cards use left-edge pulse.
+- Buttons use outer halo pulse, not left-edge pulse.
+- Pulse logic must stay centralized in the pulse registry and bridge.
+- Components should only use PulseNode or PulseTarget wrappers.
+
+## Code Quality
+
+- Use TypeScript strict patterns.
+- Avoid `any`.
+- Avoid unrelated rewrites.
+- Preserve existing architecture.
+- Prefer small, build-safe patches.
+- After changes, run lint and build.

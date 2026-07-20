@@ -1,9 +1,6 @@
 ﻿// src/shared/components/ConfirmModal.tsx
 import { CenterModal } from "./CenterModal";
 
-/* ------------------------------------------------ */
-/* Types                                            */
-/* ------------------------------------------------ */
 export type ConfirmTone = "danger" | "warn" | "neutral";
 
 export interface ConfirmData {
@@ -21,32 +18,13 @@ interface ConfirmModalProps {
   onCancel: () => void;
 }
 
-/* ------------------------------------------------ */
-/* Tone → confirm button style                      */
-/* ------------------------------------------------ */
-const TONE_BTN_BG: Record<ConfirmTone, string> = {
-  danger: "var(--wm-error, #dc2626)",
-  warn: "var(--wm-warning, #d97706)",
-  neutral: "var(--wm-brand-600, #1d4ed8)",
+const TONE_LABEL: Record<ConfirmTone, string> = {
+  danger: "Final destructive action",
+  warn: "Important confirmation",
+  neutral: "Final approval required",
 };
 
-const TONE_ICON_BG: Record<ConfirmTone, string> = {
-  danger: "rgba(220, 38, 38, 0.08)",
-  warn: "rgba(217, 119, 6, 0.08)",
-  neutral: "rgba(29, 78, 216, 0.08)",
-};
-
-const TONE_ICON_COLOR: Record<ConfirmTone, string> = {
-  danger: "rgba(220, 38, 38, 0.85)",
-  warn: "rgba(217, 119, 6, 0.85)",
-  neutral: "rgba(29, 78, 216, 0.85)",
-};
-
-/* ------------------------------------------------ */
-/* Component                                        */
-/* ------------------------------------------------ */
-export function ConfirmModal(props: ConfirmModalProps) {
-  const { confirm, onConfirm, onCancel } = props;
+export function ConfirmModal({ confirm, onConfirm, onCancel }: ConfirmModalProps) {
   if (!confirm) return null;
 
   const tone = confirm.tone ?? "neutral";
@@ -56,87 +34,79 @@ export function ConfirmModal(props: ConfirmModalProps) {
       open={!!confirm}
       onBackdropClose={onCancel}
       ariaLabel={confirm.title}
+      surface="bare"
     >
-      <div style={{ padding: 16 }}>
-        {/* Icon + Title */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 8,
-              background: TONE_ICON_BG[tone],
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}
-          >
-            {tone === "danger" ? (
-              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-                <path fill={TONE_ICON_COLOR[tone]} d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2Zm1 15h-2v-2h2v2Zm0-4h-2V7h2v6Z" />
-              </svg>
-            ) : tone === "warn" ? (
-              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-                <path fill={TONE_ICON_COLOR[tone]} d="M1 21h22L12 2 1 21Zm12-3h-2v-2h2v2Zm0-4h-2v-4h2v4Z" />
-              </svg>
-            ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-                <path fill={TONE_ICON_COLOR[tone]} d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2Zm1 15h-2v-6h2v6Zm0-8h-2V7h2v2Z" />
-              </svg>
-            )}
+      <div className={`wm-confirmModal wm-confirmModal-${tone}`}>
+        <div className="wm-confirmModalHeader">
+          <div className="wm-confirmModalIcon">
+            <ConfirmIcon tone={tone} />
           </div>
-          <div style={{ fontWeight: 900, fontSize: 14, color: "var(--wm-er-text, #111827)" }}>
-            {confirm.title}
+
+          <div className="wm-confirmModalTitleBlock">
+            <div className="wm-confirmModalEyebrow">{TONE_LABEL[tone]}</div>
+            <div className="wm-confirmModalTitle">{confirm.title}</div>
+            <div className="wm-confirmModalSubtitle">
+              Review the details carefully before continuing.
+            </div>
           </div>
         </div>
 
-       {/* Message (grey card if warning exists) */}
-        <div
-          style={{
-            marginTop: 10,
-            marginLeft: 42,
-            fontSize: 13,
-            color: "var(--wm-er-text, #111827)",
-            fontWeight: 600,
-            lineHeight: 1.6,
-            ...(confirm.warning ? { background: "#f9fafb", borderRadius: 10, padding: 12 } : { color: "var(--wm-er-muted, #6b7280)", fontWeight: 500 }),
-          }}
-        >
-          {confirm.message}
+        <div className="wm-confirmModalSection">
+          <div className="wm-confirmModalSectionLabel">Summary</div>
+          <div className="wm-confirmModalSummary">{confirm.message}</div>
         </div>
 
-        {/* Warning (amber, below summary) */}
         {confirm.warning && (
-          <div style={{ marginTop: 10, marginLeft: 42, fontSize: 12, fontWeight: 600, color: "#d97706", lineHeight: 1.5 }}>
-            ⚠ {confirm.warning}
+          <div className="wm-confirmModalWarning">
+            <div className="wm-confirmModalWarningTitle">Important before publishing</div>
+            <div className="wm-confirmModalWarningText">{confirm.warning}</div>
           </div>
         )}
 
-        {/* Actions */}
-        <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-end", gap: 10 }}>
-          <button className="wm-outlineBtn" type="button" onClick={onCancel}>
+        <div className="wm-confirmModalActions">
+          <button type="button" onClick={onCancel} className="wm-outlineBtn wm-confirmModalCancel">
             {confirm.cancelLabel ?? "Cancel"}
           </button>
+
           <button
             type="button"
             onClick={onConfirm}
-            style={{
-              height: 40,
-              borderRadius: "var(--wm-radius-14, 14px)",
-              border: 0,
-              background: TONE_BTN_BG[tone],
-              padding: "0 16px",
-              fontWeight: 800,
-              fontSize: 13,
-              cursor: "pointer",
-              color: "#fff",
-            }}
+            className="wm-primarybtn wm-confirmModalConfirm"
           >
             {confirm.confirmLabel ?? "Confirm"}
           </button>
         </div>
       </div>
     </CenterModal>
+  );
+}
+
+function ConfirmIcon({ tone }: { tone: ConfirmTone }) {
+  if (tone === "danger") {
+    return (
+      <svg width="23" height="23" viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          fill="currentColor"
+          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2Zm1 15h-2v-2h2v2Zm0-4h-2V7h2v6Z"
+        />
+      </svg>
+    );
+  }
+
+  if (tone === "warn") {
+    return (
+      <svg width="23" height="23" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="currentColor" d="M1 21h22L12 2 1 21Zm12-3h-2v-2h2v2Zm0-4h-2v-4h2v4Z" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg width="23" height="23" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M12 2 4 5.5v6.1c0 5.05 3.41 9.77 8 10.9 4.59-1.13 8-5.85 8-10.9V5.5L12 2Zm3.7 7.7-4.53 4.53L8.3 11.36l1.4-1.41 1.47 1.46 3.12-3.12 1.41 1.41Z"
+      />
+    </svg>
   );
 }

@@ -1,22 +1,22 @@
-// src/features/employer/workforceOps/services/workforceCategoryService.ts
+﻿// src/features/employer/workforceOps/services/workforceCategoryService.ts
 //
 // Category CRUD for Workforce Ops Hub.
 // Manages role categories (Manager, Barman, Runner, etc.)
 
-import type { WorkforceCategory } from "../types/workforceTypes";
+import type { WorkforceCategory } from "../../../../shared/domains/workforce/types/workforceTypes";
 import {
   WF_CATEGORIES_KEY,
   WF_CATEGORIES_CHANGED,
   safeWrite,
   safeDispatch,
   uid,
-} from "../helpers/workforceStorageUtils";
-import { readCategories } from "../helpers/workforceNormalizers";
-import { validateCategoryName } from "../helpers/workforceValidation";
+} from "../../../../shared/domains/workforce/storage/workforceStorageUtils";
+import { readCategories } from "../../../../shared/domains/workforce/helpers/workforceNormalizers";
+import { validateCategoryName } from "../../../../shared/domains/workforce/validation/workforceValidation";
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Default Suggestions
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const DEFAULT_CATEGORY_SUGGESTIONS: readonly string[] = [
   "Supervisor",
@@ -28,9 +28,9 @@ export const DEFAULT_CATEGORY_SUGGESTIONS: readonly string[] = [
   "Other",
 ] as const;
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Internal Helpers
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function read(): WorkforceCategory[] {
   return readCategories(WF_CATEGORIES_KEY);
@@ -41,9 +41,9 @@ function write(categories: WorkforceCategory[]): void {
   safeDispatch(WF_CATEGORIES_CHANGED);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Public API
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const workforceCategoryService = {
   getAll(): WorkforceCategory[] {
@@ -80,23 +80,25 @@ export const workforceCategoryService = {
       return { success: false, errors: validation.errors };
     }
 
-    const updated = existing.map((c) =>
-      c.id === categoryId ? { ...c, name: newName.trim() } : c,
-    );
+    const updated = existing.map((c) => (c.id === categoryId ? { ...c, name: newName.trim() } : c));
     write(updated);
     return { success: true };
   },
 
-  delete(categoryId: string, staffList: { categories: string[] }[], force = false): { success: boolean; assignedCount?: number; errors?: string[] } {
-    const assignedCount = staffList.filter(
-      (s) => s.categories.includes(categoryId),
-    ).length;
+  delete(
+    categoryId: string,
+    staffList: { categories: string[] }[],
+    force = false,
+  ): { success: boolean; assignedCount?: number; errors?: string[] } {
+    const assignedCount = staffList.filter((s) => s.categories.includes(categoryId)).length;
 
     if (assignedCount > 0 && !force) {
       return {
         success: false,
         assignedCount,
-        errors: [`${assignedCount} staff member${assignedCount !== 1 ? "s are" : " is"} assigned to this category.`],
+        errors: [
+          `${assignedCount} staff member${assignedCount !== 1 ? "s are" : " is"} assigned to this category.`,
+        ],
       };
     }
 

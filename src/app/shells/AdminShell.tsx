@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { roleStorage, type AppRole } from "../storage/roleStorage";
+import { logoutApp, postLogoutRoute } from "../../shared/auth/logoutApp";
 import { ROUTE_PATHS } from "../router/routePaths";
 
 function IconBack() {
@@ -86,8 +87,9 @@ export function AdminShell() {
   }
 
   function handleLogout() {
-    roleStorage.clear();
-    nav(ROUTE_PATHS.landing, { replace: true });
+    void logoutApp().then(() => {
+      nav(postLogoutRoute(), { replace: true });
+    });
   }
 
   const currentHash = window.location.hash;
@@ -95,8 +97,18 @@ export function AdminShell() {
   return (
     <div className="wm-shellRoot wm-shellAdmin">
       <div className="wm-topbar wm-admin-topbar">
-        <div className="wm-topbarActions" aria-label="Left navigation" style={{ display: "flex", gap: 10 }}>
-          <button className="wm-iconbtn" type="button" aria-label="Back" title="Back" onClick={goBack}>
+        <div
+          className="wm-topbarActions"
+          aria-label="Left navigation"
+          style={{ display: "flex", gap: 10 }}
+        >
+          <button
+            className="wm-iconbtn"
+            type="button"
+            aria-label="Back"
+            title="Back"
+            onClick={goBack}
+          >
             <IconBack />
           </button>
         </div>
@@ -111,11 +123,27 @@ export function AdminShell() {
           </p>
         </div>
 
-        <div className="wm-topbarActions" aria-label="Top actions" style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <button className="wm-iconbtn" type="button" aria-label="Home" title="Home" onClick={goHome}>
+        <div
+          className="wm-topbarActions"
+          aria-label="Top actions"
+          style={{ display: "flex", gap: 10, alignItems: "center" }}
+        >
+          <button
+            className="wm-iconbtn"
+            type="button"
+            aria-label="Home"
+            title="Home"
+            onClick={goHome}
+          >
             <IconHome />
           </button>
-          <button className="wm-iconbtn" type="button" aria-label="Logout" title="Logout" onClick={handleLogout}>
+          <button
+            className="wm-iconbtn"
+            type="button"
+            aria-label="Logout"
+            title="Logout"
+            onClick={handleLogout}
+          >
             <IconLogout />
           </button>
         </div>
@@ -156,7 +184,7 @@ export function AdminShell() {
 
       <div className="wm-ad-tabDivider" />
 
-      <div className="wm-container" style={{ padding: "16px 16px 32px" }}>
+      <div className="wm-container">
         <Outlet />
       </div>
     </div>

@@ -1,24 +1,23 @@
-﻿/** Job Mitra | EmployerSettingsPage.tsx | C:\projects\WorkMitra_Enterprise_v2\src\features\employer\company\pages\EmployerSettingsPage.tsx */
+/** Job Mitra | EmployerSettingsPage.tsx (Phase 3 — Premium Settings Dashboard)
+ *  Controls: Account & Security, Notifications & Navigation, Sound & Haptics,
+ *  Preferences, Export/Import, Help, Danger Zone.
+ *  Identity/profile moved to /employer/profile.
+ */
 
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { roleStorage } from "../../../../app/storage/roleStorage";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
-import {
-  employerSettingsStorage,
-  type EmployerProfile,
-} from "../storage/employerSettings.storage";
+import { employerSettingsStorage, type EmployerProfile } from "../storage/employerSettings.storage";
 import { ConfirmModal, type ConfirmData } from "../../../../shared/components/ConfirmModal";
 import { NoticeModal, type NoticeData } from "../../../../shared/components/NoticeModal";
-
-import { CompanyProfileSection, AccountInfoSection } from "../components/SettingsProfileSections";
-import {
-  PreferencesSection,
-  DangerZoneSection,
-} from "../components/SettingsActionSections";
 import { DeleteAccountModal } from "../components/DeleteAccountModal";
 import { ExportImportSection } from "../../../../shared/components/ExportImportSection";
-import { IconEdit } from "../helpers/settingsIcons";
+import { IconEdit, IconCompany } from "../helpers/settingsIcons";
+import { PreferencesSection, DangerZoneSection } from "../components/SettingsActionSections";
+import { EmployerSettingsAccountSection } from "../components/EmployerSettingsAccountSection";
+import { EmployerSettingsNotificationsSection } from "../components/EmployerSettingsNotificationsSection";
+import { EmployerSettingsHapticsSection } from "../components/EmployerSettingsHapticsSection";
 
 export function EmployerSettingsPage() {
   const nav = useNavigate();
@@ -33,12 +32,9 @@ export function EmployerSettingsPage() {
 
   const d = editMode ? draft : profile;
 
-  const updateDraft = useCallback(
-    (field: keyof EmployerProfile, value: string | boolean) => {
-      setDraft((prev) => ({ ...prev, [field]: value }));
-    },
-    [],
-  );
+  const updateDraft = useCallback((field: keyof EmployerProfile, value: string | boolean) => {
+    setDraft((prev) => ({ ...prev, [field]: value }));
+  }, []);
 
   function handleEdit(): void {
     setDraft({ ...profile });
@@ -74,8 +70,8 @@ export function EmployerSettingsPage() {
     setDraft(saved);
     setEditMode(false);
     setNotice({
-      title: "Profile Saved",
-      message: "Your employer profile has been saved successfully.",
+      title: "Settings Saved",
+      message: "Your settings have been saved.",
       tone: "success",
     });
   }
@@ -93,6 +89,7 @@ export function EmployerSettingsPage() {
 
   return (
     <div>
+      {/* Page header */}
       <div className="wm-pageHead">
         <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1 }}>
           <div
@@ -110,14 +107,15 @@ export function EmployerSettingsPage() {
             }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-              <path fill="currentColor" d="M19.14 12.94a7.07 7.07 0 0 0 .06-.94c0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87a.48.48 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.26.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.03-1.58ZM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2Z" />
+              <path
+                fill="currentColor"
+                d="M19.14 12.94a7.07 7.07 0 0 0 .06-.94c0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87a.48.48 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.26.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.03-1.58ZM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2Z"
+              />
             </svg>
           </div>
           <div>
-            <div className="wm-pageTitle">Employer Settings</div>
-            <div className="wm-pageSub">
-              Manage your company profile, account, and preferences.
-            </div>
+            <div className="wm-pageTitle">App Settings</div>
+            <div className="wm-pageSub">Notifications, preferences, and account control.</div>
           </div>
         </div>
 
@@ -169,62 +167,125 @@ export function EmployerSettingsPage() {
         )}
       </div>
 
-      {profile.uniqueId && (
+      {/* Navigate to Company Profile (Identity) */}
+      <button
+        type="button"
+        onClick={() => nav(ROUTE_PATHS.employerProfile)}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 14,
+          width: "100%",
+          marginTop: 12,
+          padding: "14px 16px",
+          borderRadius: 16,
+          background: "rgba(124,58,237,0.04)",
+          border: "1px solid rgba(124,58,237,0.15)",
+          cursor: "pointer",
+          textAlign: "left",
+        }}
+      >
         <div
           style={{
-            marginTop: 12,
-            padding: "12px 16px",
-            borderRadius: "var(--wm-radius-14)",
-            border: "1px solid rgba(124,58,237,0.15)",
-            background: "rgba(124,58,237,0.04)",
+            width: 40,
+            height: 40,
+            borderRadius: 11,
+            background: "rgba(124,58,237,0.1)",
+            color: "var(--wm-er-accent-hr, #7c3aed)",
             display: "flex",
-            justifyContent: "space-between",
             alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
           }}
         >
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 600, color: "var(--wm-er-muted)", letterSpacing: 0.5 }}>
-              Your Job Mitra ID
-            </div>
-            <div style={{ marginTop: 2, fontSize: 15, fontWeight: 700, fontFamily: "monospace", color: "var(--wm-er-accent-hr, #7c3aed)" }}>
-              {profile.uniqueId}
-            </div>
-          </div>
-          <span style={{ fontSize: 10, fontWeight: 600, padding: "3px 8px", borderRadius: 8, background: "rgba(124,58,237,0.08)", color: "var(--wm-er-accent-hr)" }}>
-            Permanent
-          </span>
+          <IconCompany />
         </div>
-      )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-er-accent-hr, #7c3aed)" }}>
+            Company Profile
+          </div>
+          <div style={{ fontSize: 12, color: "var(--wm-er-muted)", marginTop: 2, fontWeight: 500 }}>
+            Identity, branding, logo, location
+          </div>
+        </div>
+        <span style={{ fontSize: 18, color: "var(--wm-er-muted)", flexShrink: 0 }}>›</span>
+      </button>
 
-      <CompanyProfileSection data={d} editMode={editMode} onFieldChange={updateDraft} />
-      <AccountInfoSection data={d} editMode={editMode} onFieldChange={updateDraft} />
+      {/* Account & Security */}
+      <EmployerSettingsAccountSection
+        onLogoutAllDevices={() =>
+          setNotice({
+            title: "Sessions cleared",
+            message: "All other devices have been signed out (demo). This device remains active.",
+            tone: "success",
+          })
+        }
+      />
+
+      {/* Notifications & Navigation (includes Pulse toggle) */}
+      <EmployerSettingsNotificationsSection
+        data={d}
+        editMode={editMode}
+        onFieldChange={updateDraft}
+      />
+
+      {/* Sound & Haptics */}
+      <EmployerSettingsHapticsSection data={d} editMode={editMode} onFieldChange={updateDraft} />
+
+      {/* Preferences */}
       <PreferencesSection data={d} editMode={editMode} onFieldChange={updateDraft} />
+
       <ExportImportSection />
 
+      {/* Help & Legal */}
       <div className="wm-er-card" style={{ marginTop: 12 }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-er-text)" }}>Help & Legal</div>
+        <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-er-text)" }}>
+          Help &amp; Legal
+        </div>
         <div style={{ marginTop: 8, display: "grid", gap: 4 }}>
           <button
             type="button"
             onClick={() => {
               window.location.hash = "#/employer/help";
             }}
-            style={{ background: "none", border: "none", padding: "8px 0", textAlign: "left", fontSize: 13, fontWeight: 600, color: "var(--wm-er-accent-hr)", cursor: "pointer" }}
+            style={{
+              background: "none",
+              border: "none",
+              padding: "8px 0",
+              textAlign: "left",
+              fontSize: 13,
+              fontWeight: 600,
+              color: "var(--wm-er-accent-hr)",
+              cursor: "pointer",
+            }}
           >
-            Help & Support →
+            Help &amp; Support →
           </button>
           <button
             type="button"
-            onClick={() => window.open("https://jibi-design.github.io/workmitra-privacy/", "_blank")}
-            style={{ background: "none", border: "none", padding: "8px 0", textAlign: "left", fontSize: 13, fontWeight: 600, color: "var(--wm-er-muted)", cursor: "pointer" }}
+            onClick={() =>
+              window.open("https://jibi-design.github.io/workmitra-privacy/", "_blank")
+            }
+            style={{
+              background: "none",
+              border: "none",
+              padding: "8px 0",
+              textAlign: "left",
+              fontSize: 13,
+              fontWeight: 600,
+              color: "var(--wm-er-muted)",
+              cursor: "pointer",
+            }}
           >
             Privacy Policy →
           </button>
         </div>
       </div>
 
+      {/* Danger Zone */}
       <DangerZoneSection onDeleteAccount={handleDeleteAccount} />
 
+      {/* Modals */}
       <NoticeModal notice={notice} onClose={() => setNotice(null)} />
       <ConfirmModal
         confirm={confirm}

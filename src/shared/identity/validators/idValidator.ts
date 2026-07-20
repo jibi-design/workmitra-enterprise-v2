@@ -1,9 +1,9 @@
-/** Job Mitra | idValidator.ts | C:\projects\WorkMitra_Enterprise_v2\src\shared\identity\validators\idValidator.ts */
+/** Job Mitra | idValidator.ts — validates ML / legacy JM / WM IDs */
 
 import {
   ID_CHARSET,
   ID_PREFIX,
-  LEGACY_ID_PREFIX,
+  LEGACY_ID_PREFIXES,
   ID_SEPARATOR,
   ID_BLOCK_LENGTH,
   ID_NAME_BLOCK_LENGTH,
@@ -11,20 +11,35 @@ import {
 } from "../constants/idConstants";
 import type { IdValidationResult } from "../types/identityTypes";
 
-function recomputeCheckChar(block1: string, nameBlock: string, block3Partial: string): string {
+function recomputeLegacyCheckChar(
+  block1: string,
+  nameBlock: string,
+  block3Partial: string,
+): string {
   const raw = block1 + nameBlock + block3Partial;
   let sum = 0;
   for (let i = 0; i < raw.length; i++) {
-    const charIndex = ID_CHARSET.indexOf(raw[i]);
+    const ch = raw[i] === "I" ? "J" : raw[i] === "O" ? "P" : raw[i];
+    const charIndex = ID_CHARSET.indexOf(ch);
     const safeIndex = charIndex >= 0 ? charIndex : 0;
     sum += safeIndex * (i + 1);
   }
   return ID_CHARSET[sum % ID_CHARSET.length];
 }
 
+function validateCharset(block: string, allowLegacyIo = false): string | null {
+  const LEGACY_CHARS = "IO";
+  for (const ch of block) {
+    if (!ID_CHARSET.includes(ch) && !(allowLegacyIo && LEGACY_CHARS.includes(ch))) {
+      return `Invalid character "${ch}" found in ID.`;
+    }
+  }
+  return null;
+}
+
 /**
- * Validates a Job Mitra unique ID.
- * Backward compatible: accepts both JM and legacy WM prefixes.
+ * Validates a Mitra Labs unique ID.
+ * ML IDs use fully random outer blocks; JM/WM legacy IDs retain check-digit block 3.
  */
 export function validateId(id: string): IdValidationResult {
   if (!id || typeof id !== "string") {
@@ -45,8 +60,14 @@ export function validateId(id: string): IdValidationResult {
 
   const [prefix, block1, nameBlock, block3] = parts;
 
-  if (prefix !== ID_PREFIX && prefix !== LEGACY_ID_PREFIX) {
-    return { valid: false, reason: `ID must start with "${ID_PREFIX}" or "${LEGACY_ID_PREFIX}".` };
+  if (
+    prefix !== ID_PREFIX &&
+    !LEGACY_ID_PREFIXES.includes(prefix as (typeof LEGACY_ID_PREFIXES)[number])
+  ) {
+    return {
+      valid: false,
+      reason: `ID must start with "${ID_PREFIX}" or a legacy prefix (${LEGACY_ID_PREFIXES.join(", ")}).`,
+    };
   }
 
   if (block1.length !== ID_BLOCK_LENGTH) {
@@ -61,24 +82,38 @@ export function validateId(id: string): IdValidationResult {
     return { valid: false, reason: `Block 3 must be ${ID_BLOCK_LENGTH} characters.` };
   }
 
-  const LEGACY_CHARS = "IO";
-  const allChars = block1 + nameBlock + block3;
-  for (const ch of allChars) {
-    if (!ID_CHARSET.includes(ch) && !LEGACY_CHARS.includes(ch)) {
-      return { valid: false, reason: `Invalid character "${ch}" found in ID.` };
-    }
+  const isLegacy = prefix !== ID_PREFIX;
+
+  const block1Error = validateCharset(block1);
+  if (block1Error) {
+    return { valid: false, reason: block1Error };
   }
 
-  const block3Partial = block3.slice(0, ID_BLOCK_LENGTH - 1);
-  const providedCheck = block3[ID_BLOCK_LENGTH - 1];
-  const expectedCheck = recomputeCheckChar(block1, nameBlock, block3Partial);
+  const nameBlockError = validateCharset(nameBlock, true);
+  if (nameBlockError) {
+    return { valid: false, reason: nameBlockError };
+  }
 
-  const normalizedNameBlock = nameBlock.replace(/I/g, "J").replace(/O/g, "P");
-  const normalizedBlock3Partial = block3Partial.replace(/I/g, "J").replace(/O/g, "P");
-  const normalizedCheck = recomputeCheckChar(block1, normalizedNameBlock, normalizedBlock3Partial);
+  const block3Error = validateCharset(block3, isLegacy);
+  if (block3Error) {
+    return { valid: false, reason: block3Error };
+  }
 
-  if (providedCheck !== expectedCheck && providedCheck !== normalizedCheck) {
-    return { valid: false, reason: "Check digit mismatch. Please verify the ID for typos." };
+  if (isLegacy) {
+    const block3Partial = block3.slice(0, ID_BLOCK_LENGTH - 1);
+    const providedCheck = block3[ID_BLOCK_LENGTH - 1];
+    const expectedCheck = recomputeLegacyCheckChar(block1, nameBlock, block3Partial);
+    const normalizedNameBlock = nameBlock.replace(/I/g, "J").replace(/O/g, "P");
+    const normalizedBlock3Partial = block3Partial.replace(/I/g, "J").replace(/O/g, "P");
+    const normalizedCheck = recomputeLegacyCheckChar(
+      block1,
+      normalizedNameBlock,
+      normalizedBlock3Partial,
+    );
+
+    if (providedCheck !== expectedCheck && providedCheck !== normalizedCheck) {
+      return { valid: false, reason: "Check digit mismatch. Please verify the ID for typos." };
+    }
   }
 
   return { valid: true };

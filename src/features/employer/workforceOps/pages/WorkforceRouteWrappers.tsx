@@ -1,4 +1,4 @@
-// src/features/employer/workforceOps/pages/WorkforceRouteWrappers.tsx
+﻿// src/features/employer/workforceOps/pages/WorkforceRouteWrappers.tsx
 //
 // Router wrapper components for Workforce pages that require props.
 // Extracts route params and provides navigation callbacks.
@@ -15,9 +15,9 @@ import { EmployeeWorkforceAnnounceDetailPage } from "../../../employee/workforce
 import { EmployeeWorkforceGroupPage } from "../../../employee/workforceOps/pages/EmployeeWorkforceGroupPage";
 import { EmployeeWorkforceTimesheetPage } from "../../../employee/workforceOps/pages/EmployeeWorkforceTimesheetPage";
 
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Employer Wrappers                                                          */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 export function EmployerAnnouncementsListWrapper() {
   const nav = useNavigate();
@@ -32,12 +32,7 @@ export function EmployerAnnouncementsListWrapper() {
 
 export function EmployerAnnounceCreateWrapper() {
   const nav = useNavigate();
-  return (
-    <EmployerWorkforceAnnouncePage
-      onBack={() => nav(-1)}
-      onCreated={() => nav(-1)}
-    />
-  );
+  return <EmployerWorkforceAnnouncePage onBack={() => nav(-1)} onCreated={() => nav(-1)} />;
 }
 
 export function EmployerAnnounceDashWrapper() {
@@ -67,29 +62,19 @@ export function EmployerGroupDetailWrapper() {
   const { groupId } = useParams<{ groupId: string }>();
   const nav = useNavigate();
   if (!groupId) return null;
-  return (
-    <EmployerWorkforceGroupPage
-      groupId={groupId}
-      onBack={() => nav(-1)}
-    />
-  );
+  return <EmployerWorkforceGroupPage groupId={groupId} onBack={() => nav(-1)} />;
 }
 
 export function EmployerStaffDetailWrapper() {
   const { staffId } = useParams<{ staffId: string }>();
   const nav = useNavigate();
   if (!staffId) return null;
-  return (
-    <EmployerWorkforceStaffDetailPage
-      staffId={staffId}
-      onBack={() => nav(-1)}
-    />
-  );
+  return <EmployerWorkforceStaffDetailPage staffId={staffId} onBack={() => nav(-1)} />;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Employee Wrappers                                                          */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 export function EmployeeCompanyWrapper() {
   const nav = useNavigate();
@@ -107,28 +92,18 @@ export function EmployeeAnnounceDetailWrapper() {
   const nav = useNavigate();
   if (!announcementId) return null;
   return (
-    <EmployeeWorkforceAnnounceDetailPage
-      announcementId={announcementId}
-      onBack={() => nav(-1)}
-    />
+    <EmployeeWorkforceAnnounceDetailPage announcementId={announcementId} onBack={() => nav(-1)} />
   );
 }
 
 export function EmployeeTimesheetWrapper() {
   const nav = useNavigate();
-  return (
-    <EmployeeWorkforceTimesheetPage onBack={() => nav(-1)} />
-  );
+  return <EmployeeWorkforceTimesheetPage onBack={() => nav(-1)} />;
 }
 
 export function EmployeeGroupWrapper() {
   const { groupId } = useParams<{ groupId: string }>();
   const nav = useNavigate();
   if (!groupId) return null;
-  return (
-    <EmployeeWorkforceGroupPage
-      groupId={groupId}
-      onBack={() => nav(-1)}
-    />
-  );
+  return <EmployeeWorkforceGroupPage groupId={groupId} onBack={() => nav(-1)} />;
 }

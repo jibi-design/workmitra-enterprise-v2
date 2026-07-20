@@ -1,0 +1,382 @@
+/* src/app/theme/components/motion.css — Shared motion utilities and keyframes */
+
+/*
+  Physics & Motion Engine — Step 2.3
+  Canonical spring: var(--wm-motion-spring) = cubic-bezier(0.16, 1, 0.3, 1)
+  Do not override with inline bezier curves in feature components.
+*/
+
+/* ------------------------------------------------ */
+/* Press physics — Golden Rulebook Step 3           */
+/* ------------------------------------------------ */
+.wm-press-btn {
+  transition:
+    transform var(--wm-motion-fast) var(--wm-motion-spring),
+    box-shadow var(--wm-motion-base) var(--wm-motion-spring),
+    border-color var(--wm-motion-base) var(--wm-motion-spring),
+    background var(--wm-motion-base) var(--wm-motion-spring),
+    color var(--wm-motion-base) var(--wm-motion-spring),
+    opacity var(--wm-motion-base) var(--wm-motion-spring);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.wm-press-btn:active {
+  transform: scale(0.96);
+}
+
+.wm-press-card {
+  transition:
+    transform var(--wm-motion-base) var(--wm-motion-spring),
+    box-shadow var(--wm-motion-base) var(--wm-motion-spring),
+    border-color var(--wm-motion-base) var(--wm-motion-spring),
+    background var(--wm-motion-base) var(--wm-motion-spring);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.wm-press-card:active {
+  transform: scale(0.98);
+}
+
+.wm-pressable {
+  transition:
+    transform var(--wm-motion-base) var(--wm-motion-spring),
+    box-shadow var(--wm-motion-base) var(--wm-motion-spring);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.wm-pressable:active {
+  transform: scale(0.98);
+}
+
+/* ------------------------------------------------ */
+/* Entry animations                                 */
+/* ------------------------------------------------ */
+.wm-animateIn {
+  animation: wm-slideUp var(--wm-motion-slow) var(--wm-motion-spring) both;
+}
+
+.wm-animateScaleIn {
+  animation: wm-scaleIn var(--wm-motion-base) var(--wm-motion-spring) both;
+}
+
+.wm-pulseSoft {
+  animation: wm-pulseSoft 1.8s var(--wm-motion-ease) infinite;
+}
+
+/* ------------------------------------------------ */
+/* Shared keyframes                                 */
+/* ------------------------------------------------ */
+@keyframes wm-fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes wm-scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes wm-slideUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes wm-toastIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes wm-pulseSoft {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.16);
+  }
+
+  50% {
+    box-shadow: 0 0 0 7px rgba(22, 163, 74, 0);
+  }
+}
+
+@keyframes wm-skeleton {
+  from {
+    background-position: 220% 0;
+  }
+
+  to {
+    background-position: -220% 0;
+  }
+}
+
+/* ------------------------------------------------ */
+/* Breathing Light System — keyframe & utilities    */
+/* ------------------------------------------------ */
+
+@keyframes wm-breathe {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+.wm-breathe {
+  animation: wm-breathe 3.5s ease-in-out infinite;
+}
+
+/* ------------------------------------------------ */
+/* Action complete — save / apply feedback          */
+/* ------------------------------------------------ */
+
+/* Transient success morph (~1.2s) — Save actions */
+.wm-actionDone {
+  position: relative;
+  overflow: hidden;
+  pointer-events: none;
+  animation: wm-actionDoneMorph 1.2s var(--wm-motion-spring) both;
+}
+
+.wm-actionDone .wm-actionDone__label {
+  opacity: 0;
+  transition: opacity var(--wm-motion-fast) var(--wm-motion-spring);
+}
+
+.wm-actionDone::after {
+  content: "✓";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 900;
+  color: #fff;
+  opacity: 0;
+  transform: scale(0.72);
+  animation: wm-actionDoneCheck 1.2s var(--wm-motion-spring) both;
+}
+
+/* Persistent applied state — Quick Apply */
+.wm-actionLocked.wm-primarybtn,
+.wm-actionLocked.wm-outlineBtn {
+  background: linear-gradient(180deg, #22c55e, #16a34a) !important;
+  color: #fff !important;
+  border-color: rgba(22, 163, 74, 0.35) !important;
+  opacity: 1 !important;
+  cursor: default !important;
+  box-shadow: 0 8px 18px rgba(22, 163, 74, 0.22) !important;
+}
+
+/* Section/card success shimmer (600ms) */
+.wm-saveFlash {
+  position: relative;
+  overflow: hidden;
+  animation: wm-saveFlashBorder 600ms var(--wm-motion-spring) both;
+}
+
+.wm-saveFlash::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(16, 185, 129, 0) 38%,
+    rgba(16, 185, 129, 0.28) 50%,
+    rgba(16, 185, 129, 0) 62%,
+    transparent 100%
+  );
+  transform: translateX(-120%);
+  animation: wm-saveFlashSweep 600ms var(--wm-motion-spring) both;
+}
+
+/* Auto-save micro pop (~280ms) */
+.wm-popSaved {
+  animation: wm-popSaved 280ms var(--wm-motion-spring) both;
+}
+
+/* Delete collapse — Phase 2 only (utility built, not wired yet) */
+.wm-collapseOut {
+  animation: wm-collapseOut 300ms var(--wm-motion-spring) forwards;
+  transform-origin: top center;
+}
+
+@keyframes wm-actionDoneMorph {
+  0% {
+    transform: scale(1);
+    background: inherit;
+  }
+
+  18% {
+    transform: scale(0.96);
+  }
+
+  42% {
+    transform: scale(1);
+    min-width: 2.5rem;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #22c55e, #16a34a);
+    border-color: rgba(22, 163, 74, 0.35);
+    box-shadow: 0 8px 18px rgba(22, 163, 74, 0.24);
+  }
+
+  72% {
+    transform: scale(1);
+    background: linear-gradient(180deg, #22c55e, #16a34a);
+  }
+
+  100% {
+    transform: scale(1);
+    background: linear-gradient(180deg, #22c55e, #16a34a);
+  }
+}
+
+@keyframes wm-actionDoneCheck {
+  0%,
+  28% {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+
+  48%,
+  78% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes wm-saveFlashBorder {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+
+  35% {
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.32);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes wm-saveFlashSweep {
+  0% {
+    transform: translateX(-120%);
+    opacity: 0;
+  }
+
+  28% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+}
+
+@keyframes wm-popSaved {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+
+  45% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.34);
+  }
+
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes wm-collapseOut {
+  0% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+}
+
+/* ------------------------------------------------ */
+/* Reduced motion safety                            */
+/* ------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  .wm-modal-backdrop,
+  .wm-modal-card,
+  .wm-confirmModal,
+  .wm-globalToast,
+  .wm-animateIn,
+  .wm-animateScaleIn,
+  .wm-pulseSoft,
+  .wm-skeleton,
+  .wm-breathe,
+  .wm-actionDone,
+  .wm-actionLocked,
+  .wm-saveFlash,
+  .wm-popSaved,
+  .wm-collapseOut,
+  .wm-press-btn,
+  .wm-press-card,
+  .wm-pressable {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .wm-saveFlash::after,
+  .wm-actionDone::after {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .wm-press-btn:active,
+  .wm-press-card:active,
+  .wm-pressable:active {
+    transform: none !important;
+  }
+}

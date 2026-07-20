@@ -1,15 +1,12 @@
-// src/features/employee/home/components/EmployeeHomeCards.tsx
-//
-// Barrel re-export — preserves all existing imports unchanged.
-// Split into: EmployeeJobCards.tsx + EmployeeStatusCards.tsx
+// App name: Job Mitra
+// File name: EmployeeHomeCards.tsx
+// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\home\components\EmployeeHomeCards.tsx
 
-export {
-  ShiftJobsCard,
-  CareerJobsCard,
-} from "./EmployeeJobCards";
+export { ShiftJobsCard, GigProjectsCard, CareerJobsCard } from "./EmployeeJobCards";
 
 export {
   CurrentEmploymentCard,
+  WorkforceCard,
   WorkVaultCard,
   InsightsCard,
   SimpleModal,

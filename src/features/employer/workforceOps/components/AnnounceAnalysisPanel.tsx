@@ -1,7 +1,7 @@
-// src/features/employer/workforceOps/components/AnnounceAnalysisPanel.tsx
+﻿// src/features/employer/workforceOps/components/AnnounceAnalysisPanel.tsx
 //
 // Analysis panel for Announcement Dashboard.
-// Groups applications by category × shift, ranks by rating.
+// Groups applications by category Ã— shift, ranks by rating.
 // Provides auto-select (best candidates) and manual override.
 
 import { useMemo, useCallback } from "react";
@@ -9,13 +9,13 @@ import { workforceCategoryService } from "../services/workforceCategoryService";
 import type {
   WorkforceAnnouncement,
   WorkforceApplication,
-} from "../types/workforceTypes";
+} from "../../../../shared/domains/workforce/types/workforceTypes";
 import { AnnounceApplicationCard } from "./AnnounceApplicationCard";
-import { AMBER, AMBER_BG } from "./workforceStyles";
+import { AMBER, AMBER_BG } from "../../../../shared/domains/workforce/ui/workforceStyles";
 
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Props                                                                      */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 type Props = {
   announcement: WorkforceAnnouncement;
@@ -24,11 +24,16 @@ type Props = {
   onAutoSelect: () => void;
 };
 
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Component                                                                  */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
-export function AnnounceAnalysisPanel({ announcement, applications, onUpdateStatus, onAutoSelect }: Props) {
+export function AnnounceAnalysisPanel({
+  announcement,
+  applications,
+  onUpdateStatus,
+  onAutoSelect,
+}: Props) {
   const categories = useMemo(() => workforceCategoryService.getAll(), []);
   const categoryMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -36,7 +41,7 @@ export function AnnounceAnalysisPanel({ announcement, applications, onUpdateStat
     return map;
   }, [categories]);
 
-  /* ── Group applications by category × shift, ranked by rating ── */
+  /* â”€â”€ Group applications by category Ã— shift, ranked by rating â”€â”€ */
   const grouped = useMemo(() => {
     const result: Array<{
       categoryId: string;
@@ -74,7 +79,7 @@ export function AnnounceAnalysisPanel({ announcement, applications, onUpdateStat
     return result;
   }, [announcement, applications, categoryMap]);
 
-  /* ── Summary stats ── */
+  /* â”€â”€ Summary stats â”€â”€ */
   const stats = useMemo(() => {
     const total = applications.length;
     const selected = applications.filter((a) => a.status === "selected").length;
@@ -84,17 +89,26 @@ export function AnnounceAnalysisPanel({ announcement, applications, onUpdateStat
     return { total, selected, waiting, rejected, pending };
   }, [applications]);
 
-  const handleSelect = useCallback((appId: string) => {
-    onUpdateStatus(appId, "selected");
-  }, [onUpdateStatus]);
+  const handleSelect = useCallback(
+    (appId: string) => {
+      onUpdateStatus(appId, "selected");
+    },
+    [onUpdateStatus],
+  );
 
-  const handleReject = useCallback((appId: string) => {
-    onUpdateStatus(appId, "not_selected");
-  }, [onUpdateStatus]);
+  const handleReject = useCallback(
+    (appId: string) => {
+      onUpdateStatus(appId, "not_selected");
+    },
+    [onUpdateStatus],
+  );
 
-  const handleWaiting = useCallback((appId: string) => {
-    onUpdateStatus(appId, "waiting");
-  }, [onUpdateStatus]);
+  const handleWaiting = useCallback(
+    (appId: string) => {
+      onUpdateStatus(appId, "waiting");
+    },
+    [onUpdateStatus],
+  );
 
   const isAnalyzing = announcement.status === "analyzing";
 
@@ -121,7 +135,9 @@ export function AnnounceAnalysisPanel({ announcement, applications, onUpdateStat
             }}
           >
             <div style={{ fontSize: 16, fontWeight: 900, color: item.color }}>{item.value}</div>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "var(--wm-er-muted)" }}>{item.label}</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "var(--wm-er-muted)" }}>
+              {item.label}
+            </div>
           </div>
         ))}
       </div>
@@ -141,23 +157,34 @@ export function AnnounceAnalysisPanel({ announcement, applications, onUpdateStat
       {/* No Applications */}
       {applications.length === 0 && (
         <div className="wm-er-card" style={{ textAlign: "center", padding: 24 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-er-text)" }}>No applications yet</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-er-text)" }}>
+            No applications yet
+          </div>
           <div style={{ fontSize: 12, color: "var(--wm-er-muted)", marginTop: 4 }}>
             Staff in the selected categories will be notified. Applications will appear here.
           </div>
         </div>
       )}
 
-      {/* Grouped by Category × Shift */}
+      {/* Grouped by Category Ã— Shift */}
       {grouped.map((group) => (
         <div key={`${group.categoryId}-${group.shiftId}`} className="wm-er-card">
           {/* Group Header */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 10,
+            }}
+          >
             <div>
-              <div style={{ fontSize: 13, fontWeight: 800, color: AMBER }}>{group.categoryName}</div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: AMBER }}>
+                {group.categoryName}
+              </div>
               <div style={{ fontSize: 11, color: "var(--wm-er-muted)" }}>
-                {group.shiftName} · {group.selectedCount}/{group.vacancy} selected
-                {group.waitingCount > 0 && ` · ${group.waitingCount} waiting`}
+                {group.shiftName} Â· {group.selectedCount}/{group.vacancy} selected
+                {group.waitingCount > 0 && ` Â· ${group.waitingCount} waiting`}
               </div>
             </div>
 
@@ -176,7 +203,14 @@ export function AnnounceAnalysisPanel({ announcement, applications, onUpdateStat
           </div>
 
           {/* Progress Bar */}
-          <div style={{ height: 4, borderRadius: 2, background: "var(--wm-er-border)", marginBottom: 10 }}>
+          <div
+            style={{
+              height: 4,
+              borderRadius: 2,
+              background: "var(--wm-er-border)",
+              marginBottom: 10,
+            }}
+          >
             <div
               style={{
                 height: "100%",
@@ -206,7 +240,14 @@ export function AnnounceAnalysisPanel({ announcement, applications, onUpdateStat
               ))}
             </div>
           ) : (
-            <div style={{ fontSize: 12, color: "var(--wm-er-muted)", textAlign: "center", padding: 12 }}>
+            <div
+              style={{
+                fontSize: 12,
+                color: "var(--wm-er-muted)",
+                textAlign: "center",
+                padding: 12,
+              }}
+            >
               No applications for this shift yet
             </div>
           )}
@@ -215,7 +256,16 @@ export function AnnounceAnalysisPanel({ announcement, applications, onUpdateStat
 
       {/* Hint for non-analyzing status */}
       {!isAnalyzing && applications.length > 0 && (
-        <div style={{ padding: 10, borderRadius: 8, background: AMBER_BG, fontSize: 12, color: AMBER, textAlign: "center" }}>
+        <div
+          style={{
+            padding: 10,
+            borderRadius: 8,
+            background: AMBER_BG,
+            fontSize: 12,
+            color: AMBER,
+            textAlign: "center",
+          }}
+        >
           Change status to "Analyzing" to select and manage applicants.
         </div>
       )}

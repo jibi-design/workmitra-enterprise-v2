@@ -16,11 +16,7 @@ import {
   CAREER_WORKSPACES_CHANGED,
 } from "./careerStorageUtils";
 
-import {
-  readCareerPosts,
-  readCareerApps,
-  readCareerActivityAll,
-} from "./careerNormalizers";
+import { readCareerPosts, readCareerApps, readCareerActivityAll } from "./careerNormalizers";
 
 import { recomputePostAnalytics } from "./careerValidation";
 
@@ -37,14 +33,23 @@ const ACTIVITY_LS_KEY = "wm_employer_career_activity_log_v1";
 // ─────────────────────────────────────────────────────────────────────────────
 
 let postsCacheRaw: string | null = null;
+let postsAppsCacheRaw: string | null = null;
 let postsCacheList: CareerJobPost[] = [];
 
 export function getCareerPostsSnapshot(): CareerJobPost[] {
   const raw = localStorage.getItem(POSTS_LS_KEY);
-  if (raw === postsCacheRaw) return postsCacheList;
+  const appsRaw = localStorage.getItem(APPS_LS_KEY);
+
+  if (raw === postsCacheRaw && appsRaw === postsAppsCacheRaw) {
+    return postsCacheList;
+  }
+
   postsCacheRaw = raw;
+  postsAppsCacheRaw = appsRaw;
+
   const posts = readCareerPosts();
   const apps = readCareerApps();
+
   postsCacheList = posts.map((p) => recomputePostAnalytics(p, apps));
   return postsCacheList;
 }

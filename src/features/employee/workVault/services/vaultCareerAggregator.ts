@@ -16,6 +16,9 @@ import {
   getMiniHRStats,
   detectMiniHREmployment,
 } from "./vaultMiniHRAggregator";
+import { employeeProfileStorage } from "../../../employee/profile/storage/employeeProfile.storage";
+import { ratingStorage } from "../../../../shared/rating/ratingStorage";
+import { getVaultCareerHistory } from "../storage/vaultCareerHistory.storage";
 
 /* ── localStorage Keys (read-only) ── */
 const CAREER_POSTS_KEY = "wm_employer_career_posts_v1";
@@ -32,26 +35,38 @@ function parse<T>(key: string): T[] {
     if (!raw) return [];
     const arr = JSON.parse(raw) as unknown;
     return Array.isArray(arr) ? (arr as T[]) : [];
-  } catch { return []; }
+  } catch {
+    return [];
+  }
 }
 
 function str(r: Rec, k: string): string {
-  const v = r[k]; return typeof v === "string" ? v : "";
+  const v = r[k];
+  return typeof v === "string" ? v : "";
 }
 
 function num(r: Rec, k: string): number {
-  const v = r[k]; return typeof v === "number" && Number.isFinite(v) ? v : 0;
+  const v = r[k];
+  return typeof v === "number" && Number.isFinite(v) ? v : 0;
 }
 
-function bool(r: Rec, k: string): boolean { return r[k] === true; }
+function bool(r: Rec, k: string): boolean {
+  return r[k] === true;
+}
 
 /* ── Full HR → Work Experience ── */
 function mapExitReasonToStatus(reason: string): WorkExperienceStatus {
   switch (reason) {
-    case "resigned": case "mutual_agreement": return "left";
-    case "terminated": case "layoff": return "terminated";
-    case "contract_end": return "completed";
-    default: return "left";
+    case "resigned":
+    case "mutual_agreement":
+      return "left";
+    case "terminated":
+    case "layoff":
+      return "terminated";
+    case "contract_end":
+      return "completed";
+    default:
+      return "left";
   }
 }
 
@@ -76,7 +91,9 @@ function aggregateFullHRActive(): VaultWorkExperienceEntry[] {
   return parse<Rec>(EMPLOYMENT_KEY)
     .filter((r) => {
       const s = str(r, "status");
-      return s === "active" || s === "probation" || s === "resignation_pending" || s === "notice_period";
+      return (
+        s === "active" || s === "probation" || s === "resignation_pending" || s === "notice_period"
+      );
     })
     .map((r): VaultWorkExperienceEntry => ({
       jobId: str(r, "careerPostId") || str(r, "id"),
@@ -102,12 +119,16 @@ export function aggregateCareerExperience(): VaultWorkExperienceEntry[] {
   const apps = parse<Rec>(CAREER_APPS_KEY);
   const posts = parse<Rec>(CAREER_POSTS_KEY);
   const postMap = new Map<string, Rec>();
-  for (const p of posts) { const id = str(p, "id"); if (id) postMap.set(id, p); }
+  for (const p of posts) {
+    const id = str(p, "id");
+    if (id) postMap.set(id, p);
+  }
 
   // Collect careerPostIds covered by Full HR + Mini-HR
   const coveredPostIds = new Set<string>();
   for (const r of parse<Rec>(EMPLOYMENT_KEY)) {
-    const pid = str(r, "careerPostId"); if (pid) coveredPostIds.add(pid);
+    const pid = str(r, "careerPostId");
+    if (pid) coveredPostIds.add(pid);
   }
   const miniStats = getMiniHRStats();
   for (const pid of miniStats.coveredPostIds) coveredPostIds.add(pid);
@@ -133,8 +154,10 @@ export function aggregateCareerExperience(): VaultWorkExperienceEntry[] {
 
   // Combine: Full HR first (priority), then Mini-HR, then fallback
   const combined = [
-    ...fullHRActive, ...miniHRActive,
-    ...fullHRCompleted, ...miniHRCompleted,
+    ...fullHRActive,
+    ...miniHRActive,
+    ...fullHRCompleted,
+    ...miniHRCompleted,
     ...fallbackEntries,
   ];
 
@@ -142,7 +165,10 @@ export function aggregateCareerExperience(): VaultWorkExperienceEntry[] {
   const seen = new Set<string>();
   const deduped: VaultWorkExperienceEntry[] = [];
   for (const entry of combined) {
-    if (!seen.has(entry.jobId)) { seen.add(entry.jobId); deduped.push(entry); }
+    if (!seen.has(entry.jobId)) {
+      seen.add(entry.jobId);
+      deduped.push(entry);
+    }
   }
   return deduped.sort((a, b) => (b.endedAt ?? b.hiredAt) - (a.endedAt ?? a.hiredAt));
 }
@@ -157,18 +183,27 @@ export function aggregateCareerStats(): {
   const posts = parse<Rec>(CAREER_POSTS_KEY);
   const employment = parse<Rec>(EMPLOYMENT_KEY);
   const postMap = new Map<string, Rec>();
-  for (const p of posts) { const id = str(p, "id"); if (id) postMap.set(id, p); }
+  for (const p of posts) {
+    const id = str(p, "id");
+    if (id) postMap.set(id, p);
+  }
 
   const hiredApps = apps.filter((a) => str(a, "stage") === "hired");
-  const fullHRVerified = employment.filter((r) => str(r, "status") === "exited" && bool(r, "verified"));
+  const fullHRVerified = employment.filter(
+    (r) => str(r, "status") === "exited" && bool(r, "verified"),
+  );
 
   const companies = new Set<string>();
   for (const app of hiredApps) {
     const post = postMap.get(str(app, "jobId"));
-    if (post) { const name = str(post, "companyName").toLowerCase().trim(); if (name) companies.add(name); }
+    if (post) {
+      const name = str(post, "companyName").toLowerCase().trim();
+      if (name) companies.add(name);
+    }
   }
   for (const r of employment) {
-    const name = str(r, "companyName").toLowerCase().trim(); if (name) companies.add(name);
+    const name = str(r, "companyName").toLowerCase().trim();
+    if (name) companies.add(name);
   }
 
   // Merge Mini-HR stats
@@ -182,12 +217,62 @@ export function aggregateCareerStats(): {
   };
 }
 
+/* ── Career Ratings (Section 7 — performance aggregation) ── */
+export function aggregateCareerRatings(): {
+  ratings: number[];
+  ratedCompanies: { companyName: string; rating: number }[];
+} {
+  const workerWmId = employeeProfileStorage.get().uniqueId?.trim() || "";
+  if (!workerWmId) {
+    return { ratings: [], ratedCompanies: [] };
+  }
+
+  const posts = parse<Rec>(CAREER_POSTS_KEY);
+  const postMap = new Map<string, Rec>();
+  for (const post of posts) {
+    const id = str(post, "id");
+    if (id) postMap.set(id, post);
+  }
+
+  const ratings: number[] = [];
+  const ratedCompanies: { companyName: string; rating: number }[] = [];
+  const coveredJobIds = new Set<string>();
+  const normalizedWorkerId = workerWmId.toUpperCase();
+
+  for (const entry of getVaultCareerHistory()) {
+    if (entry.employeeWmId.trim().toUpperCase() !== normalizedWorkerId) continue;
+
+    const employerRating = entry.employerRating;
+    if (typeof employerRating !== "number" || employerRating <= 0) continue;
+
+    ratings.push(employerRating);
+    ratedCompanies.push({ companyName: entry.companyName, rating: employerRating });
+    coveredJobIds.add(entry.careerPostId);
+  }
+
+  for (const rating of ratingStorage.getAllERRatings()) {
+    if (rating.domain !== "career" || rating.workerWmId !== workerWmId) continue;
+    if (coveredJobIds.has(rating.jobId)) continue;
+
+    ratings.push(rating.stars);
+    const post = postMap.get(rating.jobId);
+    ratedCompanies.push({
+      companyName: post ? str(post, "companyName") || "Employer" : "Employer",
+      rating: rating.stars,
+    });
+  }
+
+  return { ratings, ratedCompanies };
+}
+
 /* ── Career References (Full HR verified exits with ratings) ── */
 // TODO: Add Mini-HR completed records with ratings when rating
 // integration is built. Currently employerRating=null — Full HR only.
 export function aggregateCareerReferences(): VaultReference[] {
   return parse<Rec>(EMPLOYMENT_KEY)
-    .filter((r) => str(r, "status") === "exited" && bool(r, "verified") && num(r, "employerRating") > 0)
+    .filter(
+      (r) => str(r, "status") === "exited" && bool(r, "verified") && num(r, "employerRating") > 0,
+    )
     .map((r): VaultReference => ({
       companyName: str(r, "companyName") || "Unknown Company",
       rating: num(r, "employerRating"),
@@ -207,10 +292,15 @@ export function detectCareerEmploymentStatus(): {
 
   // Full HR check
   const activeEmp = parse<Rec>(EMPLOYMENT_KEY).find((r) => {
-    const s = str(r, "status"); return s === "active" || s === "probation";
+    const s = str(r, "status");
+    return s === "active" || s === "probation";
   });
   if (activeEmp) {
-    return { isEmployed: true, currentCompany: str(activeEmp, "companyName"), currentJobTitle: str(activeEmp, "jobTitle") };
+    return {
+      isEmployed: true,
+      currentCompany: str(activeEmp, "companyName"),
+      currentJobTitle: str(activeEmp, "jobTitle"),
+    };
   }
 
   // Fallback: career workspaces
@@ -218,7 +308,11 @@ export function detectCareerEmploymentStatus(): {
     (w) => str(w, "status") === "active" || str(w, "status") === "onboarding",
   );
   if (active) {
-    return { isEmployed: true, currentCompany: str(active, "companyName"), currentJobTitle: str(active, "jobTitle") };
+    return {
+      isEmployed: true,
+      currentCompany: str(active, "companyName"),
+      currentJobTitle: str(active, "jobTitle"),
+    };
   }
   return { isEmployed: false, currentCompany: "", currentJobTitle: "" };
 }

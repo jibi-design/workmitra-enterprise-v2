@@ -1,13 +1,16 @@
 // src/features/employer/shiftJobs/helpers/shiftHomeHelpers.ts
 // Cache, count, and status helpers for EmployerShiftHomePage.
 
-import { employerShiftStorage, type ShiftPost } from "../storage/employerShift.storage";
+import {
+  employerShiftStorage,
+  type ShiftPost,
+} from "../../shiftJobs/storage/employerShift.storage";
 
 /* ------------------------------------------------ */
 /* Constants                                        */
 /* ------------------------------------------------ */
 const APPS_KEY = "wm_employee_shift_applications_v1";
-const WS_KEY   = "wm_employee_shift_workspaces_v1";
+const WS_KEY = "wm_employee_shift_workspaces_v1";
 
 export const POSTS_CHANGED_EVENT = employerShiftStorage._events.employerShiftPostsChanged;
 
@@ -56,7 +59,9 @@ export function countApplicationsForPost(postId: string, statusFilter?: string):
       if (statusFilter) return rec["status"] === statusFilter;
       return true;
     }).length;
-  } catch { return 0; }
+  } catch {
+    return 0;
+  }
 }
 
 /* ------------------------------------------------ */
@@ -69,10 +74,14 @@ export function countActiveWorkspaceGroups(): number {
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return 0;
     return parsed.filter(
-      (w) => typeof w === "object" && w !== null &&
+      (w) =>
+        typeof w === "object" &&
+        w !== null &&
         (w as Record<string, unknown>)["status"] === "active",
     ).length;
-  } catch { return 0; }
+  } catch {
+    return 0;
+  }
 }
 
 /* ------------------------------------------------ */

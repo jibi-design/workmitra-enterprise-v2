@@ -12,6 +12,12 @@ import {
   hrUpdate,
   hrFindByApplication,
 } from "./hrStorage.core";
+import {
+  notifyEmployeeContractRenewed,
+  notifyEmployeeProbationConfirmed,
+  notifyEmployeePromoted,
+  notifyEmployeeTransferred,
+} from "./hrEmploymentNotifications";
 
 /* ------------------------------------------------ */
 /* Probation Management                             */
@@ -50,7 +56,13 @@ export function hrUpdateProbationPeriod(id: string, newDurationDays: number): bo
   return hrUpdate(id, {
     probationDurationDays: newDurationDays,
     probationEndDate: newEndDate,
-    statusHistory: pushStatusChange(rec, "probation", "probation (updated)", "employer", `Probation period changed to ${newDurationDays} days`),
+    statusHistory: pushStatusChange(
+      rec,
+      "probation",
+      "probation (updated)",
+      "employer",
+      `Probation period changed to ${newDurationDays} days`,
+    ),
   });
 }
 
@@ -58,11 +70,23 @@ export function hrConfirmEmployee(id: string, note?: string): boolean {
   const rec = hrGetById(id);
   if (!rec || rec.status !== "active" || rec.employmentPhase !== "probation") return false;
 
-  return hrUpdate(id, {
+  const updated = hrUpdate(id, {
     employmentPhase: "confirmed",
     confirmedAt: Date.now(),
-    statusHistory: pushStatusChange(rec, "active (probation)", "active (confirmed)", "employer", note || "Employee confirmed after probation"),
+    statusHistory: pushStatusChange(
+      rec,
+      "active (probation)",
+      "active (confirmed)",
+      "employer",
+      note || "Employee confirmed after probation",
+    ),
   });
+
+  if (updated) {
+    notifyEmployeeProbationConfirmed(rec.jobTitle, rec.location, note);
+  }
+
+  return updated;
 }
 
 export function hrRevertToProbation(id: string, durationDays: number, note: string): boolean {
@@ -77,7 +101,13 @@ export function hrRevertToProbation(id: string, durationDays: number, note: stri
     confirmedAt: undefined,
     probationDurationDays: durationDays,
     probationEndDate: newEndDate,
-    statusHistory: pushStatusChange(rec, "active (confirmed)", "active (probation)", "employer", note),
+    statusHistory: pushStatusChange(
+      rec,
+      "active (confirmed)",
+      "active (probation)",
+      "employer",
+      note,
+    ),
   });
 }
 
@@ -109,14 +139,16 @@ export function hrCreateDirectRecord(data: {
     status: "active",
     employmentPhase: "confirmed",
     confirmedAt: now,
-    statusHistory: [{
-      id: genId(),
-      from: "manually_added",
-      to: "active (confirmed)",
-      changedAt: now,
-      changedBy: "employer",
-      note: "Staff added manually – direct active status",
-    }],
+    statusHistory: [
+      {
+        id: genId(),
+        from: "manually_added",
+        to: "active (confirmed)",
+        changedAt: now,
+        changedBy: "employer",
+        note: "Staff added manually – direct active status",
+      },
+    ],
     movedToHRAt: now,
     createdAt: now,
     updatedAt: now,
@@ -130,7 +162,10 @@ export function hrCreateDirectRecord(data: {
 /* ------------------------------------------------ */
 /* Promotion & Transfer                             */
 /* ------------------------------------------------ */
-export function hrApplyPromotion(id: string, data: { newTitle: string; newDepartment?: string }): boolean {
+export function hrApplyPromotion(
+  id: string,
+  data: { newTitle: string; newDepartment?: string },
+): boolean {
   const rec = hrGetById(id);
   if (!rec || rec.status !== "active") return false;
 
@@ -149,10 +184,18 @@ export function hrApplyPromotion(id: string, data: { newTitle: string; newDepart
     patch.department = data.newDepartment;
   }
 
-  return hrUpdate(id, patch);
+  const updated = hrUpdate(id, patch);
+  if (updated) {
+    notifyEmployeePromoted(data.newTitle, rec.location);
+  }
+
+  return updated;
 }
 
-export function hrApplyTransfer(id: string, data: { newLocation?: string; newDepartment?: string }): boolean {
+export function hrApplyTransfer(
+  id: string,
+  data: { newLocation?: string; newDepartment?: string },
+): boolean {
   const rec = hrGetById(id);
   if (!rec || rec.status !== "active") return false;
 
@@ -178,13 +221,22 @@ export function hrApplyTransfer(id: string, data: { newLocation?: string; newDep
     `Transferred: ${changes.join(", ")}`,
   );
 
-  return hrUpdate(id, patch);
+  const updated = hrUpdate(id, patch);
+  if (updated) {
+    notifyEmployeeTransferred(rec.location, changes.join(", "));
+  }
+
+  return updated;
 }
 
 /* ------------------------------------------------ */
 /* Contract Management                              */
 /* ------------------------------------------------ */
-export function hrSetContractDetails(id: string, contractType: "permanent" | "fixed_term", contractEndDate?: number): boolean {
+export function hrSetContractDetails(
+  id: string,
+  contractType: "permanent" | "fixed_term",
+  contractEndDate?: number,
+): boolean {
   const rec = hrGetById(id);
   if (!rec || rec.status !== "active") return false;
 
@@ -209,7 +261,8 @@ export function hrSetContractDetails(id: string, contractType: "permanent" | "fi
 
 export function hrRenewContract(id: string, newEndDate: number, note: string): boolean {
   const rec = hrGetById(id);
-  if (!rec || rec.status !== "active" || rec.contractType !== "fixed_term" || !rec.contractEndDate) return false;
+  if (!rec || rec.status !== "active" || rec.contractType !== "fixed_term" || !rec.contractEndDate)
+    return false;
 
   const renewalEntry = {
     id: genId(),
@@ -219,7 +272,7 @@ export function hrRenewContract(id: string, newEndDate: number, note: string): b
     note: note.trim(),
   };
 
-  return hrUpdate(id, {
+  const updated = hrUpdate(id, {
     contractEndDate: newEndDate,
     contractRenewals: [...(rec.contractRenewals ?? []), renewalEntry],
     statusHistory: pushStatusChange(
@@ -230,6 +283,12 @@ export function hrRenewContract(id: string, newEndDate: number, note: string): b
       `Contract renewed: ${note.trim()}`,
     ),
   });
+
+  if (updated) {
+    notifyEmployeeContractRenewed(rec.location, newEndDate);
+  }
+
+  return updated;
 }
 
 export function hrGetContractReminders(withinDays: number = 30): HRCandidateRecord[] {

@@ -1,216 +1,231 @@
-// src/features/employee/home/components/EmployeeJobCards.tsx
-//
-// Shift Jobs + Career Jobs domain cards for Employee Home.
-// Session 15: Waitlisted rename, Offered pill, Career button blue,
-// WorkforceCard removed, hardcoded hex → CSS vars, inline fns → useCallback,
-// Tap to manage centered.
+/** Job Mitra | EmployeeJobCards.tsx | src/features/employee/home/components/EmployeeJobCards.tsx */
 
-import { useCallback } from "react";
-import type { CSSProperties } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
-import { formatNumber } from "../helpers/employeeHomeHelpers";
 import { IconCalendar, IconBriefcase } from "./employeeHomeIcons";
+import { DESIGN_TOKENS } from "../../../../app/theme/designTokens";
+import { plannerPublicIndex } from "../../../employer/planner/storage/plannerPublicIndex.storage";
+// AUDIT: Corrected path to go up 3 levels to reach src/features/pulse
+import { PulseNode } from "../../../pulse/PulseNode";
 
-/* ------------------------------------------------ */
-/* Shared styles                                    */
-/* ------------------------------------------------ */
-const ACTION_BTN_BASE: CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 5,
-  minWidth: 100,
-  padding: "8px 16px",
-  fontSize: 12,
-  fontWeight: 600,
-  borderRadius: 8,
-  whiteSpace: "nowrap",
-  textAlign: "center",
-};
-
-const CAREER_BTN: CSSProperties = {
-  ...ACTION_BTN_BASE,
-  background: "var(--wm-career-accent, #1d4ed8)",
-  color: "#fff",
-  border: "none",
-  cursor: "pointer",
-};
-
-const ZERO_CHIP: CSSProperties = {
-  color: "var(--wm-zero-text, #9ca3af)",
-  background: "var(--wm-zero-bg, rgba(100,116,139,0.06))",
-};
-
-const TAP_SHIFT: CSSProperties = {
-  marginTop: 10,
-  color: "var(--wm-shift-accent, #16a34a)",
-  fontWeight: 600,
-  fontSize: 12,
-  cursor: "pointer",
-  textAlign: "center",
-};
-
-const TAP_CAREER: CSSProperties = {
-  marginTop: 10,
-  color: "var(--wm-career-accent, #1d4ed8)",
-  fontWeight: 600,
-  fontSize: 12,
-  cursor: "pointer",
-  textAlign: "center",
-};
-
-/* ------------------------------------------------ */
+/**
 /* Shift Jobs Card                                  */
 /* ------------------------------------------------ */
-type ShiftCardProps = {
-  waitingList: number;
-  confirmed: number;
-  activeJobs: number;
-};
 
-export function ShiftJobsCard({ waitingList, confirmed, activeJobs }: ShiftCardProps) {
+export function ShiftJobsCard() {
   const nav = useNavigate();
 
   const handleOpen = useCallback(() => {
     nav(ROUTE_PATHS.employeeShiftCenter);
   }, [nav]);
 
-  const handleBtnClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    nav(ROUTE_PATHS.employeeShiftCenter);
+  return (
+    <PulseNode
+      id="employee-home-shift-card"
+      style={{ "--wm-pulse-node-radius": DESIGN_TOKENS.geometry.radiusCard, width: "100%" }}
+    >
+      <section
+        role="button"
+        className="wm-press-card"
+        tabIndex={0}
+        onClick={handleOpen}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleOpen();
+        }}
+        style={{
+          cursor: "pointer",
+          position: "relative",
+          padding: "var(--wm-card-padding)",
+          borderRadius: "var(--wm-radius-employee-card)",
+          background: "var(--wm-emp-glass-bg-strong)",
+          border: "1px solid var(--wm-glass-border)",
+          boxShadow: DESIGN_TOKENS.shadows.card,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              background: "rgba(39, 174, 96, 0.08)",
+              color: "#27AE60",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <IconCalendar />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <h3 className="wm-typeCardTitle" style={{ letterSpacing: "-0.01em" }}>
+              Shift Jobs
+            </h3>
+            <p className="wm-typeHelper">Browse & apply for shifts</p>
+          </div>
+        </div>
+        <div style={{ color: "#CBD5E1", fontSize: 20 }}>→</div>
+      </section>
+    </PulseNode>
+  );
+}
+
+function IconGigProjects() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2Zm0 16H5V8h14v11ZM7 10h5v5H7z"
+      />
+    </svg>
+  );
+}
+
+/* ------------------------------------------------ */
+/* Gig Projects (Demand Planner — employee)         */
+/* ------------------------------------------------ */
+
+export function GigProjectsCard() {
+  const nav = useNavigate();
+
+  const openProjectCount = useSyncExternalStore(
+    plannerPublicIndex.subscribe,
+    () => plannerPublicIndex.getActiveEntries().length,
+    () => plannerPublicIndex.getActiveEntries().length,
+  );
+
+  const handleOpen = useCallback(() => {
+    nav(ROUTE_PATHS.employeePlannerHome);
   }, [nav]);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") nav(ROUTE_PATHS.employeeShiftCenter);
-  }, [nav]);
+  const subtitle =
+    openProjectCount > 0
+      ? `${openProjectCount} multi-day project${openProjectCount !== 1 ? "s" : ""} open`
+      : "Browse agency project plans";
 
   return (
-    <section
-      className="wm-ee-card wm-ee-accentCard wm-ee-vShift"
-      role="button"
-      tabIndex={0}
-      onClick={handleOpen}
-      onKeyDown={handleKeyDown}
-      style={{ cursor: "pointer" }}
-      aria-label="Open Shift Jobs"
+    <PulseNode
+      id="employee-home-gig-projects-card"
+      style={{ "--wm-pulse-node-radius": DESIGN_TOKENS.geometry.radiusCard, width: "100%" }}
     >
-      <div className="wm-ee-headTint">
-        <div className="wm-ee-cardHead" style={{ alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-          <div style={{ minWidth: 0 }}>
-            <div className="wm-ee-titleRow">
-              <span className="wm-ee-domainIcon" aria-hidden="true"><IconCalendar /></span>
-              <div style={{ minWidth: 0 }}>
-                <div className="wm-ee-cardTitle">Shift Jobs</div>
-                <div className="wm-ee-cardSub">Browse and apply for available shifts.</div>
-              </div>
-            </div>
-          </div>
-          <button
-            className="wm-primarybtn"
-            type="button"
-            onClick={handleBtnClick}
-            aria-label="View Shifts"
-            style={ACTION_BTN_BASE}
+      <section
+        role="button"
+        className="wm-press-card"
+        tabIndex={0}
+        aria-label={`Open Gig Projects. ${subtitle}.`}
+        onClick={handleOpen}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleOpen();
+        }}
+        style={{
+          cursor: "pointer",
+          position: "relative",
+          padding: "var(--wm-card-padding)",
+          borderRadius: "var(--wm-radius-employee-card)",
+          background: "var(--wm-emp-glass-bg-strong)",
+          border: "1px solid var(--wm-glass-border)",
+          boxShadow: DESIGN_TOKENS.shadows.card,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              background: "rgba(8, 145, 178, 0.08)",
+              color: "#0891B2",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
           >
-            View
-          </button>
+            <IconGigProjects />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <h3 className="wm-typeCardTitle" style={{ letterSpacing: "-0.01em" }}>
+              Gig Projects
+            </h3>
+            <p className="wm-typeHelper">{subtitle}</p>
+          </div>
         </div>
-      </div>
-
-      <div className="wm-ee-chips" aria-label="Shift Jobs stats">
-        <span className="wm-ee-chip" style={waitingList === 0 ? ZERO_CHIP : undefined}>
-          Waitlisted: <span className="n">{formatNumber(waitingList)}</span>
-        </span>
-        <span className="wm-ee-chip" style={confirmed === 0 ? ZERO_CHIP : undefined}>
-          Confirmed: <span className="n">{formatNumber(confirmed)}</span>
-        </span>
-        <span className="wm-ee-chip" style={activeJobs === 0 ? ZERO_CHIP : undefined}>
-          Jobs: <span className="n">{formatNumber(activeJobs)}</span>
-        </span>
-      </div>
-
-      <div style={TAP_SHIFT}>Tap to manage &#8594;</div>
-    </section>
+        <div style={{ color: "#CBD5E1", fontSize: 20 }}>→</div>
+      </section>
+    </PulseNode>
   );
 }
 
 /* ------------------------------------------------ */
 /* Career Jobs Card                                 */
 /* ------------------------------------------------ */
-type CareerCardProps = {
-  careerApplied: number;
-  careerInterviews: number;
-  careerOffered: number;
-};
 
-export function CareerJobsCard({ careerApplied, careerInterviews, careerOffered }: CareerCardProps) {
+export function CareerJobsCard() {
   const nav = useNavigate();
 
   const handleOpen = useCallback(() => {
     nav(ROUTE_PATHS.employeeCareerHome);
   }, [nav]);
 
-  const handleBtnClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    nav(ROUTE_PATHS.employeeCareerHome);
-  }, [nav]);
-
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") nav(ROUTE_PATHS.employeeCareerHome);
-  }, [nav]);
-
   return (
-    <section
-      className="wm-ee-card wm-ee-accentCard wm-ee-vCareer"
-      role="button"
-      tabIndex={0}
-      onClick={handleOpen}
-      onKeyDown={handleKeyDown}
-      style={{ cursor: "pointer" }}
-      aria-label="Open Career Jobs"
+    <PulseNode
+      id="employee-home-career-card"
+      style={{ "--wm-pulse-node-radius": DESIGN_TOKENS.geometry.radiusCard, width: "100%" }}
     >
-      <div className="wm-ee-headTint">
-        <div className="wm-ee-cardHead">
-          <div>
-            <div className="wm-ee-titleRow">
-              <span className="wm-ee-domainIcon" aria-hidden="true"><IconBriefcase /></span>
-              <div>
-                <div className="wm-ee-cardTitle">Career Jobs</div>
-                <div className="wm-ee-cardSub">Apply to permanent roles and track interviews.</div>
-              </div>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={handleBtnClick}
-            aria-label="Explore Jobs"
-            style={CAREER_BTN}
+      <section
+        role="button"
+        className="wm-press-card"
+        tabIndex={0}
+        onClick={handleOpen}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleOpen();
+        }}
+        style={{
+          cursor: "pointer",
+          position: "relative",
+          padding: "var(--wm-card-padding)",
+          borderRadius: "var(--wm-radius-employee-card)",
+          background: "var(--wm-emp-glass-bg-strong)",
+          border: "1px solid var(--wm-glass-border)",
+          boxShadow: DESIGN_TOKENS.shadows.card,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              background: "rgba(79, 70, 229, 0.08)",
+              color: "#4F46E5",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
           >
-            Explore
-          </button>
+            <IconBriefcase />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <h3 className="wm-typeCardTitle" style={{ letterSpacing: "-0.01em" }}>
+              Career Jobs
+            </h3>
+            <p className="wm-typeHelper">Find permanent roles</p>
+          </div>
         </div>
-      </div>
-
-      <div className="wm-ee-chips" aria-label="Career Jobs stats">
-        <span className="wm-ee-chip" style={careerApplied === 0 ? ZERO_CHIP : undefined}>
-          Applied: <span className="n">{formatNumber(careerApplied)}</span>
-        </span>
-        <span className="wm-ee-chip" style={careerInterviews === 0 ? ZERO_CHIP : undefined}>
-          Interviews: <span className="n">{formatNumber(careerInterviews)}</span>
-        </span>
-        <span className="wm-ee-chip" style={careerOffered === 0 ? ZERO_CHIP : undefined}>
-          Offered: <span className="n">{formatNumber(careerOffered)}</span>
-        </span>
-      </div>
-
-      <div style={TAP_CAREER}>Tap to manage &#8594;</div>
-    </section>
+        <div style={{ color: "#CBD5E1", fontSize: 20 }}>→</div>
+      </section>
+    </PulseNode>
   );
 }
-
-/* ------------------------------------------------ */
-/* WorkforceCard — Phase 2 (commented out)          */
-/* ------------------------------------------------ */
-// Session 15: Removed from launch. Uncomment when Phase 2 begins.
-// See master doc section 16 for Phase 2 roadmap.

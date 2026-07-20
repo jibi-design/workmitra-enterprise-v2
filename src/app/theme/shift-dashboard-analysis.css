@@ -1,0 +1,256 @@
+/* src/app/theme/shift-dashboard-analysis.css */
+/*
+  Employer Shift Dashboard analysis UI.
+
+  Purpose:
+  - Remove Career blue leakage from Shift analysis actions.
+  - Keep analysis buttons Shift green / neutral.
+  - Remove inline-heavy analysis styling from dashboard components.
+  - Admin/career untouched.
+*/
+
+/* ------------------------------------------------ */
+/* AnalysisBar                                      */
+/* ------------------------------------------------ */
+.wm-shiftAnalysisBar {
+  margin-top: var(--wm-stack-gap);
+  padding: 14px 16px;
+  border-radius: var(--wm-radius-employer-card);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(22, 163, 74, 0.04), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(255, 255, 255, 0.94));
+  box-shadow:
+    0 12px 28px rgba(15, 23, 42, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.wm-shiftAnalysisBar.isComplete {
+  border-color: rgba(22, 163, 74, 0.2);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(22, 163, 74, 0.08), transparent 34%),
+    linear-gradient(180deg, rgba(240, 253, 244, 0.9), rgba(255, 255, 255, 0.96));
+}
+
+.wm-shiftAnalysisLayout {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--wm-stack-gap);
+  flex-wrap: wrap;
+}
+
+.wm-shiftAnalysisContent {
+  min-width: 0;
+  flex: 1;
+}
+
+.wm-shiftAnalysisTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.wm-shiftAnalysisTitle {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--wm-er-text);
+}
+
+.wm-shiftAnalysisStatusBadge {
+  padding: 4px 9px;
+  border-radius: var(--wm-radius-pill);
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.wm-shiftAnalysisStatusBadge.isComplete {
+  background: rgba(22, 163, 74, 0.08);
+  border: 1px solid rgba(22, 163, 74, 0.16);
+  color: var(--wm-er-accent-shift);
+}
+
+.wm-shiftAnalysisStatusBadge.isPending {
+  background: rgba(217, 119, 6, 0.08);
+  border: 1px solid rgba(217, 119, 6, 0.18);
+  color: #92400e;
+}
+
+.wm-shiftAnalysisDescription {
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--wm-er-muted);
+  line-height: 1.45;
+}
+
+.wm-shiftAnalysisNote {
+  margin-top: 9px;
+  padding: 8px 10px;
+  border-radius: var(--wm-radius-12);
+  background: rgba(15, 23, 42, 0.035);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  font-size: 11px;
+  font-weight: 750;
+  color: var(--wm-er-muted);
+  line-height: 1.45;
+}
+
+.wm-shiftAnalysisActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.wm-shiftAnalysisPrimaryBtn {
+  font-size: 12px;
+  padding: 8px 16px;
+}
+
+.wm-er-vShift .wm-shiftAnalysisPrimaryBtn {
+  border-color: rgba(22, 163, 74, 0.18);
+  background:
+    radial-gradient(circle at 25% 0%, rgba(255, 255, 255, 0.2), transparent 42%),
+    linear-gradient(135deg, #16a34a, #12823b);
+  color: #fff;
+  box-shadow:
+    0 18px 34px rgba(22, 163, 74, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.wm-shiftAnalysisResetBtn {
+  font-size: 12px;
+}
+
+/* ------------------------------------------------ */
+/* Advanced section                                 */
+/* ------------------------------------------------ */
+.wm-shiftAdvancedSection {
+  margin-top: var(--wm-stack-gap);
+}
+
+.wm-shiftAdvancedHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--wm-stack-gap);
+}
+
+.wm-shiftAdvancedTitle {
+  font-weight: 900;
+  color: var(--wm-er-text);
+}
+
+.wm-shiftAdvancedToggleBtn {
+  font-size: 11px;
+  height: 28px;
+  padding: 0 10px;
+}
+
+.wm-shiftAdvancedBody {
+  margin-top: var(--wm-stack-gap);
+  display: grid;
+  gap: var(--wm-stack-gap);
+}
+
+.wm-shiftAdvancedInnerCard {
+  margin: 0;
+}
+
+.wm-shiftAdvancedInnerTitle {
+  font-weight: 900;
+  color: var(--wm-er-text);
+}
+
+.wm-shiftAdvancedActivityList {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.wm-shiftAdvancedEmptyText {
+  font-size: 12px;
+  color: var(--wm-er-muted);
+}
+
+.wm-shiftAdvancedActivityItem {
+  padding: 8px 0;
+  border-top: 1px solid var(--wm-er-divider);
+  font-size: 12px;
+}
+
+.wm-shiftAdvancedActivityTitle {
+  font-weight: 800;
+  color: var(--wm-er-text);
+}
+
+.wm-shiftAdvancedActivityBody {
+  color: var(--wm-er-muted);
+  margin-top: 2px;
+}
+
+.wm-shiftAdvancedActivityTime {
+  color: var(--wm-er-muted);
+  margin-top: 2px;
+  font-size: 11px;
+}
+
+.wm-shiftAdvancedAnalysisCard {
+  margin: 0;
+}
+
+.wm-shiftAdvancedAnalysisHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--wm-stack-gap);
+}
+
+.wm-shiftAdvancedAnalysisTitle {
+  font-weight: 900;
+}
+
+.wm-shiftAdvancedAnalysisMeta {
+  font-size: 12px;
+  color: var(--wm-er-muted);
+}
+
+.wm-shiftAdvancedAnalysisActions {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.wm-shiftAdvancedPrimaryBtn {
+  white-space: nowrap;
+}
+
+.wm-er-vShift .wm-shiftAdvancedPrimaryBtn {
+  border-color: rgba(22, 163, 74, 0.18);
+  background:
+    radial-gradient(circle at 25% 0%, rgba(255, 255, 255, 0.2), transparent 42%),
+    linear-gradient(135deg, #16a34a, #12823b);
+  color: #fff;
+  box-shadow:
+    0 18px 34px rgba(22, 163, 74, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.wm-shiftAdvancedResetBtn {
+  color: var(--wm-error);
+}
+
+@media (max-width: 420px) {
+  .wm-shiftAnalysisActions {
+    width: 100%;
+  }
+
+  .wm-shiftAnalysisActions .wm-primarybtn,
+  .wm-shiftAnalysisActions .wm-outlineBtn {
+    flex: 1;
+  }
+}

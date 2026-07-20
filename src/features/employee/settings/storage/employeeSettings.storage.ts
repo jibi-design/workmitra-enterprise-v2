@@ -16,6 +16,9 @@ export type EmployeeSettings = {
   appLockEnabled: boolean;
   // Quick Apply (Shift Jobs)
   quickApplyEnabled: boolean;
+  // Sound & Haptics
+  hapticFeedback: boolean;
+  globalMute: boolean;
 };
 const KEY = "wm_employee_settings_v1";
 const DEFAULTS: EmployeeSettings = {
@@ -30,6 +33,8 @@ const DEFAULTS: EmployeeSettings = {
   quietTo: "07:00",
   appLockEnabled: false,
   quickApplyEnabled: false,
+  hapticFeedback: true,
+  globalMute: false,
 };
 function safeParse(raw: string | null): EmployeeSettings {
   if (!raw) return { ...DEFAULTS };
@@ -42,6 +47,7 @@ function safeParse(raw: string | null): EmployeeSettings {
 }
 function write(s: EmployeeSettings) {
   localStorage.setItem(KEY, JSON.stringify(s));
+  window.dispatchEvent(new Event("wm:app-settings-changed"));
 }
 export const employeeSettingsStorage = {
   get(): EmployeeSettings {

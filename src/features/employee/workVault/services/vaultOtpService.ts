@@ -21,10 +21,13 @@ export function getCurrentOtp(): VaultOTP | null {
   return normalizeOtp(readStorage(VAULT_STORAGE_KEYS.otp));
 }
 
+export type GenerateOtpResult =
+  { ok: true; otp: VaultOTP } | { ok: false; reason: "storage_error" };
+
 /**
  * Generates a new OTP and stores it. Replaces any existing OTP.
  */
-export function generateOtp(): VaultOTP {
+export function generateOtp(): GenerateOtpResult {
   const now = Date.now();
 
   const otp: VaultOTP = {
@@ -34,8 +37,10 @@ export function generateOtp(): VaultOTP {
     used: false,
   };
 
-  writeStorage(VAULT_STORAGE_KEYS.otp, otp);
-  return otp;
+  const write = writeStorage(VAULT_STORAGE_KEYS.otp, otp);
+  if (!write.ok) return { ok: false, reason: "storage_error" };
+
+  return { ok: true, otp };
 }
 
 /**
@@ -53,7 +58,9 @@ export function verifyOtp(submittedCode: string): boolean {
   if (otp.code !== submittedCode.trim()) return false;
 
   const consumed: VaultOTP = { ...otp, used: true };
-  writeStorage(VAULT_STORAGE_KEYS.otp, consumed);
+  const write = writeStorage(VAULT_STORAGE_KEYS.otp, consumed);
+  if (!write.ok) return false;
+
   return true;
 }
 

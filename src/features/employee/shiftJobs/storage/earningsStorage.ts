@@ -5,7 +5,10 @@
 // Earnings = confirmed apps × (payPerDay × days in shift).
 
 import { shiftApplicationsStorage } from "./shiftApplications.storage";
-import type { ShiftPostData } from "../types/shiftApplicationTypes";
+import type { ShiftPostData } from "../../shiftJobs/types/shiftApplicationTypes";
+import { isPlannerApplication } from "../../planner/helpers/plannerDomainFilters";
+
+export type EarningsDomain = "shift" | "planner" | "all";
 
 /* ------------------------------------------------ */
 /* Types                                            */
@@ -31,7 +34,7 @@ export type EarningsSummary = {
   avgPerShift: number;
   avgPerDay: number;
   byMonth: { label: string; earned: number; shifts: number }[];
-  byWeek:  { label: string; earned: number; shifts: number }[];
+  byWeek: { label: string; earned: number; shifts: number }[];
   byCompany: { name: string; earned: number; shifts: number }[];
   entries: EarningEntry[];
 };
@@ -47,48 +50,56 @@ function countDays(startAt: number, endAt: number): number {
 function monthLabel(ts: number): string {
   try {
     return new Date(ts).toLocaleDateString(undefined, { month: "short", year: "numeric" });
-  } catch { return "Unknown"; }
+  } catch {
+    return "Unknown";
+  }
 }
 
 /* ------------------------------------------------ */
 /* Public API                                       */
 /* ------------------------------------------------ */
 export const earningsStorage = {
-  getSummary(): EarningsSummary {
-    const apps   = shiftApplicationsStorage.getApps();
-    const posts  = shiftApplicationsStorage.getPosts();
+  getSummary(domain: EarningsDomain = "all"): EarningsSummary {
+    const apps = shiftApplicationsStorage.getApps();
+    const posts = shiftApplicationsStorage.getPosts();
     const postMap = new Map<string, ShiftPostData>(posts.map((p) => [p.id, p]));
 
-    const confirmed = apps.filter((a) => a.status === "confirmed");
+    const confirmed = apps.filter((a) => {
+      if (a.status !== "confirmed") return false;
+      const isPlan = isPlannerApplication(a);
+      if (domain === "shift" && isPlan) return false;
+      if (domain === "planner" && !isPlan) return false;
+      return true;
+    });
 
     const entries: EarningEntry[] = [];
     for (const app of confirmed) {
       const post = postMap.get(app.postId);
       if (!post) continue;
-      const totalDays   = countDays(post.startAt, post.endAt);
+      const totalDays = countDays(post.startAt, post.endAt);
       const totalEarned = post.payPerDay * totalDays;
       entries.push({
-        appId:       app.id,
-        postId:      post.id,
+        appId: app.id,
+        postId: post.id,
         companyName: post.companyName,
-        jobName:     post.jobName,
+        jobName: post.jobName,
         locationName: post.locationName,
-        startAt:     post.startAt,
-        endAt:       post.endAt,
-        payPerDay:   post.payPerDay,
+        startAt: post.startAt,
+        endAt: post.endAt,
+        payPerDay: post.payPerDay,
         totalDays,
         totalEarned,
-        category:    post.shiftType ?? "General",
+        category: post.shiftType ?? "General",
       });
     }
 
     entries.sort((a, b) => b.startAt - a.startAt);
 
     const totalEarned = entries.reduce((s, e) => s + e.totalEarned, 0);
-    const totalDays   = entries.reduce((s, e) => s + e.totalDays,   0);
+    const totalDays = entries.reduce((s, e) => s + e.totalDays, 0);
     const totalShifts = entries.length;
     const avgPerShift = totalShifts > 0 ? Math.round(totalEarned / totalShifts) : 0;
-    const avgPerDay   = totalDays   > 0 ? Math.round(totalEarned / totalDays)   : 0;
+    const avgPerDay = totalDays > 0 ? Math.round(totalEarned / totalDays) : 0;
 
     /* By month */
     const monthMap = new Map<string, { earned: number; shifts: number }>();
@@ -105,7 +116,10 @@ export const earningsStorage = {
     const companyMap = new Map<string, { earned: number; shifts: number }>();
     for (const e of entries) {
       const existing = companyMap.get(e.companyName) ?? { earned: 0, shifts: 0 };
-      companyMap.set(e.companyName, { earned: existing.earned + e.totalEarned, shifts: existing.shifts + 1 });
+      companyMap.set(e.companyName, {
+        earned: existing.earned + e.totalEarned,
+        shifts: existing.shifts + 1,
+      });
     }
     const byCompany = Array.from(companyMap.entries())
       .map(([name, v]) => ({ name, ...v }))
@@ -122,7 +136,11 @@ export const earningsStorage = {
       monday.setHours(0, 0, 0, 0);
       const label = monday.toLocaleDateString(undefined, { month: "short", day: "numeric" });
       const existing = weekMap.get(label) ?? { earned: 0, shifts: 0, ts: monday.getTime() };
-      weekMap.set(label, { earned: existing.earned + e.totalEarned, shifts: existing.shifts + 1, ts: existing.ts });
+      weekMap.set(label, {
+        earned: existing.earned + e.totalEarned,
+        shifts: existing.shifts + 1,
+        ts: existing.ts,
+      });
     }
     const byWeek = Array.from(weekMap.entries())
       .map(([label, v]) => ({ label, earned: v.earned, shifts: v.shifts, ts: v.ts }))
@@ -130,7 +148,17 @@ export const earningsStorage = {
       .slice(0, 8)
       .map(({ label, earned, shifts }) => ({ label, earned, shifts }));
 
-    return { totalEarned, totalShifts, totalDays, avgPerShift, avgPerDay, byMonth, byWeek, byCompany, entries };
+    return {
+      totalEarned,
+      totalShifts,
+      totalDays,
+      avgPerShift,
+      avgPerDay,
+      byMonth,
+      byWeek,
+      byCompany,
+      entries,
+    };
   },
 
   subscribe: shiftApplicationsStorage.subscribe,

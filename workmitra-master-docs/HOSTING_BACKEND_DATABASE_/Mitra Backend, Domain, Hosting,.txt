@@ -1,0 +1,327 @@
+[Mitra Labs + Job Mitra + HomeFix Mitra — Backend, Domain, Hosting, Admin Plan Summary]
+
+Final decision:
+Mitra Labs will be the main company/parent brand.
+Job Mitra and HomeFix Mitra will be separate products under Mitra Labs.
+
+1. Brand structure
+
+Main company:
+Mitra Labs
+
+Products:
+1. Job Mitra
+2. HomeFix Mitra
+3. Future Mitra Labs products
+
+Services can also be inside Mitra Labs:
+- Software development
+- Website development
+- Graphic design
+- Video editing
+- Digital services
+
+2. Domain structure
+
+Recommended future domains:
+
+mitralabs.app
+Company website
+
+jobmitra.app
+Job Mitra product website
+
+homefixmitra.app
+HomeFix Mitra product website
+
+admin.mitralabs.app
+Central admin portal
+
+Important:
+Admin does not need a separate domain.
+Admin should use a subdomain under Mitra Labs.
+
+3. Website structure
+
+mitralabs.app:
+- Company information
+- Products
+- Services
+- Support
+- Policies
+- Links to Job Mitra and HomeFix Mitra
+
+jobmitra.app:
+- Job Mitra app landing page
+- Download link
+- Help/support
+- Privacy policy
+- Terms
+
+homefixmitra.app:
+- HomeFix Mitra app landing page
+- Download link
+- Help/support
+- Privacy policy
+- Terms
+
+4. Admin structure
+
+Final admin decision:
+Use one central admin portal:
+
+admin.mitralabs.app
+
+Inside this one admin portal, every product must have its own separated admin area.
+
+Admin portal structure:
+
+admin.mitralabs.app
+- Super Admin Dashboard
+- Mitra Labs website admin
+- Job Mitra admin
+- HomeFix Mitra admin
+- Future app admin
+- Future website admin
+- Reports
+- Users
+- Roles and permissions
+- Audit logs
+- Settings
+
+5. Admin role rule
+
+There must be a Super Admin.
+
+Super Admin:
+- Can see and manage all products
+- Can manage all admins
+- Can manage global settings
+- Can view audit logs
+- Can control permissions
+
+Product Admin:
+- Can manage only assigned product/app
+- Example: Job Mitra admin can manage only Job Mitra
+- Example: HomeFix Mitra admin can manage only HomeFix Mitra
+
+Website Admin:
+- Can manage assigned website content only
+- Example: Mitra Labs website admin
+- Example: Job Mitra website admin
+- Example: HomeFix Mitra website admin
+
+Support / Moderator:
+- Can review reports, users, complaints, and support issues only where permission is given
+
+Important:
+One admin portal, but each app/website admin must stay separated.
+
+6. Public app rule
+
+Admin must not be inside public mobile apps.
+
+Do not add Admin inside:
+- Job Mitra public app
+- HomeFix Mitra public app
+
+Correct:
+admin.mitralabs.app
+
+7. Backend plan
+
+Backend technology:
+Node.js + TypeScript
+
+Backend hosting:
+Render
+
+Backend purpose:
+- Login/auth handling
+- API handling
+- Role permissions
+- Job Mitra data
+- HomeFix Mitra data
+- Admin data
+- Reports
+- Audit logs
+
+Important:
+Backend should be written cleanly so future Google Cloud migration is possible.
+
+8. Database plan
+
+Database:
+PostgreSQL
+
+Recommended provider first:
+Supabase PostgreSQL
+
+Reason:
+- PostgreSQL database
+- Auth support
+- Storage support later
+- Easier start
+- Future migration possible
+
+Future upgrade:
+If app grows big, move later to:
+Google Cloud Run + Google Cloud SQL PostgreSQL
+
+9. Data separation rule
+
+One database can be used at the beginning.
+But data must never mix.
+
+Example structure:
+- jobmitra_users
+- jobmitra_jobs
+- jobmitra_applications
+- jobmitra_workspaces
+- homefix_customers
+- homefix_services
+- homefix_bills
+- admin_users
+- admin_roles
+- admin_audit_logs
+
+Important:
+Job Mitra data and HomeFix Mitra data must stay separate.
+
+10. Hosting plan
+
+Frontend hosting:
+Cloudflare Pages
+
+Use for:
+- Mitra Labs website
+- Job Mitra website
+- HomeFix Mitra website
+- Admin portal frontend
+
+Backend hosting:
+Render
+
+Database hosting:
+Supabase PostgreSQL
+
+Simple setup:
+Frontend → Cloudflare Pages
+Backend → Render
+Database → Supabase PostgreSQL
+
+11. Future Google Cloud migration
+
+Future migration is possible.
+
+Current:
+Node.js backend on Render
+PostgreSQL database on Supabase
+
+Future:
+Node.js backend on Google Cloud Run
+PostgreSQL database on Google Cloud SQL
+
+Reason migration is possible:
+Both databases are PostgreSQL.
+
+Important rules for easy migration:
+- Use standard Node.js backend
+- Use PostgreSQL properly
+- Use Prisma ORM if possible
+- Do not hardcode secrets
+- Do not depend too much on one provider-specific feature
+- Keep business logic in backend, not frontend
+
+12. Cost understanding
+
+Node.js:
+Free technology
+
+Render:
+Backend server hosting cost
+
+Supabase PostgreSQL:
+Database hosting cost
+
+Cloudflare Pages:
+Frontend website hosting, usually low/free for early stage
+
+Expected early production cost:
+Around $30–$60/month depending on plan and usage
+
+13. Product separation rule
+
+Never mix:
+- Job Mitra and HomeFix Mitra data
+- Employee and Employer flows
+- Career Jobs and Shift Jobs
+- Career workspace and HR Management
+- Public app and Admin portal
+
+14. Career Jobs UI rule already locked
+
+Career Jobs UI hierarchy:
+Shift Jobs < Employee Career Jobs < Employer Career Jobs
+
+Career Jobs color:
+Blue-only family
+
+Allowed:
+- Career blue
+- Deep blue
+- Soft blue
+- Blue-tinted white/gray
+- Neutral slate/gray text
+
+Avoid:
+- Orange
+- Green
+- Mixed domain colors
+
+15. Workspace rule
+
+Career Workspace means:
+Career Job വഴി hire ചെയ്ത employee-യുടെ ongoing work record area.
+
+Workspace is for:
+- joined status
+- working status
+- notice
+- resignation
+- completion
+- rating follow-up later
+
+Workspace is not:
+- HR Management
+- Payroll
+- Shift Jobs
+- Admin
+
+Employer Career Home:
+Hired Employee Workspaces card must stay visible.
+
+16. Final architecture direction
+
+Recommended starting architecture:
+
+Domains:
+mitralabs.app
+jobmitra.app
+homefixmitra.app
+admin.mitralabs.app
+
+Frontend:
+Cloudflare Pages
+
+Backend:
+Node.js + TypeScript on Render
+
+Database:
+Supabase PostgreSQL
+
+Admin:
+Central admin portal with Super Admin + separated product admins
+
+Future upgrade:
+Google Cloud possible later.

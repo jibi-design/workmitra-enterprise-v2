@@ -1,4 +1,4 @@
-// src/features/employer/workforceOps/services/workforceGroupService.ts
+﻿// src/features/employer/workforceOps/services/workforceGroupService.ts
 //
 // Group CRUD + status transitions for Workforce Ops Hub.
 // Handles: create from announcement, quick group, complete, auto-delete check.
@@ -12,7 +12,7 @@ import type {
   AnnouncementShift,
   WorkforceActivityEntry,
   WorkforceActivityKind,
-} from "../types/workforceTypes";
+} from "../../../../shared/domains/workforce/types/workforceTypes";
 
 import {
   WF_GROUPS_KEY,
@@ -24,19 +24,19 @@ import {
   safeWrite,
   safeDispatch,
   uid,
-} from "../helpers/workforceStorageUtils";
+} from "../../../../shared/domains/workforce/storage/workforceStorageUtils";
 
 import {
   readGroups,
   readMembers,
   readActivity,
-} from "../helpers/workforceNormalizers";
+} from "../../../../shared/domains/workforce/helpers/workforceNormalizers";
 
-import { validateQuickGroup } from "../helpers/workforceValidation";
+import { validateQuickGroup } from "../../../../shared/domains/workforce/validation/workforceValidation";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Types — Quick Group Payload
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Types â€” Quick Group Payload
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type QuickGroupPayload = {
   name: string;
@@ -50,9 +50,9 @@ export type QuickGroupPayload = {
   shiftIdsPerStaff: Record<string, string[]>;
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Types — Announcement Group Payload
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Types â€” Announcement Group Payload
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type AnnouncementGroupPayload = {
   announcement: WorkforceAnnouncement;
@@ -65,9 +65,9 @@ export type AnnouncementGroupPayload = {
   }>;
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Internal Helpers
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function read(): WorkforceGroup[] {
   return readGroups(WF_GROUPS_KEY);
@@ -106,12 +106,12 @@ function logActivity(
   safeDispatch(WF_ACTIVITY_CHANGED);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Public API
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const workforceGroupService = {
-  // ── Reads ──────────────────────────────────────────────────────────────
+  // â”€â”€ Reads â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   getAll(): WorkforceGroup[] {
     return read();
@@ -133,20 +133,20 @@ export const workforceGroupService = {
     return read().filter((g) => g.status === "active");
   },
 
-  // ── Create from Confirmed Announcement ─────────────────────────────────
+  // â”€â”€ Create from Confirmed Announcement â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  createFromAnnouncement(
-    payload: AnnouncementGroupPayload,
-  ): { success: boolean; groupId?: string; errors?: string[] } {
+  createFromAnnouncement(payload: AnnouncementGroupPayload): {
+    success: boolean;
+    groupId?: string;
+    errors?: string[];
+  } {
     const { announcement, confirmedMembers } = payload;
 
     if (confirmedMembers.length === 0) {
       return { success: false, errors: ["At least one confirmed member is required."] };
     }
 
-    const existingGroup = read().find(
-      (g) => g.announcementId === announcement.id,
-    );
+    const existingGroup = read().find((g) => g.announcementId === announcement.id);
     if (existingGroup) {
       return { success: false, errors: ["A group already exists for this announcement."] };
     }
@@ -192,11 +192,13 @@ export const workforceGroupService = {
     return { success: true, groupId };
   },
 
-  // ── Create Quick Group (Mode 2) ───────────────────────────────────────
+  // â”€â”€ Create Quick Group (Mode 2) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  createQuickGroup(
-    payload: QuickGroupPayload,
-  ): { success: boolean; groupId?: string; errors?: string[] } {
+  createQuickGroup(payload: QuickGroupPayload): {
+    success: boolean;
+    groupId?: string;
+    errors?: string[];
+  } {
     const validation = validateQuickGroup(
       payload.name,
       payload.selectedStaff.map((s) => s.id),
@@ -246,7 +248,7 @@ export const workforceGroupService = {
     return { success: true, groupId };
   },
 
-  // ── Complete Group ─────────────────────────────────────────────────────
+  // â”€â”€ Complete Group â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   completeGroup(groupId: string): { success: boolean; errors?: string[] } {
     const all = read();
@@ -260,22 +262,16 @@ export const workforceGroupService = {
     }
 
     const updated = all.map((g) =>
-      g.id === groupId
-        ? { ...g, status: "completed" as const, completedAt: Date.now() }
-        : g,
+      g.id === groupId ? { ...g, status: "completed" as const, completedAt: Date.now() } : g,
     );
     write(updated);
 
-    logActivity(
-      "group_completed",
-      `Group completed: ${target.name}`,
-      `Date: ${target.date}`,
-    );
+    logActivity("group_completed", `Group completed: ${target.name}`, `Date: ${target.date}`);
 
     return { success: true };
   },
 
-  // ── Auto-Delete Check (IMP-6) ─────────────────────────────────────────
+  // â”€â”€ Auto-Delete Check (IMP-6) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Returns IDs of groups that should be archived (24hrs after event date).
   // Caller (page/hook) decides whether to auto-archive or prompt rating first.
 
@@ -304,7 +300,7 @@ export const workforceGroupService = {
     return { success: true };
   },
 
-  // ── Counts / Analytics Helpers ─────────────────────────────────────────
+  // â”€â”€ Counts / Analytics Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   countByStatus(): Record<WorkforceGroup["status"], number> {
     const all = read();
@@ -319,12 +315,10 @@ export const workforceGroupService = {
   },
 
   countMembersForGroup(groupId: string): number {
-    return readAllMembers().filter(
-      (m) => m.groupId === groupId && m.status === "active",
-    ).length;
+    return readAllMembers().filter((m) => m.groupId === groupId && m.status === "active").length;
   },
 
-  // ── Events ─────────────────────────────────────────────────────────────
+  // â”€â”€ Events â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   _events: {
     changed: WF_GROUPS_CHANGED,

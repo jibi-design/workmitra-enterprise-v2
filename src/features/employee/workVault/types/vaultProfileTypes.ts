@@ -1,22 +1,12 @@
-// src/features/employee/workVault/types/vaultProfileTypes.ts
-//
-// Work Vault v2 — All profile section types.
-// Pure types only — no logic, no imports, no side effects.
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Section 2: Professional Summary (Manual entry)
-// ─────────────────────────────────────────────────────────────────────────────
+// App name: Job Mitra
+// File name: vaultProfileTypes.ts
+// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\workVault\types\vaultProfileTypes.ts
 
 export type EmploymentStatus = "employed" | "available" | "not_looking";
 
 export type ExpectedRoleType = "full-time" | "part-time" | "contract";
 
-export type NoticePeriod =
-  | "immediate"
-  | "2_weeks"
-  | "1_month"
-  | "2_months"
-  | "3_months";
+export type NoticePeriod = "immediate" | "2_weeks" | "1_month" | "2_months" | "3_months";
 
 export type VaultProfessionalSummary = {
   headline: string;
@@ -27,15 +17,7 @@ export type VaultProfessionalSummary = {
   noticePeriod: NoticePeriod;
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Section 3: Work Experience (Auto from Career Jobs)
-// ─────────────────────────────────────────────────────────────────────────────
-
-export type WorkExperienceStatus =
-  | "hired"
-  | "completed"
-  | "left"
-  | "terminated";
+export type WorkExperienceStatus = "hired" | "completed" | "left" | "terminated";
 
 export type VaultWorkExperienceEntry = {
   jobId: string;
@@ -49,10 +31,6 @@ export type VaultWorkExperienceEntry = {
   employerRating: number | null;
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Section 4: Work Stats (Auto from all domains)
-// ─────────────────────────────────────────────────────────────────────────────
-
 export type VaultWorkStats = {
   totalCareerPositions: number;
   verifiedPositions: number;
@@ -61,17 +39,7 @@ export type VaultWorkStats = {
   totalCompaniesWorked: number;
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Section 5: Education & Certifications (Manual entry)
-// ─────────────────────────────────────────────────────────────────────────────
-
-export type EducationLevel =
-  | "none"
-  | "high_school"
-  | "diploma"
-  | "degree"
-  | "masters"
-  | "phd";
+export type EducationLevel = "none" | "high_school" | "diploma" | "degree" | "masters" | "phd";
 
 export type VaultCertification = {
   id: string;
@@ -87,10 +55,6 @@ export type VaultEducation = {
   certifications: VaultCertification[];
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Section 6: Skills Assessment (Mixed — profile + endorsements)
-// ─────────────────────────────────────────────────────────────────────────────
-
 export type SkillProficiency = "beginner" | "intermediate" | "expert";
 
 export type VaultSkillEntry = {
@@ -100,10 +64,6 @@ export type VaultSkillEntry = {
   endorsedByCompanies: string[];
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Section 7: Performance Record (Auto from Shift + Workforce)
-// ─────────────────────────────────────────────────────────────────────────────
-
 export type VaultPerformanceRecord = {
   overallRating: number | null;
   totalReviews: number;
@@ -112,33 +72,24 @@ export type VaultPerformanceRecord = {
   reliabilityScore: number | null;
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Section 8: References (Auto — all employers with ratings)
-// ─────────────────────────────────────────────────────────────────────────────
-
 export type VaultReference = {
   companyName: string;
   rating: number;
   source: "shift" | "workforce" | "career";
+  jobId?: string;
+  jobTitle?: string;
+  comment?: string;
+  tags?: string[];
+  hireAgain?: boolean;
+  createdAt?: number;
+  editedAt?: number | null;
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Section 9: Achievements & Milestones (Auto-generated)
-// ─────────────────────────────────────────────────────────────────────────────
+export type AchievementGroup = "shift" | "career" | "reputation" | "profile";
 
-export type AchievementId =
-  | "first_shift"
-  | "shifts_5"
-  | "shifts_10"
-  | "shifts_25"
-  | "first_career_hire"
-  | "career_hires_3"
-  | "first_5star"
-  | "star_streak_3"
-  | "zero_cancellations"
-  | "profile_complete"
-  | "first_review"
-  | "reviews_10";
+export type AchievementDisplayState = "latest_earned" | "next_goal" | "locked";
+
+export type AchievementId = string;
 
 export type VaultAchievement = {
   id: AchievementId;
@@ -147,11 +98,11 @@ export type VaultAchievement = {
   icon: string;
   earned: boolean;
   earnedAt: number | null;
+  group: AchievementGroup;
+  displayState: AchievementDisplayState;
+  currentValue: number;
+  targetValue: number;
 };
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Section 10: Activity & Engagement
-// ─────────────────────────────────────────────────────────────────────────────
 
 export type VaultActivityData = {
   memberSince: number;
@@ -159,10 +110,6 @@ export type VaultActivityData = {
   responseRate: number | null;
   profileViewsThisMonth: number | null;
 };
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Combined Manual Profile (stored in localStorage)
-// ─────────────────────────────────────────────────────────────────────────────
 
 export type VaultManualProfile = {
   professionalSummary: VaultProfessionalSummary;

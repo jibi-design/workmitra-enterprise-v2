@@ -1,213 +1,240 @@
-﻿// src/features/employer/home/pages/EmployerHomePage.tsx
-// Session 15: 2-col tiles, zero=grey values, CSS-driven green icons,
-// useCallback handlers, vault stats prop, broadcast modal clean.
+/** Job Mitra | EmployerHomePage.tsx | src/features/employer/home/pages/EmployerHomePage.tsx */
 
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { ROUTE_PATHS } from "../../../../app/router/routePaths";
-import { CenterModal } from "../../../../shared/components/CenterModal";
-import { checkAndSendRatingReminders } from "../../helpers/ratingNudgeNotificationService";
-import { getDashboardSnapshot, subscribeDashboard } from "../helpers/employerHomeDashboard";
-import { employerSettingsStorage } from "../../company/storage/employerSettings.storage";
-import { IconTileShift, IconBroadcast } from "../components/employerHomeIcons";
+import { OnboardingOverlay } from "../../../../shared/components/OnboardingOverlay";
+import { PendingActionsHub } from "../../../../shared/components/PendingActionsHub";
+import { useEmployerRoleHomePendingActions } from "../../../../shared/pendingActions/hooks/useEmployerRoleHomePendingActions";
+import { useEmployerOfferPendingHubItems } from "../../../../shared/pendingActions/hooks/useEmployerOfferPendingHubItems";
+import { showPhase2Features } from "../../../../shared/config/featureFlags";
 import {
-  ShiftJobsCard,
+  EMPLOYER_ONBOARDING_KEY,
+  EMPLOYER_SLIDES,
+  ONBOARDING_KEY,
+} from "../../../../shared/components/onboardingConstants";
+import { employerSettingsStorage } from "../../company/storage/employerSettings.storage";
+import {
   CareerJobsCard,
+  DemandPlannerCard,
+  ShiftJobsCard,
 } from "../components/EmployerHomePrimaryCards";
 import {
-  RatingHintCard,
-  WorkVaultCard,
+  HRManagementCard,
   InsightsCard,
+  ManagerConsoleCard,
+  WorkforceCard,
+  WorkVaultCard,
 } from "../components/EmployerHomeSecondaryCards";
-import { OnboardingOverlay } from "../../../../shared/components/OnboardingOverlay";
-import { EMPLOYER_SLIDES, ONBOARDING_KEY } from "../../../../shared/components/onboardingConstants";
+import { getDashboardSnapshot, subscribeDashboard } from "../helpers/employerHomeDashboard";
 
-/* ---- Style tokens ---- */
-const ZERO_VALUE_STYLE = {
-  color: "var(--wm-zero-text, #9ca3af)",
-} as const;
+const PAGE_SHELL: CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 16,
+  boxSizing: "border-box",
+  fontFamily: `"Inter", "Plus Jakarta Sans", system-ui, sans-serif`,
+};
 
-/* ------------------------------------------------ */
-/* Main Page                                        */
-/* ------------------------------------------------ */
 export function EmployerHomePage() {
-  const nav = useNavigate();
-  const [showOnboarding, setShowOnboarding] = useState(() => {
-    try { return !localStorage.getItem(ONBOARDING_KEY); } catch { return false; }
-  });
-  const data = useSyncExternalStore(subscribeDashboard, getDashboardSnapshot, getDashboardSnapshot);
-  const [showBroadcastModal, setShowBroadcastModal] = useState(false);
-  const [showWelcome, setShowWelcome] = useState(true);
-  const [welcomeFading, setWelcomeFading] = useState(false);
+  const navigate = useNavigate();
+  const pendingActions = useEmployerRoleHomePendingActions(navigate);
+  const offerPendingActions = useEmployerOfferPendingHubItems(navigate);
+  const allPendingActions = useMemo(
+    () => [...offerPendingActions, ...pendingActions],
+    [offerPendingActions, pendingActions],
+  );
+  const [showOnboarding, setShowOnboarding] = useState(
+    () =>
+      localStorage.getItem(EMPLOYER_ONBOARDING_KEY) !== "1" &&
+      localStorage.getItem(ONBOARDING_KEY) !== "1",
+  );
 
-  const isFirstTime = useMemo(() => !data.shiftPostsExist, [data.shiftPostsExist]);
+  // AUDIT: Re-enable data sync for status pulse triggering
+  const data = useSyncExternalStore(subscribeDashboard, getDashboardSnapshot, getDashboardSnapshot);
+
   const companyDisplayName = useMemo(() => {
     const profile = employerSettingsStorage.get();
-    return profile.companyName || profile.fullName || "";
+    return profile.companyName || profile.fullName || "Partner";
   }, []);
-
-  useEffect(() => { checkAndSendRatingReminders(); }, []);
-
-  useEffect(() => {
-    if (!isFirstTime) return;
-    const fadeTimer = setTimeout(() => setWelcomeFading(true), 10000);
-    const removeTimer = setTimeout(() => setShowWelcome(false), 10500);
-    return () => { clearTimeout(fadeTimer); clearTimeout(removeTimer); };
-  }, [isFirstTime]);
-
-  /* ---- Handlers ---- */
-  const handleShiftTile = useCallback(() => {
-    nav(ROUTE_PATHS.employerShiftHome);
-  }, [nav]);
-
-  const handleShiftTileKey = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === "Enter") nav(ROUTE_PATHS.employerShiftHome);
-  }, [nav]);
-
-  const handleBroadcastTile = useCallback(() => {
-    setShowBroadcastModal(true);
-  }, []);
-
-  const handleBroadcastTileKey = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === "Enter") setShowBroadcastModal(true);
-  }, []);
-
-  const handleCloseBroadcastModal = useCallback(() => {
-    setShowBroadcastModal(false);
-  }, []);
-
-  const handleShiftBroadcast = useCallback(() => {
-    setShowBroadcastModal(false);
-    nav(ROUTE_PATHS.employerShiftWorkspaces);
-  }, [nav]);
 
   return (
-    <div>
-      {/* ---- Top Tiles (2-column) ---- */}
-      <div className="wm-er-tiles wm-er-dashTiles">
-        <div
-          className="wm-er-tile"
-          role="button"
-          tabIndex={0}
-          style={{ cursor: "pointer" }}
-          onClick={handleShiftTile}
-          onKeyDown={handleShiftTileKey}
-        >
-          <div className="wm-er-tileTop">
-            <div className="wm-er-tileLabel">Upcoming Shifts</div>
-            <div className="wm-er-tileIcon">
-              <IconTileShift />
-            </div>
-          </div>
-          <div
-            className="wm-er-tileValue"
-            style={data.pendingShifts === 0 ? ZERO_VALUE_STYLE : undefined}
-          >
-            {data.pendingShifts}
-          </div>
-        </div>
+    <div style={PAGE_SHELL}>
+      {/* HEADER SECTION */}
+      <EmployerHomeHero companyName={companyDisplayName} />
 
-        <div
-          className="wm-er-tile"
-          role="button"
-          tabIndex={0}
-          style={{ cursor: "pointer" }}
-          onClick={handleBroadcastTile}
-          onKeyDown={handleBroadcastTileKey}
-        >
-          <div className="wm-er-tileTop">
-            <div className="wm-er-tileLabel">Broadcast Messages</div>
-            <div className="wm-er-tileIcon">
-              <IconBroadcast />
-            </div>
-          </div>
-          <div
-            className="wm-er-tileValue"
-            style={data.broadcastMessages === 0 ? ZERO_VALUE_STYLE : undefined}
-          >
-            {data.broadcastMessages}
-          </div>
-        </div>
-      </div>
+      <PendingActionsHub items={allPendingActions} />
 
-      {/* ---- Broadcast Modal ---- */}
-      <CenterModal
-        open={showBroadcastModal}
-        onBackdropClose={handleCloseBroadcastModal}
-        ariaLabel="Choose broadcast type"
-        maxWidth={400}
-      >
-        <div style={{ padding: 20 }}>
-          <div style={{ fontWeight: 700, fontSize: 15, color: "var(--wm-er-text)" }}>
-            Broadcast Messages
-          </div>
-          <div style={{ marginTop: 6, fontSize: 13, color: "var(--wm-er-muted)", lineHeight: 1.5 }}>
-            Choose the broadcast stream you want to open.
-          </div>
-          <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10 }}>
-            <button
-              type="button"
-              onClick={handleShiftBroadcast}
-              style={{
-                width: "100%",
-                padding: "12px 16px",
-                borderRadius: 10,
-                border: "1px solid var(--wm-shift-border, rgba(22,163,74,0.2))",
-                background: "var(--wm-shift-wash, rgba(22,163,74,0.06))",
-                color: "var(--wm-shift-accent, #16a34a)",
-                fontWeight: 700,
-                fontSize: 13,
-                cursor: "pointer",
-                textAlign: "center",
-              }}
-            >
-              Shift Jobs Broadcasts
-            </button>
-          </div>
+      {/* WORKSPACE DIRECTORY - Passing 'data' for the pulse indicators */}
+      <HomeSection eyebrow="Hiring" title="Recruitment Hub">
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--wm-stack-gap)" }}>
+          <CareerJobsCard data={data} />
+          <ShiftJobsCard data={data} />
+          <DemandPlannerCard />
         </div>
-      </CenterModal>
+      </HomeSection>
 
-      {/* ---- Welcome Card ---- */}
-      {isFirstTime && showWelcome && (
-        <div
-          style={{
-            marginTop: 12,
-            borderRadius: 12,
-            padding: 16,
-            textAlign: "center",
-            background: "var(--wm-success-wash, #f0fdf4)",
-            border: "1px solid var(--wm-success-border, #86efac)",
-            opacity: welcomeFading ? 0 : 1,
-            transition: "opacity 0.5s ease-out",
-          }}
-        >
-          <div style={{ fontSize: 15, fontWeight: 700, color: "var(--wm-success-dark, #15803d)" }}>
-            {companyDisplayName ? `Welcome, ${companyDisplayName}!` : "Welcome!"} 👋
-          </div>
-          <div style={{ marginTop: 6, fontSize: 13, color: "var(--wm-text-muted, #6b7280)", lineHeight: 1.5 }}>
-            Everything you need to manage your team is right here. Set up your company, build your team, and get started.
-          </div>
-        </div>
-      )}
-
-      {/* ---- Cards ---- */}
-      <div style={{ marginTop: 12 }}>
-        <ShiftJobsCard data={data} />
-        <CareerJobsCard data={data} />
-        {/* Phase 2 — HR, Console, Workforce hidden at launch */}
-        <RatingHintCard />
+      <HomeSection eyebrow="Organization" title="Staff & Documents">
         <WorkVaultCard />
-        <InsightsCard data={data} />
-      </div>
+      </HomeSection>
 
-      {/* Onboarding — first launch only */}
+      {showPhase2Features ? (
+        <HomeSection eyebrow="Operations" title="Workforce & HR (Beta)">
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--wm-stack-gap)" }}>
+            <WorkforceCard data={data} />
+            <HRManagementCard />
+            <ManagerConsoleCard />
+          </div>
+        </HomeSection>
+      ) : null}
+
+      <HomeSection eyebrow="Intelligence" title="Reports">
+        <InsightsCard />
+      </HomeSection>
+
       {showOnboarding && (
         <OnboardingOverlay
           slides={EMPLOYER_SLIDES}
-          ctaLabel="Post Your First Job &#8594;"
-          onComplete={() => { setShowOnboarding(false); nav(ROUTE_PATHS.employerShiftCreate); }}
+          ctaLabel="Get Started"
+          storageKey={EMPLOYER_ONBOARDING_KEY}
+          onComplete={() => setShowOnboarding(false)}
         />
       )}
     </div>
+  );
+}
+
+function EmployerHomeHero({ companyName }: { companyName: string }) {
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
+  return (
+    <div
+      style={{
+        marginTop: 0,
+        padding: "20px 16px",
+        borderRadius: 24,
+        background: "linear-gradient(145deg, #0F172A 0%, #1E293B 100%)",
+        border: "1px solid rgba(255, 255, 255, 0.1)",
+        boxShadow: "0 16px 32px rgba(15, 23, 42, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.05)",
+        position: "relative",
+        overflow: "hidden",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          bottom: -40,
+          left: -20,
+          width: 140,
+          height: 140,
+          background: "rgba(37, 99, 235, 0.1)",
+          filter: "blur(50px)",
+          borderRadius: "50%",
+        }}
+      />
+
+      <div style={{ position: "relative", zIndex: 1 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              background: "#10B981",
+              boxShadow: "0 0 12px #10B981",
+            }}
+          />
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: "#10B981",
+              textTransform: "uppercase",
+              letterSpacing: "1px",
+            }}
+          >
+            System Active
+          </span>
+        </div>
+
+        <h1
+          style={{
+            margin: "12px 0 0 0",
+            fontSize: 24,
+            fontWeight: 800,
+            color: "#FFFFFF",
+            letterSpacing: "-0.04em",
+          }}
+        >
+          {greeting}, {companyName}
+        </h1>
+        <p style={{ marginTop: 4, fontSize: 13, color: "#94A3B8", fontWeight: 500 }}>
+          Executive Command Center
+        </p>
+      </div>
+
+      <div
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: "50%",
+          border: "2px solid rgba(255,255,255,0.15)",
+          background: "rgba(255,255,255,0.05)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#FFFFFF",
+          fontWeight: 700,
+          fontSize: 16,
+          flexShrink: 0,
+        }}
+      >
+        {companyName.charAt(0)}
+      </div>
+    </div>
+  );
+}
+
+function HomeSection({
+  eyebrow,
+  title,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <section>
+      <div style={{ marginBottom: 8 }}>
+        <div
+          style={{
+            fontSize: 10,
+            fontWeight: 750,
+            color: "#94A3B8",
+            letterSpacing: 1,
+            textTransform: "uppercase",
+          }}
+        >
+          {eyebrow}
+        </div>
+        <div
+          style={{
+            marginTop: 2,
+            fontSize: 16,
+            fontWeight: 700,
+            color: "#0F172A",
+            letterSpacing: "-0.01em",
+          }}
+        >
+          {title}
+        </div>
+      </div>
+      {children}
+    </section>
   );
 }

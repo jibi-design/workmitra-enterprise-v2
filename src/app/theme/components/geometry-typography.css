@@ -1,0 +1,83 @@
+/* src/app/theme/components/geometry-typography.css — Step 4 grid + type scale */
+
+/* ------------------------------------------------ */
+/* Vertical stack grid (16px locked)                */
+/* ------------------------------------------------ */
+.wm-stack,
+.wm-stackGrid {
+  gap: var(--wm-stack-gap);
+}
+
+.wm-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.wm-stackGrid {
+  display: grid;
+}
+
+.wm-stack > * + *,
+.wm-stackGrid > * + * {
+  margin-top: 0;
+}
+
+/* Stacked card rhythm */
+.wm-ee-card + .wm-ee-card,
+.wm-er-card + .wm-er-card,
+.wm-stackGap > * + * {
+  margin-top: var(--wm-stack-gap);
+}
+
+/* ------------------------------------------------ */
+/* Card geometry lock                               */
+/* ------------------------------------------------ */
+.wm-ee-card {
+  padding: var(--wm-card-padding);
+  border-radius: var(--wm-radius-employee-card);
+  box-sizing: border-box;
+}
+
+.wm-er-card {
+  padding: var(--wm-card-padding);
+  border-radius: var(--wm-radius-employer-card);
+  box-sizing: border-box;
+}
+
+/* ------------------------------------------------ */
+/* Typography utilities                             */
+/* ------------------------------------------------ */
+.wm-typeHero {
+  margin: 0;
+  font-size: var(--wm-type-hero-size);
+  font-weight: var(--wm-type-hero-weight);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  color: var(--wm-neutral-900);
+}
+
+.wm-typeCardTitle,
+.wm-typeSectionTitle {
+  margin: 0;
+  font-size: var(--wm-type-card-title-size);
+  font-weight: var(--wm-type-card-title-weight);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--wm-neutral-900);
+}
+
+.wm-typeHelper {
+  margin: 0;
+  font-size: var(--wm-type-helper-size);
+  font-weight: var(--wm-type-helper-weight);
+  line-height: 1.45;
+  color: var(--wm-type-helper-color);
+}
+
+.wm-typeHelperMd {
+  margin: 0;
+  font-size: var(--wm-type-helper-size-md);
+  font-weight: var(--wm-type-helper-weight);
+  line-height: 1.45;
+  color: var(--wm-type-helper-color);
+}

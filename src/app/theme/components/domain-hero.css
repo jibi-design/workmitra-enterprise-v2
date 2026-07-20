@@ -1,0 +1,190 @@
+/* src/app/theme/components/domain-hero.css — Mitra Golden Rulebook Step 1: DomainHero primitive */
+
+.wm-domainHero {
+  margin-top: 0;
+  margin-bottom: 0;
+  padding: var(--wm-card-padding);
+  border: 1px solid var(--wm-glass-border);
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.wm-domainHero--employee {
+  border-radius: var(--wm-radius-employee-card);
+  box-shadow: var(--wm-emp-card-shadow);
+}
+
+.wm-domainHero--employer {
+  border-radius: var(--wm-radius-employer-card);
+  box-shadow: var(--wm-er-card-shadow);
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .wm-domainHero--employee {
+    backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
+    -webkit-backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
+  }
+
+  .wm-domainHero--employer {
+    backdrop-filter: blur(var(--wm-blur-lg)) var(--wm-glass-saturate);
+    -webkit-backdrop-filter: blur(var(--wm-blur-lg)) var(--wm-glass-saturate);
+  }
+}
+
+/* Domain tints — structure step; material tokens land in Step 2 */
+.wm-domainHero--shift {
+  border-color: rgba(22, 163, 74, 0.18);
+  background:
+    radial-gradient(circle at 94% 0%, rgba(22, 163, 74, 0.12), transparent 36%),
+    linear-gradient(135deg, var(--wm-emp-glass-bg-strong), rgba(240, 253, 244, 0.78));
+}
+
+.wm-domainHero--shift.wm-domainHero--employer {
+  background:
+    radial-gradient(circle at 94% 0%, rgba(22, 163, 74, 0.12), transparent 36%),
+    linear-gradient(135deg, var(--wm-er-glass-bg-strong), rgba(240, 253, 244, 0.78));
+}
+
+.wm-domainHero--career {
+  border-color: rgba(29, 78, 216, 0.16);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(29, 78, 216, 0.06), transparent 34%),
+    linear-gradient(135deg, var(--wm-emp-glass-bg-strong), rgba(241, 245, 249, 0.82));
+}
+
+.wm-domainHero--career.wm-domainHero--employer {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(29, 78, 216, 0.06), transparent 34%),
+    linear-gradient(135deg, var(--wm-er-glass-bg-strong), rgba(241, 245, 249, 0.82));
+}
+
+.wm-domainHero--planner {
+  border-color: rgba(8, 145, 178, 0.22);
+  background: linear-gradient(135deg, var(--wm-cyan-50), rgba(240, 253, 250, 0.92));
+}
+
+.wm-domainHeroTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--wm-stack-gap);
+}
+
+.wm-domainHeroIdentity {
+  display: flex;
+  align-items: center;
+  gap: var(--wm-stack-gap);
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.wm-domainHeroIcon {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--wm-radius-chip);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wm-domainHero--shift .wm-domainHeroIcon {
+  background:
+    radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.92), transparent 58%),
+    rgba(22, 163, 74, 0.11);
+  color: var(--wm-shift-accent, #16a34a);
+  border: 1px solid rgba(22, 163, 74, 0.16);
+}
+
+.wm-domainHero--career .wm-domainHeroIcon {
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  color: var(--wm-er-accent-career, #2563eb);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.wm-domainHero--planner .wm-domainHeroIcon {
+  background: rgba(8, 145, 178, 0.1);
+  color: var(--wm-planner-accent, #0891b2);
+  border: 1px solid rgba(8, 145, 178, 0.2);
+}
+
+.wm-domainHeroTextBlock {
+  min-width: 0;
+}
+
+.wm-domainHeroEyebrow {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+.wm-domainHero--shift .wm-domainHeroEyebrow {
+  background: rgba(22, 163, 74, 0.09);
+  border: 1px solid rgba(22, 163, 74, 0.14);
+  color: var(--wm-shift-accent-strong, #15803d);
+}
+
+.wm-domainHero--career .wm-domainHeroEyebrow {
+  background: rgba(29, 78, 216, 0.08);
+  border: 1px solid rgba(29, 78, 216, 0.12);
+  color: #1e40af;
+}
+
+.wm-domainHero--planner .wm-domainHeroEyebrow {
+  background: rgba(8, 145, 178, 0.1);
+  border: 1px solid rgba(8, 145, 178, 0.18);
+  color: var(--wm-planner-accent-strong, #0e7490);
+}
+
+.wm-domainHeroTitle {
+  margin: 8px 0 0;
+  font-size: var(--wm-type-hero-size);
+  font-weight: var(--wm-type-hero-weight);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  color: var(--wm-er-text, #0f172a);
+}
+
+.wm-domainHeroSubtitle {
+  margin: 5px 0 0;
+  font-size: var(--wm-type-helper-size);
+  font-weight: var(--wm-type-helper-weight);
+  line-height: 1.45;
+  color: var(--wm-type-helper-color);
+}
+
+.wm-domainHeroDescription {
+  margin-top: var(--wm-stack-gap);
+  font-size: var(--wm-type-helper-size);
+  font-weight: var(--wm-type-helper-weight);
+  line-height: 1.58;
+  color: var(--wm-type-helper-color);
+  max-width: 410px;
+}
+
+.wm-domainHeroTrailing {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.wm-domainHeroBody {
+  margin-top: var(--wm-stack-gap);
+}
+
+.wm-domainHeroBadge {
+  padding: 6px 10px;
+  border-radius: var(--wm-radius-pill, 999px);
+  background: rgba(22, 163, 74, 0.09);
+  border: 1px solid rgba(22, 163, 74, 0.16);
+  color: var(--wm-shift-accent, #16a34a);
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+}

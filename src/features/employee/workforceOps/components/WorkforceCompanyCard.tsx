@@ -1,15 +1,10 @@
-// src/features/employee/workforceOps/components/WorkforceCompanyCard.tsx
+﻿// src/features/employee/workforceOps/components/WorkforceCompanyCard.tsx
 //
 // Reusable company card for Employee Workforce Home.
 
-import type { WorkforceStaff } from "../../../employer/workforceOps/types/workforceTypes";
-import {
-  IconStar,
-  IconArrowRight,
-} from "../../../employer/workforceOps/components/workforceIcons";
-import {
-  AMBER,
-} from "../../../employer/workforceOps/components/workforceStyles";
+import type { WorkforceStaff } from "../../../../shared/domains/workforce/types/workforceTypes";
+import { IconStar, IconArrowRight } from "../../../../shared/domains/workforce/ui/workforceIcons";
+import { AMBER } from "../../../../shared/domains/workforce/ui/workforceStyles";
 
 type Props = {
   staff: WorkforceStaff;
@@ -44,9 +39,25 @@ export function WorkforceCompanyCard({
         textAlign: "left",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          gap: 8,
+        }}
+      >
         <div style={{ minWidth: 0, flex: 1 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-er-text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <div
+            style={{
+              fontSize: 14,
+              fontWeight: 700,
+              color: "var(--wm-er-text)",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
             {staff.employeeName}
           </div>
           <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginTop: 2 }}>
@@ -56,7 +67,15 @@ export function WorkforceCompanyCard({
           {/* Stats */}
           <div style={{ marginTop: 6, display: "flex", gap: 10, fontSize: 11 }}>
             {staff.rating !== null && (
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 2, color: AMBER, fontWeight: 700 }}>
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 2,
+                  color: AMBER,
+                  fontWeight: 700,
+                }}
+              >
                 <IconStar /> {staff.rating.toFixed(1)}
               </span>
             )}
@@ -73,11 +92,22 @@ export function WorkforceCompanyCard({
           </div>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flexShrink: 0 }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 6,
+            flexShrink: 0,
+          }}
+        >
           {/* Preferred Star */}
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); onTogglePreferred(); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onTogglePreferred();
+            }}
             style={{
               background: "none",
               border: "none",
@@ -88,9 +118,11 @@ export function WorkforceCompanyCard({
             }}
             aria-label={isPreferred ? "Remove from preferred" : "Add to preferred"}
           >
-            ★
+            â˜…
           </button>
-          <span style={{ color: "var(--wm-er-muted)" }}><IconArrowRight /></span>
+          <span style={{ color: "var(--wm-er-muted)" }}>
+            <IconArrowRight />
+          </span>
         </div>
       </div>
     </button>

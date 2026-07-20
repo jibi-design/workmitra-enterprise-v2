@@ -1,17 +1,21 @@
-// src/features/employee/employment/components/WorkDiaryQuickReport.tsx
-//
-// Employee Quick Report — simple date range summary.
-// No PDF, no download — just view. Notepad style.
-// Custom date range → Days Worked, Total Hours, Leave, Off.
+// App name: Job Mitra
+// File name: WorkDiaryQuickReport.tsx
+// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\employment\components\WorkDiaryQuickReport.tsx
 
 import { useState } from "react";
-
+import { workDiaryStorage } from "../storage/workDiary.storage";
 
 type Props = {
   employmentId: string;
+  jobTitle: string;
+  companyName: string;
 };
 
-export function WorkDiaryQuickReport({ employmentId }: Props) {
+const CONSOLE_BLUE = "var(--wm-er-accent-console, #0369a1)";
+const TEXT = "var(--wm-emp-text, var(--wm-er-text, #1e293b))";
+const MUTED = "var(--wm-emp-muted, var(--wm-er-muted, #64748b))";
+
+export function WorkDiaryQuickReport({ employmentId, jobTitle, companyName }: Props) {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [report, setReport] = useState<{
@@ -28,31 +32,21 @@ export function WorkDiaryQuickReport({ employmentId }: Props) {
   const formatDisplay = (dateStr: string) => {
     const [y, m, d] = dateStr.split("-").map(Number);
     return new Date(y, m - 1, d).toLocaleDateString("en-GB", {
-      day: "2-digit", month: "short", year: "numeric",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
     });
   };
 
-  const handleGenerate = () => {
+  const handleReportAction = () => {
+    if (report) {
+      setReport(null);
+      return;
+    }
+
     if (!canGenerate) return;
 
-    const allEntries = (() => {
-      const key = "wm_work_diary_v1";
-      try {
-        const raw = localStorage.getItem(key);
-        if (!raw) return [];
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : [];
-      } catch {
-        return [];
-      }
-    })();
-
-    const filtered = allEntries.filter(
-      (e: { employmentId: string; dateKey: string }) =>
-        e.employmentId === employmentId &&
-        e.dateKey >= startDate &&
-        e.dateKey <= endDate,
-    );
+    const filtered = workDiaryStorage.getRangeEntries(employmentId, startDate, endDate);
 
     let daysWorked = 0;
     let totalHours = 0;
@@ -61,10 +55,17 @@ export function WorkDiaryQuickReport({ employmentId }: Props) {
 
     for (const entry of filtered) {
       switch (entry.status) {
-        case "worked": daysWorked++; break;
-        case "leave": daysLeave++; break;
-        case "off": daysOff++; break;
+        case "worked":
+          daysWorked++;
+          break;
+        case "leave":
+          daysLeave++;
+          break;
+        case "off":
+          daysOff++;
+          break;
       }
+
       if (entry.totalHours) totalHours += entry.totalHours;
     }
 
@@ -82,122 +83,183 @@ export function WorkDiaryQuickReport({ employmentId }: Props) {
     width: "100%",
     padding: "10px 12px",
     fontSize: 13,
-    border: "1px solid var(--wm-emp-border, var(--wm-er-border, #e5e7eb))",
-    borderRadius: 8,
+    border: "1px solid rgba(3,105,161,0.14)",
+    borderRadius: 12,
     outline: "none",
-    background: "#fff",
-    color: "var(--wm-emp-text, var(--wm-er-text))",
+    background: "#ffffff",
+    color: TEXT,
     boxSizing: "border-box",
+    fontWeight: 700,
   };
 
   return (
-    <div className="wm-ee-card">
-      {/* Header */}
+    <div className="wm-ee-card" style={{ border: "1px solid rgba(3,105,161,0.13)" }}>
       <div style={{ marginBottom: 14 }}>
-        <div style={{ fontWeight: 900, fontSize: 14, color: "var(--wm-emp-text, var(--wm-er-text))" }}>
-          Quick Report
-        </div>
-        <div style={{ fontSize: 11, color: "var(--wm-emp-muted, var(--wm-er-muted))", marginTop: 2 }}>
-          View your work summary for any date range
+        <div style={{ fontWeight: 950, fontSize: 14, color: TEXT }}>Quick Report</div>
+        <div style={{ fontSize: 11.5, color: MUTED, marginTop: 3, lineHeight: 1.45 }}>
+          View your personal work summary for this job.
         </div>
       </div>
 
-      {/* Date Range */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
         <div>
-          <label style={{ fontSize: 12, fontWeight: 800, color: "var(--wm-emp-text, var(--wm-er-text))", display: "block", marginBottom: 4 }}>
+          <label
+            style={{
+              fontSize: 12,
+              fontWeight: 850,
+              color: TEXT,
+              display: "block",
+              marginBottom: 5,
+            }}
+          >
             From
           </label>
           <input
             type="date"
             value={startDate}
-            onChange={(e) => { setStartDate(e.target.value); setReport(null); }}
+            onChange={(event) => {
+              setStartDate(event.target.value);
+              setReport(null);
+            }}
             style={inputStyle}
           />
         </div>
+
         <div>
-          <label style={{ fontSize: 12, fontWeight: 800, color: "var(--wm-emp-text, var(--wm-er-text))", display: "block", marginBottom: 4 }}>
+          <label
+            style={{
+              fontSize: 12,
+              fontWeight: 850,
+              color: TEXT,
+              display: "block",
+              marginBottom: 5,
+            }}
+          >
             To
           </label>
           <input
             type="date"
             value={endDate}
-            onChange={(e) => { setEndDate(e.target.value); setReport(null); }}
+            onChange={(event) => {
+              setEndDate(event.target.value);
+              setReport(null);
+            }}
             style={inputStyle}
           />
         </div>
       </div>
 
-      {/* Validation */}
       {startDate && endDate && startDate > endDate && (
-        <div style={{
-          marginTop: 8, padding: "6px 10px", borderRadius: 6,
-          background: "#fee2e2", border: "1px solid #fca5a5",
-          fontSize: 12, color: "#dc2626", fontWeight: 600,
-        }}>
+        <div
+          style={{
+            marginTop: 9,
+            padding: "8px 10px",
+            borderRadius: 12,
+            background: "rgba(220,38,38,0.07)",
+            border: "1px solid rgba(220,38,38,0.16)",
+            fontSize: 12,
+            color: "#dc2626",
+            fontWeight: 850,
+          }}
+        >
           End date must be after start date.
         </div>
       )}
 
-      {/* Generate */}
       <button
-        className="wm-primarybtn"
         type="button"
-        onClick={handleGenerate}
-        disabled={!canGenerate}
-        style={{ width: "100%", marginTop: 12, opacity: canGenerate ? 1 : 0.5 }}
+        onClick={handleReportAction}
+        disabled={!report && !canGenerate}
+        style={{
+          width: "100%",
+          marginTop: 12,
+          height: 40,
+          borderRadius: 13,
+          border: report ? "1px solid rgba(3,105,161,0.2)" : "none",
+          background: report
+            ? "rgba(3,105,161,0.08)"
+            : canGenerate
+              ? CONSOLE_BLUE
+              : "rgba(3,105,161,0.35)",
+          color: report ? CONSOLE_BLUE : "#ffffff",
+          fontSize: 13,
+          fontWeight: 950,
+          cursor: report || canGenerate ? "pointer" : "not-allowed",
+          boxShadow: !report && canGenerate ? "0 10px 22px rgba(3,105,161,0.16)" : "none",
+        }}
       >
-        View Report
+        {report ? "Hide Report" : "View Report"}
       </button>
 
-      {/* Report Display — Notepad Style */}
       {report && (
-        <div style={{
-          marginTop: 14,
-          padding: 16,
-          background: "#fffef5",
-          borderRadius: 10,
-          border: "1px solid #fde68a",
-          fontFamily: "monospace",
-        }}>
-          <div style={{ fontWeight: 800, fontSize: 13, color: "#92400e", marginBottom: 10 }}>
-            Work Summary
-          </div>
-          <div style={{ fontSize: 12, color: "#78716c", marginBottom: 12 }}>
-            {report.startDisplay}  →  {report.endDisplay}
+        <div
+          style={{
+            marginTop: 14,
+            padding: 14,
+            background: "linear-gradient(135deg, rgba(255,255,255,1), rgba(240,249,255,0.72))",
+            borderRadius: 18,
+            border: "1px solid rgba(3,105,161,0.13)",
+          }}
+        >
+          <div style={{ fontWeight: 950, fontSize: 13.5, color: TEXT }}>Work Summary</div>
+
+          <div style={{ fontSize: 12, color: MUTED, marginTop: 5, lineHeight: 1.45 }}>
+            {report.startDisplay} to {report.endDisplay}
           </div>
 
-          <div style={{ borderTop: "1px dashed #d6d3d1", paddingTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
-              <span style={{ color: "#57534e" }}>Days Worked</span>
-              <span style={{ fontWeight: 800, color: "#15803d" }}>{report.daysWorked}</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
-              <span style={{ color: "#57534e" }}>Total Hours</span>
-              <span style={{ fontWeight: 800, color: "#1e40af" }}>{report.totalHours}h</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
-              <span style={{ color: "#57534e" }}>Leave Days</span>
-              <span style={{ fontWeight: 800, color: "#dc2626" }}>{report.daysLeave}</span>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
-              <span style={{ color: "#57534e" }}>Off Days</span>
-              <span style={{ fontWeight: 800, color: "#6b7280" }}>{report.daysOff}</span>
-            </div>
+          <div
+            style={{
+              marginTop: 9,
+              marginBottom: 12,
+              padding: "7px 9px",
+              borderRadius: 12,
+              background: "rgba(3,105,161,0.07)",
+              color: TEXT,
+              fontSize: 11.5,
+              fontWeight: 850,
+            }}
+          >
+            Report for: {jobTitle} at {companyName}
           </div>
 
-          <div style={{
-            borderTop: "1px dashed #d6d3d1",
-            marginTop: 10,
-            paddingTop: 8,
-            fontSize: 10,
-            color: "#a8a29e",
-            textAlign: "center",
-          }}>
-            Personal record — from your Work Diary
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <ReportStat label="Days Worked" value={String(report.daysWorked)} />
+            <ReportStat label="Total Hours" value={`${report.totalHours}h`} />
+            <ReportStat label="Leave Days" value={String(report.daysLeave)} />
+            <ReportStat label="Off Days" value={String(report.daysOff)} />
+          </div>
+
+          <div
+            style={{
+              marginTop: 11,
+              paddingTop: 9,
+              borderTop: "1px solid rgba(148,163,184,0.16)",
+              fontSize: 10.5,
+              color: MUTED,
+              textAlign: "center",
+              fontWeight: 750,
+            }}
+          >
+            Personal record from your Work Diary
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function ReportStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div
+      style={{
+        padding: "10px 11px",
+        borderRadius: 14,
+        background: "rgba(255,255,255,0.86)",
+        border: "1px solid rgba(3,105,161,0.1)",
+      }}
+    >
+      <div style={{ fontSize: 10.5, color: MUTED, fontWeight: 850 }}>{label}</div>
+      <div style={{ marginTop: 4, fontSize: 15, color: TEXT, fontWeight: 950 }}>{value}</div>
     </div>
   );
 }

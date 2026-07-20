@@ -1,12 +1,14 @@
 /** Job Mitra | EmployerTrustBadge.tsx | C:\projects\WorkMitra_Enterprise_v2\src\shared\employerProfile\EmployerTrustBadge.tsx */
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import {
   getEmployerQuickInfo,
   EMPLOYER_LEVEL_COLORS,
   EMPLOYER_LEVEL_BG,
 } from "./employerPublicProfileService";
+import { getEmployerBusinessKey } from "../../features/employer/company/helpers/employerDualId.helpers";
 import { employerSettingsStorage } from "../../features/employer/company/storage/employerSettings.storage";
+import { ratingStorage } from "../rating/ratingStorage";
 
 type Props = {
   /** Pass explicitly if available. Falls back to employerSettingsStorage. */
@@ -17,12 +19,14 @@ type Props = {
   accentColor?: string;
 };
 
-export function EmployerTrustBadge({
-  employerWmId,
-  variant = "compact",
-  accentColor,
-}: Props) {
-  const jmId = employerWmId || employerSettingsStorage.get().uniqueId || "";
+export function EmployerTrustBadge({ employerWmId, variant = "compact", accentColor }: Props) {
+  const jmId = employerWmId || getEmployerBusinessKey(employerSettingsStorage.get()) || "";
+
+  useSyncExternalStore(
+    ratingStorage.subscribe,
+    () => JSON.stringify(ratingStorage.getAllWRRatings()),
+    () => JSON.stringify(ratingStorage.getAllWRRatings()),
+  );
 
   const info = useMemo(() => (jmId ? getEmployerQuickInfo(jmId) : null), [jmId]);
 

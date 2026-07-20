@@ -5,19 +5,12 @@
 import type { EmployerProfile } from "../storage/employerSettings.storage";
 import { LANGUAGE_OPTIONS } from "../storage/employerSettings.storage";
 import { SettingsSelectField } from "./SettingsFormFields";
-import {
-  IconPreferences,
-  IconSecurity,
-  IconDanger,
-  IconDelete,
-} from "../helpers/settingsIcons";
+import { IconPreferences, IconSecurity, IconDanger, IconDelete } from "../helpers/settingsIcons";
 import {
   sectionHeadStyle,
   sectionIconStyle,
   sectionTitleStyle,
   comingSoonBadgeStyle,
-  toggleTrackStyle,
-  toggleThumbStyle,
   dangerBtnStyle,
 } from "../helpers/settingsStyles";
 
@@ -42,25 +35,6 @@ export function PreferencesSection({ data, editMode, onFieldChange }: Preference
         </div>
         <h2 style={sectionTitleStyle}>Preferences</h2>
       </div>
-
-      {/* Notification toggle */}
-      <div style={toggleRowStyle}>
-        <div>
-          <div style={toggleLabelStyle}>Notifications</div>
-          <div style={toggleDescStyle}>Receive alerts for applications and updates</div>
-        </div>
-        <button
-          type="button"
-          disabled={!editMode}
-          onClick={() => onFieldChange("notificationsEnabled", !data.notificationsEnabled)}
-          style={toggleTrackStyle(data.notificationsEnabled as boolean)}
-          aria-label={data.notificationsEnabled ? "Disable notifications" : "Enable notifications"}
-        >
-          <div style={toggleThumbStyle(data.notificationsEnabled as boolean)} />
-        </button>
-      </div>
-
-      
 
       {/* Language */}
       <SettingsSelectField
@@ -147,8 +121,8 @@ export function DangerZoneSection({ onDeleteAccount }: DangerZoneSectionProps) {
       </button>
 
       <div style={dangerHintStyle}>
-        Delete Account will permanently remove all your data including company profile,
-        employee records, and settings. This action cannot be undone.
+        Delete Account will permanently remove all your data including company profile, employee
+        records, and settings. This action cannot be undone.
       </div>
     </div>
   );
@@ -157,15 +131,6 @@ export function DangerZoneSection({ onDeleteAccount }: DangerZoneSectionProps) {
 /* ------------------------------------------------ */
 /* Local layout styles                              */
 /* ------------------------------------------------ */
-const toggleRowStyle: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  marginBottom: 14,
-};
-
-
-
 const toggleLabelStyle: React.CSSProperties = {
   fontSize: 14,
   fontWeight: 700,

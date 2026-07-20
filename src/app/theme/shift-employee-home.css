@@ -1,0 +1,580 @@
+/* src/app/theme/shift-employee-home.css */
+/*
+  Employee Shift Home semantic bridge styles.
+  Purpose:
+  - Premium visible polish for Employee Shift control center and search hero.
+  - Shift green scoped only inside Shift content.
+  - Topbar remains neutral via domain-governance.css.
+  - Admin untouched.
+*/
+
+.wm-shiftEmployeeHomePage {
+  min-height: 100%;
+}
+
+/* ------------------------------------------------ */
+/* Employee Shift Hero                              */
+/* ------------------------------------------------ */
+.wm-shiftEmployeeHomeHero,
+.wm-shiftEmployeeSearchHero {
+  margin-top: 2px;
+  padding: 17px 16px;
+  border-radius: var(--wm-radius-employee-card);
+  border: 1px solid rgba(22, 163, 74, 0.17);
+  background:
+    radial-gradient(circle at 94% 0%, rgba(22, 163, 74, 0.12), transparent 36%),
+    radial-gradient(circle at 0% 100%, rgba(15, 23, 42, 0.035), transparent 34%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(240, 253, 244, 0.72));
+  box-shadow:
+    0 18px 46px rgba(15, 23, 42, 0.065),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+.wm-shiftEmployeeHeroTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--wm-stack-gap);
+}
+
+.wm-shiftEmployeeHeroIdentity {
+  display: flex;
+  align-items: center;
+  gap: var(--wm-stack-gap);
+  min-width: 0;
+}
+
+.wm-shiftEmployeeHeroIcon {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--wm-radius-18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background:
+    radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.92), transparent 58%),
+    rgba(22, 163, 74, 0.1);
+  color: var(--wm-shift-accent);
+  border: 1px solid rgba(22, 163, 74, 0.15);
+  box-shadow:
+    0 10px 22px rgba(22, 163, 74, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.wm-shiftEmployeeHeroBadge {
+  padding: 6px 10px;
+  border-radius: var(--wm-radius-pill);
+  background:
+    radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.9), transparent 58%),
+    rgba(22, 163, 74, 0.09);
+  border: 1px solid rgba(22, 163, 74, 0.16);
+  color: var(--wm-shift-accent);
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.wm-shiftEmployeeHeroText {
+  margin-top: var(--wm-stack-gap);
+  font-size: 12px;
+  line-height: 1.58;
+  color: var(--wm-emp-muted);
+  max-width: 410px;
+}
+
+/* ------------------------------------------------ */
+/* Employee Stats Tiles                             */
+/* ------------------------------------------------ */
+.wm-shiftEmployeeStatsGrid {
+  margin-top: var(--wm-stack-gap);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.wm-shiftEmployeeStatsTile {
+  min-height: 78px;
+  border-radius: var(--wm-radius-20);
+  padding: 12px 10px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.98), transparent 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96));
+  box-shadow:
+    0 12px 28px rgba(15, 23, 42, 0.045),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+.wm-shiftEmployeeStatsLabel {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--wm-emp-muted);
+  letter-spacing: 0.2px;
+}
+
+.wm-shiftEmployeeStatsValue {
+  margin-top: 6px;
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 900;
+  color: var(--wm-emp-text);
+  letter-spacing: -0.03em;
+}
+
+.wm-shiftEmployeeStatsTile.isPositive .wm-shiftEmployeeStatsValue {
+  color: var(--wm-shift-accent);
+}
+
+/* ------------------------------------------------ */
+/* Employee Action Cards                            */
+/* ------------------------------------------------ */
+.wm-shiftEmployeeActionGrid {
+  margin-top: var(--wm-stack-gap);
+  display: grid;
+  gap: 10px;
+}
+
+.wm-shiftEmployeeActionCard {
+  width: 100%;
+  padding: 15px 16px;
+  border-radius: var(--wm-radius-employee-card);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(22, 163, 74, 0.035), transparent 32%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(255, 255, 255, 0.94));
+  cursor: pointer;
+  text-align: left;
+  box-shadow:
+    0 12px 30px rgba(15, 23, 42, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition:
+    transform var(--wm-motion-fast) var(--wm-motion-ease),
+    border-color var(--wm-motion-base) var(--wm-motion-ease),
+    box-shadow var(--wm-motion-base) var(--wm-motion-ease),
+    background var(--wm-motion-base) var(--wm-motion-ease);
+  position: relative;
+  overflow: hidden;
+}
+
+.wm-shiftEmployeeActionCard::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 16px;
+  bottom: 16px;
+  width: 4px;
+  border-radius: var(--wm-radius-pill);
+  background: linear-gradient(180deg, var(--wm-shift-accent), rgba(22, 163, 74, 0.42));
+}
+
+.wm-shiftEmployeeActionCard:hover {
+  border-color: rgba(22, 163, 74, 0.18);
+  box-shadow:
+    0 16px 38px rgba(15, 23, 42, 0.064),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+.wm-shiftEmployeeActionCard:active {
+  transform: scale(0.992);
+}
+
+.wm-shiftEmployeeActionInner {
+  display: flex;
+  align-items: center;
+  gap: var(--wm-stack-gap);
+  position: relative;
+  z-index: 1;
+}
+
+.wm-shiftEmployeeActionIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--wm-radius-16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.96), transparent 58%),
+    rgba(22, 163, 74, 0.09);
+  color: var(--wm-shift-accent);
+  flex-shrink: 0;
+  border: 1px solid rgba(22, 163, 74, 0.13);
+  box-shadow:
+    0 8px 18px rgba(22, 163, 74, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.wm-shiftEmployeeActionContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.wm-shiftEmployeeActionTitle {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--wm-emp-text);
+  letter-spacing: -0.01em;
+}
+
+.wm-shiftEmployeeActionSubtitle {
+  font-size: 12px;
+  color: var(--wm-emp-muted);
+  margin-top: 2px;
+  line-height: 1.45;
+}
+
+.wm-shiftEmployeeActionMeta {
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--wm-shift-accent);
+  margin-top: 5px;
+}
+
+.wm-shiftEmployeeActionArrow {
+  font-size: 18px;
+  color: var(--wm-emp-muted);
+  flex-shrink: 0;
+}
+
+/* ------------------------------------------------ */
+/* Preview Posts                                    */
+/* ------------------------------------------------ */
+.wm-shiftEmployeePreviewPosts {
+  margin-top: var(--wm-stack-gap);
+}
+
+.wm-shiftEmployeePreviewHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: var(--wm-stack-gap);
+}
+
+.wm-shiftEmployeePreviewTitle {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--wm-emp-text);
+}
+
+.wm-shiftEmployeePreviewBrowseButton {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  color: var(--wm-shift-accent);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.wm-shiftEmployeePreviewList {
+  display: grid;
+  gap: 8px;
+}
+
+.wm-shiftEmployeePreviewPostButton {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: var(--wm-radius-16);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(22, 163, 74, 0.035), transparent 32%),
+    rgba(255, 255, 255, 0.96);
+  cursor: pointer;
+  text-align: left;
+  box-shadow:
+    0 10px 24px rgba(15, 23, 42, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88);
+}
+
+.wm-shiftEmployeePreviewPostRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.wm-shiftEmployeePreviewPostInfo {
+  min-width: 0;
+}
+
+.wm-shiftEmployeePreviewPostTitle {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--wm-emp-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wm-shiftEmployeePreviewPostMeta {
+  font-size: 11px;
+  color: var(--wm-emp-muted);
+  margin-top: 2px;
+}
+
+.wm-shiftEmployeePreviewPay {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--wm-shift-accent);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ------------------------------------------------ */
+/* Availability Broadcast Card                      */
+/* ------------------------------------------------ */
+.wm-shiftEmployeeAvailabilityCard {
+  margin-top: var(--wm-stack-gap);
+  border-radius: var(--wm-radius-employee-card);
+  border-color: rgba(22, 163, 74, 0.17);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(22, 163, 74, 0.055), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(255, 255, 255, 0.94));
+}
+
+.wm-shiftEmployeeAvailabilityCard::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 16px;
+  bottom: 16px;
+  width: 4px;
+  border-radius: var(--wm-radius-pill);
+  background: linear-gradient(180deg, var(--wm-shift-accent), rgba(22, 163, 74, 0.42));
+}
+
+.wm-shiftEmployeeAvailabilityTitle {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--wm-emp-text);
+  margin-bottom: 6px;
+}
+
+.wm-shiftEmployeeAvailabilityText {
+  font-size: 12px;
+  color: var(--wm-emp-muted);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.wm-shiftEmployeeBroadcastActive {
+  padding: 12px 14px;
+  border-radius: var(--wm-radius-16);
+  margin-bottom: 10px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(22, 163, 74, 0.1), transparent 34%),
+    rgba(240, 253, 244, 0.86);
+  border: 1px solid rgba(22, 163, 74, 0.22);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--wm-shift-accent);
+}
+
+.wm-shiftEmployeeBroadcastExpires {
+  font-size: 11px;
+  color: var(--wm-emp-muted);
+  margin-top: 3px;
+  font-weight: 600;
+}
+
+.wm-shiftEmployeeBroadcastStopButton {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 8px 14px;
+  border-radius: var(--wm-radius-12);
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  background: rgba(220, 38, 38, 0.04);
+  color: var(--wm-error, #dc2626);
+  cursor: pointer;
+}
+
+.wm-shiftEmployeeBroadcastActions {
+  display: flex;
+  gap: 8px;
+}
+
+.wm-shiftEmployeeBroadcastButton {
+  flex: 1;
+  min-height: 42px;
+}
+
+.wm-shiftEmployeeBroadcastOutlineButton {
+  flex: 1;
+  min-height: 42px;
+}
+
+/* ------------------------------------------------ */
+/* 7-day availability calendar (Level 3.1)          */
+/* ------------------------------------------------ */
+.wm-shiftAvailabilityCalendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--wm-space-8);
+  margin-top: var(--wm-stack-gap);
+}
+
+.wm-shiftAvailabilityCalendar__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 56px;
+  border-radius: var(--wm-radius-pill);
+  cursor: pointer;
+  transition:
+    transform var(--wm-motion-fast) var(--wm-motion-spring),
+    box-shadow var(--wm-motion-base) var(--wm-motion-spring),
+    background var(--wm-motion-base) var(--wm-motion-spring);
+}
+
+.wm-shiftAvailabilityCalendar__weekday {
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  opacity: 0.65;
+}
+
+.wm-shiftAvailabilityCalendar__day[aria-pressed="true"] .wm-shiftAvailabilityCalendar__weekday {
+  opacity: 0.92;
+}
+
+.wm-shiftAvailabilityCalendar__dayNum {
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.wm-shiftAvailabilityCalendar__summary {
+  margin: var(--wm-stack-gap) 0 0;
+  font-size: var(--wm-type-helper-size);
+  font-weight: var(--wm-type-helper-weight);
+  color: var(--wm-type-helper-color);
+  line-height: 1.5;
+}
+
+.wm-shiftAvailabilityCalendar__summary.isActive {
+  font-weight: 650;
+  color: var(--wm-success-dark);
+}
+
+/* ------------------------------------------------ */
+/* How it works                                     */
+/* ------------------------------------------------ */
+.wm-shiftEmployeeHowCard {
+  margin-top: var(--wm-stack-gap);
+  margin-bottom: 24px;
+  border-radius: var(--wm-radius-employee-card);
+  border-color: rgba(22, 163, 74, 0.17);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(22, 163, 74, 0.045), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(248, 250, 252, 0.96));
+  box-shadow:
+    0 12px 30px rgba(15, 23, 42, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.wm-shiftEmployeeHowCard::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 16px;
+  bottom: 16px;
+  width: 4px;
+  border-radius: var(--wm-radius-pill);
+  background: linear-gradient(180deg, var(--wm-shift-accent), rgba(22, 163, 74, 0.42));
+}
+
+.wm-shiftEmployeeHowToggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+}
+
+.wm-shiftEmployeeHowTitle {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--wm-emp-text);
+  text-align: left;
+}
+
+.wm-shiftEmployeeHowSub {
+  font-size: 11px;
+  color: var(--wm-emp-muted);
+  margin-top: 2px;
+  text-align: left;
+}
+
+.wm-shiftEmployeeHowSteps {
+  margin-top: 13px;
+  display: grid;
+  gap: 9px;
+}
+
+.wm-shiftEmployeeHowStep {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.wm-shiftEmployeeHowStepNumber {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--wm-radius-pill);
+  flex-shrink: 0;
+  background: rgba(22, 163, 74, 0.12);
+  color: var(--wm-shift-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.wm-shiftEmployeeHowStepText {
+  font-size: 13px;
+  color: var(--wm-emp-text);
+  line-height: 1.5;
+  padding-top: 2px;
+  font-weight: 700;
+}
+
+/* ------------------------------------------------ */
+/* Mobile                                           */
+/* ------------------------------------------------ */
+@media (max-width: 420px) {
+  .wm-shiftEmployeeHomeHero,
+  .wm-shiftEmployeeSearchHero {
+    padding: 15px 14px;
+  }
+
+  .wm-shiftEmployeeHeroTop {
+    align-items: flex-start;
+  }
+
+  .wm-shiftEmployeeHeroBadge {
+    font-size: 10.5px;
+    padding-inline: 9px;
+  }
+
+  .wm-shiftEmployeeActionCard {
+    padding: 14px;
+  }
+
+  .wm-shiftEmployeeBroadcastActions {
+    gap: 7px;
+  }
+}

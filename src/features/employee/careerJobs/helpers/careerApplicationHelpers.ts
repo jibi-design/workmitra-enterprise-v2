@@ -9,7 +9,13 @@ import {
 } from "../../../employer/careerJobs/helpers/careerStorageUtils";
 import { clampApplicationStage } from "../../../employer/careerJobs/helpers/careerNormalizers";
 import type {
-  Tab, BadgeTone, AppLite, KpiCounts, TabCounts, ExplanationResult,
+  Tab,
+  BadgeTone,
+  AppLite,
+  KpiCounts,
+  TabCounts,
+  ExplanationResult,
+  ScheduledInterviewSummary,
 } from "../types/careerApplicationTypes";
 
 /* ------------------------------------------------ */
@@ -23,7 +29,8 @@ export type { Tab, BadgeTone, AppLite, KpiCounts, TabCounts, ExplanationResult }
 export function stageToTab(stage: CareerApplicationStage): Tab {
   if (stage === "applied" || stage === "shortlisted") return "active";
   if (stage === "interview") return "interview";
-  if (stage === "offered" || stage === "hired") return "offers";
+  if (stage === "offered" || stage === "offer_accepted") return "offers";
+  if (stage === "hired") return "closed";
   if (stage === "rejected" || stage === "withdrawn") return "closed";
   return "active";
 }
@@ -31,40 +38,59 @@ export function stageToTab(stage: CareerApplicationStage): Tab {
 /* ------------------------------------------------ */
 /* Label helpers                                    */
 /* ------------------------------------------------ */
-export function stageLabel(s: CareerApplicationStage): string {
+export function stageLabel(stageOrApp: CareerApplicationStage | AppLite): string {
+  const s = typeof stageOrApp === "string" ? stageOrApp : stageOrApp.stage;
+  const app = typeof stageOrApp === "object" ? stageOrApp : null;
+
+  if (s === "rejected") {
+    const hadInterview = app && (app.totalScheduled > 0 || app.currentRound > 0);
+    return hadInterview ? "Not Selected" : "Not Shortlisted";
+  }
+
   const map: Record<CareerApplicationStage, string> = {
-    applied: "Applied", shortlisted: "Shortlisted",
-    interview: "In Interview", offered: "Offer Received",
-    hired: "Hired", rejected: "Rejected", withdrawn: "Withdrawn",
+    applied: "Applied",
+    shortlisted: "Shortlisted",
+    interview: "In Interview",
+    offered: "Offer Received",
+    offer_accepted: "Offer Accepted",
+    hired: "Confirmed",
+    rejected: "Not Selected",
+    withdrawn: "Withdrawn",
   };
   return map[s] ?? s;
 }
 
 export function toneForStage(s: CareerApplicationStage): BadgeTone {
-  if (s === "hired") return "good";
-  if (s === "offered") return "warn";
+  if (s === "hired") return "info";
+  if (s === "offered" || s === "offer_accepted") return "warn";
   if (s === "shortlisted" || s === "interview") return "info";
   if (s === "rejected" || s === "withdrawn") return "bad";
   return "neutral";
 }
 
 export function badgeColors(tone: BadgeTone): { bg: string; border: string; color: string } {
-  if (tone === "good") return { bg: "rgba(22,163,74,0.10)", border: "rgba(22,163,74,0.30)", color: "#166534" };
-  if (tone === "warn") return { bg: "rgba(217,119,6,0.10)", border: "rgba(217,119,6,0.30)", color: "#92400e" };
-  if (tone === "info") return { bg: "rgba(29,78,216,0.10)", border: "rgba(29,78,216,0.30)", color: "#1e40af" };
-  if (tone === "bad") return { bg: "rgba(220,38,38,0.10)", border: "rgba(220,38,38,0.30)", color: "#991b1b" };
+  if (tone === "good")
+    return { bg: "rgba(22,163,74,0.10)", border: "rgba(22,163,74,0.30)", color: "#166534" };
+  if (tone === "warn")
+    return { bg: "rgba(217,119,6,0.10)", border: "rgba(217,119,6,0.30)", color: "#92400e" };
+  if (tone === "info")
+    return { bg: "rgba(29,78,216,0.10)", border: "rgba(29,78,216,0.30)", color: "#1e40af" };
+  if (tone === "bad")
+    return { bg: "rgba(220,38,38,0.10)", border: "rgba(220,38,38,0.30)", color: "#991b1b" };
   return { bg: "rgba(17,24,39,0.04)", border: "rgba(17,24,39,0.10)", color: "#6b7280" };
 }
 
 export function cardLeftColor(stage: CareerApplicationStage): string {
-  if (stage === "hired") return "#16a34a";
+  if (stage === "hired") return "#1d4ed8";
+  if (stage === "offer_accepted") return "#2563eb";
   if (stage === "offered") return "#d97706";
   if (stage === "rejected" || stage === "withdrawn") return "#ef4444";
   return "#1d4ed8";
 }
 
 export function cardBgTint(stage: CareerApplicationStage): string {
-  if (stage === "hired") return "rgba(22,163,74,0.04)";
+  if (stage === "hired") return "rgba(29,78,216,0.04)";
+  if (stage === "offer_accepted") return "rgba(37,99,235,0.04)";
   if (stage === "offered") return "rgba(217,119,6,0.04)";
   if (stage === "rejected" || stage === "withdrawn") return "rgba(220,38,38,0.03)";
   return "rgba(29,78,216,0.03)";
@@ -73,33 +99,71 @@ export function cardBgTint(stage: CareerApplicationStage): string {
 export function fmtDateTime(ts: number): string {
   try {
     return new Date(ts).toLocaleString(undefined, {
-      month: "short", day: "numeric",
-      hour: "2-digit", minute: "2-digit",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
-  } catch { return ""; }
+  } catch {
+    return "";
+  }
 }
 
 export function explanationForStage(app: AppLite, totalRounds: number): ExplanationResult | null {
-  if (app.stage === "applied") return { title: "Under Review", body: "Your application is being reviewed by the employer.", tone: "neutral" };
-  if (app.stage === "shortlisted") return { title: "Shortlisted", body: "You have been shortlisted. Interview scheduling may follow.", tone: "info" };
+  if (app.stage === "applied")
+    return {
+      title: "Under Review",
+      body: "Your application is being reviewed by the employer.",
+      tone: "neutral",
+    };
+  if (app.stage === "shortlisted")
+    return {
+      title: "Shortlisted",
+      body: "You have been shortlisted. Interview scheduling may follow.",
+      tone: "info",
+    };
   if (app.stage === "interview") {
     const progress = totalRounds > 0 ? ` ${app.totalPassed}/${totalRounds} rounds passed.` : "";
     const scheduled = app.totalScheduled > 0 ? ` ${app.totalScheduled} round scheduled.` : "";
-    return { title: "In Interview", body: `Interview process is underway.${progress}${scheduled}`, tone: "info" };
+    return {
+      title: "In Interview",
+      body: `Interview process is underway.${progress}${scheduled}`,
+      tone: "info",
+    };
   }
   if (app.stage === "offered") {
     const od = app.offerDetails;
-    const body = od && od.salary > 0
-      ? `${od.jobTitle} \u2014 Salary: ${od.salary.toLocaleString()} per ${od.salaryPeriod}. Start date: ${od.startDate}.${od.message ? ` Note: ${od.message}` : ""}`
-      : "The employer has extended a job offer. Review the details with your employer.";
+    const body =
+      od && od.salary > 0
+        ? `${od.jobTitle} \u2014 Salary: ${od.salary.toLocaleString()} per ${od.salaryPeriod}. Start date: ${od.startDate}.${od.message ? ` Note: ${od.message}` : ""}`
+        : "The employer has extended a job offer. Review the details with your employer.";
     return { title: "Offer Received", body, tone: "warn" };
   }
-  if (app.stage === "hired") return { title: "Hired", body: "You have been hired! Check your Career Workspaces for details.", tone: "good" };
-  if (app.stage === "rejected") {
-    const reason = app.rejectionReason ? ` Reason: ${app.rejectionReason}` : "";
-    return { title: "Not Selected", body: `Your application was not successful.${reason}`, tone: "bad" };
+  if (app.stage === "offer_accepted") {
+    return {
+      title: "Offer Accepted",
+      body: "You accepted this offer. The employer will confirm your hire and create your workspace.",
+      tone: "info",
+    };
   }
-  if (app.stage === "withdrawn") return { title: "Withdrawn", body: "You withdrew this application.", tone: "bad" };
+  if (app.stage === "hired")
+    return {
+      title: "Moved to Career Workspace",
+      body: "This application is complete. Open your Career Workspace to view employment status and updates.",
+      tone: "info",
+    };
+  if (app.stage === "rejected") {
+    const hadInterview = app.totalScheduled > 0 || app.currentRound > 0;
+    const title = hadInterview ? "Not Selected" : "Not Shortlisted";
+    const reason = app.rejectionReason ? ` Reason: ${app.rejectionReason}` : "";
+    return {
+      title,
+      body: `This application was not successful this time. The employer has decided to move forward with other candidates.${reason}`,
+      tone: "bad",
+    };
+  }
+  if (app.stage === "withdrawn")
+    return { title: "Withdrawn", body: "You withdrew this application.", tone: "bad" };
   return null;
 }
 
@@ -107,17 +171,22 @@ export function explanationForStage(app: AppLite, totalRounds: number): Explanat
 /* KPI + Tab count helpers                          */
 /* ------------------------------------------------ */
 export function computeKpi(apps: AppLite[]): KpiCounts {
-  let applied = 0; let shortlisted = 0; let confirmed = 0;
+  let applied = 0;
+  let shortlisted = 0;
+  let confirmed = 0;
   for (const a of apps) {
     if (a.stage === "applied") applied++;
     else if (a.stage === "shortlisted") shortlisted++;
-    else if (a.stage === "hired" || a.stage === "offered") confirmed++;
+    else if (a.stage === "hired") confirmed++;
   }
   return { applied, shortlisted, confirmed };
 }
 
 export function computeTabCounts(apps: AppLite[]): TabCounts {
-  let active = 0; let interview = 0; let offers = 0; let closed = 0;
+  let active = 0;
+  let interview = 0;
+  let offers = 0;
+  let closed = 0;
   for (const a of apps) {
     const t = stageToTab(a.stage);
     if (t === "active") active++;
@@ -138,7 +207,8 @@ function isRec(x: unknown): x is Rec {
 }
 
 function str(r: Rec, k: string): string | undefined {
-  const v = r[k]; return typeof v === "string" ? v : undefined;
+  const v = r[k];
+  return typeof v === "string" ? v : undefined;
 }
 
 function num(r: Rec, k: string): number | undefined {
@@ -159,17 +229,55 @@ function parseAppsLite(raw: string | null): AppLite[] {
       const appliedAt = num(x, "appliedAt");
       if (!id || !jobId || appliedAt === undefined) continue;
       const roundResults = Array.isArray(x["roundResults"]) ? (x["roundResults"] as Rec[]) : [];
-      let totalPassed = 0; let totalScheduled = 0;
+      let totalPassed = 0;
+      let totalScheduled = 0;
+      let nextScheduledInterview: AppLite["nextScheduledInterview"];
+
       for (const rr of roundResults) {
         if (!isRec(rr)) continue;
+
         if (rr["status"] === "passed") totalPassed++;
-        if (rr["status"] === "scheduled") totalScheduled++;
+
+        if (rr["status"] === "scheduled") {
+          totalScheduled++;
+
+          const scheduledDate = str(rr, "scheduledDate") ?? "";
+          const scheduledTime = str(rr, "scheduledTime") ?? "";
+
+          if (scheduledDate && scheduledTime) {
+            const round = num(rr, "round") ?? totalScheduled;
+            const rsvpRaw = rr["rsvpStatus"];
+            const rsvpStatus =
+              rsvpRaw === "pending" || rsvpRaw === "accepted" || rsvpRaw === "declined"
+                ? rsvpRaw
+                : undefined;
+
+            const scheduledInterview: ScheduledInterviewSummary = {
+              round,
+              label: str(rr, "label") ?? `Round ${round}`,
+              mode: str(rr, "interviewMode") ?? "interview",
+              scheduledDate,
+              scheduledTime,
+              location: str(rr, "location"),
+              meetingLink: str(rr, "meetingLink"),
+              rsvpStatus,
+            };
+
+            if (!nextScheduledInterview || round < nextScheduledInterview.round) {
+              nextScheduledInterview = scheduledInterview;
+            }
+          }
+        }
       }
       out.push({
-        id, jobId, stage: clampApplicationStage(x["stage"]),
-        appliedAt, updatedAt: num(x, "updatedAt") ?? appliedAt,
+        id,
+        jobId,
+        stage: clampApplicationStage(x["stage"]),
+        appliedAt,
+        updatedAt: num(x, "updatedAt") ?? appliedAt,
         currentRound: num(x, "currentRound") ?? 0,
-        totalPassed, totalScheduled,
+        totalPassed,
+        totalScheduled,
         employeeName: str(x, "employeeName") ?? "Applicant",
         coverNote: str(x, "coverNote") ?? "",
         noticePeriod: str(x, "noticePeriod") ?? "Immediate",
@@ -192,10 +300,13 @@ function parseAppsLite(raw: string | null): AppLite[] {
             message: str(od, "message"),
           };
         })(),
+        nextScheduledInterview,
       });
     }
     return out.sort((a, b) => b.appliedAt - a.appliedAt);
-  } catch { return []; }
+  } catch {
+    return [];
+  }
 }
 
 /* ------------------------------------------------ */

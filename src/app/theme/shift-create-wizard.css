@@ -1,0 +1,100 @@
+/* src/app/theme/shift-create-wizard.css */
+/* Create Shift wizard — recessed glass availability card (Step 2). */
+
+.wm-shiftCreateWizardPage {
+  padding-bottom: 8px;
+}
+
+.wm-shiftNearbyAvailability {
+  position: relative;
+  margin-top: var(--wm-stack-gap);
+  margin-bottom: 4px;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid rgba(203, 213, 225, 0.95);
+  background: rgba(248, 250, 252, 0.92);
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.85),
+    0 1px 3px rgba(15, 23, 42, 0.06);
+  min-height: 72px;
+}
+
+.wm-shiftNearbyAvailability__neonEdge {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  border-radius: 16px 0 0 16px;
+  background: #10b981;
+  animation: wm-shiftNearbyNeonPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes wm-shiftNearbyNeonPulse {
+  0%,
+  100% {
+    opacity: 0.72;
+    box-shadow: 0 0 0 rgba(16, 185, 129, 0);
+  }
+
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.45);
+  }
+}
+
+.wm-shiftNearbyAvailability--active {
+  border-color: #d1fae5;
+  background: rgba(236, 253, 245, 0.6);
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.04);
+}
+
+.wm-shiftNearbyAvailability__inner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--wm-stack-gap);
+  padding: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.wm-shiftNearbyAvailability__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(148, 163, 184, 0.12);
+  color: #64748b;
+}
+
+.wm-shiftNearbyAvailability--active .wm-shiftNearbyAvailability__icon {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+}
+
+.wm-shiftNearbyAvailability__title {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--wm-er-text);
+  line-height: 1.3;
+}
+
+.wm-shiftNearbyAvailability__desc {
+  margin: 6px 0 0;
+  font-size: 12px;
+  font-weight: 650;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.wm-shiftNearbyAvailability__desc--active {
+  color: #047857;
+  font-weight: 700;
+}
+
+.wm-shiftNearbyAvailability__desc--active strong {
+  font-weight: 950;
+}

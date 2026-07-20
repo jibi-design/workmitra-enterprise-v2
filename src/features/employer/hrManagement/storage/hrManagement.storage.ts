@@ -42,6 +42,7 @@ import {
   hrMarkExperienceLetterSent,
   hrCompleteExit,
 } from "./hrStorage.exit";
+import { hrCompleteExitSaga } from "./hrStorage.exitSaga";
 
 export const hrManagementStorage = {
   // Read
@@ -91,6 +92,7 @@ export const hrManagementStorage = {
   saveSettlementNote: hrSaveSettlementNote,
   markExperienceLetterSent: hrMarkExperienceLetterSent,
   completeExit: hrCompleteExit,
+  completeExitSaga: hrCompleteExitSaga,
 
   // Subscription
   subscribe: hrSubscribe,

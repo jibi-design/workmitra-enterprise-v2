@@ -1,104 +1,161 @@
-// src/features/employer/shiftJobs/components/ShiftCreateScheduleSection.tsx
+// App: Job Mitra / WorkMitra_Enterprise_v2
+// File: ShiftCreateScheduleSection.tsx
+// Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\components\ShiftCreateScheduleSection.tsx
 
-import { toDateStr, todayStr, toEpoch } from "../helpers/shiftCreateHelpers";
+import type { CSSProperties } from "react";
+import {
+  formatShiftPayDisplay,
+  getShiftPayBasisLabel,
+  SHIFT_PAY_BASIS_OPTIONS,
+  toDateStr,
+  todayStr,
+  toEpoch,
+  type ShiftPayBasisDraft,
+} from "../helpers/shiftCreateHelpers";
 import { SectionHead, IconSchedule } from "./ShiftCreateIcons";
 
-type JobType = "one-time" | "weekly" | "custom";
-
 type Props = {
-  startAt: number;      onStartAt: (v: number) => void;
-  endAt: number;        onEndAt: (v: number) => void;
-  shiftTiming: string;  onShiftTiming: (v: string) => void;
-  payPerDayStr: string; onPayPerDay: (v: string) => void;
-  jobType: JobType;     onJobType: (v: JobType) => void;
+  startAt: number;
+  onStartAt: (v: number) => void;
+  endAt: number;
+  onEndAt: (v: number) => void;
+  shiftTiming: string;
+  onShiftTiming: (v: string) => void;
+  payPerDayStr: string;
+  onPayPerDay: (v: string) => void;
+  payBasis: ShiftPayBasisDraft;
+  onPayBasis: (v: ShiftPayBasisDraft) => void;
 };
 
-const JOB_TYPES: { value: JobType; label: string; sub: string }[] = [
-  { value: "one-time", label: "One-time",         sub: "Single shift or short run" },
-  { value: "weekly",   label: "Weekly recurring", sub: "Repeats every week" },
-  { value: "custom",   label: "Custom recurring", sub: "Specific days / pattern" },
-];
+const CARD_STYLE: CSSProperties = {
+  marginTop: 12,
+  borderRadius: 20,
+  border: "1px solid rgba(226,232,240,0.95)",
+  background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
+  boxShadow: "0 10px 24px rgba(15,23,42,0.045)",
+};
+
+const GRID_STYLE: CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: 10,
+};
+
+const PAY_HINT_STYLE: CSSProperties = {
+  marginTop: 6,
+  padding: "9px 12px",
+  borderRadius: 14,
+  background: "rgba(22,163,74,0.06)",
+  border: "1px solid rgba(22,163,74,0.16)",
+  fontSize: 11,
+  color: "var(--wm-er-muted)",
+  lineHeight: 1.45,
+};
 
 export function ShiftCreateScheduleSection(props: Props) {
   const payPerDay = Number(props.payPerDayStr) || 0;
+  const payInputDisabled = props.payBasis === "not_listed";
+  const payDisplay = formatShiftPayDisplay(payPerDay, props.payBasis);
 
   return (
-    <section className="wm-er-card" style={{ marginTop: 12 }}>
-      <SectionHead icon={<IconSchedule />} title="Schedule and Pay" sub="When is the shift and how much does it pay" />
+    <section className="wm-er-card" style={CARD_STYLE}>
+      <SectionHead
+        icon={<IconSchedule />}
+        title="Schedule and Pay"
+        sub="Set shift dates, timing, and pay"
+      />
 
-      {/* Dates */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+      <div style={GRID_STYLE}>
         <div className="wm-field">
-          <div className="wm-label">Start Date <span style={{ color: "var(--wm-error)" }}>*</span></div>
-          <input className="wm-input" type="date"
-            value={toDateStr(props.startAt)} min={todayStr()}
-            onChange={(e) => props.onStartAt(toEpoch(e.target.value))} />
+          <div className="wm-label">
+            Start Date <span style={{ color: "var(--wm-error)" }}>*</span>
+          </div>
+          <input
+            className="wm-input"
+            type="date"
+            value={toDateStr(props.startAt)}
+            min={todayStr()}
+            onChange={(e) => props.onStartAt(toEpoch(e.target.value))}
+          />
         </div>
+
         <div className="wm-field">
-          <div className="wm-label">End Date <span style={{ color: "var(--wm-error)" }}>*</span></div>
-          <input className="wm-input" type="date"
-            value={toDateStr(props.endAt)} min={toDateStr(props.startAt)}
-            onChange={(e) => props.onEndAt(toEpoch(e.target.value))} />
+          <div className="wm-label">
+            End Date <span style={{ color: "var(--wm-error)" }}>*</span>
+          </div>
+          <input
+            className="wm-input"
+            type="date"
+            value={toDateStr(props.endAt)}
+            min={toDateStr(props.startAt)}
+            onChange={(e) => props.onEndAt(toEpoch(e.target.value))}
+          />
         </div>
       </div>
 
-      {/* Job Type */}
       <div className="wm-field" style={{ marginTop: 12 }}>
-        <div className="wm-label">Job Type</div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {JOB_TYPES.map((jt) => {
-            const isOn = props.jobType === jt.value;
-            return (
-              <button
-                key={jt.value}
-                type="button"
-                onClick={() => props.onJobType(jt.value)}
-                style={{
-                  flex: "1 1 0", minWidth: 90,
-                  padding: "8px 10px", borderRadius: 10, cursor: "pointer",
-                  border: isOn
-                    ? "1.5px solid var(--wm-er-accent-shift)"
-                    : "1.5px solid var(--wm-er-border)",
-                  background: isOn ? "rgba(22,163,74,0.08)" : "var(--wm-er-surface)",
-                  textAlign: "left", transition: "all 0.15s",
-                }}
-                aria-pressed={isOn}
-              >
-                <div style={{ fontSize: 12, fontWeight: 700, color: isOn ? "var(--wm-er-accent-shift)" : "var(--wm-er-text)" }}>
-                  {jt.label}
-                </div>
-                <div style={{ fontSize: 10, color: "var(--wm-er-muted)", marginTop: 2 }}>
-                  {jt.sub}
-                </div>
-              </button>
-            );
-          })}
+        <div className="wm-label">Shift Timing</div>
+        <input
+          className="wm-input"
+          value={props.shiftTiming}
+          onChange={(e) => props.onShiftTiming(e.target.value)}
+          placeholder="e.g. 8:00 AM - 5:00 PM"
+          maxLength={50}
+        />
+      </div>
+
+      <div className="wm-field" style={{ marginTop: 12 }}>
+        <div className="wm-label">
+          Pay Basis <span style={{ color: "var(--wm-error)" }}>*</span>
         </div>
-        {props.jobType !== "one-time" && (
-          <div style={{ marginTop: 6, fontSize: 11, color: "var(--wm-er-muted)", fontStyle: "italic" }}>
-            {props.jobType === "weekly"
-              ? "Workers will see this as a weekly recurring shift. Set the date range for the full period."
-              : "Set the start and end date to cover the full custom period."}
+        <select
+          className="wm-input"
+          value={props.payBasis}
+          onChange={(e) => props.onPayBasis(e.target.value as ShiftPayBasisDraft)}
+        >
+          <option value="" disabled>
+            Select pay basis
+          </option>
+          {SHIFT_PAY_BASIS_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+
+        {props.payBasis && (
+          <div
+            style={{ marginTop: 5, fontSize: 11, color: "var(--wm-er-muted)", lineHeight: 1.45 }}
+          >
+            {SHIFT_PAY_BASIS_OPTIONS.find((item) => item.value === props.payBasis)?.helper}
           </div>
         )}
       </div>
 
-      {/* Shift Timing */}
-      <div className="wm-field" style={{ marginTop: 10 }}>
-        <div className="wm-label">Shift Timing</div>
-        <input className="wm-input" value={props.shiftTiming}
-          onChange={(e) => props.onShiftTiming(e.target.value)}
-          placeholder="e.g. 8:00 AM – 5:00 PM" maxLength={50} />
-      </div>
-
-      {/* Pay */}
-      <div className="wm-field" style={{ marginTop: 10 }}>
-        <div className="wm-label">Pay per day <span style={{ color: "var(--wm-error)" }}>*</span></div>
-        <input className="wm-input" value={props.payPerDayStr}
+      <div className="wm-field" style={{ marginTop: 12 }}>
+        <div className="wm-label">
+          Pay Amount{" "}
+          {props.payBasis !== "not_listed" && <span style={{ color: "var(--wm-error)" }}>*</span>}
+        </div>
+        <input
+          className="wm-input"
+          value={payInputDisabled ? "" : props.payPerDayStr}
           onChange={(e) => props.onPayPerDay(e.target.value.replace(/\D/g, ""))}
-          inputMode="numeric" placeholder="Amount (no currency symbol)" maxLength={7} />
-        <div style={{ marginTop: 4, fontSize: 11, color: "var(--wm-er-muted)" }}>
-          Workers will see: Pay {payPerDay > 0 ? payPerDay : "___"} / day
+          inputMode="numeric"
+          placeholder={
+            payInputDisabled
+              ? "Not required when pay is not listed"
+              : "Amount without currency symbol"
+          }
+          maxLength={7}
+          disabled={payInputDisabled}
+        />
+
+        <div style={PAY_HINT_STYLE}>
+          Workers will see:{" "}
+          <b style={{ color: "var(--wm-er-text)" }}>
+            {props.payBasis ? payDisplay : getShiftPayBasisLabel(props.payBasis)}
+          </b>
         </div>
       </div>
     </section>

@@ -2,12 +2,7 @@
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { deriveNameBlock, generateRawId } from "../generators/uniqueIdGenerator";
-import {
-  ID_PREFIX,
-  ID_SEPARATOR,
-  ID_CHARSET,
-  ID_DISPLAY_LENGTH,
-} from "../constants/idConstants";
+import { ID_PREFIX, ID_SEPARATOR, ID_CHARSET, ID_DISPLAY_LENGTH } from "../constants/idConstants";
 
 // ─── deriveNameBlock ─────────────────────────────────────────
 
@@ -26,6 +21,7 @@ describe("deriveNameBlock", () => {
 
   it("pads short names with X", () => {
     expect(deriveNameBlock("Al")).toBe("ALX");
+    expect(deriveNameBlock("Lal")).toBe("LAL");
     expect(deriveNameBlock("X")).toBe("XXX");
   });
 
@@ -71,7 +67,7 @@ describe("generateRawId", () => {
     });
   });
 
-  it("produces correct format: WM-XXXX-XXX-XXXX", () => {
+  it("produces correct format: ML-XXXX-ABC-XXXX", () => {
     const id = generateRawId("Rahul");
     const parts = id.split(ID_SEPARATOR);
 
@@ -91,6 +87,13 @@ describe("generateRawId", () => {
     const id = generateRawId("Rahul");
     const nameBlock = id.split(ID_SEPARATOR)[2];
     expect(nameBlock).toBe("RAH");
+  });
+
+  it("embeds Lal as LAL in the center block", () => {
+    const id = generateRawId("Lal");
+    const nameBlock = id.split(ID_SEPARATOR)[2];
+    expect(nameBlock).toBe("LAL");
+    expect(id.startsWith("ML-")).toBe(true);
   });
 
   it("preserves I and O in name block", () => {

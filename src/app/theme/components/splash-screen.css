@@ -1,0 +1,766 @@
+/* src/app/theme/components/splash-screen.css — Mitra Labs 4K Cinematic Rebirth (4.5s) */
+
+/*
+  PRODUCTION LOCK — Master timeline (5000ms total):
+  0.0s – 2.0s  Phase 1 — Liquid ML expansion
+  2.0s – 4.0s  Phase 2 — Slow-burn reveal (energy charge @ 2.5s, sustained glow 2.5–3.5s)
+  4.0s – 5.0s  Phase 3 — Portal zoom
+*/
+
+:root {
+  --wm-splash-teal: #0891b2;
+  --wm-splash-royal: #2563eb;
+  --wm-splash-liquid-ease: cubic-bezier(0.1, 0, 0, 1);
+  --wm-splash-portal-ease: cubic-bezier(0.7, 0, 0.84, 0);
+  --wm-splash-glow-dissipate-ease: cubic-bezier(0, 0, 0.2, 1);
+  --wm-splash-total-ms: 5000ms;
+  --wm-splash-liquid-ms: 2000ms;
+  --wm-splash-brightness-ms: 2500ms;
+  --wm-splash-energy-start-ms: 2500ms;
+  --wm-splash-energy-shift-ms: 500ms;
+  --wm-splash-clarity-lock-ms: 2000ms;
+  --wm-splash-reveal-start-ms: 2000ms;
+  --wm-splash-laser-duration-ms: 2200ms;
+  --wm-splash-bloom-start-ms: 2000ms;
+  --wm-splash-bloom-duration-ms: 2000ms;
+  --wm-splash-portal-start-ms: 4000ms;
+  --wm-splash-portal-duration-ms: 1000ms;
+}
+
+.wm-splash-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #020617;
+  transform: scale(1) translateZ(0);
+  opacity: 1;
+  will-change: transform, opacity;
+  contain: layout style paint;
+  pointer-events: auto;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wm-splash-screen.is-portal-exit {
+  animation: wm-splash-portal-zoom var(--wm-splash-portal-duration-ms) var(--wm-splash-portal-ease)
+    forwards;
+  pointer-events: none;
+}
+
+/* Crystal grain — ultra-subtle lens texture (no side blur) */
+.wm-splash-screen__grain {
+  position: absolute;
+  inset: -40%;
+  z-index: 4;
+  opacity: 0.028;
+  pointer-events: none;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 128px 128px;
+  will-change: transform;
+  animation: wm-splash-grain-shift 1.8s steps(2) infinite;
+}
+
+/* Static circuitry — razor-sharp, fixed 4% (no side glow animation) */
+.wm-splash-screen__circuitry {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.04;
+  mix-blend-mode: screen;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 600'%3E%3Cg fill='none' stroke='%230891b2' stroke-width='1' opacity='0.9'%3E%3Cpath d='M40 120 H220 V80 H360'/%3E%3Cpath d='M760 480 H580 V520 H440'/%3E%3Cpath d='M120 40 V180'/%3E%3Cpath d='M680 560 V420'/%3E%3Cpath d='M300 300 H500'/%3E%3Cpath d='M400 200 V400'/%3E%3Cpath d='M60 500 H180'/%3E%3Cpath d='M620 100 H740'/%3E%3C/g%3E%3Cg fill='%230891b2'%3E%3Ccircle cx='220' cy='120' r='3'/%3E%3Ccircle cx='360' cy='80' r='3'/%3E%3Ccircle cx='580' cy='480' r='3'/%3E%3Ccircle cx='440' cy='520' r='3'/%3E%3Ccircle cx='300' cy='300' r='3'/%3E%3Ccircle cx='500' cy='300' r='3'/%3E%3Ccircle cx='400' cy='200' r='3'/%3E%3Ccircle cx='400' cy='400' r='3'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: cover;
+  background-position: center;
+}
+
+.wm-splash-screen__stage {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Volumetric floor reflection — mirrors ML white → permanent teal */
+.wm-splash-screen__floor-reflection {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: min(280px, 72vw);
+  height: 72px;
+  margin-left: min(-140px, -36vw);
+  pointer-events: none;
+  z-index: 0;
+  transform: perspective(600px) rotateX(72deg) translateZ(0);
+  will-change: opacity;
+}
+
+.wm-splash-screen__floor-reflection--white {
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(255, 255, 255, 0.38) 0%,
+    rgba(226, 232, 240, 0.16) 36%,
+    transparent 72%
+  );
+  opacity: 0.5;
+  animation: wm-splash-floor-glow var(--wm-splash-brightness-ms) var(--wm-splash-liquid-ease)
+    forwards;
+}
+
+.wm-splash-screen__floor-reflection--teal {
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(8, 145, 178, 0.55) 0%,
+    rgba(8, 145, 178, 0.28) 38%,
+    transparent 72%
+  );
+  opacity: 0;
+  animation: wm-splash-floor-teal-lock var(--wm-splash-energy-shift-ms) ease-out
+    var(--wm-splash-energy-start-ms) forwards;
+}
+
+.wm-splash-screen__bloom {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  width: 200px;
+  height: 200px;
+  margin-left: -100px;
+  margin-top: -100px;
+  border-radius: 50%;
+  aspect-ratio: 1;
+  clip-path: circle(50% at 50% 50%);
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(224, 252, 255, 0.72) 16%,
+    rgba(8, 145, 178, 0.52) 42%,
+    rgba(37, 99, 235, 0.18) 58%,
+    transparent 74%
+  );
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+  z-index: 0;
+  animation: wm-splash-super-bloom var(--wm-splash-bloom-duration-ms)
+    var(--wm-splash-glow-dissipate-ease) var(--wm-splash-bloom-start-ms) forwards;
+}
+
+.wm-splash-screen__orb {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: scale(0.02) translateZ(0);
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: wm-splash-liquid-expand var(--wm-splash-liquid-ms) var(--wm-splash-liquid-ease)
+    forwards;
+}
+
+.wm-splash-screen__orb-wobble {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: scale(1) rotate(0deg) translateZ(0);
+  transform-origin: center center;
+  will-change: transform;
+  animation: wm-splash-inertia-wobble 1200ms var(--wm-splash-liquid-ease) var(--wm-splash-liquid-ms)
+    forwards;
+}
+
+.wm-splash-screen__origin {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--wm-splash-teal);
+  box-shadow:
+    0 0 20px rgba(8, 145, 178, 0.98),
+    0 0 48px rgba(37, 99, 235, 0.45);
+  opacity: 1;
+  pointer-events: none;
+  animation: wm-splash-origin-vanish 700ms var(--wm-splash-liquid-ease) forwards;
+}
+
+.wm-splash-screen__logo-shell {
+  position: relative;
+  overflow: visible;
+  transform: translateZ(0);
+  padding: 28px;
+}
+
+.wm-splash-screen__brand-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(16px, 4vw, 24px);
+}
+
+.wm-splash-screen__brand-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: -24px;
+  opacity: 0;
+  transform: translate3d(0, 8px, 0);
+  animation: wm-splash-brand-reveal 1200ms var(--wm-splash-liquid-ease) 1400ms forwards;
+}
+
+.wm-splash-screen__title {
+  margin: 0;
+  font-size: clamp(22px, 6vw, 34px);
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.wm-splash-screen__title-mitra {
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(8, 145, 178, 0.3);
+}
+
+.wm-splash-screen__title-labs {
+  color: var(--wm-splash-teal);
+  text-shadow: 0 0 10px rgba(8, 145, 178, 0.3);
+}
+
+.wm-splash-screen__accent-line {
+  width: min(240px, 64vw);
+  height: 2px;
+  margin-top: 10px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.45) 18%,
+    #ffffff 50%,
+    rgba(255, 255, 255, 0.45) 82%,
+    transparent 100%
+  );
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.25);
+  animation: wm-splash-accent-teal-lock var(--wm-splash-energy-shift-ms) ease-out
+    var(--wm-splash-energy-start-ms) forwards;
+}
+
+.wm-splash-ml-ring-layer {
+  transform-origin: 100px 100px;
+  will-change: filter, opacity;
+  animation:
+    wm-splash-laser-luminance var(--wm-splash-brightness-ms) var(--wm-splash-liquid-ease) forwards,
+    wm-splash-ring-plasma 0.11s steps(2) infinite;
+}
+
+.wm-splash-ml-monogram-group {
+  opacity: 0.75;
+  will-change: opacity;
+  animation: wm-splash-monogram-clarity 1ms linear var(--wm-splash-clarity-lock-ms) forwards;
+}
+
+.wm-splash-ml-monogram-body {
+  vector-effect: non-scaling-stroke;
+  paint-order: stroke fill;
+  animation: wm-splash-ml-body-shift var(--wm-splash-energy-shift-ms) ease-out
+    var(--wm-splash-energy-start-ms) forwards;
+}
+
+.wm-splash-ml-monogram-core {
+  vector-effect: non-scaling-stroke;
+  paint-order: stroke fill;
+  animation: wm-splash-ml-core-shift var(--wm-splash-energy-shift-ms) ease-out
+    var(--wm-splash-energy-start-ms) forwards;
+}
+
+.wm-splash-ml-energy-node {
+  animation: wm-splash-ml-node-shift var(--wm-splash-energy-shift-ms) ease-out
+    var(--wm-splash-energy-start-ms) forwards;
+}
+
+/* SVG container — radial bloom bleed room, no rectangular clip */
+.wm-splash-mark {
+  display: block;
+  overflow: visible;
+  will-change: transform;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: high-quality;
+  transform: translateZ(0);
+}
+
+.wm-splash-ml-laser-stroke {
+  vector-effect: non-scaling-stroke;
+  paint-order: stroke fill;
+}
+
+.wm-splash-ml-node {
+  filter: drop-shadow(0 0 3px #ffffff) drop-shadow(0 0 8px #0891b2)
+    drop-shadow(0 0 14px rgba(8, 145, 178, 0.75));
+}
+
+.wm-splash-ml-l-node {
+  filter: drop-shadow(0 0 4px #ffffff) drop-shadow(0 0 10px #0891b2);
+}
+
+.wm-splash-ml-l-node-core {
+  filter: drop-shadow(0 0 5px #fff);
+}
+
+.wm-splash-ml-star {
+  filter: drop-shadow(0 0 5px #fff) drop-shadow(0 0 14px rgba(8, 145, 178, 0.95));
+}
+
+.wm-splash-ml-edge-spark {
+  animation: wm-splash-ml-svg-spark var(--wm-splash-laser-duration-ms)
+    var(--wm-splash-glow-dissipate-ease) var(--wm-splash-reveal-start-ms) forwards;
+}
+
+/* Phase 2 — Luminous reveal laser + metallic edge spark */
+.wm-splash-screen__laser-beam {
+  position: absolute;
+  inset: -14%;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    128deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 34%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(255, 255, 255, 0.05) 66%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    128deg,
+    transparent 0%,
+    transparent 38%,
+    #000 50%,
+    transparent 62%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    128deg,
+    transparent 0%,
+    transparent 38%,
+    #000 50%,
+    transparent 62%,
+    transparent 100%
+  );
+  -webkit-mask-size: 300% 300%;
+  mask-size: 300% 300%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  mix-blend-mode: screen;
+  will-change: -webkit-mask-position, mask-position, opacity;
+  animation: wm-splash-laser-mask-sweep var(--wm-splash-laser-duration-ms) linear
+    var(--wm-splash-reveal-start-ms) forwards;
+}
+
+.wm-splash-screen__edge-spark {
+  position: absolute;
+  inset: -8%;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    128deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.15) 42%,
+    rgba(255, 255, 255, 0.85) 50%,
+    rgba(8, 145, 178, 0.35) 54%,
+    transparent 100%
+  );
+  mix-blend-mode: color-dodge;
+  -webkit-mask-image: linear-gradient(
+    128deg,
+    transparent 0%,
+    transparent 38%,
+    #000 50%,
+    transparent 62%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    128deg,
+    transparent 0%,
+    transparent 38%,
+    #000 50%,
+    transparent 62%,
+    transparent 100%
+  );
+  -webkit-mask-size: 300% 300%;
+  mask-size: 300% 300%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  will-change: -webkit-mask-position, mask-position, opacity;
+  animation: wm-splash-laser-mask-sweep var(--wm-splash-laser-duration-ms) linear
+    var(--wm-splash-reveal-start-ms) forwards;
+}
+
+.wm-splash-screen__sparkle {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(8, 145, 178, 0.82);
+  box-shadow:
+    0 0 6px rgba(255, 255, 255, 0.65),
+    0 0 14px rgba(8, 145, 178, 0.72);
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+  animation: wm-splash-sparkle-rise 900ms var(--wm-splash-glow-dissipate-ease)
+    var(--wm-sparkle-delay, 2000ms) forwards;
+}
+
+@keyframes wm-splash-grain-shift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform: translate3d(-1.5%, 1%, 0);
+  }
+
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes wm-splash-liquid-expand {
+  0% {
+    transform: scale(0.02) translateZ(0);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1) translateZ(0);
+    opacity: 1;
+  }
+}
+
+@keyframes wm-splash-inertia-wobble {
+  0% {
+    transform: scale(1) rotate(0deg) translateZ(0);
+  }
+
+  22% {
+    transform: scale(1.006) rotate(0.14deg) translateZ(0);
+  }
+
+  48% {
+    transform: scale(0.997) rotate(-0.1deg) translateZ(0);
+  }
+
+  72% {
+    transform: scale(1.003) rotate(0.05deg) translateZ(0);
+  }
+
+  100% {
+    transform: scale(1) rotate(0deg) translateZ(0);
+  }
+}
+
+@keyframes wm-splash-origin-vanish {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateZ(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(2.6) translateZ(0);
+  }
+}
+
+@keyframes wm-splash-floor-glow {
+  0% {
+    opacity: 0.2;
+  }
+
+  100% {
+    opacity: 0.62;
+  }
+}
+
+@keyframes wm-splash-ring-plasma {
+  0%,
+  100% {
+    opacity: 0.96;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes wm-splash-floor-teal-lock {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 0.72;
+  }
+}
+
+@keyframes wm-splash-accent-teal-lock {
+  from {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.45) 18%,
+      #ffffff 50%,
+      rgba(255, 255, 255, 0.45) 82%,
+      transparent 100%
+    );
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.25);
+  }
+
+  to {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(8, 145, 178, 0.45) 14%,
+      #0891b2 50%,
+      rgba(8, 145, 178, 0.45) 86%,
+      transparent 100%
+    );
+    box-shadow:
+      0 0 2px #0891b2,
+      0 0 10px #0891b2,
+      0 0 18px rgba(8, 145, 178, 0.55);
+  }
+}
+
+@keyframes wm-splash-monogram-clarity {
+  to {
+    opacity: 0.75;
+  }
+}
+
+@keyframes wm-splash-monogram-plasma {
+  0%,
+  100% {
+    opacity: 0.72;
+  }
+
+  50% {
+    opacity: 0.78;
+  }
+}
+
+@keyframes wm-splash-brand-reveal {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes wm-splash-laser-luminance {
+  0% {
+    opacity: 0.82;
+  }
+
+  72% {
+    opacity: 0.94;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Permanent teal shift @ 2.5s — one-way, never returns to white */
+@keyframes wm-splash-ml-core-shift {
+  0% {
+    stroke: #ffffff;
+    filter: none;
+  }
+
+  100% {
+    stroke: #0891b2;
+    filter: drop-shadow(0 0 10px #0891b2);
+  }
+}
+
+@keyframes wm-splash-ml-body-shift {
+  0% {
+    stroke: #ffffff;
+    filter: none;
+  }
+
+  100% {
+    stroke: #0891b2;
+    filter: drop-shadow(0 0 8px rgba(8, 145, 178, 0.85));
+  }
+}
+
+@keyframes wm-splash-ml-node-shift {
+  0% {
+    fill: #ffffff;
+    filter: none;
+  }
+
+  100% {
+    fill: #0891b2;
+    filter: drop-shadow(0 0 10px #0891b2);
+  }
+}
+
+/* Full 4K brightness peaks @ 2.5s energy sync (haptic sync point) */
+@keyframes wm-splash-luminance-breathe {
+  0% {
+    filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 6px rgba(8, 145, 178, 0.35));
+  }
+
+  72% {
+    filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 16px rgba(8, 145, 178, 0.78));
+  }
+
+  100% {
+    filter: drop-shadow(0 0 3px #fff) drop-shadow(0 0 20px rgba(8, 145, 178, 0.95))
+      drop-shadow(0 0 32px rgba(37, 99, 235, 0.35));
+  }
+}
+
+@keyframes wm-splash-ml-svg-spark {
+  0%,
+  6% {
+    opacity: 0;
+  }
+
+  22% {
+    opacity: 0.88;
+  }
+
+  48% {
+    opacity: 0.55;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes wm-splash-laser-mask-sweep {
+  0% {
+    opacity: 0;
+    -webkit-mask-position: 122% 94%;
+    mask-position: 122% 94%;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  42% {
+    opacity: 1;
+    -webkit-mask-position: 18% 12%;
+    mask-position: 18% 12%;
+  }
+
+  58% {
+    opacity: 0.95;
+    -webkit-mask-position: 18% 12%;
+    mask-position: 18% 12%;
+  }
+
+  100% {
+    opacity: 0;
+    -webkit-mask-position: -22% -16%;
+    mask-position: -22% -16%;
+  }
+}
+
+@keyframes wm-splash-sparkle-rise {
+  0% {
+    opacity: 0.9;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(0, -28px, 0) scale(0.35);
+  }
+}
+
+@keyframes wm-splash-super-bloom {
+  0% {
+    opacity: 0;
+    transform: scale(0.12) translateZ(0);
+  }
+
+  30% {
+    opacity: 1;
+    transform: scale(5.5) translateZ(0);
+  }
+
+  55% {
+    opacity: 0.96;
+    transform: scale(7.2) translateZ(0);
+  }
+
+  72% {
+    opacity: 0.88;
+    transform: scale(7.8) translateZ(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(9.5) translateZ(0);
+  }
+}
+
+@keyframes wm-splash-portal-zoom {
+  from {
+    transform: scale(1) translateZ(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: scale(1.5) translateZ(0);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wm-splash-screen,
+  .wm-splash-screen__circuitry,
+  .wm-splash-screen__grain,
+  .wm-splash-screen__floor-reflection--white,
+  .wm-splash-screen__floor-reflection--teal,
+  .wm-splash-screen__accent-line,
+  .wm-splash-screen__bloom,
+  .wm-splash-screen__orb,
+  .wm-splash-screen__orb-wobble,
+  .wm-splash-screen__origin,
+  .wm-splash-screen__brand-copy,
+  .wm-splash-mark,
+  .wm-splash-ml-ring-layer,
+  .wm-splash-ml-monogram-body,
+  .wm-splash-ml-monogram-core,
+  .wm-splash-ml-energy-node,
+  .wm-splash-ml-edge-spark,
+  .wm-splash-screen__laser-beam,
+  .wm-splash-screen__edge-spark,
+  .wm-splash-screen__sparkle {
+    animation: none !important;
+  }
+
+  .wm-splash-screen {
+    opacity: 0;
+    pointer-events: none;
+  }
+}

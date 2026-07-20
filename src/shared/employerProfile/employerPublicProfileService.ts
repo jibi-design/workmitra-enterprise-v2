@@ -5,6 +5,7 @@
 // Combines: employer settings + ratings + shift/career post data.
 
 import { employerSettingsStorage } from "../../features/employer/company/storage/employerSettings.storage";
+import { getEmployerBusinessKey } from "../../features/employer/company/helpers/employerDualId.helpers";
 import { ratingStorage } from "../rating/ratingStorage";
 import { employerShiftStorage } from "../../features/employer/shiftJobs/storage/employerShift.storage";
 import { getCareerPosts } from "../../features/employer/careerJobs/services/careerPostService";
@@ -14,27 +15,33 @@ import type { WorkerEmployerTag } from "../rating/ratingTypes";
 
 export type EmployerLevel = "new" | "established" | "trusted" | "verified";
 
-export const EMPLOYER_LEVEL_THRESHOLDS: Record<EmployerLevel, {
-  min: number; max: number; label: string; description: string;
-}> = {
-  new:         { min: 0,  max: 4,        label: "New",         description: "Recently joined" },
-  established: { min: 5,  max: 14,       label: "Established", description: "Building track record" },
-  trusted:     { min: 15, max: 29,       label: "Trusted",     description: "Consistently rated well" },
-  verified:    { min: 30, max: Infinity,  label: "Verified",    description: "Proven employer" },
+export const EMPLOYER_LEVEL_THRESHOLDS: Record<
+  EmployerLevel,
+  {
+    min: number;
+    max: number;
+    label: string;
+    description: string;
+  }
+> = {
+  new: { min: 0, max: 4, label: "New", description: "Recently joined" },
+  established: { min: 5, max: 14, label: "Established", description: "Building track record" },
+  trusted: { min: 15, max: 29, label: "Trusted", description: "Consistently rated well" },
+  verified: { min: 30, max: Infinity, label: "Verified", description: "Proven employer" },
 };
 
 export const EMPLOYER_LEVEL_COLORS: Record<EmployerLevel, string> = {
-  new:         "#64748b",
+  new: "#64748b",
   established: "#0369a1",
-  trusted:     "#b45309",
-  verified:    "#16a34a",
+  trusted: "#b45309",
+  verified: "#16a34a",
 };
 
 export const EMPLOYER_LEVEL_BG: Record<EmployerLevel, string> = {
-  new:         "rgba(100,116,139,0.08)",
+  new: "rgba(100,116,139,0.08)",
   established: "rgba(3,105,161,0.08)",
-  trusted:     "rgba(180,83,9,0.08)",
-  verified:    "rgba(22,163,74,0.08)",
+  trusted: "rgba(180,83,9,0.08)",
+  verified: "rgba(22,163,74,0.08)",
 };
 
 export function calculateEmployerLevel(ratingCount: number): EmployerLevel {
@@ -85,7 +92,8 @@ export function getEmployerPublicProfile(employerWmId: string): EmployerPublicPr
   if (!employerWmId) return null;
 
   const profile = employerSettingsStorage.get();
-  if (!profile.uniqueId || profile.uniqueId !== employerWmId) return null;
+  const businessKey = getEmployerBusinessKey(profile);
+  if (!businessKey || businessKey !== employerWmId) return null;
   if (!profile.companyName.trim()) return null;
 
   const summary = ratingStorage.getEmployerSummary(employerWmId);
@@ -156,7 +164,8 @@ export function getEmployerQuickInfo(employerWmId: string): {
   if (!employerWmId) return null;
 
   const profile = employerSettingsStorage.get();
-  if (!profile.uniqueId || profile.uniqueId !== employerWmId) return null;
+  const businessKey = getEmployerBusinessKey(profile);
+  if (!businessKey || businessKey !== employerWmId) return null;
 
   const summary = ratingStorage.getEmployerSummary(employerWmId);
   const level = calculateEmployerLevel(summary.totalRatings);

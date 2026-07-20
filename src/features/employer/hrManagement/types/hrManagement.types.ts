@@ -15,7 +15,8 @@ export type HRCandidateStatus =
   | "hired"
   | "onboarding"
   | "active"
-  | "exit_processing";
+  | "exit_processing"
+  | "exited";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Employment Phase (sub-status when active)

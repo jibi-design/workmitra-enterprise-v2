@@ -1,44 +1,55 @@
-// src/features/employer/careerJobs/components/CareerCreateScreeningSection.tsx
-//
-// Screening Questions section for career post creation.
-// Employer adds up to 5 Yes/No questions applicants must answer.
-// Career domain: Indigo var(--wm-er-accent-career).
+// App name: Job Mitra
+// File name: CareerCreateScreeningSection.tsx
+// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\careerJobs\components\CareerCreateScreeningSection.tsx
 
 import { useState } from "react";
 
-/* ------------------------------------------------ */
-/* Types                                            */
-/* ------------------------------------------------ */
 export type ScreeningQuestion = { id: string; text: string };
 
-/* ------------------------------------------------ */
-/* Suggestions                                      */
-/* ------------------------------------------------ */
+const CAREER_BLUE = "var(--wm-er-accent-career, #1d4ed8)";
+const CAREER_BLUE_DEEP = "#1e3a8a";
+const CAREER_TEXT = "var(--wm-er-text, #1e293b)";
+const CAREER_MUTED = "var(--wm-er-muted, #64748b)";
+const MAX = 7;
+
 const ROLE_SUGGESTIONS: Record<string, string[]> = {
   "full-time": [
-    "Are you available to work full-time (40 hrs/week)?",
-    "Do you have the required experience for this role?",
-    "Are you willing to relocate if needed?",
-    "Do you have the required qualifications listed?",
+    "Are you available to work full-time for this role?",
+    "Do you meet the required experience mentioned in this post?",
+    "Do you have the required qualifications listed for this role?",
+    "Are you comfortable with the listed responsibilities?",
+    "Are you available for the employer interview process?",
+    "Are you open to the listed salary range?",
+    "Can you join within the expected notice period?",
   ],
   "part-time": [
-    "Are you available for part-time hours?",
+    "Are you available for part-time working hours?",
+    "Can you commit to the required working days and times?",
     "Do you have experience relevant to this role?",
-    "Can you commit to the scheduled days and times?",
+    "Are you comfortable with the listed responsibilities?",
+    "Are you available for the employer interview process?",
+    "Are you open to the listed salary range?",
+    "Can you join within the expected notice period?",
   ],
-  "contract": [
-    "Are you available to start within 2 weeks?",
-    "Do you have the required skills for this contract?",
+  contract: [
+    "Are you available to start within the required timeframe?",
+    "Do you have the required skills for this contract role?",
+    "Are you comfortable with the listed responsibilities?",
+    "Can you commit for the full contract period?",
     "Are you open to contract extension if needed?",
+    "Are you available for the employer interview process?",
+    "Are you open to the listed salary range?",
   ],
 };
 
 const DEFAULT_SUGGESTIONS = [
-  "Do you have the required experience for this role?",
-  "Are you legally authorized to work in this location?",
-  "Are you available to start within the stated timeframe?",
-  "Do you have the required qualifications listed in this post?",
-  "Are you comfortable with the work mode (on-site / remote / hybrid)?",
+  "Do you meet the required experience mentioned in this post?",
+  "Do you have the required qualifications listed for this role?",
+  "Are you comfortable with the listed work mode?",
+  "Are you available in the listed work location?",
+  "Are you comfortable with the listed responsibilities?",
+  "Are you available for the employer interview process?",
+  "Can you join within the expected notice period?",
 ];
 
 function getSuggestions(jobType: string): string[] {
@@ -49,126 +60,213 @@ function genId(): string {
   return `sq_${Math.random().toString(36).slice(2)}_${Date.now().toString(36)}`;
 }
 
-/* ------------------------------------------------ */
-/* Icon                                             */
-/* ------------------------------------------------ */
 function IconScreening() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="currentColor" d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17Z" />
+    <svg width="21" height="21" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6ZM9.5 16.5 6 13l1.41-1.41L9.5 13.67l5.09-5.09L16 10l-6.5 6.5ZM13 9V3.5L18.5 9H13Z"
+      />
     </svg>
   );
 }
 
-/* ------------------------------------------------ */
-/* Props                                            */
-/* ------------------------------------------------ */
 type Props = {
   jobType: string;
   questions: ScreeningQuestion[];
   onChange: (questions: ScreeningQuestion[]) => void;
 };
 
-/* ------------------------------------------------ */
-/* Component                                        */
-/* ------------------------------------------------ */
 export function CareerCreateScreeningSection({ jobType, questions, onChange }: Props) {
   const [customText, setCustomText] = useState("");
 
-  const suggestions  = getSuggestions(jobType);
-  const addedTexts   = new Set(questions.map((q) => q.text));
-  const MAX          = 5;
-  const atLimit      = questions.length >= MAX;
+  const suggestions = getSuggestions(jobType);
+  const addedTexts = new Set(questions.map((question) => question.text));
+  const atLimit = questions.length >= MAX;
 
   function addQuestion(text: string) {
-    if (atLimit || addedTexts.has(text) || !text.trim()) return;
-    onChange([...questions, { id: genId(), text: text.trim() }]);
+    const cleanText = text.trim();
+    if (atLimit || addedTexts.has(cleanText) || !cleanText) return;
+    onChange([...questions, { id: genId(), text: cleanText }]);
   }
 
   function removeQuestion(id: string) {
-    onChange(questions.filter((q) => q.id !== id));
+    onChange(questions.filter((question) => question.id !== id));
   }
 
   function handleAddCustom() {
-    const t = customText.trim();
-    if (!t || addedTexts.has(t) || atLimit) return;
-    addQuestion(t);
+    const cleanText = customText.trim();
+    if (!cleanText || addedTexts.has(cleanText) || atLimit) return;
+
+    addQuestion(cleanText);
     setCustomText("");
   }
 
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "Enter") { e.preventDefault(); handleAddCustom(); }
+  function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleAddCustom();
+    }
   }
 
   return (
-    <section className="wm-er-card" style={{ marginTop: 12 }}>
-      {/* Header */}
+    <section
+      style={{
+        marginTop: 12,
+        padding: 15,
+        borderRadius: 24,
+        border: "1px solid rgba(29,78,216,0.13)",
+        background:
+          "radial-gradient(circle at 94% 0%, rgba(29,78,216,0.06), transparent 30%), linear-gradient(135deg, rgba(255,255,255,1), rgba(248,250,252,0.98))",
+        boxShadow: "0 14px 30px rgba(15,23,42,0.06)",
+      }}
+    >
       <div style={{ marginBottom: 14 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: 10,
-            display: "inline-flex", alignItems: "center", justifyContent: "center",
-            background: "rgba(55,48,163,0.08)", color: "var(--wm-er-accent-career)", flexShrink: 0,
-          }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+          <div
+            style={{
+              width: 42,
+              height: 42,
+              borderRadius: 17,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "rgba(29,78,216,0.08)",
+              color: CAREER_BLUE,
+              border: "1px solid rgba(29,78,216,0.12)",
+              flexShrink: 0,
+            }}
+          >
             <IconScreening />
           </div>
-          <div style={{ fontWeight: 700, fontSize: 14, color: "var(--wm-er-text)" }}>
-            Screening Questions
+
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontWeight: 950, fontSize: 15, color: CAREER_TEXT, lineHeight: 1.22 }}>
+              Screening questions
+            </div>
+            <div style={{ marginTop: 4, fontSize: 12, color: CAREER_MUTED, lineHeight: 1.45 }}>
+              Optional Yes/No questions applicants must answer before applying. Max {MAX}.
+            </div>
           </div>
-        </div>
-        <div style={{ marginTop: 4, marginLeft: 42, fontSize: 12, color: "var(--wm-er-muted)" }}>
-          Optional Yes/No questions applicants must answer before applying. Max {MAX}.
         </div>
       </div>
 
-      {/* Suggestions */}
-      <div style={{ marginBottom: 10 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--wm-er-muted)", marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.4 }}>
+      <div
+        style={{
+          marginBottom: 12,
+          padding: "10px 11px",
+          borderRadius: 16,
+          background: "rgba(29,78,216,0.055)",
+          border: "1px solid rgba(29,78,216,0.10)",
+          color: CAREER_BLUE_DEEP,
+          fontSize: 11.5,
+          fontWeight: 850,
+          lineHeight: 1.45,
+        }}
+      >
+        Use screening questions to confirm eligibility, role fit, and joining readiness before
+        reviewing candidates.
+      </div>
+
+      <div style={{ marginBottom: 12 }}>
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 950,
+            color: CAREER_MUTED,
+            marginBottom: 7,
+            textTransform: "uppercase",
+            letterSpacing: 0.45,
+          }}
+        >
           Suggested for {jobType || "this role"}
         </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-          {suggestions.map((s) => {
-            const already = addedTexts.has(s);
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+          {suggestions.map((suggestion) => {
+            const already = addedTexts.has(suggestion);
+
             return (
-              <button key={s} type="button"
+              <button
+                key={suggestion}
+                type="button"
                 disabled={atLimit && !already}
-                onClick={() => already ? undefined : addQuestion(s)}
+                onClick={() => {
+                  if (!already) addQuestion(suggestion);
+                }}
                 style={{
-                  fontSize: 11, fontWeight: 600, padding: "5px 10px",
-                  borderRadius: 999, cursor: already || atLimit ? "default" : "pointer",
-                  border: already ? "1.5px solid var(--wm-er-accent-career)" : "1.5px solid var(--wm-er-border)",
-                  background: already ? "rgba(55,48,163,0.07)" : "var(--wm-er-surface)",
-                  color: already ? "var(--wm-er-accent-career)" : atLimit ? "var(--wm-er-muted)" : "var(--wm-er-text)",
+                  fontSize: 11.5,
+                  fontWeight: already ? 900 : 750,
+                  padding: "6px 10px",
+                  borderRadius: 999,
+                  cursor: already || atLimit ? "default" : "pointer",
+                  border: already
+                    ? "1.5px solid rgba(29,78,216,0.28)"
+                    : "1px solid rgba(148,163,184,0.22)",
+                  background: already ? "rgba(29,78,216,0.09)" : "rgba(255,255,255,0.88)",
+                  color: already ? CAREER_BLUE_DEEP : atLimit ? CAREER_MUTED : CAREER_MUTED,
                   opacity: atLimit && !already ? 0.45 : 1,
-                  transition: "all 0.15s",
+                  lineHeight: 1.25,
                 }}
                 aria-pressed={already}
               >
-                {already ? "\u2713 " : "+ "}{s}
+                {already ? "✓ " : "+ "}
+                {suggestion}
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Added questions */}
       {questions.length > 0 && (
-        <div style={{ marginBottom: 10, display: "grid", gap: 6 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "var(--wm-er-muted)", textTransform: "uppercase", letterSpacing: 0.4 }}>
-            Added ({questions.length}/{MAX})
+        <div style={{ marginBottom: 12, display: "grid", gap: 7 }}>
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 950,
+              color: CAREER_MUTED,
+              textTransform: "uppercase",
+              letterSpacing: 0.45,
+            }}
+          >
+            Added questions ({questions.length}/{MAX})
           </div>
-          {questions.map((q, idx) => (
-            <div key={q.id} style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
-              padding: "8px 12px", borderRadius: 10,
-              background: "var(--wm-er-bg)", border: "1px solid var(--wm-er-border)",
-            }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: "var(--wm-er-text)", flex: 1 }}>
-                Q{idx + 1}. {q.text}
+
+          {questions.map((question, index) => (
+            <div
+              key={question.id}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr auto",
+                alignItems: "center",
+                gap: 9,
+                padding: "9px 11px",
+                borderRadius: 15,
+                background: "rgba(248,250,252,0.94)",
+                border: "1px solid rgba(29,78,216,0.09)",
+              }}
+            >
+              <div
+                style={{ fontSize: 12.5, fontWeight: 850, color: CAREER_TEXT, lineHeight: 1.45 }}
+              >
+                {index + 1}. {question.text}
               </div>
-              <button type="button" onClick={() => removeQuestion(q.id)}
-                style={{ fontSize: 11, fontWeight: 700, padding: "3px 8px", borderRadius: 6, border: "none", cursor: "pointer", background: "rgba(220,38,38,0.08)", color: "var(--wm-error, #dc2626)" }}
-                aria-label="Remove">
+
+              <button
+                type="button"
+                onClick={() => removeQuestion(question.id)}
+                style={{
+                  fontSize: 11,
+                  fontWeight: 950,
+                  padding: "5px 9px",
+                  borderRadius: 999,
+                  border: "1px solid rgba(220,38,38,0.16)",
+                  cursor: "pointer",
+                  background: "rgba(254,242,242,0.92)",
+                  color: "var(--wm-error, #dc2626)",
+                }}
+                aria-label="Remove screening question"
+              >
                 Remove
               </button>
             </div>
@@ -176,27 +274,45 @@ export function CareerCreateScreeningSection({ jobType, questions, onChange }: P
         </div>
       )}
 
-      {/* Custom input */}
       {!atLimit && (
         <div className="wm-field" style={{ marginTop: 4 }}>
           <div className="wm-label">Add custom question</div>
           <div style={{ display: "flex", gap: 8 }}>
-            <input className="wm-input"
+            <input
+              className="wm-input"
               value={customText}
-              onChange={(e) => setCustomText(e.target.value)}
+              onChange={(event) => setCustomText(event.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Type a Yes/No screening question..."
-              maxLength={160}
+              maxLength={180}
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck={false}
               style={{ flex: 1 }}
             />
-            <button type="button" onClick={handleAddCustom}
+
+            <button
+              type="button"
+              onClick={handleAddCustom}
               disabled={!customText.trim() || addedTexts.has(customText.trim())}
               style={{
-                fontSize: 12, fontWeight: 600, padding: "0 14px", borderRadius: 10,
-                border: "none", background: "var(--wm-er-accent-career, #1d4ed8)",
-                color: "#fff", cursor: "pointer", height: 42, whiteSpace: "nowrap",
-                opacity: !customText.trim() ? 0.5 : 1,
-              }}>
+                fontSize: 12,
+                fontWeight: 950,
+                padding: "0 14px",
+                borderRadius: 999,
+                border: "none",
+                background: CAREER_BLUE,
+                color: "#fff",
+                cursor: "pointer",
+                height: 42,
+                whiteSpace: "nowrap",
+                opacity: !customText.trim() || addedTexts.has(customText.trim()) ? 0.5 : 1,
+                boxShadow:
+                  customText.trim() && !addedTexts.has(customText.trim())
+                    ? "0 10px 20px rgba(29,78,216,0.16)"
+                    : "none",
+              }}
+            >
               Add
             </button>
           </div>
@@ -204,7 +320,7 @@ export function CareerCreateScreeningSection({ jobType, questions, onChange }: P
       )}
 
       {atLimit && (
-        <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginTop: 6, fontStyle: "italic" }}>
+        <div style={{ fontSize: 11.5, color: CAREER_MUTED, marginTop: 7, lineHeight: 1.45 }}>
           Maximum {MAX} questions reached. Remove one to add another.
         </div>
       )}

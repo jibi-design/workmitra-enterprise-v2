@@ -23,10 +23,7 @@ import {
 
 import { pushCareerActivity } from "../helpers/careerNotifications";
 
-import {
-  recomputePostAnalytics,
-  syncToEmployeeCareerSearch,
-} from "../helpers/careerValidation";
+import { recomputePostAnalytics, syncToEmployeeCareerSearch } from "../helpers/careerValidation";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Read Operations
@@ -53,7 +50,9 @@ export function getCareerApplication(appId: string): CareerApplication | null {
 }
 
 export function getCareerActivityForPost(postId: string): EmployerCareerActivityEntry[] {
-  return readCareerActivityAll().filter((a) => a.postId === postId).slice(0, 50);
+  return readCareerActivityAll()
+    .filter((a) => a.postId === postId)
+    .slice(0, 50);
 }
 
 export function getCareerTemplates(): CareerJobPost[] {
@@ -64,22 +63,94 @@ export function getCareerTemplates(): CareerJobPost[] {
 // Create Post
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function createCareerPost(
-  input: Omit<
-    CareerJobPost,
-    | "id"
-    | "createdAt"
-    | "updatedAt"
-    | "totalApplications"
-    | "shortlisted"
-    | "inInterview"
-    | "offered"
-    | "hired"
-    | "rejected"
-  >
-): string {
+type CareerPostCreateInput = Omit<
+  CareerJobPost,
+  | "id"
+  | "createdAt"
+  | "updatedAt"
+  | "totalApplications"
+  | "shortlisted"
+  | "inInterview"
+  | "offered"
+  | "hired"
+  | "rejected"
+>;
+
+const MAX_CAREER_POST_VACANCIES = 500;
+
+function getDefaultRepostClosingDate(now: number): number {
+  const date = new Date(now);
+  date.setDate(date.getDate() + 30);
+  date.setHours(23, 59, 59, 0);
+
+  return date.getTime();
+}
+
+function hasMinText(value: string, minLength: number): boolean {
+  return value.trim().length >= minLength;
+}
+
+function isValidCareerPostCreateInput(input: CareerPostCreateInput, now: number): boolean {
+  if (!hasMinText(input.companyName, 2)) return false;
+  if (!hasMinText(input.jobTitle, 2)) return false;
+
+  if (input.workMode !== "remote" && !hasMinText(input.location, 2)) return false;
+
+  if (
+    !Number.isInteger(input.vacancies) ||
+    input.vacancies < 1 ||
+    input.vacancies > MAX_CAREER_POST_VACANCIES
+  ) {
+    return false;
+  }
+
+  if (!["none", "1_month", "3_months", "6_months"].includes(input.probationPeriod)) return false;
+
+  if (!Number.isFinite(input.salaryMin) || !Number.isFinite(input.salaryMax)) return false;
+  if (input.salaryMin < 0 || input.salaryMax < 0) return false;
+  if (input.salaryMax > 0 && input.salaryMax < input.salaryMin) return false;
+
+  if (!Number.isFinite(input.experienceMin) || !Number.isFinite(input.experienceMax)) return false;
+  if (input.experienceMin < 0 || input.experienceMax < 0) return false;
+  if (input.experienceMin > 50 || input.experienceMax > 50) return false;
+  if (input.experienceMax > 0 && input.experienceMax < input.experienceMin) return false;
+
+  const noticePeriodDays = input.noticePeriodDays ?? 0;
+
+  if (!Number.isInteger(noticePeriodDays) || noticePeriodDays < 0 || noticePeriodDays > 365) {
+    return false;
+  }
+
+  if (
+    !Number.isInteger(input.interviewRounds) ||
+    input.interviewRounds < 1 ||
+    input.interviewRounds > 10
+  ) {
+    return false;
+  }
+
+  if (!Array.isArray(input.roundConfigs) || input.roundConfigs.length < 1) return false;
+
+  const invalidRound = input.roundConfigs.some(
+    (round) =>
+      !Number.isInteger(round.round) ||
+      round.round < 1 ||
+      round.round > input.interviewRounds ||
+      !hasMinText(round.label, 1),
+  );
+
+  if (invalidRound) return false;
+
+  if (!Number.isFinite(input.closingDate) || input.closingDate <= now) return false;
+
+  return true;
+}
+
+export function createCareerPost(input: CareerPostCreateInput): string | null {
   const posts = readCareerPosts();
   const now = Date.now();
+
+  if (!isValidCareerPostCreateInput(input, now)) return null;
 
   const post: CareerJobPost = {
     ...input,
@@ -115,10 +186,11 @@ export function createCareerPost(
 
 export function cloneCareerPost(
   sourcePostId: string,
-  overrides?: Partial<CareerJobPost>
+  overrides?: Partial<CareerJobPost>,
 ): string | null {
   const source = getCareerPost(sourcePostId);
   if (!source) return null;
+  if (source.status !== "closed" && source.status !== "filled") return null;
 
   const now = Date.now();
   const cloned: CareerJobPost = {
@@ -128,6 +200,7 @@ export function cloneCareerPost(
     status: "draft",
     createdAt: now,
     updatedAt: now,
+    closingDate: getDefaultRepostClosingDate(now),
     clonedFrom: sourcePostId,
     isTemplate: false,
     totalApplications: 0,
@@ -158,18 +231,13 @@ export function cloneCareerPost(
 // Save As Template
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function saveCareerPostAsTemplate(
-  postId: string,
-  templateName: string
-): boolean {
+export function saveCareerPostAsTemplate(postId: string, templateName: string): boolean {
   const posts = readCareerPosts();
   const post = posts.find((p) => p.id === postId);
   if (!post) return false;
 
   const next = posts.map((p) =>
-    p.id === postId
-      ? { ...p, isTemplate: true, templateName, updatedAt: Date.now() }
-      : p
+    p.id === postId ? { ...p, isTemplate: true, templateName, updatedAt: Date.now() } : p,
   );
   writeCareerPosts(next);
   return true;
@@ -185,9 +253,7 @@ export function pauseCareerPost(postId: string): boolean {
   if (!post || post.status !== "active") return false;
 
   const next = posts.map((p) =>
-    p.id === postId
-      ? { ...p, status: "paused" as const, updatedAt: Date.now() }
-      : p
+    p.id === postId ? { ...p, status: "paused" as const, updatedAt: Date.now() } : p,
   );
   writeCareerPosts(next);
   syncToEmployeeCareerSearch(next);
@@ -210,12 +276,13 @@ export function pauseCareerPost(postId: string): boolean {
 export function resumeCareerPost(postId: string): boolean {
   const posts = readCareerPosts();
   const post = posts.find((p) => p.id === postId);
+  const now = Date.now();
+
   if (!post || post.status !== "paused") return false;
+  if (post.closingDate > 0 && post.closingDate <= now) return false;
 
   const next = posts.map((p) =>
-    p.id === postId
-      ? { ...p, status: "active" as const, updatedAt: Date.now() }
-      : p
+    p.id === postId ? { ...p, status: "active" as const, updatedAt: now } : p,
   );
   writeCareerPosts(next);
   syncToEmployeeCareerSearch(next);
@@ -238,12 +305,12 @@ export function resumeCareerPost(postId: string): boolean {
 export function closeCareerPost(postId: string): boolean {
   const posts = readCareerPosts();
   const post = posts.find((p) => p.id === postId);
-  if (!post || post.status === "closed" || post.status === "filled") return false;
+  if (!post || (post.status !== "active" && post.status !== "paused")) return false;
+
+  const now = Date.now();
 
   const next = posts.map((p) =>
-    p.id === postId
-      ? { ...p, status: "closed" as const, updatedAt: Date.now() }
-      : p
+    p.id === postId ? { ...p, status: "closed" as const, updatedAt: now } : p,
   );
   writeCareerPosts(next);
   syncToEmployeeCareerSearch(next);

@@ -1,0 +1,186 @@
+/* src/app/theme/shift-employer-posts.css */
+/*
+  Employer Shift Posts semantic bridge styles.
+  Purpose:
+  - Adds visible command-center polish for Employer Shift Posts screen.
+  - No admin impact.
+  - No business logic impact.
+  - Used only by semantic class hooks in EmployerShiftPosts* components.
+*/
+
+.wm-shiftPostsPage {
+  position: relative;
+}
+
+.wm-shiftPostsHeaderActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.wm-shiftPostsDraftBadge {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--wm-radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.85), transparent 56%),
+    rgba(217, 119, 6, 0.12);
+  color: var(--wm-amber-700);
+  font-size: 11px;
+  font-weight: 800;
+  border: 1px solid rgba(217, 119, 6, 0.2);
+  white-space: nowrap;
+  box-shadow: var(--wm-shadow-xs);
+}
+
+.wm-shiftPostsTemplatesBtn {
+  font-size: 12px;
+}
+
+.wm-shiftPostsCreateBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.wm-shiftPostsPlusIcon {
+  display: block;
+  flex: 0 0 auto;
+}
+
+.wm-shiftPostsSaveNotice {
+  margin-top: 10px;
+  padding: 11px 14px;
+  border-radius: var(--wm-radius-16);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(22, 163, 74, 0.12), transparent 36%),
+    linear-gradient(135deg, rgba(240, 253, 244, 0.9), rgba(255, 255, 255, 0.82));
+  border: 1px solid rgba(22, 163, 74, 0.22);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--wm-er-accent-shift, #16a34a);
+  box-shadow: var(--wm-shadow-xs);
+}
+
+.wm-shiftPostsKpiGrid {
+  margin-top: var(--wm-stack-gap);
+}
+
+.wm-shiftPostsKpiTile {
+  min-height: 76px;
+}
+
+.wm-shiftPostsKpiTile.isShift .wm-er-tileValue {
+  color: var(--wm-er-accent-shift);
+}
+
+.wm-shiftPostsKpiTile.isSuccess .wm-er-tileValue {
+  color: var(--wm-success);
+}
+
+.wm-shiftPostsKpiTile.isShift::before {
+  background: var(--wm-er-accent-shift);
+}
+
+.wm-shiftPostsKpiTile.isSuccess::before {
+  background: var(--wm-success);
+}
+
+.wm-shiftPostsList {
+  margin-top: var(--wm-stack-gap);
+  display: grid;
+  gap: 10px;
+}
+
+.wm-shiftPostsPostShell {
+  position: relative;
+}
+
+.wm-shiftPostsEmptyState {
+  text-align: center;
+  padding: 26px;
+  border-radius: var(--wm-radius-employer-card);
+  border: 1px solid rgba(22, 163, 74, 0.18);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(22, 163, 74, 0.12), transparent 34%),
+    radial-gradient(circle at 100% 100%, rgba(29, 78, 216, 0.07), transparent 34%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.62));
+  box-shadow:
+    0 24px 64px rgba(15, 23, 42, 0.085),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .wm-shiftPostsEmptyState {
+    backdrop-filter: blur(var(--wm-blur-lg)) var(--wm-glass-saturate);
+    -webkit-backdrop-filter: blur(var(--wm-blur-lg)) var(--wm-glass-saturate);
+  }
+}
+
+.wm-shiftPostsEmptyTitle {
+  font-weight: 800;
+  font-size: 17px;
+  color: var(--wm-er-text);
+  letter-spacing: -0.018em;
+}
+
+.wm-shiftPostsEmptyText {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--wm-er-muted);
+  line-height: 1.6;
+  max-width: 440px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.wm-shiftPostsRecoveryGrid {
+  margin-top: 15px;
+  display: grid;
+  gap: 8px;
+  text-align: left;
+}
+
+.wm-shiftPostsRecoveryTip {
+  padding: 10px 11px;
+  border-radius: var(--wm-radius-16);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(22, 163, 74, 0.07), transparent 34%),
+    rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(22, 163, 74, 0.14);
+  color: var(--wm-er-muted);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.48;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
+.wm-shiftPostsEmptyCreateBtn {
+  margin-top: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--wm-radius-pill);
+  padding-inline: 17px;
+}
+
+@media (max-width: 420px) {
+  .wm-shiftPostsHeaderActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .wm-shiftPostsEmptyState {
+    padding: 22px 18px;
+  }
+
+  .wm-shiftPostsRecoveryTip {
+    font-size: 10.8px;
+  }
+}

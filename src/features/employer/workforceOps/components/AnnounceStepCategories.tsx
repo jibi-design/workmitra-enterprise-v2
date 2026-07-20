@@ -7,15 +7,22 @@ import { useMemo, useState } from "react";
 import { workforceCategoryService } from "../services/workforceCategoryService";
 import { workforceTemplateService } from "../services/workforceTemplateService";
 import { workforceStaffService } from "../services/workforceStaffService";
-import type { WorkforceCategory, WorkforceTemplate } from "../types/workforceTypes";
-import type { AnnounceFormData } from "../pages/EmployerWorkforceAnnouncePage";
-import { validateAnnouncementStep1 } from "../helpers/workforceValidation";
-import { IconPlus } from "./workforceIcons";
-import { AMBER, AMBER_BG, categoryChipStyle } from "./workforceStyles";
+import type {
+  WorkforceCategory,
+  WorkforceTemplate,
+} from "../../../../shared/domains/workforce/types/workforceTypes";
+import type { AnnounceFormData } from "../types/announceForm.types";
+import { validateAnnouncementStep1 } from "../../../../shared/domains/workforce/validation/workforceValidation";
+import { IconPlus } from "../../../../shared/domains/workforce/ui/workforceIcons";
+import {
+  AMBER,
+  AMBER_BG,
+  categoryChipStyle,
+} from "../../../../shared/domains/workforce/ui/workforceStyles";
 
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Props                                                                      */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 type Props = {
   selected: string[];
@@ -24,9 +31,9 @@ type Props = {
   onNext: () => void;
 };
 
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Component                                                                  */
-/* ─────────────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 export function AnnounceStepCategories({ selected, onChange, onLoadTemplate, onNext }: Props) {
   const categories = useMemo(() => workforceCategoryService.getAll(), []);
@@ -101,11 +108,10 @@ export function AnnounceStepCategories({ selected, onChange, onLoadTemplate, onN
               padding: 0,
             }}
           >
-            <div style={{ fontSize: 13, fontWeight: 800, color: AMBER }}>
-              Load from Template
-            </div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: AMBER }}>Load from Template</div>
             <span style={{ fontSize: 12, color: "var(--wm-er-muted)" }}>
-              {templates.length} template{templates.length !== 1 ? "s" : ""} {showTemplates ? "▲" : "▼"}
+              {templates.length} template{templates.length !== 1 ? "s" : ""}{" "}
+              {showTemplates ? "â–²" : "â–¼"}
             </span>
           </button>
 
@@ -126,9 +132,12 @@ export function AnnounceStepCategories({ selected, onChange, onLoadTemplate, onN
                     textAlign: "left",
                   }}
                 >
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "var(--wm-er-text)" }}>{t.name}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "var(--wm-er-text)" }}>
+                    {t.name}
+                  </div>
                   <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginTop: 2 }}>
-                    {t.targetCategories.length} categories · {t.shifts.length} shifts · {t.location || "No location"}
+                    {t.targetCategories.length} categories Â· {t.shifts.length} shifts Â·{" "}
+                    {t.location || "No location"}
                   </div>
                 </button>
               ))}
@@ -139,7 +148,14 @@ export function AnnounceStepCategories({ selected, onChange, onLoadTemplate, onN
 
       {/* Category Selection */}
       <div className="wm-er-card">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 10,
+          }}
+        >
           <div style={{ fontSize: 14, fontWeight: 900, color: "var(--wm-er-text)" }}>
             Select Categories
           </div>
@@ -184,7 +200,13 @@ export function AnnounceStepCategories({ selected, onChange, onLoadTemplate, onN
                     color: isActive ? "#fff" : AMBER,
                   }}
                 >
-                  {isActive ? "✓ " : <><IconPlus /> </>}
+                  {isActive ? (
+                    "âœ“ "
+                  ) : (
+                    <>
+                      <IconPlus />{" "}
+                    </>
+                  )}
                   {cat.name}
                   <span style={{ marginLeft: 4, opacity: 0.7, fontSize: 11 }}>({count})</span>
                 </button>
@@ -192,14 +214,18 @@ export function AnnounceStepCategories({ selected, onChange, onLoadTemplate, onN
             })}
           </div>
         ) : (
-          <div style={{ fontSize: 13, color: "var(--wm-er-muted)", padding: 16, textAlign: "center" }}>
+          <div
+            style={{ fontSize: 13, color: "var(--wm-er-muted)", padding: 16, textAlign: "center" }}
+          >
             No categories created yet. Add categories from the home page first.
           </div>
         )}
 
         {selected.length > 0 && (
           <div style={{ marginTop: 10, fontSize: 12, color: "var(--wm-er-muted)" }}>
-            {selected.length} selected · {selected.reduce((sum, id) => sum + (staffCounts.get(id) ?? 0), 0)} staff will see this announcement
+            {selected.length} selected Â·{" "}
+            {selected.reduce((sum, id) => sum + (staffCounts.get(id) ?? 0), 0)} staff will see this
+            announcement
           </div>
         )}
       </div>
@@ -208,7 +234,9 @@ export function AnnounceStepCategories({ selected, onChange, onLoadTemplate, onN
       {errors.length > 0 && (
         <div style={{ padding: 10, borderRadius: 8, background: "rgba(220,38,38,0.06)" }}>
           {errors.map((e, i) => (
-            <div key={i} style={{ fontSize: 12, color: "var(--wm-error)" }}>{e}</div>
+            <div key={i} style={{ fontSize: 12, color: "var(--wm-error)" }}>
+              {e}
+            </div>
           ))}
         </div>
       )}
@@ -226,7 +254,7 @@ export function AnnounceStepCategories({ selected, onChange, onLoadTemplate, onN
           padding: "12px",
         }}
       >
-        Next — Define Shifts
+        Next â€” Define Shifts
       </button>
     </div>
   );

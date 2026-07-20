@@ -1,0 +1,116 @@
+/* src/app/theme/components/master-elements.css — Master shared Button / TextField primitives */
+
+.wm-masterButton {
+  min-height: var(--wm-touch-min);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--wm-radius-14);
+  border: 1px solid transparent;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition:
+    transform var(--wm-motion-fast) var(--wm-motion-ease),
+    border-color var(--wm-motion-base) var(--wm-motion-ease),
+    box-shadow var(--wm-motion-base) var(--wm-motion-ease),
+    background var(--wm-motion-base) var(--wm-motion-ease),
+    color var(--wm-motion-base) var(--wm-motion-ease),
+    opacity var(--wm-motion-base) var(--wm-motion-ease);
+}
+
+.wm-masterButton:active {
+  transform: scale(0.975);
+}
+
+.wm-masterButton:disabled,
+.wm-masterButton[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.wm-masterButton-sm {
+  min-height: 36px;
+  padding: 0 14px;
+  font-size: 12px;
+}
+
+.wm-masterButton-md {
+  min-height: 44px;
+  padding: 0 18px;
+  font-size: 13px;
+}
+
+.wm-masterButton-lg {
+  min-height: 50px;
+  padding: 0 24px;
+  font-size: 15px;
+}
+
+.wm-masterButton-primary {
+  background: linear-gradient(135deg, var(--wm-brand-600), var(--wm-brand-700));
+  color: #fff;
+  box-shadow: var(--wm-shadow-career);
+}
+
+.wm-ee-vShift .wm-masterButton-primary,
+.wm-er-vShift .wm-masterButton-primary {
+  background: linear-gradient(135deg, var(--wm-shift-accent), var(--wm-shift-accent-strong));
+  color: #fff;
+  box-shadow: var(--wm-shadow-shift);
+}
+
+.wm-ee-vPlanner .wm-masterButton-primary {
+  background: linear-gradient(135deg, var(--wm-planner-accent), var(--wm-planner-accent-strong));
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(8, 145, 178, 0.22);
+}
+
+.wm-masterButton-secondary {
+  border-color: rgba(148, 163, 184, 0.26);
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--wm-neutral-900);
+  box-shadow: var(--wm-shadow-xs);
+}
+
+.wm-masterButton-outline {
+  border-color: rgba(15, 23, 42, 0.22);
+  background: transparent;
+  color: var(--wm-neutral-900);
+  box-shadow: none;
+}
+
+.wm-masterButton-danger {
+  border-color: rgba(220, 38, 38, 0.16);
+  background: linear-gradient(135deg, var(--wm-red-600), var(--wm-red-700));
+  color: #fff;
+  box-shadow: var(--wm-shadow-danger);
+}
+
+.wm-masterTextField {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: var(--wm-radius-14);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--wm-neutral-800);
+  font-size: 14px;
+  font-weight: 600;
+  outline: none;
+  box-sizing: border-box;
+  transition:
+    border-color var(--wm-motion-base) var(--wm-motion-ease),
+    box-shadow var(--wm-motion-base) var(--wm-motion-ease),
+    background var(--wm-motion-base) var(--wm-motion-ease);
+}
+
+.wm-masterTextField:focus,
+.wm-masterTextField:focus-visible {
+  border-color: rgba(22, 163, 74, 0.36);
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+  background: #fff;
+}

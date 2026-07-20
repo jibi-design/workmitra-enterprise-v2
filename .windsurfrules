@@ -1,0 +1,393 @@
+# ============================================================================
+# Job Mitra / WorkMitra Enterprise — Technical Lead Constitutional Rules
+# ============================================================================
+# Effective: 2026-07-19
+# Authority: Technical Lead
+# Scope: All phases from Priority 4 onward.
+#
+# These rules are non-negotiable. Any PR, commit, or generated file that
+# contradicts them must be rejected and corrected before merge.
+# ============================================================================
+
+
+# ── SECTION 1: THE THREE LAWS ──────────────────────────────────────────────
+#
+# These laws were derived from the Deep Ecosystem & Business Logic Discovery
+# Report. They address every identified class of fragility in the codebase.
+# They apply to every new file and every touched file in Priority 4 and beyond.
+
+
+## LAW 1 — THE SAGA LAW
+#
+# Every function that performs ≥2 storage or API mutations in sequence is a
+# named Saga. A Saga must:
+#   (a) Define a typed result type: { ok: true; value: T } | { ok: false; ... }
+#   (b) Have an explicit compensation (rollback) step for each completed mutation
+#       in case a subsequent mutation fails.
+#   (c) Never return void or boolean for a multi-store mutation sequence.
+#   (d) Execute the DB/API write FIRST. localStorage/cache sync follows only
+#       on success. Optimistic UI is forbidden for lifecycle mutations.
+#
+# FORBIDDEN: Five sequential localStorage.setItem calls with no rollback.
+# REQUIRED:  runSaga([stepA, stepB, stepC]) with compensation defined per step.
+#
+# Reference: src/features/employer/careerJobs/services/careerHireActivationService.ts
+# — the activateCareerHire function is the canonical example of what must NOT
+# be done. It is the first refactor target under Priority 5.
+
+
+## LAW 2 — THE TIER LAW
+#
+# Every catch block in this codebase is classified by one of three tiers.
+# No catch block may exist without an explicit tier classification comment.
+#
+#   TIER: CRITICAL
+#     Definition: Data that determines a user's verified work history,
+#                 employment state, financial record, or vault integrity.
+#     Allowed response: MUST throw. Caller handles and surfaces to user.
+#     Examples: vaultCareerHistory.storage.ts writeAll(), vault session writes,
+#               employment completion writes.
+#
+#   TIER: IMPORTANT
+#     Definition: Notifications, pulse triggers, activity log entries.
+#     Allowed response: MUST catch, MUST enqueue item to wm_retry_queue_v1,
+#                       MUST NOT silently drop.
+#     Examples: employmentNotifications.ts pushTo(), pulse event writes.
+#
+#   TIER: ADVISORY
+#     Definition: Analytics events, non-critical audit sidecars.
+#     Allowed response: MAY swallow, but MUST emit console.warn with context.
+#     Examples: appendExitLog in employmentStorageHelpers.ts.
+#
+# FORBIDDEN: catch { /* non-critical */ }  — no tier classification.
+# FORBIDDEN: catch { /* Phase-0 localStorage-safe fallback */ } — retired forever.
+# REQUIRED:  catch (error) { /* TIER: IMPORTANT — enqueue to retry queue */ }
+#
+# The comment "non-critical" is permanently banned from this codebase.
+
+
+## LAW 3 — THE DOMAIN LAW
+#
+# No module may read or write a localStorage key that is owned by a different
+# domain. Cross-domain communication is permitted ONLY through:
+#   (a) Keys in src/shared/* — explicitly designed for shared access.
+#   (b) A backend API call — the authoritative cross-device channel.
+#
+# Domain ownership map (authoritative):
+#   wm_hr_management_v1          → employer/hrManagement  (no employee access)
+#   wm_employer_staff_v1         → employer/myStaff       (no employee access)
+#   wm_employment_lifecycle_v1   → employee/employment    (no employer access)
+#   wm_vault_*                   → employee/workVault     (no employer access)
+#   wm_career_employment_v1      → shared/employment      (shared — read/write ok)
+#   wm_pulse_event_queue_v1      → pulse system           (read-only from any domain)
+#
+# FORBIDDEN:
+#   — employee modules reading wm_hr_management_v1 directly.
+#   — submitResignation writing to wm_employer_staff_v1 via raw localStorage.setItem.
+#   — notifyCrossRole delivering events via localStorage (same-device only).
+#
+# The migration targets for each violation are defined in the Blueprint document.
+#
+# REQUIRED for Priority 4+:
+#   — All cross-role data reads go through the backend API.
+#   — The vault OTP and session state live in the DB, never in localStorage.
+#   — window.wmPulseDev is wrapped in: if (import.meta.env.DEV) { ... }
+
+
+# ── SECTION 2: BACKEND ARCHITECTURE RULES ──────────────────────────────────
+
+## AUTH & SESSION
+#   - Session cookies: SameSite=Strict, HttpOnly=true, Secure=true (production).
+#   - Role is ALWAYS read from the session store (DB or in-memory). It is NEVER
+#     read from request body, query string, or any client-supplied header.
+#   - requireAuth + requireRole are the only valid gates for protected endpoints.
+#   - No endpoint may skip requireAuth and manually check session inline.
+
+## ROUTE HANDLER CONTRACTS
+#   - All route handlers return boolean (handled: true/false).
+#   - All route handlers are async. Unhandled promise rejections are forbidden.
+#   - Error responses always use sendJson / sendNotFound / sendForbidden from
+#     server/utils/http.ts. Never write res.end() with raw strings in handlers.
+#   - 4xx errors never expose internal error messages or stack traces.
+#   - requestId (UUID) is threaded through every handler for traceability.
+
+## DATABASE TRANSACTIONS
+#   - Any operation that mutates ≥2 DB tables must be wrapped in a BEGIN/COMMIT
+#     transaction block with explicit ROLLBACK on error.
+#   - SELECT FOR UPDATE is required when reading a row with the intent to
+#     immediately update it (prevents race conditions on concurrent requests).
+#   - All lifecycle events (hire, resign, terminate, vault access) are logged
+#     to their respective event/audit tables as part of the SAME transaction
+#     that mutates the primary state table.
+
+## ERROR HANDLING (backend mirrors Law 2)
+#   - Repository functions return typed results, not raw thrown errors.
+#   - Service functions validate business rules before calling the repository.
+#   - Handler functions map ServiceResult errors to appropriate HTTP status codes.
+#   - Pattern: Handler → Service (validates) → Repository (executes) → Handler
+#     (maps result to HTTP response). No business logic in handlers. No HTTP
+#     knowledge in repositories.
+
+
+# ── SECTION 3: PRIORITY 4 — WORK VAULT AUTHORIZATION ───────────────────────
+#
+# The Work Vault backend must enforce all three laws from day one.
+# Specific rules for the vault domain:
+#
+#   (a) OTP codes are generated server-side, stored as a bcrypt/argon2 hash in
+#       the vault_otps table. The plaintext code is returned to the employee
+#       ONCE and never stored anywhere in the DB.
+#
+#   (b) OTP verification is performed with a timing-safe comparison against the
+#       stored hash. A failed verification increments an attempt counter. After
+#       5 failed attempts the OTP is invalidated. There is NO endpoint that
+#       returns the raw OTP code to any caller.
+#
+#   (c) Vault sessions are stored in the vault_sessions DB table. Expiry is
+#       enforced server-side. The client cannot extend a session by modifying
+#       localStorage. The session token returned to the employer is an opaque
+#       UUID that maps to the DB row.
+#
+#   (d) Folder visibility is enforced server-side. The vault session row stores
+#       a snapshot of visible_folder_ids at the moment of OTP verification.
+#       An employer cannot request a hidden folder even if they know its ID.
+#
+#   (e) The vault_access_log table is INSERT-only. No UPDATE or DELETE is
+#       permitted on this table from the application layer. The employee cannot
+#       clear their access history.
+#
+#   (f) The requireVaultSession middleware must verify: session exists in DB,
+#       status = 'active', expires_at > now(), employer_id matches session user.
+#       Any failure returns 401, never leaks session details.
+
+
+# ── SECTION 4: FRONTEND CONVENTIONS ────────────────────────────────────────
+
+## DOMAIN SEPARATION
+#   - Employee (/employee/*) and Employer (/employer/*) are completely separate
+#     domains. They do not share Zustand slices, components, or routes.
+#   - /*/profile  → identity (who they are)
+#   - /*/settings → control (how they behave)
+
+## COMPONENT QUALITY
+#   - No inline styles. Tailwind utility classes only.
+#   - No hardcoded strings visible to users. All copy lives in constants or i18n.
+#   - No direct localStorage calls inside React components. Storage access is
+#     always delegated to storage modules or custom hooks.
+
+## PULSE SYSTEM
+#   - dispatchPulseEvent() is the ONLY entry point for triggering breathing
+#     light effects. Direct calls to usePulseStore.getState().startPulseTrail()
+#     from outside the pulse module are forbidden.
+#   - PULSE_REGISTRY is a pure data map. It must remain free of React hooks,
+#     Zustand state, navigation side effects, and private payloads.
+
+
+# ── SECTION 5: FULL-SYSTEM ECOSYSTEM AUDIT SPECS ───────────────────────────
+#
+# Derived from: Full-System Cascade & Edge Case Audit (2026-07-19).
+# Authority: Technical Lead.
+# Every finding below is a permanent law — violations block merge.
+#
+# ── 5A: SHIFT CONFIRMATION CASCADE (Law 1 targets) ─────────────────────────
+#
+# GAP-001 — confirmCandidate is a 5-mutation unguarded Saga.
+#   File:    employer/shiftJobs/storage/employerShift.candidateActions.ts
+#   Writes:  (1) wm_employee_shift_applications_v1
+#            (2) wm_employee_shift_workspaces_v1 (createOrUpdateEmployeeWorkspace)
+#            (3) wm_plan_broadcast_groups_v1 (enrollConfirmedWorkerInPlanGroup)
+#            (4) wm_personal_calendar_shifts_v1 (plannerDiarySyncService.upsertConfirmedDay)
+#            (5) wm_pulse_event_queue_v1 + wm_employee_notifications_v1 (notifyCrossRole)
+#   Risk:    Write (2) failing leaves application=confirmed but no workspace.
+#            Writes (3)/(4) silently fail with no surface or rollback.
+#   REQUIRED FIX: Wrap in confirmCandidateSaga.
+#     — Compensation for (1): revert application status to prior state.
+#     — Compensation for (2): delete workspace row.
+#     — Compensation for (3): unenroll from plan group.
+#     — (4) returns typed result; failure surfaces to caller.
+#     — (5) is TIER: IMPORTANT — enqueue to wm_retry_queue_v1 on failure.
+#
+# GAP-002 — completePost fires 4 mutation chains, vault write is CRITICAL+untiered.
+#   File:    employer/shiftJobs/storage/employerShift.storage.ts → completePost
+#   Writes:  (1) writeEmployerPosts  (2) syncToEmployeeSearch
+#            (3) notifyShiftBothPleaseRate per workspace (fan-out)
+#            (4) finalizeVaultShiftHistoryForPost (CRITICAL — verified work history)
+#   Risk:    (4) has no tier classification. Silent failure = vault missing
+#            a completed shift record, which is an integrity violation.
+#   REQUIRED FIX: (4) must be TIER: CRITICAL — wrap in try/catch that throws.
+#     Caller must surface error. (3) is TIER: IMPORTANT per workspace.
+#     No SHIFT_POST_COMPLETED pulse event is dispatched — this is a Pulse
+#     blindspot (see GAP-020). Dispatch must be added as the final step.
+#
+# GAP-003 — replaceConfirmedCandidate — 4 mutations, backup notification silently dropped.
+#   File:    employer/shiftJobs/storage/employerShift.candidateActions.ts
+#   Writes:  (1) wm_employee_shift_applications_v1 (status → "replaced")
+#            (2) wm_employee_shift_workspaces_v1 (markEmployeeWorkspaceReplaced)
+#            (3) notifyCrossRole(SHIFT_ASSIGNMENT_REPLACED) — replaced employee
+#            (4) notifyCrossRole(SHIFT_BACKUP_SLOT_OPEN) — backup employee
+#   Risk:    (1) succeeds, (2) fails → application="replaced", workspace="active".
+#            (3) succeeds, (4) silently dropped → backup never notified.
+#   REQUIRED FIX: replaceCandidateSaga.
+#     — (1)+(2) must be atomic: both succeed or both roll back.
+#     — (3)+(4) are each TIER: IMPORTANT — enqueue independently on failure.
+#
+# GAP-004 — cancelActivePlan — confirmed workers receive no cancellation notice.
+#   File:    employer/planner/services/plannerCancel.service.ts
+#   Confirmed workers are explicitly excluded from the rejection pass:
+#     if (post.confirmedIds.includes(app.id)) return app; ← skips them entirely
+#   Their workspaces remain "active" after plan cancellation.
+#   REQUIRED FIX:
+#     — After the application rejection pass, iterate confirmed workers.
+#     — Dispatch SHIFT_PLAN_CANCELLED_CONFIRMED_WORKER (new pulse event)
+#       for each confirmed worker — TIER: IMPORTANT.
+#     — Mark their workspace status as "cancelled" (new status value).
+#
+# GAP-005 — checkExpiredPosts — side effect inside .map() callback.
+#   File:    employer/shiftJobs/storage/employerShift.storage.ts
+#   pushEmployerActivity(...) is called INSIDE the .map() transform.
+#   If writeEmployerPosts() fails afterward, activity log is already written
+#   claiming a post was expired, but its status was never updated.
+#   REQUIRED FIX: Collect activity entries during map, write posts FIRST,
+#     then dispatch activity entries only on successful write.
+#
+# GAP-006 — resetAnalysis — writeEmployerPosts called TWICE for the same postId.
+#   File:    employer/shiftJobs/storage/employerShift.storage.ts → resetAnalysis
+#   Calls resetEmployerShiftAnalysis (write #1) then updateEmployerShiftPost (write #2).
+#   Write #2 can silently overwrite what write #1 set. Applications write is
+#   write #3 — if it fails, post shows cleared shortlist but apps still show
+#   "shortlisted" / "waiting".
+#   REQUIRED FIX: Merge both post patches into a single updateEmployerShiftPost
+#     call. Applications write must complete or the post patch rolls back.
+#
+# ── 5B: DOMAIN LAW VIOLATIONS ───────────────────────────────────────────────
+#
+# GAP-007 — planBroadcast.service.ts reads employee workspace key by raw string.
+#   File:    employer/planner/services/planBroadcast.service.ts line 63:
+#     localStorage.getItem("wm_employee_shift_workspaces_v1")  ← HARDCODED RAW READ
+#   This bypasses the domain bridge and makes the coupling invisible.
+#   REQUIRED FIX: Replace with readEmployeeWorkspaces() from
+#     employer/shiftJobs/storage/employerShift.employeeBridge.
+#
+# GAP-008 — CRITICAL KEY COLLISION: EMP_POSTS_KEY === EMPLOYEE_SEARCH_POSTS_KEY.
+#   File:    employer/shiftJobs/storage/employerShift.keys.ts lines 5–6:
+#     EMP_POSTS_KEY          = "wm_employer_shift_posts_v1"
+#     EMPLOYEE_SEARCH_POSTS_KEY = "wm_employer_shift_posts_v1"  ← IDENTICAL
+#   The employee search index IS the employer's raw post list. Employees reading
+#   posts for job search receive confirmedIds, shortlistIds, waitingIds,
+#   rejectedIds, analysisNote, analysisStatus — all sensitive employer data.
+#   REQUIRED FIX (two-part):
+#     1. Rename EMPLOYEE_SEARCH_POSTS_KEY to "wm_employee_shift_search_v1".
+#     2. Strip ALL employer-private fields in syncToEmployeeSearch before writing.
+#        Private fields: confirmedIds, shortlistIds, waitingIds, rejectedIds,
+#        analysisStatus, analyzedAt, analysisNote, settings.
+#
+# GAP-018 — wm_employee_notifications_v1 hardcoded in two separate files.
+#   Files:   employerShift.keys.ts AND shiftWorkspaceStorage.ts both define
+#            EMPLOYEE_NOTES_KEY = "wm_employee_notifications_v1" independently.
+#   Risk:    Future rename of one leaves the other stale — silent key mismatch.
+#   REQUIRED FIX: All modules import EMPLOYEE_NOTES_KEY from
+#     employerShift.keys.ts. No module may define this constant locally.
+#
+# ── 5C: TIER LAW VIOLATIONS (unclassified catch blocks) ────────────────────
+#
+# GAP-009 — workerPointsStorage.write() — "/* safe */" is not a tier.
+#   File:    shared/rating/workerPointsStorage.ts
+#   Worker points are a verified performance record. TIER: CRITICAL.
+#   REQUIRED FIX: catch must throw. Caller surfaces to user.
+#
+# GAP-010 — shiftWorkspaceStorage.saveWorkspaces() — "Phase-0 fallback" is retired.
+#   File:    employer/shiftJobs/storage/shiftWorkspaceStorage.ts
+#   "Phase-0 localStorage-safe fallback" is permanently banned (see Law 2).
+#   Workspaces govern active work relationships. TIER: CRITICAL.
+#   REQUIRED FIX: catch must throw.
+#
+# GAP-011 — shiftWorkspaceStorage.pushEmployeeShiftNotification() — silent drop.
+#   File:    employer/shiftJobs/storage/shiftWorkspaceStorage.ts
+#   Notifications are TIER: IMPORTANT — must enqueue to wm_retry_queue_v1.
+#   REQUIRED FIX: catch must enqueue notification payload to retry queue.
+#
+# GAP-012 — safeDispatch() — blanket silent swallow on all UI events.
+#   File:    employer/shiftJobs/storage/shiftWorkspaceStorage.ts
+#   "Phase-0 fallback" comment is banned. UI dispatch failures are TIER: ADVISORY.
+#   REQUIRED FIX: catch must emit console.warn with event name and context.
+#
+# GAP-013 — planBroadcast.service.ts — /* safe */ inside delivery loop.
+#   File:    employer/planner/services/planBroadcast.service.ts line 77
+#   Silent catch inside workspace ID resolution for crew broadcast.
+#   TIER: IMPORTANT — missed delivery means a worker is unaware of a plan update.
+#   REQUIRED FIX: catch must push to wm_retry_queue_v1 with workspaceId context.
+#
+# ── 5D: CONCURRENT MULTI-DOMAIN TRIGGER GAPS ────────────────────────────────
+#
+# GAP-014 — No SHIFT_POST_COMPLETED pulse event exists anywhere.
+#   completePost fires notifications and vault writes but never dispatches
+#   a pulse event. The breathing light system is blind to shift completion.
+#   REQUIRED FIX: Add SHIFT_POST_COMPLETED to PULSE_REGISTRY (pure data only).
+#     Dispatch via dispatchPulseEvent() as the FINAL step after all writes
+#     succeed. TIER: IMPORTANT.
+#
+# GAP-015 — confirmDirectInviteCandidate skips SHIFT_EMPLOYEE_SELECTED notification.
+#   File:    employer/shiftJobs/storage/employerShift.candidateActions.ts
+#   confirmDirectInviteCandidate creates workspace, enrolls in plan, syncs diary
+#   but NEVER calls notifyCrossRole(SHIFT_EMPLOYEE_SELECTED).
+#   Direct-invite workers are not notified that they are confirmed.
+#   REQUIRED FIX: confirmDirectInviteCandidate must dispatch SHIFT_EMPLOYEE_SELECTED
+#     after workspace is created (matching the standard confirmCandidate path).
+#
+# GAP-016 — plannerDiarySyncService.upsertConfirmedDay has no error surface.
+#   File:    employee/planner/services/plannerDiarySync.service.ts
+#   personalCalendarShiftStorage.upsert() is TIER: CRITICAL (confirmed work calendar).
+#   Currently returns void with no error handling.
+#   REQUIRED FIX: Return a typed SagaResult. Callers (confirmCandidate,
+#     confirmDirectInviteCandidate) must handle failure and roll back the
+#     prior workspace creation step.
+#
+# GAP-017 — saveRating and workerPointsStorage.applyEvent are unconnected silos.
+#   When an employee rates a completed shift workspace, workerPointsStorage
+#   is never called. Points and ratings are independent writes with no
+#   orchestrator guaranteeing both fire together.
+#   REQUIRED FIX: Define submitShiftRatingSaga.
+#     Step 1: ratingStorage.submitWorkerRating(...)  — CRITICAL
+#     Step 2: workerPointsStorage.applyEvent(...)    — IMPORTANT
+#     Compensation for (2): no-op (points loss acceptable).
+#     Compensation for (1) if (2) fails: log IMPORTANT-tier retry.
+#
+# GAP-019 — hrCompleteExit does NOT sync myStaff, employment lifecycle, or
+#            shared employment storage.
+#   Files:   employer/hrManagement/storage/hrStorage.exit.ts → hrCompleteExit
+#   After hrCompleteExit, hrStorage shows "exited" but:
+#     — myStaff.storage.ts StaffRecord.status remains at prior state
+#     — wm_employment_lifecycle_v1 is not updated
+#     — wm_career_employment_v1 is not updated
+#   Employer sees contradictory "notice_period" in My Staff vs "exited" in HR.
+#   REQUIRED FIX: hrCompleteExit must call a cross-domain exitEmployeeSaga:
+#     Step 1: hrUpdate(id, { status: "exited" })              — CRITICAL
+#     Step 2: myStaffStorage.markExited(employeeUniqueId)      — CRITICAL
+#     Step 3: employmentLifecycleStorage.markExited(employeeId)— CRITICAL
+#     Step 4: sharedEmploymentStorage.markExited(employeeId)   — CRITICAL
+#     All four must succeed or all four roll back.
+#
+# GAP-020 — Pulse registry missing SHIFT_POST_COMPLETED, PLAN_CANCELLED,
+#            SHIFT_PLAN_CANCELLED_CONFIRMED_WORKER events.
+#   These critical lifecycle state transitions are invisible to the breathing
+#   light system. Employees see no indication that their shift was completed
+#   or their plan was cancelled.
+#   REQUIRED FIX: Add to PULSE_REGISTRY (pure data map, no side effects):
+#     — SHIFT_POST_COMPLETED      — employer domain, IMPORTANT tier
+#     — PLAN_CANCELLED            — employee domain, IMPORTANT tier
+#     — SHIFT_PLAN_CANCELLED_CONFIRMED_WORKER — employee domain, CRITICAL tier
+#   All three must be dispatched via dispatchPulseEvent() only.
+#
+# ── 5E: CANONICAL REFACTOR PRIORITY ORDER ───────────────────────────────────
+#
+# P1 (before any new feature): GAP-008 key collision (data leakage bug)
+# P2 (before Shift backend):   GAP-001 confirmCandidateSaga
+#                               GAP-003 replaceCandidateSaga
+#                               GAP-015 directInvite notification gap
+# P3 (before Planner backend): GAP-004 planCancellation confirmed worker gap
+#                               GAP-007 raw localStorage read in planner
+# P4 (before HR backend):      GAP-019 hrCompleteExit cross-system sync
+# P5 (ongoing):                GAP-009, GAP-010, GAP-011, GAP-012, GAP-013
+#                               (tier reclassification pass)
+# P6 (Pulse hardening):        GAP-014, GAP-020 (missing pulse events)
+# P7 (ratings/points):         GAP-017 submitShiftRatingSaga

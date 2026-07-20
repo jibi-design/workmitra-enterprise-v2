@@ -1,4 +1,4 @@
-// src/features/employee/workforceOps/services/employeeWorkforceHelpers.ts
+﻿// src/features/employee/workforceOps/services/employeeWorkforceHelpers.ts
 //
 // Employee-side helpers for Workforce Ops Hub.
 // Reads employer workforce data from localStorage to build employee views.
@@ -12,7 +12,7 @@ import type {
   WorkforceGroupMember,
   WorkforceCategory,
   EmployeeWorkforcePreferences,
-} from "../../../employer/workforceOps/types/workforceTypes";
+} from "../../../../shared/domains/workforce/types/workforceTypes";
 
 import {
   WF_STAFF_KEY,
@@ -28,7 +28,7 @@ import {
   safeDispatch,
   WF_APPLICATIONS_CHANGED,
   uid,
-} from "../../../employer/workforceOps/helpers/workforceStorageUtils";
+} from "../../../../shared/domains/workforce/storage/workforceStorageUtils";
 
 import {
   readStaff,
@@ -38,11 +38,11 @@ import {
   readMembers,
   readCategories,
   readAttendance,
-} from "../../../employer/workforceOps/helpers/workforceNormalizers";
+} from "../../../../shared/domains/workforce/helpers/workforceNormalizers";
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Employee Profile Helper
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function getEmployeeUniqueId(): string {
   try {
@@ -55,18 +55,18 @@ function getEmployeeUniqueId(): string {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Company Detection (which employers added this employee as staff)
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type EmployeeCompany = {
   staffRecord: WorkforceStaff;
   categories: WorkforceCategory[];
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Preferences (IMP-5)
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function readPrefs(): EmployeeWorkforcePreferences {
   try {
@@ -88,30 +88,31 @@ function writePrefs(prefs: EmployeeWorkforcePreferences): void {
   safeWrite(WF_EMPLOYEE_PREFS_KEY, prefs);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Public API
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const employeeWorkforceHelpers = {
   getMyUniqueId(): string {
     return getEmployeeUniqueId();
   },
 
-  // ── Staff Record ────────────────────────────────────────────────────────
+  // â”€â”€ Staff Record â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   getMyStaffRecord(): WorkforceStaff | null {
     const myId = getEmployeeUniqueId();
     if (!myId) return null;
-    return readStaff(WF_STAFF_KEY).find(
-      (s) => s.employeeUniqueId === myId && s.status === "active",
-    ) ?? null;
+    return (
+      readStaff(WF_STAFF_KEY).find((s) => s.employeeUniqueId === myId && s.status === "active") ??
+      null
+    );
   },
 
   isAddedAsStaff(): boolean {
     return this.getMyStaffRecord() !== null;
   },
 
-  // ── Categories ──────────────────────────────────────────────────────────
+  // â”€â”€ Categories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   getAllCategories(): WorkforceCategory[] {
     return readCategories(WF_CATEGORIES_KEY);
@@ -126,7 +127,7 @@ export const employeeWorkforceHelpers = {
     return staff.categories.map((id) => catMap.get(id) ?? id);
   },
 
-  // ── Announcements (visible to employee) ─────────────────────────────────
+  // â”€â”€ Announcements (visible to employee) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   getVisibleAnnouncements(): WorkforceAnnouncement[] {
     const staff = this.getMyStaffRecord();
@@ -134,8 +135,7 @@ export const employeeWorkforceHelpers = {
 
     return readAnnouncements(WF_ANNOUNCEMENTS_KEY).filter(
       (a) =>
-        a.status === "open" &&
-        a.targetCategories.some((catId) => staff.categories.includes(catId)),
+        a.status === "open" && a.targetCategories.some((catId) => staff.categories.includes(catId)),
     );
   },
 
@@ -143,34 +143,34 @@ export const employeeWorkforceHelpers = {
     const staff = this.getMyStaffRecord();
     if (!staff) return [];
 
-    return readAnnouncements(WF_ANNOUNCEMENTS_KEY).filter(
-      (a) => a.targetCategories.some((catId) => staff.categories.includes(catId)),
+    return readAnnouncements(WF_ANNOUNCEMENTS_KEY).filter((a) =>
+      a.targetCategories.some((catId) => staff.categories.includes(catId)),
     );
   },
 
-  // ── Applications ────────────────────────────────────────────────────────
+  // â”€â”€ Applications â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   getMyApplications(): WorkforceApplication[] {
     const myId = getEmployeeUniqueId();
     if (!myId) return [];
-    return readApplications(WF_APPLICATIONS_KEY).filter(
-      (a) => a.employeeUniqueId === myId,
-    );
+    return readApplications(WF_APPLICATIONS_KEY).filter((a) => a.employeeUniqueId === myId);
   },
 
   getApplicationForAnnouncement(announcementId: string): WorkforceApplication | null {
     const myId = getEmployeeUniqueId();
     if (!myId) return null;
-    return readApplications(WF_APPLICATIONS_KEY).find(
-      (a) => a.announcementId === announcementId && a.employeeUniqueId === myId,
-    ) ?? null;
+    return (
+      readApplications(WF_APPLICATIONS_KEY).find(
+        (a) => a.announcementId === announcementId && a.employeeUniqueId === myId,
+      ) ?? null
+    );
   },
 
   hasApplied(announcementId: string): boolean {
     return this.getApplicationForAnnouncement(announcementId) !== null;
   },
 
-  // ── Apply to Announcement ───────────────────────────────────────────────
+  // â”€â”€ Apply to Announcement â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   apply(
     announcementId: string,
@@ -191,7 +191,9 @@ export const employeeWorkforceHelpers = {
       return { success: false, errors: ["You have already applied to this announcement."] };
     }
 
-    const announcement = readAnnouncements(WF_ANNOUNCEMENTS_KEY).find((a) => a.id === announcementId);
+    const announcement = readAnnouncements(WF_ANNOUNCEMENTS_KEY).find(
+      (a) => a.id === announcementId,
+    );
     if (!announcement) {
       return { success: false, errors: ["Announcement not found."] };
     }
@@ -222,7 +224,7 @@ export const employeeWorkforceHelpers = {
     return { success: true };
   },
 
-  // ── Groups (employee is member of) ──────────────────────────────────────
+  // â”€â”€ Groups (employee is member of) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   getMyGroups(): Array<{ group: WorkforceGroup; member: WorkforceGroupMember }> {
     const myId = getEmployeeUniqueId();
@@ -248,7 +250,7 @@ export const employeeWorkforceHelpers = {
     return this.getMyGroups().filter((g) => g.group.status === "active");
   },
 
-  // ── Preferred Companies (IMP-5) ─────────────────────────────────────────
+  // â”€â”€ Preferred Companies (IMP-5) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   getPreferredCompanyIds(): string[] {
     return readPrefs().preferredCompanyIds;
@@ -267,7 +269,7 @@ export const employeeWorkforceHelpers = {
     return readPrefs().preferredCompanyIds.includes(companyId);
   },
 
-  // ── Summary (for home page KPIs) ───────────────────────────────────────
+  // â”€â”€ Summary (for home page KPIs) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   getHomeSummary(): {
     isStaff: boolean;
@@ -286,9 +288,12 @@ export const employeeWorkforceHelpers = {
     };
   },
 
-  // ── Timesheet (Monthly attendance summary) ──────────────────────────────
+  // â”€â”€ Timesheet (Monthly attendance summary) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  getMyTimesheet(year: number, month: number): {
+  getMyTimesheet(
+    year: number,
+    month: number,
+  ): {
     totalDays: number;
     totalHours: number;
     avgHoursPerDay: number;
@@ -332,7 +337,11 @@ export const employeeWorkforceHelpers = {
       .map((rec) => ({
         groupId: rec.groupId,
         groupName: groupMap.get(rec.groupId) ?? "Unknown",
-        date: new Date(rec.signInAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }),
+        date: new Date(rec.signInAt).toLocaleDateString(undefined, {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        }),
         shiftName: shiftMap.get(`${rec.groupId}__${rec.shiftId}`) ?? "Shift",
         signInAt: rec.signInAt,
         signOutAt: rec.signOutAt,

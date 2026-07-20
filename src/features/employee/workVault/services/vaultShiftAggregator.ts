@@ -1,22 +1,14 @@
-// src/features/employee/workVault/services/vaultShiftAggregator.ts
-//
-// Reads Shift Jobs data from localStorage and returns
-// structured Work Vault sections: Shift Stats + Ratings + References.
-// No writes — pure read-only aggregation.
+// App name: Job Mitra
+// File name: vaultShiftAggregator.ts
+// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\workVault\services\vaultShiftAggregator.ts
 
+import { ratingStorage } from "../../../../shared/rating/ratingStorage";
+import { employeeProfileStorage } from "../../../employee/profile/storage/employeeProfile.storage";
+import { getVaultShiftHistoryForWorker } from "../storage/vaultShiftHistory.storage";
 import type { VaultReference } from "../types/vaultProfileTypes";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// localStorage Keys (read-only — owned by Shift domain)
-// ─────────────────────────────────────────────────────────────────────────────
-
 const SHIFT_POSTS_KEY = "wm_employer_shift_posts_v1";
-const SHIFT_APPS_KEY = "wm_employee_shift_applications_v1";
 const SHIFT_WORKSPACES_KEY = "wm_employee_shift_workspaces_v1";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Safe Helpers
-// ─────────────────────────────────────────────────────────────────────────────
 
 type Rec = Record<string, unknown>;
 
@@ -24,6 +16,7 @@ function parse<T>(key: string): T[] {
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return [];
+
     const arr = JSON.parse(raw) as unknown;
     return Array.isArray(arr) ? (arr as T[]) : [];
   } catch {
@@ -36,28 +29,50 @@ function str(r: Rec, k: string): string {
   return typeof v === "string" ? v : "";
 }
 
-function num(r: Rec, k: string): number {
-  const v = r[k];
-  return typeof v === "number" && Number.isFinite(v) ? v : 0;
+function getCurrentWorkerWmId(): string {
+  return employeeProfileStorage.get().uniqueId?.trim() || "";
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Shift Stats (Section 4 — shift portion)
-// ─────────────────────────────────────────────────────────────────────────────
+function getShiftPostMap(): Map<string, Rec> {
+  const posts = parse<Rec>(SHIFT_POSTS_KEY);
+  const map = new Map<string, Rec>();
+
+  for (const post of posts) {
+    const id = str(post, "id");
+    if (id) map.set(id, post);
+  }
+
+  return map;
+}
 
 export function aggregateShiftStats(): {
   totalShiftsCompleted: number;
   uniqueCompanies: string[];
 } {
+  const workerWmId = getCurrentWorkerWmId();
+  const history = workerWmId ? getVaultShiftHistoryForWorker(workerWmId) : [];
+  const finalizedHistory = history.filter((entry) => entry.vaultFinalized);
+
+  if (finalizedHistory.length > 0) {
+    const companies = new Set<string>();
+    for (const entry of finalizedHistory) {
+      const name = entry.companyName.toLowerCase().trim();
+      if (name) companies.add(name);
+    }
+
+    return {
+      totalShiftsCompleted: finalizedHistory.length,
+      uniqueCompanies: Array.from(companies),
+    };
+  }
+
   const workspaces = parse<Rec>(SHIFT_WORKSPACES_KEY);
 
-  const completed = workspaces.filter(
-    (w) => str(w, "status") === "completed" || str(w, "status") === "active"
-  );
+  const completed = workspaces.filter((workspace) => str(workspace, "status") === "completed");
 
   const companies = new Set<string>();
-  for (const w of completed) {
-    const name = str(w, "companyName").toLowerCase().trim();
+  for (const workspace of completed) {
+    const name = str(workspace, "companyName").toLowerCase().trim();
     if (name) companies.add(name);
   }
 
@@ -67,62 +82,74 @@ export function aggregateShiftStats(): {
   };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Shift Ratings (Section 7 — shift portion)
-// ─────────────────────────────────────────────────────────────────────────────
-
 export function aggregateShiftRatings(): {
   ratings: number[];
   ratedCompanies: { companyName: string; rating: number }[];
 } {
-  const apps = parse<Rec>(SHIFT_APPS_KEY);
-  const posts = parse<Rec>(SHIFT_POSTS_KEY);
-
-  const postMap = new Map<string, Rec>();
-  for (const p of posts) {
-    const id = str(p, "id");
-    if (id) postMap.set(id, p);
+  const workerWmId = getCurrentWorkerWmId();
+  if (!workerWmId) {
+    return { ratings: [], ratedCompanies: [] };
   }
 
-  const ratings: number[] = [];
-  const ratedCompanies: { companyName: string; rating: number }[] = [];
+  const postMap = getShiftPostMap();
 
-  for (const app of apps) {
-    const rating = num(app, "rating");
-    if (rating >= 1 && rating <= 5) {
-      ratings.push(rating);
-      const post = postMap.get(str(app, "postId"));
-      const companyName = post ? str(post, "companyName") : "";
-      if (companyName) {
-        ratedCompanies.push({ companyName, rating });
-      }
-    }
-  }
+  const workerRatings = ratingStorage
+    .getAllERRatings()
+    .filter((rating) => rating.domain === "shift" && rating.workerWmId === workerWmId);
+
+  const ratings = workerRatings.map((rating) => rating.stars);
+
+  const ratedCompanies = workerRatings.map((rating) => {
+    const post = postMap.get(rating.jobId);
+    return {
+      companyName: post ? str(post, "companyName") || "Employer" : "Employer",
+      rating: rating.stars,
+    };
+  });
 
   return { ratings, ratedCompanies };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Shift References (Section 8 — employers who rated 4+)
-// ─────────────────────────────────────────────────────────────────────────────
-
 export function aggregateShiftReferences(): VaultReference[] {
-  const { ratedCompanies } = aggregateShiftRatings();
+  const workerWmId = getCurrentWorkerWmId();
+  if (!workerWmId) return [];
 
-  const seen = new Set<string>();
-  const refs: VaultReference[] = [];
+  const historyRefs = getVaultShiftHistoryForWorker(workerWmId)
+    .filter((entry) => entry.vaultFinalized)
+    .map((entry): VaultReference => ({
+      companyName: entry.companyName,
+      rating: entry.employerRating ?? entry.workerRating ?? 0,
+      source: "shift",
+      jobId: entry.postId,
+      jobTitle: entry.jobTitle,
+      createdAt: entry.finalizedAt ?? entry.completedAt,
+    }));
 
-  for (const entry of ratedCompanies) {
-    const key = entry.companyName.toLowerCase().trim();
-    if (!seen.has(key)) {
-      seen.add(key);
-      refs.push({
-        companyName: entry.companyName,
-        rating: entry.rating,
-        source: "shift",
-      });
-    }
+  if (historyRefs.length > 0) {
+    return historyRefs;
   }
 
-  return refs;
+  const postMap = getShiftPostMap();
+
+  return ratingStorage
+    .getAllERRatings()
+    .filter((rating) => rating.domain === "shift" && rating.workerWmId === workerWmId)
+    .map((rating): VaultReference => {
+      const post = postMap.get(rating.jobId);
+      const companyName = post ? str(post, "companyName") || "Employer" : "Employer";
+      const jobTitle = post ? str(post, "jobName") || "Shift work" : "Shift work";
+
+      return {
+        companyName,
+        rating: rating.stars,
+        source: "shift",
+        jobId: rating.jobId,
+        jobTitle,
+        comment: rating.comment,
+        tags: rating.tags,
+        hireAgain: rating.hireAgain,
+        createdAt: rating.createdAt,
+        editedAt: rating.editedAt,
+      };
+    });
 }

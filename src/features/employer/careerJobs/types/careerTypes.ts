@@ -35,10 +35,17 @@ export type CareerJobPost = {
   workMode: CareerWorkMode;
   location: string;
 
+  // ── NEW FIELDS ──
+  vacancies: number;
+  probationPeriod: string;
+
   // ── Compensation ──
   salaryMin: number;
   salaryMax: number;
   salaryPeriod: CareerSalaryPeriod;
+
+  // ── Employment Terms ──
+  noticePeriodDays?: number;
 
   // ── Requirements ──
   experienceMin: number;
@@ -84,17 +91,15 @@ export type CareerApplicationStage =
   | "shortlisted"
   | "interview"
   | "offered"
+  | "offer_accepted"
   | "hired"
   | "rejected"
   | "withdrawn";
 
 export type RoundResultStatus =
-  | "scheduled"
-  | "pending"
-  | "passed"
-  | "failed"
-  | "skipped"
-  | "cancelled";
+  "scheduled" | "pending" | "passed" | "failed" | "skipped" | "cancelled";
+
+export type InterviewRsvpStatus = "pending" | "accepted" | "declined";
 
 export type RoundResult = {
   round: number;
@@ -107,6 +112,8 @@ export type RoundResult = {
   location?: string;
   meetingLink?: string;
   completedAt?: number;
+  rsvpStatus?: InterviewRsvpStatus;
+  rsvpAt?: number;
 };
 
 export type CareerApplicationProfileSnapshot = {
@@ -124,6 +131,7 @@ export type CareerApplication = {
   employeeId: string;
   employeeName: string;
   employeePhone: string;
+  employeeEmail: string;
 
   // ── Application Data ──
   resumeSummary: string;
@@ -146,9 +154,10 @@ export type CareerApplication = {
   rejectionReason?: string;
   rejectedAt?: number;
   offeredAt?: number;
+  offerAcceptedAt?: number;
   offerDetails?: CareerOfferInput;
   hiredAt?: number;
- withdrawnAt?: number;
+  withdrawnAt?: number;
   screeningAnswers?: Record<string, "yes" | "no">;
 };
 

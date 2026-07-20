@@ -15,6 +15,17 @@ export type KpiCounts = {
 
 export type TabCounts = Record<Tab, number>;
 
+export type ScheduledInterviewSummary = {
+  round: number;
+  label: string;
+  mode: string;
+  scheduledDate: string;
+  scheduledTime: string;
+  location?: string;
+  meetingLink?: string;
+  rsvpStatus?: "pending" | "accepted" | "declined";
+};
+
 export type AppLite = {
   id: string;
   jobId: string;
@@ -40,6 +51,7 @@ export type AppLite = {
     startDate: string;
     message?: string;
   };
+  nextScheduledInterview?: ScheduledInterviewSummary;
 };
 
 export type ExplanationResult = {

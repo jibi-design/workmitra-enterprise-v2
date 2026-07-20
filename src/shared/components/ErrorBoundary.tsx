@@ -1,6 +1,18 @@
-﻿/** Job Mitra | ErrorBoundary.tsx | C:\projects\WorkMitra_Enterprise_v2\src\shared\components\ErrorBoundary.tsx */
+/** Job Mitra | ErrorBoundary.tsx | C:\projects\WorkMitra_Enterprise_v2\src\shared\components\ErrorBoundary.tsx */
 
 import { Component, type ErrorInfo, type ReactNode } from "react";
+
+const CHUNK_RELOAD_KEY = "wm:chunk-reload-attempted";
+
+function isDynamicImportError(error: Error | null): boolean {
+  if (!error) return false;
+  const message = error.message.toLowerCase();
+  return (
+    message.includes("failed to fetch dynamically imported module") ||
+    message.includes("importing a module script failed") ||
+    message.includes("error loading dynamically imported module")
+  );
+}
 
 interface ErrorBoundaryProps {
   fallback?: ReactNode;
@@ -29,11 +41,24 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   private handleGoHome = (): void => {
     const path = this.props.homePath ?? "/";
+
+    if (isDynamicImportError(this.state.error)) {
+      sessionStorage.removeItem(CHUNK_RELOAD_KEY);
+      window.location.replace(`${window.location.origin}${window.location.pathname}#${path}`);
+      return;
+    }
+
     this.setState({ hasError: false, error: null });
     window.location.hash = `#${path}`;
   };
 
   private handleRetry = (): void => {
+    if (isDynamicImportError(this.state.error)) {
+      sessionStorage.removeItem(CHUNK_RELOAD_KEY);
+      window.location.reload();
+      return;
+    }
+
     this.setState({ hasError: false, error: null });
   };
 
@@ -165,9 +190,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 color: "var(--wm-er-muted, #6b7280)",
               }}
             >
-              <summary style={{ cursor: "pointer", fontWeight: 700 }}>
-                Error details
-              </summary>
+              <summary style={{ cursor: "pointer", fontWeight: 700 }}>Error details</summary>
               <pre
                 style={{
                   marginTop: 8,
