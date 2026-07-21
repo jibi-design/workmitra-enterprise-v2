@@ -1,13 +1,23 @@
 // App name: Job Mitra
 // File name: EmployerShiftPostsList.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\components\EmployerShiftPostsList.tsx
+// Ultra-Enterprise U3/U4 — SlideOver quick view + EnterpriseEmpty
 
+import { useState, useSyncExternalStore } from "react";
 import { PulseTargetIndicator } from "../../../../features/pulse/PulseTargetIndicator";
+import {
+  EnterpriseEmpty,
+  EnterpriseSkeleton,
+  SlideOver,
+  StatusBadge,
+} from "../../../../shared/components/enterprise";
 import type { ShiftPost } from "../../shiftJobs/storage/employerShift.storage";
 import { EmployerShiftPostCard } from "./EmployerShiftPostCard";
 import { EmployerShiftPlannerGroupPromoCard } from "./EmployerShiftPlannerGroupPromoCard";
 import type { EmployerPlannerPostGroup } from "../../planner/helpers/employerPlannerPostsGrouping";
-import { IconPlus } from "./EmployerShiftPostsHeader";
+import {
+  countAppliedAppsForPost,
+  getShiftPostStatusLabel,
+} from "../helpers/employerShiftPosts.helpers";
 
 type EmployerShiftPostsListProps = {
   posts: ShiftPost[];
@@ -36,6 +46,17 @@ export function EmployerShiftPostsList({
   onCancelSaveTemplate,
   onSaveTemplate,
 }: EmployerShiftPostsListProps) {
+  const [quickPost, setQuickPost] = useState<ShiftPost | null>(null);
+  const hydrated = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+
+  if (!hydrated) {
+    return <EnterpriseSkeleton domain="shift" count={3} testId="shift-posts-skeleton" />;
+  }
+
   return (
     <div className="wm-shiftPostsList">
       {posts.length === 0 && planGroups.length === 0 && <EmptyPostsState onCreate={onCreate} />}
@@ -63,35 +84,89 @@ export function EmployerShiftPostsList({
             onCancelSaveTemplate={onCancelSaveTemplate}
             onSaveTemplate={onSaveTemplate}
           />
+
+          <div style={{ marginTop: 8, display: "flex", justifyContent: "flex-end" }}>
+            <button
+              type="button"
+              className="wm-outlineBtn"
+              data-testid={`shift-post-quick-view-${post.id}`}
+              onClick={() => setQuickPost(post)}
+              style={{ minHeight: 36, fontSize: 12, fontWeight: 800 }}
+            >
+              Quick view
+            </button>
+          </div>
         </div>
       ))}
+
+      <SlideOver
+        open={Boolean(quickPost)}
+        onClose={() => setQuickPost(null)}
+        title={quickPost?.jobName ?? "Shift details"}
+        subtitle={quickPost?.companyName}
+        testId="shift-detail-slideover"
+        footer={
+          quickPost ? (
+            <>
+              <button type="button" className="wm-outlineBtn" onClick={() => setQuickPost(null)}>
+                Close
+              </button>
+              <button
+                type="button"
+                className="wm-primarybtn"
+                data-testid="shift-detail-slideover-open-full"
+                onClick={() => {
+                  const id = quickPost.id;
+                  setQuickPost(null);
+                  onOpen(id);
+                }}
+              >
+                Open full dashboard
+              </button>
+            </>
+          ) : null
+        }
+      >
+        {quickPost ? <ShiftPostQuickViewBody post={quickPost} /> : null}
+      </SlideOver>
+    </div>
+  );
+}
+
+function ShiftPostQuickViewBody({ post }: { post: ShiftPost }) {
+  const appliedCount = countAppliedAppsForPost(post.id);
+  const openSlots = Math.max(0, post.vacancies - post.confirmedIds.length);
+
+  return (
+    <div style={{ display: "grid", gap: 12 }} data-testid="shift-detail-slideover-body">
+      <StatusBadge label={getShiftPostStatusLabel(post)} tone="active" accent="shift" />
+      <div style={{ fontSize: 13, color: "var(--wm-er-muted)" }}>
+        {post.locationName} · {post.vacancies} vacancies · {openSlots} open · {appliedCount} applied
+      </div>
+      <div style={{ fontSize: 12, lineHeight: 1.5 }}>
+        Confirmed {post.confirmedIds.length} · Shortlist {post.shortlistIds.length} · Waiting{" "}
+        {post.waitingIds.length}
+      </div>
     </div>
   );
 }
 
 function EmptyPostsState({ onCreate }: { onCreate: () => void }) {
   return (
-    <div className="wm-er-card wm-shiftPostsEmptyState">
-      <div className="wm-shiftPostsEmptyTitle">Create your first shift post</div>
-
-      <div className="wm-shiftPostsEmptyText">
-        Start with a clear title, pay, shift time, location, and must-have requirements. Workers
-        will see the post and apply from the employee side.
-      </div>
-
+    <div style={{ display: "grid", gap: 12 }}>
+      <EnterpriseEmpty
+        domain="shift"
+        title="No shifts posted yet"
+        subtitle="Create your first shift post with pay, time, location, and must-have requirements."
+        primaryLabel="Create Shift Post"
+        onPrimary={onCreate}
+        testId="shift-posts-empty"
+      />
       <div className="wm-shiftPostsRecoveryGrid">
         <RecoveryTip text="Use simple job names like Helper, Billing Staff, Delivery Support, or Cleaner." />
         <RecoveryTip text="Keep pay, reporting time, and dress code honest. Avoid fake hiring or payment claims." />
         <RecoveryTip text="After applications arrive, use candidate filters, compare mode, shortlist, backup, and vacancy-safe confirmation." />
       </div>
-
-      <button
-        className="wm-primarybtn wm-shiftPostsEmptyCreateBtn"
-        type="button"
-        onClick={onCreate}
-      >
-        <IconPlus /> Create Shift Post
-      </button>
     </div>
   );
 }

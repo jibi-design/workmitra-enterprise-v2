@@ -1,8 +1,10 @@
 // Job Mitra | EmployerPlannerPlansListPage.tsx
+// Ultra-Enterprise U2/U4 — skeleton + EnterpriseEmpty buckets
 
 import { useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { EnterpriseEmpty, EnterpriseSkeleton } from "../../../../shared/components/enterprise";
 import {
   demandPlannerStorage,
   type DemandPlan,
@@ -24,6 +26,11 @@ export function EmployerPlannerPlansListPage() {
     getPlansSnapshot,
     getPlansSnapshot,
   );
+  const hydrated = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   function openPlan(plan: DemandPlan) {
     if (plan.status === "draft") {
@@ -32,6 +39,16 @@ export function EmployerPlannerPlansListPage() {
     }
     nav(ROUTE_PATHS.employerPlannerDetail.replace(":planId", plan.id));
   }
+
+  if (!hydrated) {
+    return (
+      <div className="wm-er-vPlanner wm-planner-page">
+        <EnterpriseSkeleton domain="planner" count={3} testId="planner-plans-skeleton" />
+      </div>
+    );
+  }
+
+  const hasAnyPlan = plans.length > 0;
 
   return (
     <div className="wm-er-vPlanner wm-planner-page">
@@ -43,6 +60,17 @@ export function EmployerPlannerPlansListPage() {
       </section>
 
       <PlannerEmployerCommandGrid />
+
+      {!hasAnyPlan ? (
+        <EnterpriseEmpty
+          domain="planner"
+          title="No demand plans yet"
+          subtitle="Create a multi-day demand plan to publish day slots into Shift hiring."
+          primaryLabel="Create demand plan"
+          onPrimary={() => nav(ROUTE_PATHS.employerPlannerNew)}
+          testId="planner-plans-empty"
+        />
+      ) : null}
 
       {TABS.map((status) => (
         <PlannerEmployerPlanStatusSection

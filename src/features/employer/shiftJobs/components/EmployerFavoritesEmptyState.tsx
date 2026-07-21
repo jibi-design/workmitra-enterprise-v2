@@ -1,24 +1,31 @@
 // App name: Job Mitra
 // File name: EmployerFavoritesEmptyState.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\components\EmployerFavoritesEmptyState.tsx
+// Ultra-Enterprise U4 — actionable EnterpriseEmpty
+
+import { useNavigate } from "react-router-dom";
+import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { EnterpriseEmpty } from "../../../../shared/components/enterprise";
 
 type EmployerFavoritesEmptyStateProps = {
   show: boolean;
 };
 
 export function EmployerFavoritesEmptyState({ show }: EmployerFavoritesEmptyStateProps) {
+  const nav = useNavigate();
   if (!show) return null;
 
   return (
-    <div className="wm-er-card" style={{ marginTop: 12, padding: 28, textAlign: "center" }}>
-      <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-er-text)" }}>
-        No favorites yet
-      </div>
-
-      <div style={{ fontSize: 12, color: "var(--wm-er-muted)", marginTop: 6, lineHeight: 1.6 }}>
-        Rate a worker and select &ldquo;Hire Again&rdquo; to automatically add them here. Or add by
-        Job Mitra ID above.
-      </div>
+    <div style={{ marginTop: 12 }}>
+      <EnterpriseEmpty
+        domain="shift"
+        title="No favorites yet"
+        subtitle='Rate a worker and select "Hire Again" to automatically add them here. Or add by Mitra Labs ID above.'
+        primaryLabel="Open shift posts"
+        onPrimary={() => nav(ROUTE_PATHS.employerShiftPosts)}
+        secondaryLabel="Create shift"
+        onSecondary={() => nav(ROUTE_PATHS.employerShiftCreate)}
+        testId="shift-favorites-empty"
+      />
     </div>
   );
 }

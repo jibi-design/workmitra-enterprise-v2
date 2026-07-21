@@ -1,6 +1,8 @@
 // Job Mitra | EmployerPlannerNewPage.tsx | Gig Projects 3-step wizard
+// Ultra-Enterprise U5 — TrustStrip for stale concurrency
 
 import { NoticeModal } from "../../../../shared/components/NoticeModal";
+import { TrustStrip } from "../../../../shared/components/enterprise";
 import { DemandPlannerStep1 } from "../components/wizard/DemandPlannerStep1";
 import { DemandPlannerStep2SchedulePay } from "../components/wizard/DemandPlannerStep2SchedulePay";
 import { DemandPlannerStep3 } from "../components/wizard/DemandPlannerStep3";
@@ -11,10 +13,40 @@ import { useEmployerDemandPlannerState } from "../hooks/useEmployerDemandPlanner
 
 export function EmployerPlannerNewPage() {
   const state = useEmployerDemandPlannerState();
+  const isStaleNotice =
+    Boolean(state.notice) &&
+    state.notice?.confirmLabel === "Reload" &&
+    (state.notice?.title.includes("updated elsewhere") ?? false);
 
   return (
     <div className="wm-er-vPlanner wm-planner-page">
-      <NoticeModal notice={state.notice} onClose={state.handleNoticeClose} />
+      {isStaleNotice ? (
+        <div style={{ marginBottom: 12 }}>
+          <TrustStrip
+            kind="stale"
+            tone="warning"
+            title={state.notice?.title ?? "This plan was updated elsewhere"}
+            message={
+              state.notice?.message ??
+              "Reload the draft to continue editing without overwriting newer changes."
+            }
+            badgeLabel="Stale"
+            testId="planner-stale-trust"
+            actions={
+              <button
+                type="button"
+                className="wm-primarybtn"
+                data-testid="planner-stale-reload"
+                onClick={state.handleNoticeClose}
+              >
+                Reload
+              </button>
+            }
+          />
+        </div>
+      ) : (
+        <NoticeModal notice={state.notice} onClose={state.handleNoticeClose} />
+      )}
 
       <EmployerDemandPlannerHeader
         showCancel

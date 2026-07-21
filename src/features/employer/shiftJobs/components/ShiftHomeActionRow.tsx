@@ -3,6 +3,7 @@
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\components\ShiftHomeActionRow.tsx
 
 import type { CSSProperties, ReactNode } from "react";
+import { EnterpriseResponsiveGrid } from "../../../../shared/components/enterprise";
 import { IconBroadcast, IconFavorites, IconGroup, IconPost, IconReview } from "./ShiftHomeIcons";
 import { shiftHomeActionButtonBase, shiftHomeActionIconWrap } from "./ShiftHomeSectionStyles";
 
@@ -17,19 +18,13 @@ type ShiftHomeActionRowProps = {
   onReviews: () => void;
 };
 
-const ACTION_GRID_STYLE: CSSProperties = {
-  marginTop: 14,
-  display: "grid",
-  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-  gap: 8,
-};
-
 const ACTION_BUTTON_STYLE: CSSProperties = {
   ...shiftHomeActionButtonBase,
   minHeight: 112,
   justifyContent: "flex-start",
   paddingTop: 14,
   paddingBottom: 12,
+  width: "100%",
 };
 
 const LABEL_STYLE: CSSProperties = {
@@ -68,50 +63,57 @@ export function ShiftHomeActionRow({
   onReviews,
 }: ShiftHomeActionRowProps) {
   return (
-    <div style={ACTION_GRID_STYLE} data-testid="shift-home-action-row">
-      <ActionButton label="My Posts" description="Created shifts" onClick={onPosts}>
-        <IconPost />
-      </ActionButton>
-
-      <ActionButton
-        label="Groups"
-        description="Confirmed teams"
-        subLabel={groups > 0 ? `${groups} active` : undefined}
-        onClick={onGroups}
+    <div style={{ marginTop: 14 }} data-testid="shift-home-action-row">
+      <EnterpriseResponsiveGrid
+        minItemWidth={120}
+        gap={8}
+        collapseMobile
+        testId="shift-home-action-grid"
       >
-        <IconGroup />
-      </ActionButton>
+        <ActionButton label="My Posts" description="Created shifts" onClick={onPosts}>
+          <IconPost />
+        </ActionButton>
 
-      <ActionButton
-        label="Favorites"
-        description="Trusted workers"
-        subLabel={favCount > 0 ? `${favCount} saved` : undefined}
-        onClick={onFavorites}
-        iconStyle={{
-          background: "rgba(22,163,74,0.08)",
-          color: "var(--wm-er-accent-shift, #16a34a)",
-        }}
-      >
-        <IconFavorites />
-      </ActionButton>
+        <ActionButton
+          label="Groups"
+          description="Confirmed teams"
+          subLabel={groups > 0 ? `${groups} active` : undefined}
+          onClick={onGroups}
+        >
+          <IconGroup />
+        </ActionButton>
 
-      <ActionButton label="Broadcasts" description="Worker updates" onClick={onBroadcasts}>
-        <IconBroadcast />
-      </ActionButton>
+        <ActionButton
+          label="Favorites"
+          description="Trusted workers"
+          subLabel={favCount > 0 ? `${favCount} saved` : undefined}
+          onClick={onFavorites}
+          iconStyle={{
+            background: "rgba(22,163,74,0.08)",
+            color: "var(--wm-er-accent-shift, #16a34a)",
+          }}
+        >
+          <IconFavorites />
+        </ActionButton>
 
-      <ActionButton
-        label="Reviews"
-        description="Ratings & feedback"
-        subLabel={reviewPendingCount > 0 ? `${reviewPendingCount} pending` : undefined}
-        onClick={onReviews}
-        testId="shift-home-reviews-tile"
-        iconStyle={{
-          background: "rgba(217,119,6,0.1)",
-          color: "var(--wm-rating-accent, #d97706)",
-        }}
-      >
-        <IconReview />
-      </ActionButton>
+        <ActionButton label="Broadcasts" description="Worker updates" onClick={onBroadcasts}>
+          <IconBroadcast />
+        </ActionButton>
+
+        <ActionButton
+          label="Reviews"
+          description="Ratings & feedback"
+          subLabel={reviewPendingCount > 0 ? `${reviewPendingCount} pending` : undefined}
+          onClick={onReviews}
+          testId="shift-home-reviews-tile"
+          iconStyle={{
+            background: "rgba(217,119,6,0.1)",
+            color: "var(--wm-rating-accent, #d97706)",
+          }}
+        >
+          <IconReview />
+        </ActionButton>
+      </EnterpriseResponsiveGrid>
     </div>
   );
 }

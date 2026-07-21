@@ -33,6 +33,7 @@ import {
 } from "../../../shared/planner/services/plannerRtw.service";
 import { listPlannerRosterAssignments } from "../../../shared/planner/services/plannerRoster.helpers";
 import { getVaultPlannerHistory } from "../../../shared/planner/plannerVault";
+import { StatusBadge, TrustStrip } from "../../../../shared/components/enterprise";
 
 export function EmployerPlannerRosterDetailPage() {
   const { planId = "" } = useParams();
@@ -183,6 +184,18 @@ export function EmployerPlannerRosterDetailPage() {
           </button>
           <span style={{ color: "#64748b" }}>Visa / Right-to-Work only — not clinical NMC.</span>
         </div>
+        {rtwWorkers.size > 0 ? (
+          <div style={{ marginTop: 12 }}>
+            <TrustStrip
+              kind="rtw"
+              tone="warning"
+              title="RTW review needed"
+              message={`${rtwWorkers.size} worker(s) on this roster have Visa / Right-to-Work expiry warnings.`}
+              badgeLabel="RTW"
+              testId="planner-roster-rtw-trust"
+            />
+          </div>
+        ) : null}
       </section>
 
       {assignments.length === 0 ? (
@@ -236,28 +249,18 @@ export function EmployerPlannerRosterDetailPage() {
                   {isNoShow ? " · missed check-in" : ""}
                 </div>
                 {(rtwStatus.level === "warning" || rtwStatus.level === "expired") && (
-                  <div
-                    data-testid="planner-roster-rtw-badge"
-                    style={{
-                      marginTop: 8,
-                      display: "inline-block",
-                      padding: "4px 8px",
-                      borderRadius: 8,
-                      fontSize: 11,
-                      fontWeight: 800,
-                      background:
-                        rtwStatus.level === "expired"
-                          ? "rgba(220,38,38,0.12)"
-                          : "rgba(217,119,6,0.14)",
-                      color: rtwStatus.level === "expired" ? "#b91c1c" : "#b45309",
-                    }}
-                  >
-                    RTW {rtwStatus.level}
-                    {rtwStatus.daysRemaining !== null
-                      ? rtwStatus.level === "expired"
-                        ? ` · ${Math.abs(rtwStatus.daysRemaining)}d overdue`
-                        : ` · ${rtwStatus.daysRemaining}d left`
-                      : ""}
+                  <div data-testid="planner-roster-rtw-badge" style={{ marginTop: 8 }}>
+                    <StatusBadge
+                      accent="planner"
+                      tone={rtwStatus.level === "expired" ? "critical" : "warning"}
+                      label={
+                        rtwStatus.daysRemaining !== null
+                          ? rtwStatus.level === "expired"
+                            ? `RTW expired · ${Math.abs(rtwStatus.daysRemaining)}d overdue`
+                            : `RTW warning · ${rtwStatus.daysRemaining}d left`
+                          : `RTW ${rtwStatus.level}`
+                      }
+                    />
                   </div>
                 )}
                 <div style={{ marginTop: 8, fontSize: 12 }}>

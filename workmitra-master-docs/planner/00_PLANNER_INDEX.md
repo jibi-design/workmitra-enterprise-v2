@@ -14,7 +14,9 @@ Phase-0 ships as Shift demand-planning; domain scope lock in doc 02 — **never 
 
 **Phase-1:** `03_PLANNER_HYBRID_A2_PHASE1_ROADMAP_v1.0.md` — Hybrid A2 + Zero Dead-End (**COMPLETE** — tag `v1.0.0-planner-hybrida2-p1`).
 
-**Phase-2:** `04_PLANNER_HYBRID_A2_PHASE2_OPS_ROADMAP_v1.0.md` — Ops & Trust Hardening (audit / concurrency / escalations / RTW).
+**Phase-2:** `04_PLANNER_HYBRID_A2_PHASE2_OPS_ROADMAP_v1.0.md` — Ops & Trust Hardening.
+
+**Employer UI:** `05_EMPLOYER_ULTRA_ENTERPRISE_UI_SYSTEM_v1.0.md` — Ultra-Enterprise UI unification (U0–U5).
 
 **Quick version check:** see `Document version:` on **line 4** of this file and `01_SHIFT_DEMAND_PLANNER_MASTER_DOCUMENT.md` header — both must always match.
 
@@ -26,6 +28,7 @@ Phase-0 ships as Shift demand-planning; domain scope lock in doc 02 — **never 
 | 02  | `02_PLANNER_DOMAIN_SCOPE_LOCK_v1.0.md`            | **☑ FROZEN — separate Workforce Intelligence Domain (2026-07-04)**    |
 | 03  | `03_PLANNER_HYBRID_A2_PHASE1_ROADMAP_v1.0.md`     | **COMPLETE — Hybrid A2 Phase-1 (2026-07-21)**                         |
 | 04  | `04_PLANNER_HYBRID_A2_PHASE2_OPS_ROADMAP_v1.0.md` | **COMPLETE — Phase-2 Ops & Trust (P2.0–P2.5 RTW; snapshot deferred)** |
+| 05  | `05_EMPLOYER_ULTRA_ENTERPRISE_UI_SYSTEM_v1.0.md`  | **ACTIVE — Employer UI unification (U0–U5)**                          |
 
 | — | V2 intelligence spec | **`second-update/04_PLANNER_WORKFORCE_INTELLIGENCE_V2.md`** |
 

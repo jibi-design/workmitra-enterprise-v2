@@ -15,6 +15,7 @@ import {
   PlannerDetailDaysSection,
 } from "./EmployerPlannerDetailPage.parts";
 import { PlannerDetailActivitySection } from "../components/PlannerDetailActivitySection";
+import { EnterpriseResponsiveGrid, SlideOver } from "../../../../shared/components/enterprise";
 
 export function EmployerPlannerDetailPage() {
   const { planId = "" } = useParams();
@@ -22,6 +23,7 @@ export function EmployerPlannerDetailPage() {
   const [broadcastTitle, setBroadcastTitle] = useState("");
   const [broadcastBody, setBroadcastBody] = useState("");
   const [broadcastMsg, setBroadcastMsg] = useState("");
+  const [auditOpen, setAuditOpen] = useState(false);
 
   const subscribe = useMemo(
     () => (cb: () => void) => {
@@ -138,13 +140,7 @@ export function EmployerPlannerDetailPage() {
 
       <div className="wm-planner-card">
         <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 10 }}>Plan actions</div>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
-            gap: 8,
-          }}
-        >
+        <EnterpriseResponsiveGrid minItemWidth={140} gap={8} testId="planner-detail-actions-grid">
           <button
             type="button"
             className="wm-planner-btnGhost"
@@ -181,11 +177,19 @@ export function EmployerPlannerDetailPage() {
           <button
             type="button"
             className="wm-planner-btnGhost"
+            data-testid="planner-detail-audit-drawer-open"
+            onClick={() => setAuditOpen(true)}
+          >
+            Activity drawer
+          </button>
+          <button
+            type="button"
+            className="wm-planner-btnGhost"
             onClick={() => nav(ROUTE_PATHS.employerPlannerFinance.replace(":planId", plan.id))}
           >
             Finance (preview)
           </button>
-        </div>
+        </EnterpriseResponsiveGrid>
       </div>
 
       <PlannerDetailBudgetSection estBudget={estBudget} />
@@ -221,6 +225,21 @@ export function EmployerPlannerDetailPage() {
           Planner Home
         </button>
       </div>
+
+      <SlideOver
+        open={auditOpen}
+        onClose={() => setAuditOpen(false)}
+        title="Plan activity"
+        subtitle={plan.name}
+        testId="planner-audit-slideover"
+        footer={
+          <button type="button" className="wm-outlineBtn" onClick={() => setAuditOpen(false)}>
+            Close
+          </button>
+        }
+      >
+        <PlannerDetailActivitySection planId={plan.id} />
+      </SlideOver>
     </div>
   );
 }

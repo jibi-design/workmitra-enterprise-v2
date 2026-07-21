@@ -4,6 +4,7 @@
 
 import { PulseNode } from "../../../../pulse/PulseNode";
 import type { DashboardTab } from "../../helpers/shiftDashboardHelpers";
+import { EnterpriseResponsiveGrid } from "../../../../../shared/components/enterprise";
 
 type DashboardTabsProps = {
   activeTab: DashboardTab;
@@ -27,54 +28,57 @@ export function DashboardTabs({ activeTab, counts, onChange }: DashboardTabsProp
       style={{
         marginTop: 12,
         padding: 6,
-        display: "grid",
-        gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
-        gap: 6,
         borderRadius: 18,
         border: "1px solid rgba(226,232,240,0.95)",
         background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
         boxShadow: "0 10px 24px rgba(15,23,42,0.04)",
       }}
     >
-      {ALL_TABS.map((tab) => {
-        const button = (
-          <DashboardTabButton
-            key={tab}
-            label={TAB_LABELS[tab]}
-            count={counts[tab]}
-            isActive={activeTab === tab}
-            onClick={() => onChange(tab)}
-          />
-        );
-
-        if (tab === "selected") {
-          return (
-            <PulseNode
-              key={tab}
-              id="employer-shift-confirmed-roster"
-              variant="button"
-              style={{ "--wm-pulse-node-radius": "14px" }}
-            >
-              {button}
-            </PulseNode>
+      <EnterpriseResponsiveGrid
+        minItemWidth={88}
+        gap={6}
+        collapseMobile
+        testId="shift-dashboard-tabs-grid"
+      >
+        {ALL_TABS.map((tab) => {
+          const button = (
+            <DashboardTabButton
+              label={TAB_LABELS[tab]}
+              count={counts[tab]}
+              isActive={activeTab === tab}
+              onClick={() => onChange(tab)}
+            />
           );
-        }
 
-        if (tab === "backup") {
-          return (
-            <PulseNode
-              key={tab}
-              id="employer-shift-replacement-needed"
-              variant="button"
-              style={{ "--wm-pulse-node-radius": "14px" }}
-            >
-              {button}
-            </PulseNode>
-          );
-        }
+          if (tab === "selected") {
+            return (
+              <PulseNode
+                key={tab}
+                id="employer-shift-confirmed-roster"
+                variant="button"
+                style={{ "--wm-pulse-node-radius": "14px" }}
+              >
+                {button}
+              </PulseNode>
+            );
+          }
 
-        return <div key={tab}>{button}</div>;
-      })}
+          if (tab === "backup") {
+            return (
+              <PulseNode
+                key={tab}
+                id="employer-shift-replacement-needed"
+                variant="button"
+                style={{ "--wm-pulse-node-radius": "14px" }}
+              >
+                {button}
+              </PulseNode>
+            );
+          }
+
+          return <div key={tab}>{button}</div>;
+        })}
+      </EnterpriseResponsiveGrid>
     </div>
   );
 }

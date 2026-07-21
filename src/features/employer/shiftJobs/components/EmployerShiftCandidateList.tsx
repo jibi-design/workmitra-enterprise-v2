@@ -1,12 +1,8 @@
-// App name: Job Mitra
-// File name: EmployerShiftCandidateList.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\components\EmployerShiftCandidateList.tsx
+/** Job Mitra | EmployerShiftCandidateList — virtualized candidate review */
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 
-import { PulseSectionResolver } from "../../../../features/pulse/PulseSectionResolver";
-import { PulseTargetIndicator } from "../../../../features/pulse/PulseTargetIndicator";
-import { PulseEvent, PulseSectionId } from "../../../../features/pulse/pulseRegistry";
 import type { DashboardTab } from "../helpers/shiftDashboardHelpers";
 import type {
   EmployeeShiftApplication,
@@ -14,14 +10,20 @@ import type {
   ShiftQuickQuestion,
 } from "../../shiftJobs/storage/employerShift.storage";
 import { CandidateCard } from "./CandidateCard";
+import { CandidatePulseRowChrome } from "./CandidatePulseRowChrome";
+import { useShiftCandidatePulseAppId } from "../hooks/useShiftCandidatePulseAppId";
 import { CandidateReviewEmptyState } from "./candidateReview/CandidateReviewEmptyState";
 import { CandidateReviewToolbar } from "./candidateReview/CandidateReviewToolbar";
+import { BackupPromotionHint, CompareModeBar } from "./candidateReview/CandidateListChrome";
 import {
   applyCandidateReviewPriority,
   getCandidateReviewItems,
   getCandidateReviewSummary,
 } from "./candidateReview/candidateReview.logic";
 import type { CandidateReviewFilters } from "./candidateReview/candidateReview.types";
+import { SlideOver, StatusBadge } from "../../../../shared/components/enterprise";
+import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { useNavigate } from "react-router-dom";
 
 type CandidateCardActions = {
   isBusy: boolean;
@@ -56,6 +58,9 @@ const DEFAULT_REVIEW_FILTERS: CandidateReviewFilters = {
   sort: "recommended",
 };
 
+const ROW_ESTIMATE_PX = 168;
+const LIST_HEIGHT_PX = 560;
+
 export function EmployerShiftCandidateList({
   postId,
   useSmartGroups,
@@ -73,10 +78,13 @@ export function EmployerShiftCandidateList({
   const [compareMode, setCompareMode] = useState(false);
   const [reviewFilters, setReviewFilters] =
     useState<CandidateReviewFilters>(DEFAULT_REVIEW_FILTERS);
+  const [quickApp, setQuickApp] = useState<EmployeeShiftApplication | null>(null);
+  const parentRef = useRef<HTMLDivElement | null>(null);
+  const targetedAppId = useShiftCandidatePulseAppId();
+  const nav = useNavigate();
 
   const sourceApps = useMemo(() => {
     const baseApps = useSmartGroups ? appliedApps : tabApps;
-
     return applyCandidateReviewPriority(baseApps, priorityTags, useSmartGroups);
   }, [appliedApps, priorityTags, tabApps, useSmartGroups]);
 
@@ -90,7 +98,17 @@ export function EmployerShiftCandidateList({
     [reviewFilters, sourceApps, visibleApps],
   );
 
+  // TanStack Virtual intentionally returns unstable function identities.
+  // eslint-disable-next-line react-hooks/incompatible-library -- required for list virtualization
+  const virtualizer = useVirtualizer({
+    count: visibleApps.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => ROW_ESTIMATE_PX,
+    overscan: 4,
+  });
+
   const hasAnyCandidates = sourceApps.length > 0;
+  const mode = getCandidateCardMode(tab);
 
   return (
     <div style={{ marginTop: 10, display: "grid", gap: 12, minHeight: 260 }}>
@@ -110,7 +128,7 @@ export function EmployerShiftCandidateList({
 
       {tab === "backup" && visibleApps.length > 0 && <BackupPromotionHint />}
 
-      {visibleApps.length === 0 && (
+      {visibleApps.length === 0 ? (
         <CandidateReviewEmptyState
           tab={tab}
           filters={reviewFilters}
@@ -118,42 +136,127 @@ export function EmployerShiftCandidateList({
           onReset={() => setReviewFilters(DEFAULT_REVIEW_FILTERS)}
           onRequestTabChange={onRequestTabChange}
         />
+      ) : (
+        <div
+          ref={parentRef}
+          data-testid="employer-shift-candidate-virtual-list"
+          style={{
+            height: LIST_HEIGHT_PX,
+            overflow: "auto",
+            position: "relative",
+            contain: "paint layout",
+            willChange: "scroll-position",
+            transform: "translateZ(0)",
+          }}
+        >
+          <div
+            style={{
+              height: virtualizer.getTotalSize(),
+              width: "100%",
+              position: "relative",
+              contain: "layout style",
+            }}
+          >
+            {virtualizer.getVirtualItems().map((virtualRow) => {
+              const app = visibleApps[virtualRow.index];
+              if (!app) return null;
+              const compareSelected = compareIds.has(app.id);
+              const compareDisabled = !compareSelected && compareIds.size >= 3;
+
+              return (
+                <div
+                  key={app.id}
+                  data-index={virtualRow.index}
+                  ref={virtualizer.measureElement}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    transform: `translate3d(0, ${virtualRow.start}px, 0)`,
+                    paddingBottom: 12,
+                    contain: "layout paint style",
+                  }}
+                >
+                  <CandidatePulseRowChrome
+                    postId={postId}
+                    appId={app.id}
+                    targetedAppId={targetedAppId}
+                  >
+                    <div style={{ display: "grid", gap: 8 }}>
+                      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                        <button
+                          type="button"
+                          className="wm-outlineBtn"
+                          data-testid={`shift-applicant-quick-view-${app.id}`}
+                          onClick={() => setQuickApp(app)}
+                          style={{ minHeight: 32, fontSize: 11, fontWeight: 800 }}
+                        >
+                          Quick view
+                        </button>
+                      </div>
+                      <CandidateCard
+                        app={app}
+                        mode={mode}
+                        quickQuestions={quickQuestions}
+                        showCompareSelector={compareMode}
+                        isCompareSelected={compareSelected}
+                        isCompareDisabled={compareDisabled}
+                        onToggleCompare={onToggleCompare}
+                        {...cardActions}
+                      />
+                    </div>
+                  </CandidatePulseRowChrome>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
 
-      {visibleApps.map((app) => {
-        const compareSelected = compareIds.has(app.id);
-        const compareDisabled = !compareSelected && compareIds.size >= 3;
-
-        return (
-          <PulseSectionResolver
-            key={app.id}
-            notificationId={PulseEvent.SHIFT_APPLICATION_RECEIVED}
-            sectionId={PulseSectionId.EMPLOYER_SHIFT_APPLICATION_CARD}
-            postId={postId}
-            appId={app.id}
-          >
-            <div style={{ position: "relative" }}>
-              <PulseTargetIndicator
-                notificationId={PulseEvent.SHIFT_APPLICATION_RECEIVED}
-                postId={postId}
-                appId={app.id}
-                sectionId={PulseSectionId.EMPLOYER_SHIFT_APPLICATION_CARD}
-              />
-
-              <CandidateCard
-                app={app}
-                mode={getCandidateCardMode(tab)}
-                quickQuestions={quickQuestions}
-                showCompareSelector={compareMode}
-                isCompareSelected={compareSelected}
-                isCompareDisabled={compareDisabled}
-                onToggleCompare={onToggleCompare}
-                {...cardActions}
-              />
+      <SlideOver
+        open={Boolean(quickApp)}
+        onClose={() => setQuickApp(null)}
+        title={quickApp?.profileSnapshot?.fullName?.trim() || "Applicant"}
+        subtitle={quickApp?.profileSnapshot?.city || "Shift applicant snapshot"}
+        testId="shift-applicant-slideover"
+        footer={
+          quickApp ? (
+            <>
+              <button type="button" className="wm-outlineBtn" onClick={() => setQuickApp(null)}>
+                Close
+              </button>
+              <button
+                type="button"
+                className="wm-primarybtn"
+                data-testid="shift-applicant-slideover-open-full"
+                onClick={() => {
+                  setQuickApp(null);
+                  nav(ROUTE_PATHS.employerShiftPostDashboard.replace(":postId", postId));
+                }}
+              >
+                Open full profile
+              </button>
+            </>
+          ) : null
+        }
+      >
+        {quickApp ? (
+          <div style={{ display: "grid", gap: 10 }} data-testid="shift-applicant-slideover-body">
+            <StatusBadge
+              label={String(quickApp.status)}
+              tone={quickApp.status === "confirmed" ? "active" : "pending"}
+              accent="shift"
+            />
+            <div style={{ fontSize: 13 }}>
+              Experience: {quickApp.profileSnapshot?.experience || "Not listed"}
             </div>
-          </PulseSectionResolver>
-        );
-      })}
+            <div style={{ fontSize: 12, color: "var(--wm-er-muted)" }}>
+              Skills: {(quickApp.profileSnapshot?.skills ?? []).join(", ") || "Not listed"}
+            </div>
+          </div>
+        ) : null}
+      </SlideOver>
     </div>
   );
 }
@@ -166,96 +269,4 @@ function getCandidateCardMode(
   if (tab === "backup") return "waiting";
   if (tab === "rejected") return "rejected";
   return "applied";
-}
-
-function CompareModeBar({
-  enabled,
-  selectedCount,
-  onToggle,
-  onOpenCompare,
-}: {
-  enabled: boolean;
-  selectedCount: number;
-  onToggle: () => void;
-  onOpenCompare: () => void;
-}) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        gap: 8,
-        alignItems: "center",
-        flexWrap: "wrap",
-        padding: "10px 11px",
-        borderRadius: 16,
-        border: "1px solid rgba(22,163,74,0.14)",
-        background: "linear-gradient(180deg, rgba(240,253,244,0.64), rgba(255,255,255,0.98))",
-      }}
-    >
-      <button
-        type="button"
-        onClick={onToggle}
-        style={{
-          border: "1px solid rgba(22,163,74,0.18)",
-          background: enabled ? "#16a34a" : "#ffffff",
-          color: enabled ? "#ffffff" : "#166534",
-          borderRadius: 999,
-          padding: "8px 11px",
-          fontSize: 11,
-          fontWeight: 900,
-          cursor: "pointer",
-        }}
-      >
-        {enabled ? "Exit Compare" : "Compare Applicants"}
-      </button>
-
-      <button
-        type="button"
-        onClick={onOpenCompare}
-        disabled={selectedCount < 2}
-        style={{
-          border: "none",
-          background: selectedCount >= 2 ? "#0f172a" : "rgba(15,23,42,0.12)",
-          color: "#ffffff",
-          borderRadius: 999,
-          padding: "8px 11px",
-          fontSize: 11,
-          fontWeight: 900,
-          cursor: selectedCount >= 2 ? "pointer" : "not-allowed",
-        }}
-      >
-        Open Compare ({selectedCount}/3)
-      </button>
-
-      <div style={{ fontSize: 11, fontWeight: 750, color: "var(--wm-er-muted)" }}>
-        Select 2–3 applicants to compare answers and profile snapshots.
-      </div>
-    </div>
-  );
-}
-
-function BackupPromotionHint() {
-  return (
-    <div
-      className="wm-er-card"
-      style={{
-        padding: 14,
-        borderRadius: 20,
-        border: "1px solid rgba(217,119,6,0.18)",
-        background: "linear-gradient(180deg, rgba(255,251,235,0.9), rgba(255,255,255,0.98))",
-        boxShadow: "0 12px 26px rgba(217,119,6,0.08)",
-      }}
-    >
-      <div style={{ fontSize: 13, fontWeight: 950, color: "#92400e" }}>
-        Backup candidates are ready
-      </div>
-
-      <div
-        style={{ marginTop: 6, fontSize: 11, fontWeight: 750, color: "#b45309", lineHeight: 1.5 }}
-      >
-        If a confirmed worker is replaced, review this list and use Confirm manually. Job Mitra will
-        not auto-confirm a backup worker without employer action.
-      </div>
-    </div>
-  );
 }

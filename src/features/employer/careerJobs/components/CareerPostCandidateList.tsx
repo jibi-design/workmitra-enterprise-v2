@@ -2,11 +2,16 @@
 // File name: CareerPostCandidateList.tsx
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\careerJobs\components\CareerPostCandidateList.tsx
 
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { PulseTargetIndicator } from "../../../pulse/PulseTargetIndicator";
+import { EnterpriseEmpty, SlideOver, StatusBadge } from "../../../../shared/components/enterprise";
+import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import type { CareerApplication, CareerJobPost } from "../types/careerTypes";
 import { CareerCandidateCard } from "./CareerCandidateCard";
 import { CareerCompareToolbar } from "./CareerCompareToolbar";
 import type { CareerTab } from "./CareerPipelineTabs";
+import { getCandidateWorkerName } from "../helpers/careerCandidateCard.helpers";
 
 type CareerPostCandidateListProps = {
   apps: CareerApplication[];
@@ -30,10 +35,10 @@ type CareerPostCandidateListProps = {
   onEditNotes: (appId: string) => void;
 };
 
-const CAREER_BLUE = "var(--wm-er-accent-career, #2563eb)";
-const CAREER_BLUE_DEEP = "#1e3a8a";
 const CAREER_TEXT = "var(--wm-er-text, #0f172a)";
 const CAREER_MUTED = "var(--wm-er-muted, #64748b)";
+const CAREER_BLUE = "var(--wm-er-accent-career, #2563eb)";
+const CAREER_BLUE_DEEP = "#1e3a8a";
 
 export function CareerPostCandidateList({
   apps,
@@ -59,10 +64,29 @@ export function CareerPostCandidateList({
   const compareAllowed = isCompareAllowed(tab);
   const showCompareToolbar = compareAllowed && apps.length >= 2;
   const showCompareSelector = showCompareToolbar && compareMode;
+  const [quickApp, setQuickApp] = useState<CareerApplication | null>(null);
 
   return (
     <section style={{ marginTop: 16, display: "grid", gap: 16 }}>
       {apps.length === 0 && <EmptyCandidateState tab={tab} post={post} />}
+
+      {apps.length > 0 && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            paddingBottom: 4,
+            borderBottom: "1px solid rgba(29,78,216,0.1)",
+          }}
+        >
+          <div style={{ fontSize: 13, fontWeight: 800, color: CAREER_TEXT }}>
+            {getTabSectionLabel(tab)}
+          </div>
+          <span className="wm-career-pill wm-career-pill--pay">{apps.length}</span>
+        </div>
+      )}
 
       {showCompareToolbar && (
         <CareerCompareToolbar
@@ -116,6 +140,18 @@ export function CareerPostCandidateList({
             </label>
           )}
 
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+            <button
+              type="button"
+              className="wm-outlineBtn"
+              data-testid={`career-applicant-quick-view-${app.id}`}
+              onClick={() => setQuickApp(app)}
+              style={{ minHeight: 32, fontSize: 11, fontWeight: 800 }}
+            >
+              Quick view
+            </button>
+          </div>
+
           <CareerCandidateCard
             app={app}
             post={post}
@@ -135,92 +171,68 @@ export function CareerPostCandidateList({
           />
         </div>
       ))}
+
+      <SlideOver
+        open={Boolean(quickApp)}
+        onClose={() => setQuickApp(null)}
+        title={quickApp ? getCandidateWorkerName(quickApp) : "Applicant"}
+        subtitle={post.jobTitle}
+        testId="career-applicant-slideover"
+        footer={
+          <button type="button" className="wm-outlineBtn" onClick={() => setQuickApp(null)}>
+            Close
+          </button>
+        }
+      >
+        {quickApp ? (
+          <div style={{ display: "grid", gap: 10 }} data-testid="career-applicant-slideover-body">
+            <StatusBadge label={String(quickApp.stage)} tone="pending" accent="career" />
+            <div style={{ fontSize: 13 }}>
+              Notice: {quickApp.noticePeriod || "Not specified"} · Expected salary:{" "}
+              {quickApp.expectedSalary > 0
+                ? quickApp.expectedSalary.toLocaleString()
+                : "Not specified"}
+            </div>
+            <div style={{ fontSize: 12, color: CAREER_MUTED, lineHeight: 1.5 }}>
+              {quickApp.coverNote?.trim() || "No cover note provided."}
+            </div>
+          </div>
+        ) : null}
+      </SlideOver>
     </section>
   );
 }
 
 function EmptyCandidateState({ tab, post }: { tab: CareerTab; post: CareerJobPost }) {
   const copy = getEmptyStateCopy(tab, post);
+  const nav = useNavigate();
 
   return (
-    <div
-      style={{
-        padding: 32,
-        borderRadius: 28,
-        border: "1px dashed rgba(37,99,235,0.3)",
-        background: "linear-gradient(135deg, rgba(255,255,255,0.8), rgba(248,250,252,0.5))",
-        boxShadow: "0 12px 32px -4px rgba(15, 23, 42, 0.05)",
-        backdropFilter: "blur(12px)",
-        textAlign: "center",
+    <EnterpriseEmpty
+      domain="career"
+      title={copy.title}
+      subtitle={`${copy.body} ${copy.helper}`}
+      primaryLabel={tab === "applied" ? "Back to Career posts" : "Review Applied tab"}
+      onPrimary={() => {
+        if (tab === "applied") {
+          nav(ROUTE_PATHS.employerCareerPosts);
+          return;
+        }
+        nav(ROUTE_PATHS.employerCareerPostDashboard.replace(":postId", post.id));
       }}
-    >
-      <div
-        style={{
-          width: 56,
-          height: 56,
-          margin: "0 auto",
-          borderRadius: 20,
-          background: "rgba(37,99,235,0.1)",
-          border: "1px solid rgba(37,99,235,0.15)",
-          color: CAREER_BLUE,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-        aria-hidden="true"
-      >
-        <svg width="28" height="28" viewBox="0 0 24 24">
-          <path
-            fill="currentColor"
-            d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-3.31 0-6 1.57-6 3.5V20h12v-2.5c0-1.93-2.69-3.5-6-3.5Z"
-          />
-        </svg>
-      </div>
-
-      <div
-        style={{
-          marginTop: 16,
-          fontSize: 18,
-          fontWeight: 900,
-          color: CAREER_TEXT,
-          lineHeight: 1.2,
-        }}
-      >
-        {copy.title}
-      </div>
-
-      <div
-        style={{
-          marginTop: 8,
-          fontSize: 13,
-          fontWeight: 700,
-          color: CAREER_MUTED,
-          lineHeight: 1.5,
-          maxWidth: 400,
-          margin: "8px auto 0",
-        }}
-      >
-        {copy.body}
-      </div>
-
-      <div
-        style={{
-          marginTop: 20,
-          padding: "12px 16px",
-          borderRadius: 16,
-          background: "rgba(37,99,235,0.06)",
-          border: "1px solid rgba(37,99,235,0.1)",
-          color: CAREER_BLUE_DEEP,
-          fontSize: 12,
-          fontWeight: 800,
-          lineHeight: 1.5,
-          display: "inline-block",
-        }}
-      >
-        {copy.helper}
-      </div>
-    </div>
+      testId={`career-candidates-empty-${tab}`}
+    />
   );
+}
+
+function getTabSectionLabel(tab: CareerTab): string {
+  if (tab === "applied") return "Applied candidates";
+  if (tab === "backup") return "Backup candidates";
+  if (tab === "shortlisted") return "Shortlisted candidates";
+  if (tab === "interview") return "Interview candidates";
+  if (tab === "offered") return "Offer candidates";
+  if (tab === "hired") return "Hired candidates";
+  return "Rejected candidates";
 }
 
 function getEmptyStateCopy(

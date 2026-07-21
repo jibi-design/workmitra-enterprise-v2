@@ -13,29 +13,33 @@
 }
 
 .wm-er-topbar {
-  border-bottom: 1px solid var(--wm-glass-border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
   background:
     radial-gradient(circle at 50% -80%, rgba(255, 255, 255, 0.96), transparent 68%),
-    var(--wm-er-glass-bg);
+    rgba(255, 255, 255, 0.85);
   box-shadow: var(--wm-er-elevation-shadow);
+  height: 56px;
+  min-height: 56px;
+  padding: 0 var(--wm-space-16);
+  box-sizing: border-box;
 }
 
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .wm-er-topbar {
-    backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
-    -webkit-backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
+    backdrop-filter: blur(16px) var(--wm-glass-saturate);
+    -webkit-backdrop-filter: blur(16px) var(--wm-glass-saturate);
   }
 }
 
 .wm-er-topbar .wm-title h1 {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 800;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.03em;
 }
 
 .wm-er-topbar .wm-title p {
   color: var(--wm-er-muted);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .wm-er-topbar .wm-iconbtn {
@@ -51,9 +55,15 @@
 /* ------------------------------------------------ */
 .wm-er-tiles {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: var(--wm-stack-gap);
   margin-top: 0;
+}
+
+@media (max-width: 580px) {
+  .wm-er-tiles {
+    grid-template-columns: 1fr;
+  }
 }
 
 .wm-er-dashTiles {

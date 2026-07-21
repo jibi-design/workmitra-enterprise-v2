@@ -11,6 +11,9 @@ import type {
   EmployerWorkspaceLite,
   EmployerWorkspaceMode,
 } from "../types/employerShiftWorkspaces.types";
+import { EnterpriseEmpty } from "../../../../shared/components/enterprise";
+import { useNavigate } from "react-router-dom";
+import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 
 type EmployerShiftWorkspacesListProps = {
   mode: EmployerWorkspaceMode;
@@ -46,28 +49,23 @@ export function EmployerShiftWorkspacesList({
 
 function EmptyState({ mode, allCount }: { mode: EmployerWorkspaceMode; allCount: number }) {
   const isGroups = mode === "groups";
+  const nav = useNavigate();
 
   return (
-    <div
-      className="wm-er-card"
-      style={{
-        textAlign: "center",
-        padding: "24px 18px",
-        borderRadius: 22,
-      }}
-    >
-      <div style={{ fontWeight: 950, fontSize: 15, color: "var(--wm-er-text)" }}>
-        {allCount === 0 ? "No work groups yet" : "No groups match your search"}
-      </div>
-
-      <div style={{ marginTop: 7, fontSize: 12, color: "var(--wm-er-muted)", lineHeight: 1.5 }}>
-        {allCount === 0
+    <EnterpriseEmpty
+      domain="shift"
+      title={allCount === 0 ? "No work groups yet" : "No groups match your search"}
+      subtitle={
+        allCount === 0
           ? isGroups
             ? "Groups are created when you confirm workers for a shift."
             : "Broadcasts can be sent after a group is created."
-          : "Try changing your search or filter."}
-      </div>
-    </div>
+          : "Try changing your search or filter."
+      }
+      primaryLabel={allCount === 0 ? "Open shift posts" : undefined}
+      onPrimary={allCount === 0 ? () => nav(ROUTE_PATHS.employerShiftPosts) : undefined}
+      testId="shift-workspaces-empty"
+    />
   );
 }
 

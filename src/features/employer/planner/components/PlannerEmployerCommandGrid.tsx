@@ -2,6 +2,7 @@
 
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { EnterpriseResponsiveGrid } from "../../../../shared/components/enterprise";
 
 type CommandItem = {
   label: string;
@@ -56,13 +57,7 @@ export function PlannerEmployerCommandGrid() {
         Every Gig Projects tool is listed here — nothing is hidden. P2/P3 items show honest status
         on open.
       </p>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(148px, 1fr))",
-          gap: 8,
-        }}
-      >
+      <EnterpriseResponsiveGrid minItemWidth={148} gap={8} testId="planner-command-grid">
         {commands.map((cmd) => (
           <button
             key={cmd.label}
@@ -76,6 +71,7 @@ export function PlannerEmployerCommandGrid() {
               padding: "10px 12px",
               textAlign: "left",
               gap: 4,
+              width: "100%",
             }}
             onClick={cmd.onClick}
           >
@@ -85,7 +81,7 @@ export function PlannerEmployerCommandGrid() {
             </span>
           </button>
         ))}
-      </div>
+      </EnterpriseResponsiveGrid>
     </div>
   );
 }
