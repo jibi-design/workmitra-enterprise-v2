@@ -1,6 +1,6 @@
 // Job Mitra | plannerApplicationBundles.ts | My Work plan application bundles
 
-import type { ShiftApplicationData } from "../../shiftJobs/types/shiftApplicationTypes";
+import type { ShiftApplicationData } from "../../../shared/planner/ports/plannerLegacyShiftBridge";
 
 export type PlannerApplicationBundle = {
   kind: "plan";

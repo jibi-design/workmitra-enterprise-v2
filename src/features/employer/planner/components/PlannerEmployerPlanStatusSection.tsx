@@ -6,6 +6,7 @@ type Props = {
   status: DemandPlanStatus;
   plans: DemandPlan[];
   onOpenPlan: (plan: DemandPlan) => void;
+  onCreate?: () => void;
 };
 
 const EMPTY_COPY: Record<DemandPlanStatus, string> = {
@@ -15,7 +16,7 @@ const EMPTY_COPY: Record<DemandPlanStatus, string> = {
   cancelled: "No cancelled plans.",
 };
 
-export function PlannerEmployerPlanStatusSection({ status, plans, onOpenPlan }: Props) {
+export function PlannerEmployerPlanStatusSection({ status, plans, onOpenPlan, onCreate }: Props) {
   return (
     <div className="wm-planner-card">
       <div
@@ -33,20 +34,69 @@ export function PlannerEmployerPlanStatusSection({ status, plans, onOpenPlan }: 
       </div>
 
       {plans.length === 0 ? (
-        <div style={{ fontSize: 12, color: "var(--wm-neutral-500)", lineHeight: 1.45 }}>
-          {EMPTY_COPY[status]}
+        <div className="wm-planner-empty">
+          <div className="wm-planner-empty__icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <rect
+                x="3"
+                y="4"
+                width="18"
+                height="18"
+                rx="2"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+              <path
+                d="M16 2v4M8 2v4M3 10h18"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+          <div className="wm-planner-empty__title">
+            {status === "active" || status === "draft" ? "No plans yet" : EMPTY_COPY[status]}
+          </div>
+          <div className="wm-planner-empty__sub">{EMPTY_COPY[status]}</div>
+          {(status === "draft" || status === "active") && onCreate ? (
+            <button
+              type="button"
+              className="wm-planner-btnPrimary"
+              style={{ marginTop: 14 }}
+              onClick={onCreate}
+            >
+              Create your first demand plan
+            </button>
+          ) : null}
         </div>
       ) : (
         plans.map((plan) => (
           <button
             key={plan.id}
             type="button"
-            className="wm-planner-btnGhost"
+            className="wm-planner-btnGhost wm-planner-planRow"
             style={{ width: "100%", marginBottom: 8, justifyContent: "space-between" }}
             onClick={() => onOpenPlan(plan)}
           >
-            <span>{plan.name || "Untitled plan"}</span>
-            <span className="wm-planner-badge">{plan.slots.length} days</span>
+            <span style={{ textAlign: "left" }}>
+              <span style={{ display: "block", fontSize: 15, fontWeight: 700 }}>
+                {plan.name || "Untitled plan"}
+              </span>
+              <span
+                style={{
+                  display: "block",
+                  marginTop: 2,
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: "var(--wm-neutral-500)",
+                }}
+              >
+                {plan.slots.length > 0
+                  ? `${plan.slots[0]?.date ?? ""} → ${plan.slots[plan.slots.length - 1]?.date ?? ""}`
+                  : "No dates yet"}
+              </span>
+            </span>
+            <span className="wm-planner-badge">{plan.slots.length} slots</span>
           </button>
         ))
       )}

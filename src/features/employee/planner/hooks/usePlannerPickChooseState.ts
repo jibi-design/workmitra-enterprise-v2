@@ -1,11 +1,11 @@
 // Job Mitra | usePlannerPickChooseState.ts
 
 import { useMemo, useState } from "react";
-import type { PlannerPublicIndexEntry } from "../../../employer/planner/storage/plannerPublicIndex.storage";
+import type { PlannerPublicIndexEntry } from "../../../shared/planner/plannerPublic";
 import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
 import { employeeAvailabilityService } from "../services/employeeAvailability.service";
 import { smartEarningsPredictorService } from "../services/smartEarningsPredictor.service";
-import { multiApplyGroup } from "../../shiftJobs/helpers/shiftSearchHelpers";
+import { multiApplyGroup } from "../../../shared/planner/ports/plannerLegacyShiftBridge";
 import { plannerCommitmentStreakService } from "../services/plannerCommitmentStreak.service";
 import { plannerEmployeeNotifications } from "../services/plannerEmployeeNotifications.service";
 
@@ -22,19 +22,19 @@ export function usePlannerPickChooseState({
   onNeedProfile,
   isProfileComplete,
 }: Args) {
-  const workerWmId = employeeProfileStorage.get().uniqueId ?? "local-worker";
+  const workerMlId = employeeProfileStorage.get().uniqueId ?? "local-worker";
   const [selectionByPlan, setSelectionByPlan] = useState<Record<string, string[]>>({});
   const planDateKeys = selectionByPlan[entry.planId];
 
   const availability = useMemo(
     () =>
       employeeAvailabilityService.build({
-        workerWmId,
+        workerMlId,
         planId: entry.planId,
         indexEntry: entry,
         initialSelectedDateKeys: planDateKeys ?? [],
       }),
-    [workerWmId, entry, planDateKeys],
+    [workerMlId, entry, planDateKeys],
   );
 
   const predictor = useMemo(
@@ -82,7 +82,9 @@ export function usePlannerPickChooseState({
       return;
     }
 
-    const postIds = selectedOpenDays.map((d) => d.postId).filter((id): id is string => Boolean(id));
+    const postIds = selectedOpenDays
+      .map((d) => d.applyTargetId ?? d.postId ?? d.slotId)
+      .filter((id): id is string => Boolean(id));
     if (postIds.length === 0) return;
 
     const batchId = `pb_${entry.planId}_${Date.now().toString(36)}`;
@@ -96,7 +98,7 @@ export function usePlannerPickChooseState({
 
     if (count > 0) {
       plannerCommitmentStreakService.recordFromApply(
-        workerWmId,
+        workerMlId,
         entry.planId,
         batchId,
         selectedDates,

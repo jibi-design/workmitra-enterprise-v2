@@ -9,7 +9,7 @@ export type VaultShiftHistoryEntry = {
   id: string;
   workspaceId: string;
   postId: string;
-  workerWmId: string;
+  workerMlId: string;
   workerName: string;
   companyName: string;
   jobTitle: string;
@@ -51,7 +51,8 @@ function normalizeEntry(raw: unknown): VaultShiftHistoryEntry | null {
 
   const workspaceId = str(raw, "workspaceId");
   const postId = str(raw, "postId");
-  const workerWmId = str(raw, "workerWmId");
+  // Dual-read: prefer workerMlId; accept legacy workerWmId from older localStorage JSON.
+  const workerMlId = str(raw, "workerMlId") ?? str(raw, "workerWmId");
   const workerName = str(raw, "workerName");
   const companyName = str(raw, "companyName");
   const jobTitle = str(raw, "jobTitle");
@@ -62,7 +63,7 @@ function normalizeEntry(raw: unknown): VaultShiftHistoryEntry | null {
   if (
     !workspaceId ||
     !postId ||
-    !workerWmId ||
+    !workerMlId ||
     !workerName ||
     !companyName ||
     !jobTitle ||
@@ -80,7 +81,7 @@ function normalizeEntry(raw: unknown): VaultShiftHistoryEntry | null {
     id: str(raw, "id") ?? makeId(),
     workspaceId,
     postId,
-    workerWmId,
+    workerMlId,
     workerName,
     companyName,
     jobTitle,
@@ -128,17 +129,17 @@ export function getVaultShiftHistory(): VaultShiftHistoryEntry[] {
   return readAll();
 }
 
-export function getVaultShiftHistoryForWorker(workerWmId: string): VaultShiftHistoryEntry[] {
-  const normalized = workerWmId.trim().toUpperCase();
+export function getVaultShiftHistoryForWorker(workerMlId: string): VaultShiftHistoryEntry[] {
+  const normalized = workerMlId.trim().toUpperCase();
   if (!normalized) return [];
 
-  return readAll().filter((entry) => entry.workerWmId.trim().toUpperCase() === normalized);
+  return readAll().filter((entry) => entry.workerMlId.trim().toUpperCase() === normalized);
 }
 
 export function upsertVaultShiftHistoryOnComplete(input: {
   workspaceId: string;
   postId: string;
-  workerWmId: string;
+  workerMlId: string;
   workerName: string;
   companyName: string;
   jobTitle: string;
@@ -154,7 +155,7 @@ export function upsertVaultShiftHistoryOnComplete(input: {
     id: prior?.id ?? makeId(),
     workspaceId: input.workspaceId,
     postId: input.postId,
-    workerWmId: input.workerWmId,
+    workerMlId: input.workerMlId,
     workerName: input.workerName,
     companyName: input.companyName,
     jobTitle: input.jobTitle,

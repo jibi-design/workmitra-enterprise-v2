@@ -1,3 +1,7 @@
+// WARNING DEC-012 / MIG-008: Client-side OTP path (plaintext)
+// Server OTP path (Argon2 hashed) exists at server/modules/vault/
+// This client path MUST BE REMOVED before production cutover
+// See architecture-audits/Phase-DB-Migration-Readiness-Audit-001.md
 // src/features/employee/workVault/helpers/vaultStorageUtils.ts
 
 /**

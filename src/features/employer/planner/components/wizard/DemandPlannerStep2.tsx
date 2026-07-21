@@ -1,16 +1,9 @@
-// src/features/employer/shiftJobs/components/DemandPlannerStep2.tsx
-//
-// Demand Planner — Step 2: Fill Calendar.
-// Each day: workers count + pay per day.
-// Quick: "Copy to all" shortcut from first day.
+// Demand Planner — Step 2: Fill Calendar — facade
 
 import { useState } from "react";
 import type { DaySlot } from "../../storage/demandPlannerStorage";
-import { fmtPlanDate } from "../../storage/demandPlannerStorage";
+import { DemandPlannerSlotGrid, DemandPlannerTotals } from "./DemandPlannerStep2.parts";
 
-/* ------------------------------------------------ */
-/* Props                                            */
-/* ------------------------------------------------ */
 type Props = {
   slots: DaySlot[];
   defaultPay: number;
@@ -36,7 +29,6 @@ export function DemandPlannerStep2({
   const totalDays = slots.length;
   const totalWorkers = slots.reduce((s, d) => s + (d.workers || 0), 0);
   const estimatedCost = slots.reduce((s, d) => s + (d.workers || 0) * (d.payPerDay || 0), 0);
-
   const allFilled = slots.every((s) => s.workers > 0 && s.payPerDay > 0);
 
   function updateSlot(date: string, field: "workers" | "payPerDay", value: number) {
@@ -77,7 +69,6 @@ export function DemandPlannerStep2({
         </>
       )}
 
-      {/* Quick fill */}
       <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
         {defaultPay > 0 && (
           <button
@@ -117,156 +108,8 @@ export function DemandPlannerStep2({
         )}
       </div>
 
-      {/* Calendar slots */}
-      <div style={{ display: "grid", gap: 8 }}>
-        {slots.map((slot, idx) => (
-          <div
-            key={slot.date}
-            style={{
-              padding: "10px 12px",
-              borderRadius: 12,
-              border: `1px solid ${slot.workers > 0 && slot.payPerDay > 0 ? "rgba(22,163,74,0.2)" : "var(--wm-er-border)"}`,
-              background:
-                slot.workers > 0 && slot.payPerDay > 0 ? "rgba(22,163,74,0.03)" : "var(--wm-er-bg)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 8,
-                flexWrap: "wrap",
-              }}
-            >
-              {/* Date label */}
-              <div
-                style={{ fontSize: 12, fontWeight: 700, color: "var(--wm-er-text)", minWidth: 120 }}
-              >
-                <span style={{ fontSize: 10, color: "var(--wm-er-muted)", fontWeight: 600 }}>
-                  Day {idx + 1}
-                </span>
-                <br />
-                {fmtPlanDate(slot.date)}
-              </div>
-
-              {/* Workers */}
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <label
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: "var(--wm-er-muted)",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  Workers
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  max={500}
-                  value={slot.workers || ""}
-                  onChange={(e) =>
-                    updateSlot(slot.date, "workers", Math.max(0, parseInt(e.target.value) || 0))
-                  }
-                  style={{
-                    width: 64,
-                    padding: "6px 8px",
-                    borderRadius: 8,
-                    fontSize: 13,
-                    fontWeight: 700,
-                    border: "1.5px solid var(--wm-er-border)",
-                    background: "var(--wm-er-bg)",
-                    color: "var(--wm-er-text)",
-                    textAlign: "center",
-                  }}
-                  placeholder="0"
-                />
-              </div>
-
-              {/* Pay */}
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <label
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: "var(--wm-er-muted)",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  Pay/day
-                </label>
-                <input
-                  type="number"
-                  min={0}
-                  value={slot.payPerDay || ""}
-                  onChange={(e) =>
-                    updateSlot(slot.date, "payPerDay", Math.max(0, parseInt(e.target.value) || 0))
-                  }
-                  style={{
-                    width: 90,
-                    padding: "6px 8px",
-                    borderRadius: 8,
-                    fontSize: 13,
-                    fontWeight: 700,
-                    border: "1.5px solid var(--wm-er-border)",
-                    background: "var(--wm-er-bg)",
-                    color: "var(--wm-er-text)",
-                    textAlign: "center",
-                  }}
-                  placeholder="0"
-                />
-              </div>
-
-              {/* Day total */}
-              {slot.workers > 0 && slot.payPerDay > 0 && (
-                <div
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: "var(--wm-er-accent-shift)",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  = {(slot.workers * slot.payPerDay).toLocaleString()}
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Running total */}
-      {totalWorkers > 0 && (
-        <div
-          style={{
-            marginTop: 14,
-            padding: "12px 14px",
-            borderRadius: 12,
-            background: "var(--wm-er-surface)",
-            border: "1px solid var(--wm-er-border)",
-            display: "flex",
-            gap: 16,
-            flexWrap: "wrap",
-          }}
-        >
-          <div>
-            <div style={{ fontSize: 11, color: "var(--wm-er-muted)" }}>Total worker-days</div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: "var(--wm-er-accent-shift)" }}>
-              {totalWorkers}
-            </div>
-          </div>
-          {estimatedCost > 0 && (
-            <div>
-              <div style={{ fontSize: 11, color: "var(--wm-er-muted)" }}>Estimated total cost</div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "var(--wm-er-text)" }}>
-                {estimatedCost.toLocaleString()}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+      <DemandPlannerSlotGrid slots={slots} onUpdateSlot={updateSlot} />
+      <DemandPlannerTotals totalWorkers={totalWorkers} estimatedCost={estimatedCost} />
 
       {!hideActions && (
         <div className="wm-planner-stepActions wm-planner-stepActions--split">

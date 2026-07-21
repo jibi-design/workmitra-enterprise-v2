@@ -196,7 +196,10 @@ export function DemandPlannerStep3({ step1, slots, isSubmitting, onSubmit, onBac
       </div>
 
       {/* Actions */}
-      <div style={{ display: "flex", gap: 10, justifyContent: "space-between" }}>
+      <div
+        className="wm-planner-sticky-actions"
+        style={{ display: "flex", gap: 10, flexWrap: "wrap" }}
+      >
         <button
           type="button"
           className="wm-planner-btnGhost"
@@ -208,10 +211,11 @@ export function DemandPlannerStep3({ step1, slots, isSubmitting, onSubmit, onBac
         <button
           type="button"
           className="wm-planner-btnPrimary"
+          style={{ minHeight: 52, flex: 1 }}
           onClick={onSubmit}
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Publishing..." : `Publish — Create ${totalDays} Shifts`}
+          {isSubmitting ? "Publishing..." : `Publish — ${totalDays} day plan`}
         </button>
       </div>
     </div>

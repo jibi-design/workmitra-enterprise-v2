@@ -1,51 +1,42 @@
-// src/shared/components/rating/EmployerRateWorkerModal.tsx
-//
-// Employer rates Worker modal — MANDATORY after shift completion.
-// Stars + Tags + Comment + "Hire again?" Yes/No.
-// Edit mode: pre-populates, 1 edit within 24hr, no points re-award.
+// Facade — EmployerRateWorkerModal.tsx
 
 import { useState, useCallback } from "react";
-import { StarRating } from "./StarRating";
-import { RatingTagSelector } from "./RatingTagSelector";
-import { EMPLOYER_WORKER_TAGS } from "../../rating/ratingTags";
 import { ratingStorage } from "../../rating/ratingStorage";
 import { submitEmployerShiftRatingSaga } from "../../rating/submitEmployerShiftRatingSaga";
-import type { EmployerWorkerTag } from "../../rating/ratingTypes";
+import { submitPlannerEmployerRating } from "../../rating/submitPlannerRatingSaga";
+import type { EmployerWorkerTag, RatingDomain, RatingPlannerMeta } from "../../rating/ratingTypes";
+import { EmployerRateWorkerModalForm } from "./EmployerRateWorkerModal.form";
 
-/* ------------------------------------------------ */
-/* Props                                            */
-/* ------------------------------------------------ */
 type Props = {
   isOpen: boolean;
   jobId: string;
   jobTitle: string;
-  employerWmId: string;
-  workerWmId: string;
+  employerMlId: string;
+  workerMlId: string;
   workerName: string;
-  domain: "shift" | "career";
-  /** When true, pre-populates from existing rating for edit */
+  domain: RatingDomain;
+  /** Required when domain === "planner". */
+  plannerMeta?: RatingPlannerMeta;
   editMode?: boolean;
   onSubmitted: () => void;
   onClose: () => void;
 };
 
-/* ------------------------------------------------ */
-/* Component                                        */
-/* ------------------------------------------------ */
 export function EmployerRateWorkerModal({
   isOpen,
   jobId,
   jobTitle,
-  employerWmId,
-  workerWmId,
+  employerMlId,
+  workerMlId,
   workerName,
   domain,
+  plannerMeta,
   editMode,
   onSubmitted,
   onClose,
 }: Props) {
   const existing = editMode
-    ? ratingStorage.getEmployerRatingForJob(employerWmId, jobId, workerWmId)
+    ? ratingStorage.getEmployerRatingForJob(employerMlId, jobId, workerMlId)
     : null;
 
   const [stars, setStars] = useState(existing?.stars ?? 0);
@@ -73,7 +64,7 @@ export function EmployerRateWorkerModal({
     setSubmitting(true);
 
     if (editMode) {
-      const result = ratingStorage.editEmployerRating(employerWmId, jobId, workerWmId, {
+      const result = ratingStorage.editEmployerRating(employerMlId, jobId, workerMlId, {
         stars: stars as 1 | 2 | 3 | 4 | 5,
         tags,
         comment: comment.trim() || undefined,
@@ -89,11 +80,41 @@ export function EmployerRateWorkerModal({
       return;
     }
 
+    if (domain === "planner") {
+      if (!plannerMeta) {
+        setSubmitting(false);
+        setError("Planner rating requires plan entity metadata.");
+        return;
+      }
+      const plannerResult = submitPlannerEmployerRating({
+        employerMlId,
+        workerMlId,
+        stars: stars as 1 | 2 | 3 | 4 | 5,
+        tags,
+        comment: comment.trim() || undefined,
+        hireAgain,
+        meta: plannerMeta,
+      });
+      setSubmitting(false);
+      if (!plannerResult.ok) {
+        setError(
+          plannerResult.reason === "site_manager_as_subject"
+            ? "Site manager cannot be the reputation subject. Rate the legal entity."
+            : plannerResult.reason === "already_rated"
+              ? "Already rated for this plan epoch."
+              : "Unable to save planner rating.",
+        );
+        return;
+      }
+      onSubmitted();
+      return;
+    }
+
     if (domain !== "shift") {
       ratingStorage.saveEmployerRating({
         domain,
-        employerWmId,
-        workerWmId,
+        employerMlId,
+        workerMlId,
         jobId,
         stars: stars as 1 | 2 | 3 | 4 | 5,
         tags,
@@ -107,8 +128,8 @@ export function EmployerRateWorkerModal({
 
     const sagaResult = submitEmployerShiftRatingSaga({
       domain: "shift",
-      employerWmId,
-      workerWmId,
+      employerMlId,
+      workerMlId,
       jobId,
       stars: stars as 1 | 2 | 3 | 4 | 5,
       tags,
@@ -142,8 +163,9 @@ export function EmployerRateWorkerModal({
     comment,
     hireAgain,
     domain,
-    employerWmId,
-    workerWmId,
+    plannerMeta,
+    employerMlId,
+    workerMlId,
     jobId,
     jobTitle,
     workerName,
@@ -162,7 +184,8 @@ export function EmployerRateWorkerModal({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        zIndex: 1000,
+        /* Above BottomNav (z-index: 1000) — match .wm-modal-backdrop */
+        zIndex: 9000,
         padding: 16,
       }}
       onClick={onClose}
@@ -179,7 +202,6 @@ export function EmployerRateWorkerModal({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div
           style={{
             padding: "16px 18px 12px",
@@ -215,7 +237,6 @@ export function EmployerRateWorkerModal({
           </button>
         </div>
 
-        {/* Edit success state */}
         {editSuccess ? (
           <div style={{ padding: "32px 18px", textAlign: "center" }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>&#10003;</div>
@@ -227,209 +248,21 @@ export function EmployerRateWorkerModal({
             </div>
           </div>
         ) : (
-          <>
-            {/* Body */}
-            <div style={{ padding: "16px 18px", display: "grid", gap: 16 }}>
-              {/* Notice */}
-              <div
-                style={{
-                  padding: "10px 14px",
-                  borderRadius: 10,
-                  background: "rgba(22,163,74,0.06)",
-                  border: "1px solid rgba(22,163,74,0.18)",
-                  fontSize: 12,
-                  fontWeight: 600,
-                  lineHeight: 1.5,
-                  color: "var(--wm-er-accent-shift, #16a34a)",
-                }}
-              >
-                {editMode
-                  ? "Edit your review. This is your only edit — make it count."
-                  : "Rating is required to close this shift. Honest feedback builds a stronger workforce."}
-              </div>
-
-              {/* Worker name */}
-              <div
-                style={{
-                  padding: "10px 14px",
-                  borderRadius: 10,
-                  border: "1px solid var(--wm-er-border)",
-                  background: "var(--wm-er-card)",
-                }}
-              >
-                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-er-text)" }}>
-                  {workerName}
-                </div>
-                <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginTop: 2 }}>
-                  {editMode ? "Update your rating below" : "How did this worker perform?"}
-                </div>
-              </div>
-
-              {/* Stars */}
-              <div>
-                <div
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: "var(--wm-er-text)",
-                    marginBottom: 8,
-                  }}
-                >
-                  Star Rating <span style={{ color: "var(--wm-error)" }}>*</span>
-                </div>
-                <StarRating value={stars} onChange={handleStarsChange} />
-              </div>
-
-              {/* Tags */}
-              <div>
-                <div
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: "var(--wm-er-text)",
-                    marginBottom: 8,
-                  }}
-                >
-                  What stood out? (optional)
-                </div>
-                <RatingTagSelector tags={EMPLOYER_WORKER_TAGS} selected={tags} onChange={setTags} />
-              </div>
-
-              {/* Comment */}
-              <div>
-                <div
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: "var(--wm-er-text)",
-                    marginBottom: 6,
-                  }}
-                >
-                  Comment (optional, max 100 chars)
-                </div>
-                <input
-                  type="text"
-                  className="wm-input"
-                  placeholder="Brief comment about this worker..."
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  maxLength={100}
-                  style={{ width: "100%", fontSize: 12 }}
-                />
-              </div>
-
-              {/* Hire again */}
-              <div>
-                <div
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: "var(--wm-er-text)",
-                    marginBottom: 8,
-                  }}
-                >
-                  Would you hire this worker again?{" "}
-                  <span style={{ color: "var(--wm-error)" }}>*</span>
-                </div>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button
-                    type="button"
-                    onClick={() => setHireAgain(true)}
-                    style={{
-                      flex: 1,
-                      padding: "8px 0",
-                      borderRadius: 8,
-                      fontSize: 13,
-                      fontWeight: 600,
-                      border:
-                        hireAgain === true
-                          ? "2px solid var(--wm-er-accent-shift, #16a34a)"
-                          : "1px solid var(--wm-er-border)",
-                      background: hireAgain === true ? "rgba(22,163,74,0.08)" : "#fff",
-                      color:
-                        hireAgain === true
-                          ? "var(--wm-er-accent-shift, #16a34a)"
-                          : "var(--wm-er-muted)",
-                      cursor: "pointer",
-                    }}
-                  >
-                    &#10003; Yes
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setHireAgain(false)}
-                    style={{
-                      flex: 1,
-                      padding: "8px 0",
-                      borderRadius: 8,
-                      fontSize: 13,
-                      fontWeight: 600,
-                      border:
-                        hireAgain === false ? "2px solid #ef4444" : "1px solid var(--wm-er-border)",
-                      background: hireAgain === false ? "rgba(239,68,68,0.06)" : "#fff",
-                      color: hireAgain === false ? "#ef4444" : "var(--wm-er-muted)",
-                      cursor: "pointer",
-                    }}
-                  >
-                    &#10005; No
-                  </button>
-                </div>
-              </div>
-
-              {error && (
-                <div
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: 8,
-                    background: "rgba(220,38,38,0.06)",
-                    fontSize: 12,
-                    color: "var(--wm-error)",
-                    fontWeight: 600,
-                  }}
-                >
-                  {error}
-                </div>
-              )}
-            </div>
-
-            {/* Footer */}
-            <div style={{ padding: "12px 18px 16px", borderTop: "1px solid var(--wm-er-border)" }}>
-              {!editMode && (
-                <div
-                  style={{
-                    fontSize: 11,
-                    color: "var(--wm-er-muted)",
-                    marginBottom: 10,
-                    textAlign: "center",
-                  }}
-                >
-                  You can edit this review once within 24 hours
-                </div>
-              )}
-              <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={submitting || stars === 0}
-                  style={{
-                    padding: "10px 24px",
-                    borderRadius: 8,
-                    border: "none",
-                    background:
-                      stars > 0 && hireAgain !== null
-                        ? "var(--wm-er-accent-shift, #16a34a)"
-                        : "#d1d5db",
-                    color: "#fff",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: stars > 0 ? "pointer" : "not-allowed",
-                  }}
-                >
-                  {submitting ? "Saving..." : editMode ? "Update Review" : "Submit Rating"}
-                </button>
-              </div>
-            </div>
-          </>
+          <EmployerRateWorkerModalForm
+            editMode={editMode}
+            workerName={workerName}
+            stars={stars}
+            tags={tags}
+            comment={comment}
+            hireAgain={hireAgain}
+            error={error}
+            submitting={submitting}
+            onStarsChange={handleStarsChange}
+            onTagsChange={setTags}
+            onCommentChange={setComment}
+            onHireAgainChange={setHireAgain}
+            onSubmit={handleSubmit}
+          />
         )}
       </div>
     </div>

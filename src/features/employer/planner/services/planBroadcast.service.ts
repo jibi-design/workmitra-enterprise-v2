@@ -1,15 +1,15 @@
 // Job Mitra | planBroadcast.service.ts | BCC crew broadcast — no worker-to-worker visibility
 
-import { findWorkspaceIdForPostAndWorker } from "../../shiftJobs/helpers/directInviteWorkspace.helpers";
 import {
+  findWorkspaceIdForPostAndWorker,
   broadcastToEmployeeWorkspace,
   readEmployeeWorkspaces,
-} from "../../shiftJobs/storage/employerShift.employeeBridge";
-import type { ShiftPost } from "../../shiftJobs/storage/employerShift.types";
-import type { EmployeeShiftApplication } from "../../shiftJobs/storage/employerShift.types";
+  type ShiftPost,
+  type EmployeeShiftApplication,
+} from "../../../shared/planner/ports/plannerLegacyShiftBridge";
 import { planBroadcastGroupStorage } from "../storage/planBroadcastGroup.storage";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
-import { plannerEmployeeNotifications } from "../../../employee/planner/services/plannerEmployeeNotifications.service";
+import { plannerEmployeeNotifications } from "../../../shared/planner/plannerEmployeeBridge";
 
 /**
  * BCC MODEL:
@@ -28,9 +28,9 @@ export function ensurePlanBroadcastGroup(
 export function enrollWorkspaceInPlanGroup(
   planId: string,
   workspaceId: string,
-  workerWmId: string,
+  workerMlId: string,
 ): void {
-  planBroadcastGroupStorage.enrollWorkspace(planId, workspaceId, workerWmId);
+  planBroadcastGroupStorage.enrollWorkspace(planId, workspaceId, workerMlId);
 }
 
 export type PlanEnrollResult = { ok: true } | { ok: false; reason: "skipped" | "storage_error" };
@@ -42,13 +42,13 @@ export function enrollConfirmedWorkerInPlanGroup(
   const planId = post.planId;
   if (!planId || post.source !== "planner") return { ok: true };
 
-  const workerWmId = application.profileSnapshot?.uniqueId?.trim();
-  const workspaceId = findWorkspaceIdForPostAndWorker(post.id, workerWmId) ?? undefined;
+  const workerMlId = application.profileSnapshot?.uniqueId?.trim();
+  const workspaceId = findWorkspaceIdForPostAndWorker(post.id, workerMlId) ?? undefined;
 
-  if (!workspaceId || !workerWmId) return { ok: false, reason: "skipped" };
+  if (!workspaceId || !workerMlId) return { ok: false, reason: "skipped" };
 
   planBroadcastGroupStorage.ensureGroup(planId, post.jobName, post.companyName);
-  const enrolled = planBroadcastGroupStorage.enrollWorkspace(planId, workspaceId, workerWmId);
+  const enrolled = planBroadcastGroupStorage.enrollWorkspace(planId, workspaceId, workerMlId);
   return enrolled ? { ok: true } : { ok: false, reason: "storage_error" };
 }
 
@@ -59,12 +59,12 @@ export function unenrollWorkerFromPlanGroup(
   const planId = post.planId;
   if (!planId || post.source !== "planner") return;
 
-  const workerWmId = application.profileSnapshot?.uniqueId?.trim();
-  const workspaceId = findWorkspaceIdForPostAndWorker(post.id, workerWmId) ?? undefined;
+  const workerMlId = application.profileSnapshot?.uniqueId?.trim();
+  const workspaceId = findWorkspaceIdForPostAndWorker(post.id, workerMlId) ?? undefined;
 
-  if (!workspaceId || !workerWmId) return;
+  if (!workspaceId || !workerMlId) return;
 
-  planBroadcastGroupStorage.unenrollWorkspace(planId, workspaceId, workerWmId);
+  planBroadcastGroupStorage.unenrollWorkspace(planId, workspaceId, workerMlId);
 }
 
 export type PlanBroadcastResult = { ok: true; delivered: number } | { ok: false; reason: string };

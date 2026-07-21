@@ -1,57 +1,26 @@
-// Job Mitra | EmployeePlannerApplicationsPage.tsx | Gig plan bundles only
+/** Job Mitra | EmployeePlannerApplicationsPage.tsx | Native planner applications (Hybrid A2 S4) */
 
-import { ConfirmModal } from "../../../../shared/components/ConfirmModal";
-import { MyShiftApplicationsHeader } from "../../shiftJobs/components/MyShiftApplicationsHeader";
-import { MyShiftApplicationsKpiTiles } from "../../shiftJobs/components/MyShiftApplicationsKpiTiles";
-import { MyShiftApplicationsList } from "../../shiftJobs/components/MyShiftApplicationsList";
-import { MyShiftApplicationsTabs } from "../../shiftJobs/components/MyShiftApplicationsTabs";
-import { ShiftToast } from "../../shiftJobs/components/ShiftPostDetailSections";
-import { useMyShiftApplicationsState } from "../../shiftJobs/hooks/useMyShiftApplicationsState";
+import { PlannerApplicationsHeader } from "../components/PlannerApplicationsHeader";
+import { PlannerApplicationsKpiTiles } from "../components/PlannerApplicationsKpiTiles";
+import { PlannerApplicationsList } from "../components/PlannerApplicationsList";
+import { PlannerApplicationsTabs } from "../components/PlannerApplicationsTabs";
+import { usePlannerApplicationsState } from "../hooks/usePlannerApplicationsState";
 
 export function EmployeePlannerApplicationsPage() {
-  const {
-    tab,
-    kpi,
-    counts,
-    postMap,
-    filteredApplications,
-    withdrawConfirm,
-    toast,
-    setTab,
-    openFindShifts,
-    openApplication,
-    requestWithdrawApplication,
-    requestConfirmAttendanceApplication,
-    handleCancelWithdraw,
-    handleConfirmWithdraw,
-  } = useMyShiftApplicationsState("planner");
+  const { tab, kpi, counts, postMap, filteredApplications, setTab, openDiscover, openApplication } =
+    usePlannerApplicationsState();
 
   return (
-    <div className="wm-ee-vPlanner wm-planner-page">
-      <MyShiftApplicationsHeader domain="planner" onFindShifts={openFindShifts} />
-
-      <MyShiftApplicationsKpiTiles domain="planner" kpi={kpi} />
-
-      <MyShiftApplicationsTabs domain="planner" tab={tab} counts={counts} onChange={setTab} />
-
-      <MyShiftApplicationsList
-        domain="planner"
+    <div className="wm-ee-vPlanner wm-planner-page" data-testid="planner-employee-applications">
+      <PlannerApplicationsHeader onBrowseProjects={openDiscover} />
+      <PlannerApplicationsKpiTiles kpi={kpi} />
+      <PlannerApplicationsTabs tab={tab} counts={counts} onChange={setTab} />
+      <PlannerApplicationsList
         applications={filteredApplications}
         postMap={postMap}
-        onFindShifts={openFindShifts}
+        onBrowseProjects={openDiscover}
         onOpenApplication={openApplication}
-        onWithdrawApplication={requestWithdrawApplication}
-        onConfirmAttendanceApplication={requestConfirmAttendanceApplication}
       />
-
-      <ShiftToast message={toast} />
-
-      <ConfirmModal
-        confirm={withdrawConfirm}
-        onCancel={handleCancelWithdraw}
-        onConfirm={handleConfirmWithdraw}
-      />
-
       <div style={{ height: 32 }} />
     </div>
   );

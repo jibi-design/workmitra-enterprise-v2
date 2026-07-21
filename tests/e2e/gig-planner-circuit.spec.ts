@@ -59,9 +59,9 @@ test.describe("Gig Projects — Mega Card, Pick & Choose, Conflict Guard", () =>
       expect(probe.indexEntryCount, "Exactly one Mega Project index entry").toBe(1);
       expect(
         probe.hiddenChildCount,
-        "All planner child posts must be hidden from regular shift search",
-      ).toBe(5);
-      expect(probe.childPostIds.length).toBe(5);
+        "P1.7: new publishes must not create hidden Shift child posts",
+      ).toBe(0);
+      expect(probe.childPostIds.length, "P1.7: dual-write wind-down — zero child posts").toBe(0);
 
       const { startDate, endDate } = getGigCircuitPlanDates();
       expect(probe.slotDates[0]).toBe(startDate);

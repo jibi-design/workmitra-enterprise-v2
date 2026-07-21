@@ -1,6 +1,7 @@
 /** Job Mitra | PlannerShell.tsx — Gig Projects (Agency Mode) content chrome */
 
 import type { ReactNode } from "react";
+import { useThemeBundle } from "./useThemeBundle";
 
 type PlannerShellProps = {
   readonly children: ReactNode;
@@ -12,6 +13,7 @@ type PlannerShellProps = {
  * Employer routes use EmployerShell topbar chrome; this wraps page content only.
  */
 export function PlannerShell({ children, audience = "employer" }: PlannerShellProps) {
+  useThemeBundle("shift-planner");
   const variantClass = audience === "employer" ? "wm-er-vPlanner" : "wm-ee-vPlanner";
 
   return (

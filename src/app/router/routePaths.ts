@@ -1,6 +1,7 @@
 // src/app/router/routePaths.ts
 export const ROUTE_PATHS = {
   landing: "/",
+  publicSite: "/site",
   publicWelcome: "/welcome",
   login: "/login",
   rolePick: "/role-pick",
@@ -27,11 +28,15 @@ export const ROUTE_PATHS = {
 
   // Employee Gig Projects (Demand Planner) — separate domain from Shift Jobs
   employeePlannerHome: "/employee/planner/home",
+  /** Canonical discovery hub (Hybrid A2 Route Contract). */
+  employeePlannerDiscover: "/employee/planner/discover",
   employeePlannerBrowse: "/employee/planner/browse",
   employeePlannerProjectDetail: "/employee/planner/projects/:planId",
   employeePlannerProjectApply: "/employee/planner/projects/:planId/apply",
   employeePlannerApplications: "/employee/planner/applications",
   employeePlannerPlanApplicationSummary: "/employee/planner/applications/plan/:planId",
+  /** Unified Candidate Roster Workspace hub (native in S7). */
+  employeePlannerWorkspaceHub: "/employee/planner/workspace",
   employeePlannerWorkspaces: "/employee/planner/workspaces",
   employeePlannerWorkspace: "/employee/planner/workspace/:workspaceId",
   employeePlannerEarnings: "/employee/planner/earnings",
@@ -83,9 +88,16 @@ export const ROUTE_PATHS = {
   // Employer Demand Planner (Teal subdomain)
   employerPlannerHome: "/employer/planner/home",
   employerPlannerPlans: "/employer/planner/plans",
+  /** Canonical wizard entry (Hybrid A2 Route Contract). */
+  employerPlannerCreate: "/employer/planner/create",
   employerPlannerNew: "/employer/planner/new",
   employerPlannerDetail: "/employer/planner/plans/:planId",
   employerPlannerFinance: "/employer/planner/plans/:planId/finance",
+  /** Batch Approval Engine (native in S4). */
+  employerPlannerApplications: "/employer/planner/applications",
+  /** Roster Management Console (native in S7). */
+  employerPlannerRoster: "/employer/planner/roster",
+  employerPlannerRosterDetail: "/employer/planner/roster/:planId",
 
   // Employer Workforce - detailed routes (Phase-0)
   employerWorkforceStaff: "/employer/workforce/staff",

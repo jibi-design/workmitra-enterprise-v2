@@ -29,7 +29,7 @@ export function LegacyShiftPlanSummaryRedirect() {
 export function LegacyShiftSearchGigHashRedirect() {
   const loc = useLocation();
   if (loc.hash === "#gig-projects") {
-    return <Navigate to={ROUTE_PATHS.employeePlannerBrowse} replace />;
+    return <Navigate to={ROUTE_PATHS.employeePlannerDiscover} replace />;
   }
   return null;
 }

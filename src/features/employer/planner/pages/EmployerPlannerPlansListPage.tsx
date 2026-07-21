@@ -36,7 +36,7 @@ export function EmployerPlannerPlansListPage() {
   return (
     <div className="wm-er-vPlanner wm-planner-page">
       <section className="wm-planner-hero">
-        <div className="wm-planner-heroTitle">All Plans</div>
+        <div className="wm-planner-heroTitle">Demand Planner</div>
         <div className="wm-planner-heroSub">
           Every plan status is shown — empty buckets stay visible
         </div>
@@ -50,8 +50,25 @@ export function EmployerPlannerPlansListPage() {
           status={status}
           plans={plans.filter((p) => p.status === status)}
           onOpenPlan={openPlan}
+          onCreate={() => nav(ROUTE_PATHS.employerPlannerNew)}
         />
       ))}
+
+      <button
+        type="button"
+        className="wm-planner-fab"
+        aria-label="Create new plan"
+        onClick={() => nav(ROUTE_PATHS.employerPlannerNew)}
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M12 5v14M5 12h14"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+          />
+        </svg>
+      </button>
     </div>
   );
 }

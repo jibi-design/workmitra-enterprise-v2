@@ -29,7 +29,7 @@ function str(r: Rec, k: string): string {
   return typeof v === "string" ? v : "";
 }
 
-function getCurrentWorkerWmId(): string {
+function getCurrentWorkerMlId(): string {
   return employeeProfileStorage.get().uniqueId?.trim() || "";
 }
 
@@ -49,8 +49,8 @@ export function aggregateShiftStats(): {
   totalShiftsCompleted: number;
   uniqueCompanies: string[];
 } {
-  const workerWmId = getCurrentWorkerWmId();
-  const history = workerWmId ? getVaultShiftHistoryForWorker(workerWmId) : [];
+  const workerMlId = getCurrentWorkerMlId();
+  const history = workerMlId ? getVaultShiftHistoryForWorker(workerMlId) : [];
   const finalizedHistory = history.filter((entry) => entry.vaultFinalized);
 
   if (finalizedHistory.length > 0) {
@@ -86,8 +86,8 @@ export function aggregateShiftRatings(): {
   ratings: number[];
   ratedCompanies: { companyName: string; rating: number }[];
 } {
-  const workerWmId = getCurrentWorkerWmId();
-  if (!workerWmId) {
+  const workerMlId = getCurrentWorkerMlId();
+  if (!workerMlId) {
     return { ratings: [], ratedCompanies: [] };
   }
 
@@ -95,7 +95,7 @@ export function aggregateShiftRatings(): {
 
   const workerRatings = ratingStorage
     .getAllERRatings()
-    .filter((rating) => rating.domain === "shift" && rating.workerWmId === workerWmId);
+    .filter((rating) => rating.domain === "shift" && rating.workerMlId === workerMlId);
 
   const ratings = workerRatings.map((rating) => rating.stars);
 
@@ -111,10 +111,10 @@ export function aggregateShiftRatings(): {
 }
 
 export function aggregateShiftReferences(): VaultReference[] {
-  const workerWmId = getCurrentWorkerWmId();
-  if (!workerWmId) return [];
+  const workerMlId = getCurrentWorkerMlId();
+  if (!workerMlId) return [];
 
-  const historyRefs = getVaultShiftHistoryForWorker(workerWmId)
+  const historyRefs = getVaultShiftHistoryForWorker(workerMlId)
     .filter((entry) => entry.vaultFinalized)
     .map((entry): VaultReference => ({
       companyName: entry.companyName,
@@ -133,7 +133,7 @@ export function aggregateShiftReferences(): VaultReference[] {
 
   return ratingStorage
     .getAllERRatings()
-    .filter((rating) => rating.domain === "shift" && rating.workerWmId === workerWmId)
+    .filter((rating) => rating.domain === "shift" && rating.workerMlId === workerMlId)
     .map((rating): VaultReference => {
       const post = postMap.get(rating.jobId);
       const companyName = post ? str(post, "companyName") || "Employer" : "Employer";

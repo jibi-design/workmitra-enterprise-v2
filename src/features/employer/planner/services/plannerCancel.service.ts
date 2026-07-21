@@ -4,16 +4,15 @@ import {
   markEmployeeWorkspaceCancelled,
   readEmployeeApplications,
   writeEmployeeApplications,
-} from "../../shiftJobs/storage/employerShift.employeeBridge";
-import {
   getEmployerShiftPosts,
   updateEmployerShiftPost,
-} from "../../shiftJobs/storage/employerShift.postActions";
-import type { EmployeeShiftApplication } from "../../shiftJobs/storage/employerShift.types";
-import { plannerEmployeeNotifications } from "../../../employee/planner/services/plannerEmployeeNotifications.service";
+  type EmployeeShiftApplication,
+} from "../../../shared/planner/ports/plannerLegacyShiftBridge";
+import { plannerEmployeeNotifications } from "../../../shared/planner/plannerEmployeeBridge";
 import { demandPlannerStorage } from "../storage/demandPlannerStorage";
 import { plannerPublicIndex } from "../storage/plannerPublicIndex.storage";
-import { plannerDiarySyncService } from "../../../employee/planner/services/plannerDiarySync.service";
+import { plannerDiarySyncService } from "../../../shared/planner/plannerEmployeeBridge";
+import { recordPlannerOffboardInVault } from "../../../shared/planner/plannerVault";
 
 const PENDING: EmployeeShiftApplication["status"][] = ["applied", "shortlisted", "waiting"];
 
@@ -68,12 +67,20 @@ export function cancelActivePlan(planId: string, reason?: string): PlannerCancel
   const now = Date.now();
 
   const nextApps = apps.map((app) => {
-    if (!postIds.has(app.postId) || !PENDING.includes(app.status)) return app;
+    if (app.planId !== planId || !PENDING.includes(app.status)) return app;
 
     const post = posts.find((p) => p.id === app.postId);
-    if (!post || post.source !== "planner" || post.planId !== planId) return app;
+    if (
+      post?.source === "planner" &&
+      post.planId === planId &&
+      post.confirmedIds.includes(app.id)
+    ) {
+      return app;
+    }
 
-    if (post.confirmedIds.includes(app.id)) return app;
+    if (post && (post.source !== "planner" || post.planId !== planId)) {
+      return app;
+    }
 
     closedApplicationIds.push(app.id);
     return {
@@ -100,46 +107,56 @@ export function cancelActivePlan(planId: string, reason?: string): PlannerCancel
   }
 
   for (const app of apps) {
-    if (!postIds.has(app.postId)) continue;
-    if (!isPlannerPlanPost(app.postId, planId, posts)) continue;
+    if (app.planId !== planId) continue;
 
     const post = posts.find((item) => item.id === app.postId);
-    if (!post) continue;
-
-    const isConfirmed = app.status === "confirmed" || post.confirmedIds.includes(app.id);
+    const legacyPlannerPost = post && isPlannerPlanPost(app.postId, planId, posts);
+    const isConfirmed =
+      app.status === "confirmed" ||
+      Boolean(legacyPlannerPost && post?.confirmedIds.includes(app.id));
     if (!isConfirmed) continue;
 
-    const workspaceResult = markEmployeeWorkspaceCancelled(app.postId, app.id);
-    if (!workspaceResult.ok) {
-      console.warn("[plannerCancel] Failed to mark confirmed worker workspace cancelled", {
-        planId,
-        postId: app.postId,
-        appId: app.id,
-        reason: workspaceResult.reason,
-      });
-      // TODO: enqueue to wm_retry_queue_v1 when retry infrastructure exists.
-      continue;
-    }
-
-    try {
-      plannerEmployeeNotifications.planCancelledConfirmedWorker(
-        plan.name,
-        post.jobName,
-        planId,
-        app.postId,
-        app.id,
-      );
-    } catch (error) {
-      console.warn("[plannerCancel] Confirmed worker cancellation notification failed", {
-        planId,
-        postId: app.postId,
-        appId: app.id,
-        error,
-      });
-      // TODO: enqueue to wm_retry_queue_v1 when retry infrastructure exists.
+    if (legacyPlannerPost && post) {
+      const workspaceResult = markEmployeeWorkspaceCancelled(app.postId, app.id);
+      if (!workspaceResult.ok) {
+        console.warn("[plannerCancel] Failed to mark confirmed worker workspace cancelled", {
+          planId,
+          postId: app.postId,
+          appId: app.id,
+          reason: workspaceResult.reason,
+        });
+        // TODO: enqueue to wm_retry_queue_v1 when retry infrastructure exists.
+      } else {
+        try {
+          plannerEmployeeNotifications.planCancelledConfirmedWorker(
+            plan.name,
+            post.jobName,
+            planId,
+            app.postId,
+            app.id,
+          );
+        } catch (error) {
+          console.warn("[plannerCancel] Confirmed worker cancellation notification failed", {
+            planId,
+            postId: app.postId,
+            appId: app.id,
+            error,
+          });
+          // TODO: enqueue to wm_retry_queue_v1 when retry infrastructure exists.
+        }
+      }
     }
 
     cancelledConfirmedApplicationIds.push(app.id);
+
+    const workerMlId = app.profileSnapshot?.uniqueId?.trim();
+    if (workerMlId) {
+      recordPlannerOffboardInVault({
+        planId,
+        employeeMlId: workerMlId,
+        exitType: "plan_cancelled",
+      });
+    }
   }
 
   return {

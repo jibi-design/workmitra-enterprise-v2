@@ -3,10 +3,10 @@
 import { useMemo, useState, useSyncExternalStore, useEffect } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
-import { fmtPlanDate } from "../../../employer/planner/storage/demandPlannerStorage";
-import { formatPlannerPayRange } from "../../../employer/planner/helpers/plannerPayDisplay.helpers";
-import type { PlannerPublicIndexEntry } from "../../../employer/planner/storage/plannerPublicIndex.storage";
-import { plannerPublicIndex } from "../../../employer/planner/storage/plannerPublicIndex.storage";
+import { fmtPlanDate } from "../../../shared/planner/plannerPublic";
+import { formatPlannerPayRange } from "../../../shared/planner/plannerPublic";
+import type { PlannerPublicIndexEntry } from "../../../shared/planner/plannerPublic";
+import { plannerPublicIndex } from "../../../shared/planner/plannerPublic";
 import { employeePlanEngagementStorage } from "../storage/employeePlanEngagement.storage";
 import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
 import { employeeAvailabilityService } from "../services/employeeAvailability.service";
@@ -26,17 +26,17 @@ function ProjectDetailBody({ entry }: { entry: PlannerPublicIndexEntry }) {
     employeePlanEngagementStorage.markViewed(entry.planId);
   }, [entry.planId]);
 
-  const workerWmId = employeeProfileStorage.get().uniqueId ?? "local-worker";
+  const workerMlId = employeeProfileStorage.get().uniqueId ?? "local-worker";
   const isProfileComplete = Boolean(employeeProfileStorage.get().fullName.trim());
 
   const previewAvailability = useMemo(
     () =>
       employeeAvailabilityService.build({
-        workerWmId,
+        workerMlId,
         planId: entry.planId,
         indexEntry: entry,
       }),
-    [workerWmId, entry],
+    [workerMlId, entry],
   );
 
   const appliedCount = previewAvailability.summary.appliedDayCount;

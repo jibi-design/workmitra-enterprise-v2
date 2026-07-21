@@ -7,7 +7,7 @@ const THRESHOLD = 5;
 
 export const plannerCommitmentStreakService = {
   recordFromApply(
-    workerWmId: string,
+    workerMlId: string,
     planId: string,
     planApplyBatchId: string,
     selectedDates: string[],
@@ -17,7 +17,7 @@ export const plannerCommitmentStreakService = {
     const now = Date.now();
 
     plannerCommitmentStreakStorage.upsert({
-      workerWmId,
+      workerMlId,
       planId,
       planApplyBatchId,
       consecutiveDaysCount: consecutiveDays,
@@ -28,14 +28,14 @@ export const plannerCommitmentStreakService = {
     return { earned, consecutiveDays };
   },
 
-  hasStreak(workerWmId: string, planId?: string, planApplyBatchId?: string): boolean {
+  hasStreak(workerMlId: string, planId?: string, planApplyBatchId?: string): boolean {
     if (
       planApplyBatchId &&
-      plannerCommitmentStreakStorage.hasStreakForBatch(workerWmId, planApplyBatchId)
+      plannerCommitmentStreakStorage.hasStreakForBatch(workerMlId, planApplyBatchId)
     ) {
       return true;
     }
-    if (planId && plannerCommitmentStreakStorage.hasStreakForPlan(workerWmId, planId)) {
+    if (planId && plannerCommitmentStreakStorage.hasStreakForPlan(workerMlId, planId)) {
       return true;
     }
     return false;

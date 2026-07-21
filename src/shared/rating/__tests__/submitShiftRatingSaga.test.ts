@@ -9,8 +9,8 @@ import type { WorkerEmployerTag } from "../ratingTypes";
 function shiftWorkerRatingInput(overrides?: Record<string, unknown>) {
   return {
     domain: "shift" as const,
-    workerWmId: "WM-EE01-RAH-CD34",
-    employerWmId: "WM-ER01-TEC-AB12",
+    workerMlId: "WM-EE01-RAH-CD34",
+    employerMlId: "WM-ER01-TEC-AB12",
     jobId: "job_shift_001",
     stars: 4 as const,
     tags: ["Paid on time"] as WorkerEmployerTag[],
@@ -36,7 +36,7 @@ describe("submitShiftRatingSaga", () => {
     expect(
       ratingStorage.hasWorkerRatedEmployer("WM-EE01-RAH-CD34", "job_shift_001", "WM-ER01-TEC-AB12"),
     ).toBe(true);
-    expect(workerPointsStorage.getByWmId("WM-EE01-RAH-CD34").total).toBeGreaterThan(0);
+    expect(workerPointsStorage.getByMlId("WM-EE01-RAH-CD34").total).toBeGreaterThan(0);
   });
 
   it("returns already_rated when duplicate submission", () => {

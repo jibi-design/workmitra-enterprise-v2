@@ -1,8 +1,10 @@
 // Job Mitra | employerPlannerPostsGrouping.ts | Hide planner child posts; group by planId
 
 import { demandPlannerStorage, type DemandPlan } from "../storage/demandPlannerStorage";
-import { countApplicationsForPost } from "../../shiftJobs/helpers/shiftHomeHelpers";
-import type { ShiftPost } from "../../shiftJobs/storage/employerShift.storage";
+import {
+  countApplicationsForPost,
+  type ShiftPost,
+} from "../../../shared/planner/ports/plannerLegacyShiftBridge";
 
 export type EmployerPlannerPostGroup = {
   planId: string;

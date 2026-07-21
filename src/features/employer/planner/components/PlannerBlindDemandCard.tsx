@@ -1,7 +1,7 @@
 // Job Mitra | PlannerBlindDemandCard.tsx | Blind worker count — no names/avatars
 
 import { useSyncExternalStore } from "react";
-import { availabilityStorage } from "../../../employee/shiftJobs/storage/availabilityStorage";
+import { availabilityStorage } from "../../../shared/planner/ports/plannerLegacyShiftBridge";
 
 type Props = {
   dateKey: string;

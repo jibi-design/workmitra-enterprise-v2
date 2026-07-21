@@ -7,7 +7,7 @@ export const GIG_CIRCUIT_IDS = {
   locationName: "Lulu Mall, Kochi",
   category: "Security",
   payPerDay: 800,
-  workerWmId: "WM-GIG-CIRCUIT-001",
+  workerMlId: "ML-E2E2-GGG-PLAN",
   workerName: "Gig Circuit Worker",
   conflictPostId: "e2e-gig-conflict-post-001",
   conflictAppId: "e2e-gig-conflict-app-001",
@@ -100,7 +100,7 @@ export async function initGigRoleContext(page: Page, role: "employer" | "employe
       profile:
         role === "employee"
           ? {
-              uniqueId: GIG_CIRCUIT_IDS.workerWmId,
+              uniqueId: GIG_CIRCUIT_IDS.workerMlId,
               fullName: GIG_CIRCUIT_IDS.workerName,
               city: "Kochi",
               skills: ["security"],
@@ -127,7 +127,7 @@ export async function ensureGigEmployeeProfile(page: Page): Promise<void> {
       localStorage.setItem(
         "wm_employee_profile_v1",
         JSON.stringify({
-          uniqueId: worker.wmId,
+          uniqueId: worker.mlId,
           fullName: worker.name,
           city: "Kochi",
           skills: ["security"],
@@ -145,7 +145,7 @@ export async function ensureGigEmployeeProfile(page: Page): Promise<void> {
         }),
       );
     },
-    { worker: { wmId: GIG_CIRCUIT_IDS.workerWmId, name: GIG_CIRCUIT_IDS.workerName } },
+    { worker: { mlId: GIG_CIRCUIT_IDS.workerMlId, name: GIG_CIRCUIT_IDS.workerName } },
   );
 }
 
@@ -218,7 +218,7 @@ export async function publishGigPlanViaEmployerUi(employerPage: Page): Promise<v
   await employerPage.getByRole("button", { name: "Next: Review & Publish →" }).click();
   await expect(employerPage.getByText("Step 3 of 3 — Review & Publish")).toBeVisible();
 
-  await employerPage.getByRole("button", { name: /Publish — Create \d+ Shifts/ }).click();
+  await employerPage.getByRole("button", { name: /Publish — \d+ day plan/ }).click();
   await expect(employerPage).toHaveURL(/\/#\/employer\/planner\/plans\//, { timeout: 20_000 });
   await expect(employerPage.getByText(GIG_CIRCUIT_IDS.planName)).toBeVisible();
 }
@@ -365,7 +365,7 @@ export async function seedGigConflictOnDate(page: Page, conflictDate: string): P
         goodToHaveAnswers: {},
         notes: {},
         profileSnapshot: {
-          uniqueId: worker.wmId,
+          uniqueId: worker.mlId,
           fullName: worker.name,
           city: "Kochi",
           experience: "helper",
@@ -377,7 +377,7 @@ export async function seedGigConflictOnDate(page: Page, conflictDate: string): P
         id: ids.conflictWorkspaceId,
         postId: ids.conflictPostId,
         appId: ids.conflictAppId,
-        workerWmId: worker.wmId,
+        workerMlId: worker.mlId,
         workerName: worker.name,
         companyName: ids.conflictCompanyName,
         jobName: ids.conflictJobName,
@@ -402,7 +402,7 @@ export async function seedGigConflictOnDate(page: Page, conflictDate: string): P
     {
       ids: GIG_CIRCUIT_IDS,
       dateKey: conflictDate,
-      worker: { wmId: GIG_CIRCUIT_IDS.workerWmId, name: GIG_CIRCUIT_IDS.workerName },
+      worker: { mlId: GIG_CIRCUIT_IDS.workerMlId, name: GIG_CIRCUIT_IDS.workerName },
     },
   );
 }

@@ -189,11 +189,11 @@ export function VaultProfileTab({ data: d, readOnlyEmployerView = false }: Props
 
       {VAULT_FEATURE_FLAGS.references ? (
         <>
-          <VaultSectionHead number={9} title="Shift Work Reviews" auto />
+          <VaultSectionHead number={9} title="Work Reviews" auto />
           <ReviewsSection data={d.references} />
         </>
       ) : (
-        <VaultSectionLock title="Shift Work Reviews" />
+        <VaultSectionLock title="Work Reviews" />
       )}
 
       {VAULT_FEATURE_FLAGS.activity ? (

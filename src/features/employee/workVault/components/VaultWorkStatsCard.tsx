@@ -31,7 +31,7 @@ export function VaultWorkStatsCard({ stats }: { stats: VaultWorkStats }) {
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
       <StatBox value={stats.totalCareerPositions} label="Career positions" color="#3730a3" />
       <StatBox value={stats.totalShiftsCompleted} label="Shifts completed" color="#0f766e" />
-      <StatBox value={stats.totalWorkforceCompanies} label="Company records" color="#b45309" />
+      <StatBox value={stats.totalPlannerEpochs} label="Planner epochs" color="#0891b2" />
       <StatBox
         value={stats.totalCompaniesWorked}
         label="Total companies"

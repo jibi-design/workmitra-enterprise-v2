@@ -1,3 +1,7 @@
+// WARNING DEC-012 / MIG-008: Client-side OTP path (plaintext)
+// Server OTP path (Argon2 hashed) exists at server/modules/vault/
+// This client path MUST BE REMOVED before production cutover
+// See architecture-audits/Phase-DB-Migration-Readiness-Audit-001.md
 // src/features/employee/workVault/components/EditProfileSummarySection.tsx
 
 import { VAULT_ACCENT } from "../constants/vaultConstants";
@@ -37,16 +41,25 @@ type EditProfileSummarySectionProps = {
 /* Component                                        */
 /* ------------------------------------------------ */
 export function EditProfileSummarySection({
-  headline, onHeadlineChange,
-  empStatus, onEmpStatusChange,
-  empStatusAuto, onEmpStatusAutoChange,
-  currentCompany, onCurrentCompanyChange,
-  roleType, onRoleTypeChange,
-  noticePeriod, onNoticePeriodChange,
+  headline,
+  onHeadlineChange,
+  empStatus,
+  onEmpStatusChange,
+  empStatusAuto,
+  onEmpStatusAutoChange,
+  currentCompany,
+  onCurrentCompanyChange,
+  roleType,
+  onRoleTypeChange,
+  noticePeriod,
+  onNoticePeriodChange,
 }: EditProfileSummarySectionProps) {
   return (
     <section className="wm-ee-card" style={{ marginTop: 12 }}>
-      <SectionTitle title="Professional Summary" sub="This is visible to employers after OTP verification" />
+      <SectionTitle
+        title="Professional Summary"
+        sub="This is visible to employers after OTP verification"
+      />
 
       <div className="wm-field">
         <label className="wm-label">Headline</label>

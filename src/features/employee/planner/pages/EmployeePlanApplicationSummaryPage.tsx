@@ -3,17 +3,20 @@
 import { useMemo, useSyncExternalStore } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
-import { plannerPublicIndex } from "../../../employer/planner/storage/plannerPublicIndex.storage";
-import { formatPlannerPayPerDay } from "../../../employer/planner/helpers/plannerPayDisplay.helpers";
-import { getEmployerShiftPosts } from "../../../employer/shiftJobs/storage/employerShift.postActions";
-import { readEmployeeApplications } from "../../../employer/shiftJobs/storage/employerShift.employeeBridge";
-import { fmtTimestamp, statusLabel } from "../../shiftJobs/helpers/shiftApplicationHelpers";
+import { plannerPublicIndex } from "../../../shared/planner/plannerPublic";
+import { formatPlannerPayPerDay } from "../../../shared/planner/plannerPublic";
+import {
+  getEmployerShiftPostsPublic as getEmployerShiftPosts,
+  readEmployeeApplicationsPublic as readEmployeeApplications,
+  fmtTimestamp,
+  statusLabel,
+  shiftWorkspacesStorage,
+} from "../../../shared/planner/ports/plannerLegacyShiftBridge";
 import { getPlannerStatusStyle } from "../helpers/plannerStatusStyles";
 import {
   employeePlanApplicationSummaryPath,
   employeeProjectDetailPath,
 } from "../../planner/helpers/plannerEmployeeRoutes";
-import { shiftWorkspacesStorage } from "../../shiftJobs/storage/shiftWorkspaces.storage";
 
 const APPS_CHANGED = "wm:employee-shift-apps-changed";
 

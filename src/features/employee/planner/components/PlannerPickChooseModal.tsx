@@ -1,7 +1,7 @@
 // Job Mitra | PlannerPickChooseModal.tsx
 
 import { useState } from "react";
-import type { PlannerPublicIndexEntry } from "../../../employer/planner/storage/plannerPublicIndex.storage";
+import type { PlannerPublicIndexEntry } from "../../../shared/planner/plannerPublic";
 import { PlannerPickChooseCalendar } from "./PlannerPickChooseCalendar";
 import { PlannerProfileGateModal } from "./PlannerProfileGateModal";
 import { usePlannerPickChooseState } from "../hooks/usePlannerPickChooseState";

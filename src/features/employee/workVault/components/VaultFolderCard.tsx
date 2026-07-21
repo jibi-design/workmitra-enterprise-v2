@@ -11,7 +11,8 @@ function FolderIcon({ icon }: { icon: string }) {
     id: "M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm8 5a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-4 8h8v-1c0-1.33-2.67-2-4-2s-4 .67-4 2v1Z",
     cert: "M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.27 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2Z",
     edu: "M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3Zm0 12.55L5 12.36V11l7 3.82 7-3.82v1.36L12 15.55Z",
-    license: "M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4Zm0 6a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm4 8H8v-1c0-1.33 2.67-2 4-2s4 .67 4 2v1Z",
+    license:
+      "M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4Zm0 6a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm4 8H8v-1c0-1.33 2.67-2 4-2s4 .67 4 2v1Z",
     other: "M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2Z",
   };
 
@@ -43,9 +44,7 @@ function VisibilityBadge({ visibility }: { visibility: "visible" | "hidden" }) {
         border: isVisible
           ? "1px solid rgba(22, 163, 74, 0.25)"
           : "1px solid rgba(220, 38, 38, 0.25)",
-        background: isVisible
-          ? "rgba(22, 163, 74, 0.08)"
-          : "rgba(220, 38, 38, 0.08)",
+        background: isVisible ? "rgba(22, 163, 74, 0.08)" : "rgba(220, 38, 38, 0.08)",
         color: isVisible ? "#15803d" : "#dc2626",
         flexShrink: 0,
       }}
@@ -85,33 +84,19 @@ export function VaultFolderCard({
           onTap(folder.id);
         }
       }}
+      className="wm-vault-card"
       style={{
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
         gap: 12,
         padding: "14px 16px",
-        borderRadius: 14,
-        border: "1px solid var(--wm-emp-border, rgba(15, 23, 42, 0.08))",
-        background: "#fff",
         cursor: "pointer",
       }}
     >
       {/* Left: icon + info */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
-        <div
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 12,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: `${VAULT_ACCENT}12`,
-            color: VAULT_ACCENT,
-            flexShrink: 0,
-          }}
-        >
+        <div className="wm-vault-folder-icon">
           <FolderIcon icon={folder.icon} />
         </div>
 
@@ -119,7 +104,7 @@ export function VaultFolderCard({
           <div
             style={{
               fontWeight: 700,
-              fontSize: 14,
+              fontSize: 15,
               color: "var(--wm-emp-text)",
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -135,21 +120,33 @@ export function VaultFolderCard({
       </div>
 
       {/* Right: visibility badge + toggle */}
-      <div
-        style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}
-      >
+      <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+        {folder.visibility === "hidden" ? (
+          <span
+            style={{ color: VAULT_ACCENT, display: "inline-flex" }}
+            aria-label="Access controlled"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2Zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2Zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2Z"
+              />
+            </svg>
+          </span>
+        ) : null}
         <VisibilityBadge visibility={folder.visibility} />
         <button
           type="button"
+          className="wm-vault-tap"
           onClick={(e) => {
             e.stopPropagation();
             onToggleVisibility(folder.id);
           }}
           aria-label={`Toggle visibility for ${folder.name}`}
           style={{
-            width: 32,
-            height: 32,
-            borderRadius: 8,
+            width: 44,
+            height: 44,
+            borderRadius: 12,
             border: "1px solid var(--wm-emp-border, rgba(15, 23, 42, 0.08))",
             background: "transparent",
             cursor: "pointer",

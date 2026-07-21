@@ -1,53 +1,49 @@
-// src/features/employer/shiftJobs/storage/demandPlannerStorage.ts
-//
-// Shift Demand Planner storage — crash-safe localStorage (authStore pattern).
+// Job Mitra | demandPlannerStorage.ts | Demand Planner storage (schema v2 + migrate-on-read)
 
+import { ensureDaySlotIdentities, migrateDemandPlanList } from "./demandPlanner.migrate";
+import {
+  DEFAULT_PLANNER_EPOCH_DAYS,
+  DEMAND_PLAN_SCHEMA_VERSION,
+  DEMAND_PLANS_CHANGED_EVENT,
+  DEMAND_PLANS_STORAGE_KEY,
+  type DaySlot,
+  type DemandPlan,
+  type DemandPlanCreateInput,
+} from "./demandPlanner.schema";
 import { plannerDispatchChanged, plannerReadJson, plannerWriteJson } from "./plannerSafeStorage";
-import type { ExperienceLabel } from "../../shiftJobs/storage/employerShift.types";
 
-export type WorkingDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+export type {
+  DaySlot,
+  DemandPlan,
+  DemandPlanCreateInput,
+  DemandPlanStatus,
+  ExperienceLabel,
+  PublishStatus,
+  WorkingDay,
+} from "./demandPlanner.schema";
+export {
+  DEMAND_PLAN_SCHEMA_VERSION,
+  DEFAULT_PLANNER_EPOCH_DAYS,
+  DEMAND_PLANS_STORAGE_KEY,
+  buildPlannerSlotId,
+} from "./demandPlanner.schema";
+export {
+  migrateDemandPlanToV2,
+  migrateDemandPlanList,
+  ensureDaySlotIdentities,
+} from "./demandPlanner.migrate";
 
-export type DaySlot = {
-  date: string;
-  workers: number;
-  payPerDay: number;
-  category?: string;
-  postId?: string;
-};
-
-export type DemandPlanStatus = "draft" | "active" | "completed" | "cancelled";
-export type PublishStatus = "idle" | "publishing" | "published" | "failed";
-
-export type DemandPlan = {
-  id: string;
-  name: string;
-  companyName: string;
-  locationName: string;
-  category: string;
-  experience: ExperienceLabel;
-  startDate: string;
-  endDate: string;
-  workingDays: WorkingDay[];
-  slots: DaySlot[];
-  status: DemandPlanStatus;
-  createdAt: number;
-  updatedAt: number;
-  submittedAt?: number;
-  description?: string;
-  draftStep?: 1 | 2 | 3;
-  publishStatus?: PublishStatus;
-  publishRequestId?: string;
-  publishError?: string;
-  cancelledAt?: number;
-  cancelReason?: string;
-  schemaVersion?: 1;
-};
-
-const KEY = "wm_employer_demand_plans_v1";
-const CHANGED = "wm:employer-demand-plans-changed";
+const KEY = DEMAND_PLANS_STORAGE_KEY;
+const CHANGED = DEMAND_PLANS_CHANGED_EVENT;
 
 function read(): DemandPlan[] {
-  return plannerReadJson<DemandPlan[]>(KEY, []);
+  const raw = plannerReadJson<unknown>(KEY, []);
+  const { plans, changed } = migrateDemandPlanList(raw);
+  if (changed) {
+    plannerWriteJson(KEY, plans);
+    invalidateSortedCache();
+  }
+  return plans;
 }
 
 let sortedPlansCache: DemandPlan[] = [];
@@ -91,7 +87,7 @@ function genId(): string {
 export function generateDates(
   startDate: string,
   endDate: string,
-  workingDays: WorkingDay[],
+  workingDays: import("./demandPlanner.schema").WorkingDay[],
 ): string[] {
   const dates: string[] = [];
   if (!startDate || !endDate || workingDays.length === 0) return dates;
@@ -100,7 +96,7 @@ export function generateDates(
   if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) return dates;
   const cur = new Date(start);
   while (cur <= end && dates.length < 90) {
-    if (workingDays.includes(cur.getDay() as WorkingDay)) {
+    if (workingDays.includes(cur.getDay() as import("./demandPlanner.schema").WorkingDay)) {
       const y = cur.getFullYear();
       const m = String(cur.getMonth() + 1).padStart(2, "0");
       const d = String(cur.getDate()).padStart(2, "0");
@@ -133,17 +129,30 @@ export const demandPlannerStorage = {
     return plan;
   },
 
-  create(data: Omit<DemandPlan, "id" | "createdAt" | "updatedAt" | "status">): string {
+  create(data: DemandPlanCreateInput): string {
     const now = Date.now();
     const id = genId();
+    const slots = ensureDaySlotIdentities(id, data.slots ?? []);
     const plan: DemandPlan = {
       ...data,
       id,
+      slots,
       status: "draft",
       createdAt: now,
       updatedAt: now,
-      publishStatus: "idle",
-      schemaVersion: 1,
+      publishStatus: data.publishStatus ?? "idle",
+      schemaVersion: DEMAND_PLAN_SCHEMA_VERSION,
+      legalEntityMlId: data.legalEntityMlId?.trim() ?? "",
+      siteId: data.siteId?.trim() || undefined,
+      siteManagerId: data.siteManagerId?.trim() || undefined,
+      epochDays:
+        typeof data.epochDays === "number" && data.epochDays > 0
+          ? Math.floor(data.epochDays)
+          : DEFAULT_PLANNER_EPOCH_DAYS,
+      milestoneCursor:
+        typeof data.milestoneCursor === "number" && data.milestoneCursor >= 0
+          ? Math.floor(data.milestoneCursor)
+          : 0,
     };
     write([plan, ...read()].slice(0, 50));
     return id;
@@ -154,7 +163,25 @@ export const demandPlannerStorage = {
     write(
       read().map((p) => {
         if (p.id !== id) return p;
-        updated = { ...p, ...patch, updatedAt: Date.now() };
+        const nextSlots = patch.slots ? ensureDaySlotIdentities(id, patch.slots) : p.slots;
+        updated = {
+          ...p,
+          ...patch,
+          id: p.id,
+          slots: nextSlots,
+          schemaVersion: DEMAND_PLAN_SCHEMA_VERSION,
+          legalEntityMlId:
+            patch.legalEntityMlId !== undefined ? patch.legalEntityMlId.trim() : p.legalEntityMlId,
+          epochDays:
+            typeof patch.epochDays === "number" && patch.epochDays > 0
+              ? Math.floor(patch.epochDays)
+              : p.epochDays,
+          milestoneCursor:
+            typeof patch.milestoneCursor === "number" && patch.milestoneCursor >= 0
+              ? Math.floor(patch.milestoneCursor)
+              : p.milestoneCursor,
+          updatedAt: Date.now(),
+        };
         return updated;
       }),
     );
@@ -171,10 +198,13 @@ export const demandPlannerStorage = {
     write(
       read().map((p) => {
         if (p.id !== id) return p;
-        const slots = p.slots.map((s) => ({
-          ...s,
-          postId: postIds[s.date] ?? s.postId,
-        }));
+        const slots = ensureDaySlotIdentities(
+          id,
+          p.slots.map((s) => ({
+            ...s,
+            postId: postIds[s.date] ?? s.postId,
+          })),
+        );
         result = {
           ...p,
           slots,
@@ -182,6 +212,7 @@ export const demandPlannerStorage = {
           submittedAt: now,
           updatedAt: now,
           publishStatus: "published" as const,
+          schemaVersion: DEMAND_PLAN_SCHEMA_VERSION,
         };
         return result;
       }),
@@ -201,6 +232,7 @@ export const demandPlannerStorage = {
           cancelledAt: now,
           cancelReason: reason,
           updatedAt: now,
+          schemaVersion: DEMAND_PLAN_SCHEMA_VERSION,
         };
         return result;
       }),
@@ -212,6 +244,14 @@ export const demandPlannerStorage = {
     const plan = this.getById(id);
     if (!plan || plan.status !== "draft") return;
     write(read().filter((p) => p.id !== id));
+  },
+
+  /** Force re-read + migrate (tests / ops). */
+  migrateAllFromStorage(): { migratedCount: number } {
+    const raw = plannerReadJson<unknown>(KEY, []);
+    const { plans, migratedCount, changed } = migrateDemandPlanList(raw);
+    if (changed) write(plans);
+    return { migratedCount };
   },
 
   subscribe(cb: () => void): () => void {

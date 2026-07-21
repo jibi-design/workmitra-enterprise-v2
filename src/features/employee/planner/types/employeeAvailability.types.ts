@@ -24,7 +24,12 @@ export type EmployeeAvailabilityDayStatus =
 
 export type EmployeeAvailabilityDay = {
   dateKey: DateKey;
+  /** Legacy dual-write Shift post id when present. */
   postId?: string;
+  /** Planner-owned slot id (P1.7+ apply target). */
+  slotId?: string;
+  /** multiApplyGroup target — real postId or synthetic slotId. */
+  applyTargetId?: string;
   payPerDay: number;
   status: EmployeeAvailabilityDayStatus;
   selectable: boolean;
@@ -47,7 +52,7 @@ export type EmployeeAvailabilitySummary = {
 };
 
 export type EmployeeAvailability = {
-  workerWmId: string;
+  workerMlId: string;
   planId: string;
   planName: string;
   companyName: string;
@@ -61,7 +66,7 @@ export type EmployeeAvailability = {
 };
 
 export type BuildEmployeeAvailabilityInput = {
-  workerWmId: string;
+  workerMlId: string;
   planId: string;
   indexEntry: {
     planName: string;
@@ -69,6 +74,9 @@ export type BuildEmployeeAvailabilityInput = {
     locationName: string;
     slotDates: DateKey[];
     postIdsByDate: Record<DateKey, string>;
+    slotIdsByDate?: Record<DateKey, string>;
+    payByDate?: Record<DateKey, number>;
+    workersByDate?: Record<DateKey, number>;
     payMin: number;
     payMax: number;
     status: "active" | "cancelled";

@@ -2,8 +2,8 @@
 
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
-import type { PlannerPublicIndexEntry } from "../../../employer/planner/storage/plannerPublicIndex.storage";
-import { plannerPublicIndex } from "../../../employer/planner/storage/plannerPublicIndex.storage";
+import type { PlannerPublicIndexEntry } from "../../../shared/planner/plannerPublic";
+import { plannerPublicIndex } from "../../../shared/planner/plannerPublic";
 import { employeePlanEngagementStorage } from "../storage/employeePlanEngagement.storage";
 import { employeeProjectDetailPath } from "../../planner/helpers/plannerEmployeeRoutes";
 import { PlannerPickChooseModal } from "./PlannerPickChooseModal";

@@ -6,6 +6,7 @@ import type { EmploymentRecord } from "../../../../shared/employment/employmentT
 import { ratingStorage } from "../../../../shared/rating/ratingStorage";
 import {
   finalizeVaultCareerHistory,
+  finalizeVaultCareerHistoryOnClosure,
   updateVaultCareerHistoryRatings,
   upsertVaultCareerHistoryOnClosure,
   type VaultCareerHistoryEntry,
@@ -19,14 +20,14 @@ export function recordCareerClosureInVault(
   if (!careerPostId) return null;
 
   const completedAt = record.completedAt ?? Date.now();
-  const employeeWmId = record.employeeWmId?.trim() || record.employeeId?.trim() || "";
+  const employeeMlId = record.employeeMlId?.trim() || record.employeeId?.trim() || "";
 
-  if (!employeeWmId) return null;
+  if (!employeeMlId) return null;
 
   const entry = upsertVaultCareerHistoryOnClosure({
     careerPostId,
     employmentId: record.id,
-    employeeWmId,
+    employeeMlId,
     employeeName: record.employeeName,
     companyName: record.companyName,
     jobTitle: record.jobTitle,
@@ -36,6 +37,7 @@ export function recordCareerClosureInVault(
   });
 
   syncVaultCareerRatingsForPost(careerPostId, record);
+  finalizeVaultCareerHistoryOnClosure(careerPostId);
   return entry;
 }
 
@@ -43,20 +45,20 @@ export function syncVaultCareerRatingsForPost(
   careerPostId: string,
   record: EmploymentRecord,
 ): void {
-  const workerWmId = record.employeeWmId?.trim() || record.employeeId?.trim() || "";
-  const employerWmId = record.employerWmId?.trim() ?? "";
+  const workerMlId = record.employeeMlId?.trim() || record.employeeId?.trim() || "";
+  const employerMlId = record.employerMlId?.trim() ?? "";
 
-  if (!workerWmId || !employerWmId) return;
+  if (!workerMlId || !employerMlId) return;
 
   const workerRating = ratingStorage.getWorkerRatingForJob(
-    workerWmId,
+    workerMlId,
     careerPostId,
-    employerWmId,
+    employerMlId,
   )?.stars;
   const employerRating = ratingStorage.getEmployerRatingForJob(
-    employerWmId,
+    employerMlId,
     careerPostId,
-    workerWmId,
+    workerMlId,
   )?.stars;
 
   updateVaultCareerHistoryRatings(careerPostId, {

@@ -1,7 +1,7 @@
 // Job Mitra | PlannerProjectContextBanner.tsx | Plan day context — shift-safe or planner variant
 
 import { useNavigate } from "react-router-dom";
-import { plannerPublicIndex } from "../../../employer/planner/storage/plannerPublicIndex.storage";
+import { plannerPublicIndex } from "../../../shared/planner/plannerPublic";
 import { employeePlanApplicationSummaryPath } from "../../planner/helpers/plannerEmployeeRoutes";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 

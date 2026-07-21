@@ -1,7 +1,9 @@
 // Job Mitra | plannerStatusStyles.ts | Gig Projects status colors — teal only, never shift green
 
-import type { ShiftApplicationStatus } from "../../shiftJobs/types/shiftApplicationTypes";
-import type { StatusStyle } from "../../shiftJobs/helpers/shiftApplicationHelpers";
+import type {
+  ShiftApplicationStatus,
+  StatusStyle,
+} from "../../../shared/planner/ports/plannerLegacyShiftBridge";
 
 const PLANNER_TEAL = "var(--wm-planner-accent-strong, #0e7490)";
 const PLANNER_TEAL_SOFT = "rgba(8, 145, 178, 0.1)";

@@ -1,8 +1,11 @@
 // Job Mitra | plannerPublicIndex.storage.ts | Employee-visible plan discoverability
+// Hybrid A2 S8 — index from plan slots (slotId/pay/workers); postIds optional (legacy only).
 
-import type { ExperienceLabel } from "../../shiftJobs/storage/employerShift.types";
-import type { DemandPlan } from "./demandPlannerStorage";
-import { getEmployerShiftPosts } from "../../shiftJobs/storage/employerShift.postActions";
+import type { DemandPlan, ExperienceLabel } from "./demandPlannerStorage";
+import { demandPlannerStorage } from "./demandPlannerStorage";
+import { getEmployerShiftPosts } from "../../../shared/planner/ports/plannerLegacyShiftBridge";
+import { countConfirmedPlannerAppsForTarget } from "../../../shared/planner/services/plannerNativeApplication.helpers";
+import { buildPlannerSlotId } from "./demandPlanner.schema";
 import { plannerDispatchChanged, plannerReadJson, plannerWriteJson } from "./plannerSafeStorage";
 
 export type PlannerPublicIndexEntry = {
@@ -17,7 +20,12 @@ export type PlannerPublicIndexEntry = {
   payMin: number;
   payMax: number;
   slotDates: string[];
+  /** Legacy dual-write child post ids only (may be empty after P1.7). */
   postIdsByDate: Record<string, string>;
+  /** Planner-owned slot identities (apply target when no postId). */
+  slotIdsByDate: Record<string, string>;
+  payByDate: Record<string, number>;
+  workersByDate: Record<string, number>;
   publishedAt: number;
   status: "active" | "cancelled";
   schemaVersion: 1;
@@ -50,9 +58,36 @@ function readAllCached(): PlannerPublicIndexEntry[] {
     return allEntriesCache;
   }
   allEntriesCacheKey = cacheKey;
-  allEntriesCache = raw;
+  allEntriesCache = raw.map(normalizeIndexEntry);
   activeEntriesCacheKey = "";
   return allEntriesCache;
+}
+
+function normalizeIndexEntry(entry: PlannerPublicIndexEntry): PlannerPublicIndexEntry {
+  const slotIdsByDate = { ...(entry.slotIdsByDate ?? {}) };
+  const payByDate = { ...(entry.payByDate ?? {}) };
+  const workersByDate = { ...(entry.workersByDate ?? {}) };
+  const postIdsByDate = { ...(entry.postIdsByDate ?? {}) };
+
+  for (const date of entry.slotDates ?? []) {
+    if (!slotIdsByDate[date]) {
+      slotIdsByDate[date] = buildPlannerSlotId(entry.planId, date);
+    }
+    if (payByDate[date] == null) {
+      payByDate[date] = entry.payMin ?? 0;
+    }
+    if (workersByDate[date] == null) {
+      workersByDate[date] = 1;
+    }
+  }
+
+  return {
+    ...entry,
+    postIdsByDate,
+    slotIdsByDate,
+    payByDate,
+    workersByDate,
+  };
 }
 
 function getActiveEntriesCached(): PlannerPublicIndexEntry[] {
@@ -69,10 +104,30 @@ function getActiveEntriesCached(): PlannerPublicIndexEntry[] {
 function countOpenDays(plan: DemandPlan): number {
   let open = 0;
   for (const slot of plan.slots) {
-    if (!slot.postId || slot.workers <= 0) continue;
-    const post = getEmployerShiftPosts().find((p) => p.id === slot.postId);
-    if (!post) continue;
-    if (post.confirmedIds.length < post.vacancies) open += 1;
+    if (slot.workers <= 0) continue;
+
+    if (slot.postId) {
+      const post = getEmployerShiftPosts().find((p) => p.id === slot.postId);
+      if (!post) {
+        // Native / missing post: use planner app counts against slot capacity.
+        const targetId = slot.slotId ?? buildPlannerSlotId(plan.id, slot.date);
+        const confirmed = countConfirmedPlannerAppsForTarget({
+          planId: plan.id,
+          targetId,
+        });
+        if (confirmed < slot.workers) open += 1;
+        continue;
+      }
+      if (post.confirmedIds.length < post.vacancies) open += 1;
+      continue;
+    }
+
+    const targetId = slot.slotId ?? buildPlannerSlotId(plan.id, slot.date);
+    const confirmed = countConfirmedPlannerAppsForTarget({
+      planId: plan.id,
+      targetId,
+    });
+    if (confirmed < slot.workers) open += 1;
   }
   return open;
 }
@@ -102,12 +157,21 @@ export const plannerPublicIndex = {
     const payMin = pays.length > 0 ? Math.min(...pays) : 0;
     const payMax = pays.length > 0 ? Math.max(...pays) : 0;
     const postIdsByDate: Record<string, string> = {};
+    const slotIdsByDate: Record<string, string> = {};
+    const payByDate: Record<string, number> = {};
+    const workersByDate: Record<string, number> = {};
     const slotDates: string[] = [];
 
     for (const slot of plan.slots) {
-      if (!slot.postId) continue;
-      postIdsByDate[slot.date] = slot.postId;
+      if (slot.workers <= 0) continue;
+      const slotId = slot.slotId ?? buildPlannerSlotId(plan.id, slot.date);
       slotDates.push(slot.date);
+      slotIdsByDate[slot.date] = slotId;
+      payByDate[slot.date] = slot.payPerDay;
+      workersByDate[slot.date] = slot.workers;
+      if (slot.postId) {
+        postIdsByDate[slot.date] = slot.postId;
+      }
     }
 
     const entry: PlannerPublicIndexEntry = {
@@ -123,6 +187,9 @@ export const plannerPublicIndex = {
       payMax,
       slotDates,
       postIdsByDate,
+      slotIdsByDate,
+      payByDate,
+      workersByDate,
       publishedAt: Date.now(),
       status: "active",
       schemaVersion: 1,
@@ -137,14 +204,10 @@ export const plannerPublicIndex = {
     const idx = all.findIndex((e) => e.planId === planId);
     if (idx < 0) return;
 
-    const plan = { id: planId, slots: [] as DemandPlan["slots"] } as DemandPlan;
-    const stored = all[idx];
-    for (const date of stored.slotDates) {
-      const postId = stored.postIdsByDate[date];
-      if (postId) plan.slots.push({ date, workers: 1, payPerDay: 0, postId });
-    }
+    const plan = demandPlannerStorage.getById(planId);
+    if (!plan) return;
 
-    all[idx] = { ...stored, openDayCount: countOpenDays(plan) };
+    all[idx] = { ...all[idx]!, openDayCount: countOpenDays(plan) };
     writeAll(all);
   },
 

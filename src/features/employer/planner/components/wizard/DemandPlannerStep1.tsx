@@ -1,6 +1,6 @@
 // Job Mitra | DemandPlannerStep1.tsx | Step 1 — Role & Team
 
-import type { ExperienceLabel } from "../../../shiftJobs/storage/employerShift.storage";
+import type { ExperienceLabel } from "../../storage/demandPlannerStorage";
 import type { Step1Data } from "./DemandPlannerStep1.types";
 
 export type { Step1Data } from "./DemandPlannerStep1.types";

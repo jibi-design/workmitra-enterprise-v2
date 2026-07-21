@@ -1,37 +1,9 @@
-// Job Mitra | EmployeePlannerWorkspacesPage.tsx | Gig project workspaces only
+/** Job Mitra | EmployeePlannerWorkspacesPage.tsx | S7 — redirect to native workspace hub */
 
-import { MyShiftWorkspacesHeader } from "../../shiftJobs/components/MyShiftWorkspacesHeader";
-import { MyShiftWorkspacesList } from "../../shiftJobs/components/MyShiftWorkspacesList";
-import { MyShiftWorkspacesSearch } from "../../shiftJobs/components/MyShiftWorkspacesSearch";
-import { MyShiftWorkspacesTabs } from "../../shiftJobs/components/MyShiftWorkspacesTabs";
-import { useMyShiftWorkspacesState } from "../../shiftJobs/hooks/useMyShiftWorkspacesState";
+import { Navigate } from "react-router-dom";
+import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 
+/** Compat list path → canonical roster hub (Zero Soft-Wrappers). */
 export function EmployeePlannerWorkspacesPage() {
-  const {
-    tab,
-    query,
-    counts,
-    filteredWorkspaces,
-    setTab,
-    setQuery,
-    openFindShifts,
-    openWorkspace,
-  } = useMyShiftWorkspacesState("planner");
-
-  return (
-    <div className="wm-ee-vPlanner wm-planner-page">
-      <MyShiftWorkspacesHeader domain="planner" onFindShifts={openFindShifts} />
-
-      <MyShiftWorkspacesSearch query={query} onQueryChange={setQuery} />
-
-      <MyShiftWorkspacesTabs tab={tab} counts={counts} onTabChange={setTab} domain="planner" />
-
-      <MyShiftWorkspacesList
-        tab={tab}
-        workspaces={filteredWorkspaces}
-        onOpenWorkspace={openWorkspace}
-        domain="planner"
-      />
-    </div>
-  );
+  return <Navigate to={ROUTE_PATHS.employeePlannerWorkspaceHub} replace />;
 }

@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import { PageHeader, Section } from "../../../../shared/components/layout/EnterpriseLayout";
-import { ShiftToast } from "../../shiftJobs/components/ShiftPostDetailSections";
 import { PlannerMegaProjectSection } from "../components/PlannerMegaProjectSection";
 import { PlannerProfileGateModal } from "../components/PlannerProfileGateModal";
-import { isProfileComplete } from "../../shiftJobs/helpers/shiftSearchHelpers";
+import { isProfileComplete } from "../../../shared/planner/ports/plannerLegacyShiftBridge";
 
 export function EmployeePlannerBrowsePage() {
   const [profileGateOpen, setProfileGateOpen] = useState(false);
@@ -29,7 +28,32 @@ export function EmployeePlannerBrowsePage() {
       </Section>
 
       <PlannerProfileGateModal open={profileGateOpen} onClose={() => setProfileGateOpen(false)} />
-      <ShiftToast message={toast} />
+
+      {toast ? (
+        <div
+          role="status"
+          data-testid="planner-browse-toast"
+          onClick={() => setToast("")}
+          style={{
+            position: "fixed",
+            left: 16,
+            right: 16,
+            bottom: 24,
+            zIndex: 40,
+            margin: "0 auto",
+            maxWidth: 420,
+            padding: "12px 14px",
+            borderRadius: 14,
+            background: "#0f172a",
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: 13,
+            cursor: "pointer",
+          }}
+        >
+          {toast}
+        </div>
+      ) : null}
     </div>
   );
 }

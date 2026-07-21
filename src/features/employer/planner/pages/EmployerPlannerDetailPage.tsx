@@ -1,18 +1,19 @@
-// Job Mitra | EmployerPlannerDetailPage.tsx | P1 minimum plan detail
+// Job Mitra | EmployerPlannerDetailPage.tsx — facade
 
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
-import { fmtPlanDate, demandPlannerStorage } from "../storage/demandPlannerStorage";
-import {
-  formatPlannerPayPerDay,
-  formatPlannerPayTotal,
-} from "../helpers/plannerPayDisplay.helpers";
+import { demandPlannerStorage } from "../storage/demandPlannerStorage";
 import { plannerPublicIndex } from "../storage/plannerPublicIndex.storage";
-import { employerShiftStorage } from "../../shiftJobs/storage/employerShift.storage";
+import { employerShiftStorage } from "../../../shared/planner/ports/plannerLegacyShiftBridge";
 import { broadcastToPlanCrew } from "../services/planBroadcast.service";
 import { cancelActivePlan } from "../services/plannerCancel.service";
 import { planBroadcastGroupStorage } from "../storage/planBroadcastGroup.storage";
+import {
+  PlannerDetailBroadcastSection,
+  PlannerDetailBudgetSection,
+  PlannerDetailDaysSection,
+} from "./EmployerPlannerDetailPage.parts";
 
 export function EmployerPlannerDetailPage() {
   const { planId = "" } = useParams();
@@ -39,7 +40,7 @@ export function EmployerPlannerDetailPage() {
     () => demandPlannerStorage.getById(planId),
   );
 
-  const crewCount = planBroadcastGroupStorage.getByPlanId(planId)?.memberWorkerWmIds.length ?? 0;
+  const crewCount = planBroadcastGroupStorage.getByPlanId(planId)?.memberWorkerMlIds.length ?? 0;
   const publicEntry = plannerPublicIndex.getByPlanId(planId);
   const estBudget = plan?.slots.reduce((sum, s) => sum + s.workers * s.payPerDay, 0) ?? 0;
   const firstOpenPostId = plan?.slots.find((s) => s.postId)?.postId;
@@ -186,97 +187,16 @@ export function EmployerPlannerDetailPage() {
         </div>
       </div>
 
-      <div className="wm-planner-card">
-        <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 8 }}>Budget snapshot</div>
-        <div style={{ fontSize: 12, color: "var(--wm-neutral-500)" }}>
-          Estimated plan budget:{" "}
-          <strong style={{ color: "var(--wm-planner-accent-strong)" }}>
-            {formatPlannerPayTotal(estBudget)}
-          </strong>
-          {" · "}Full ledger in Finance tab (P3)
-        </div>
-      </div>
-
-      <div className="wm-planner-card">
-        <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 10 }}>Plan days</div>
-        {plan.slots.map((slot) => {
-          const post = slot.postId
-            ? employerShiftStorage.getPosts().find((p) => p.id === slot.postId)
-            : null;
-          const confirmed = post?.confirmedIds.length ?? 0;
-          const vacancies = post?.vacancies ?? slot.workers;
-          return (
-            <div
-              key={slot.date}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 8,
-                padding: "8px 0",
-                borderBottom: "1px solid var(--wm-neutral-100)",
-              }}
-            >
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700 }}>{fmtPlanDate(slot.date)}</div>
-                <div style={{ fontSize: 11, color: "var(--wm-neutral-500)" }}>
-                  {confirmed}/{vacancies} filled · {formatPlannerPayPerDay(slot.payPerDay)}
-                </div>
-              </div>
-              {slot.postId && (
-                <button
-                  type="button"
-                  className="wm-planner-btnGhost"
-                  onClick={() =>
-                    nav(ROUTE_PATHS.employerShiftPostDashboard.replace(":postId", slot.postId!))
-                  }
-                >
-                  View Post
-                </button>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="wm-planner-card">
-        <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 8 }}>
-          Broadcast to Project Crew
-        </div>
-        <p style={{ fontSize: 11, color: "var(--wm-neutral-500)", marginBottom: 8 }}>
-          BCC model — each worker receives your message privately. Workers cannot see or message
-          each other.
-        </p>
-        <input
-          value={broadcastTitle}
-          onChange={(e) => setBroadcastTitle(e.target.value)}
-          placeholder="Title"
-          style={{
-            width: "100%",
-            marginBottom: 8,
-            padding: 10,
-            borderRadius: 10,
-            border: "1px solid var(--wm-planner-border)",
-          }}
-        />
-        <textarea
-          value={broadcastBody}
-          onChange={(e) => setBroadcastBody(e.target.value)}
-          placeholder="Message to entire project crew"
-          rows={3}
-          style={{
-            width: "100%",
-            marginBottom: 8,
-            padding: 10,
-            borderRadius: 10,
-            border: "1px solid var(--wm-planner-border)",
-          }}
-        />
-        <button type="button" className="wm-planner-btnPrimary" onClick={handleBroadcast}>
-          Send crew broadcast
-        </button>
-        {broadcastMsg && <div style={{ marginTop: 8, fontSize: 12 }}>{broadcastMsg}</div>}
-      </div>
+      <PlannerDetailBudgetSection estBudget={estBudget} />
+      <PlannerDetailDaysSection plan={plan} onNavigate={nav} />
+      <PlannerDetailBroadcastSection
+        broadcastTitle={broadcastTitle}
+        broadcastBody={broadcastBody}
+        broadcastMsg={broadcastMsg}
+        onBroadcastTitleChange={setBroadcastTitle}
+        onBroadcastBodyChange={setBroadcastBody}
+        onBroadcast={handleBroadcast}
+      />
 
       <div className="wm-planner-card" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         <button

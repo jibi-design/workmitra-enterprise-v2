@@ -3,9 +3,29 @@
 /**
  * Job Mitra Rating & Trust System — Core Types.
  * Two-way mandatory rating: Employer → Worker + Worker → Employer.
- * Permanent, linked to Job Mitra ID. Cannot delete/reset/fake.
+ * Permanent, linked to Mitra Labs ID. Cannot delete/reset/fake.
+ *
+ * Hybrid A2 P1.5: RatingDomain includes "planner".
+ * Reputation subject for planner = legal corporate entity (`employerMlId`).
+ * `siteManagerId` / `siteId` are telemetry only (never replace entity score).
  */
-export type RatingDomain = "shift" | "career";
+export type RatingDomain = "shift" | "career" | "planner";
+
+/**
+ * Planner-only metadata. Never use siteManagerId as the reputation subject.
+ * jobId for planner ratings should be the roster plan id (or epoch-scoped plan key).
+ */
+export type RatingPlannerMeta = {
+  /** Always the roster / demand plan id. */
+  rosterPlanId: string;
+  /** 0-based epoch index when rating a milestone summary. */
+  epochIndex?: number;
+  /** Telemetry only — site supervisor Mitra Labs ID. */
+  siteManagerId?: string;
+  /** Telemetry only — site / location entity. */
+  siteId?: string;
+  assignmentId?: string;
+};
 
 export type EmployerWorkerTag =
   | "On time"
@@ -19,11 +39,14 @@ export type EmployerWorkerTag =
 export type EmployerToWorkerRating = {
   id: string;
   domain: RatingDomain;
-  /** Employer's unique ID */
-  employerWmId: string;
+  /**
+   * Reputation subject Mitra Labs ID.
+   * For planner: must be the legal corporate entity (agency/enterprise), never site manager.
+   */
+  employerMlId: string;
   /** Worker's unique ID */
-  workerWmId: string;
-  /** Shift post ID or Career job ID */
+  workerMlId: string;
+  /** Shift post ID, Career job ID, or Planner plan/epoch job key */
   jobId: string;
   stars: 1 | 2 | 3 | 4 | 5;
   tags: EmployerWorkerTag[];
@@ -32,6 +55,8 @@ export type EmployerToWorkerRating = {
   createdAt: number;
   editedAt: number | null;
   editCount: number;
+  /** Present when domain === "planner". */
+  meta?: RatingPlannerMeta;
 };
 
 export type WorkerEmployerTag =
@@ -46,10 +71,13 @@ export type WorkerToEmployerRating = {
   id: string;
   domain: RatingDomain;
   /** Worker's unique ID */
-  workerWmId: string;
-  /** Employer's unique ID */
-  employerWmId: string;
-  /** Shift post ID or Career job ID */
+  workerMlId: string;
+  /**
+   * Reputation subject Mitra Labs ID.
+   * For planner: legal corporate entity only.
+   */
+  employerMlId: string;
+  /** Shift post ID, Career job ID, or Planner plan/epoch job key */
   jobId: string;
   stars: 1 | 2 | 3 | 4 | 5;
   tags: WorkerEmployerTag[];
@@ -58,6 +86,8 @@ export type WorkerToEmployerRating = {
   createdAt: number;
   editedAt: number | null;
   editCount: number;
+  /** Present when domain === "planner". */
+  meta?: RatingPlannerMeta;
 };
 
 export type RatingLevel = "bronze" | "silver" | "gold" | "platinum";
@@ -87,7 +117,7 @@ export type PointsHistoryEntry = {
 };
 
 export type WorkerPoints = {
-  workerWmId: string;
+  workerMlId: string;
   total: number;
   level: RatingLevel;
   history: PointsHistoryEntry[];
@@ -95,7 +125,7 @@ export type WorkerPoints = {
 };
 
 export type WorkerRatingSummary = {
-  workerWmId: string;
+  workerMlId: string;
   totalRatings: number;
   averageStars: number;
   tagCounts: Record<EmployerWorkerTag, number>;
@@ -106,7 +136,7 @@ export type WorkerRatingSummary = {
 };
 
 export type EmployerRatingSummary = {
-  employerWmId: string;
+  employerMlId: string;
   totalRatings: number;
   averageStars: number;
   tagCounts: Record<WorkerEmployerTag, number>;

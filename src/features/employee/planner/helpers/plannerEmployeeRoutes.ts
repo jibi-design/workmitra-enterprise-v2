@@ -13,3 +13,11 @@ export function employeeProjectApplyPath(planId: string): string {
 export function employeePlanApplicationSummaryPath(planId: string): string {
   return ROUTE_PATHS.employeePlannerPlanApplicationSummary.replace(":planId", planId);
 }
+
+export function employeePlannerDiscoverPath(): string {
+  return ROUTE_PATHS.employeePlannerDiscover;
+}
+
+export function employeePlannerWorkspaceHubPath(): string {
+  return ROUTE_PATHS.employeePlannerWorkspaceHub;
+}

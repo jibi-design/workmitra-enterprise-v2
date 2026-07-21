@@ -1,7 +1,9 @@
 // Job Mitra | plannerDomainFilters.ts | Separate Gig Projects from Shift Jobs
 
-import type { ShiftApplicationData } from "../../shiftJobs/types/shiftApplicationTypes";
-import type { ShiftWorkspace } from "../../shiftJobs/types/shiftWorkspace.types";
+import type {
+  ShiftApplicationData,
+  ShiftWorkspace,
+} from "../../../shared/planner/ports/plannerLegacyShiftBridge";
 
 export function isPlannerApplication(app: ShiftApplicationData): boolean {
   return Boolean(app.planId || app.planApplyBatchId);

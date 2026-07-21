@@ -1,7 +1,10 @@
 // Job Mitra | employeeAvailability.service.ts | Section 6.11 / 8.11
+// Hybrid A2 S8 — native slot days when no dual-write ShiftPost exists.
 
-import { getEmployerShiftPosts } from "../../../employer/shiftJobs/storage/employerShift.postActions";
-import { isAlreadyApplied } from "../../shiftJobs/helpers/shiftSearchHelpers";
+import {
+  getEmployerShiftPostsPublic as getEmployerShiftPosts,
+  isAlreadyApplied,
+} from "../../../shared/planner/ports/plannerLegacyShiftBridge";
 import { getShiftDayConflict } from "../helpers/plannerDayConflict.helpers";
 import type {
   BuildEmployeeAvailabilityInput,
@@ -13,7 +16,7 @@ import type {
 
 const APPS_KEY = "wm_employee_shift_applications_v1";
 
-function readAppForPost(postId: string): { id: string; status: string } | null {
+function readAppForTarget(targetId: string): { id: string; status: string } | null {
   try {
     const raw = localStorage.getItem(APPS_KEY);
     if (!raw) return null;
@@ -22,7 +25,7 @@ function readAppForPost(postId: string): { id: string; status: string } | null {
     for (const item of parsed) {
       if (typeof item !== "object" || item === null) continue;
       const rec = item as Record<string, unknown>;
-      if (rec.postId === postId) {
+      if (rec.postId === targetId) {
         return {
           id: String(rec.id ?? ""),
           status: String(rec.status ?? "applied"),
@@ -48,17 +51,22 @@ function summarize(days: EmployeeAvailabilityDay[]): EmployeeAvailabilitySummary
   };
 }
 
-function buildDay(
-  dateKey: string,
-  postId: string | undefined,
-  indexStatus: "active" | "cancelled",
-  workerWmId: string,
-  now: number,
-): EmployeeAvailabilityDay {
+function buildDayFromPost(args: {
+  dateKey: string;
+  postId: string;
+  slotId?: string;
+  indexStatus: "active" | "cancelled";
+  workerMlId: string;
+  now: number;
+}): EmployeeAvailabilityDay {
+  const { dateKey, postId, slotId, indexStatus, workerMlId, now } = args;
+
   if (indexStatus === "cancelled") {
     return {
       dateKey,
       postId,
+      slotId,
+      applyTargetId: postId,
       payPerDay: 0,
       status: "cancelled",
       selectable: false,
@@ -71,18 +79,21 @@ function buildDay(
     return {
       dateKey,
       postId,
+      slotId,
+      applyTargetId: postId,
       payPerDay: 0,
       status: "past",
       selectable: false,
     };
   }
 
-  const post = postId ? getEmployerShiftPosts().find((p) => p.id === postId) : null;
-
+  const post = getEmployerShiftPosts().find((p) => p.id === postId);
   if (!post || post.status === "cancelled") {
     return {
       dateKey,
       postId,
+      slotId,
+      applyTargetId: postId,
       payPerDay: 0,
       status: "cancelled",
       selectable: false,
@@ -95,8 +106,8 @@ function buildDay(
   const vacanciesRemaining = Math.max(0, vacancies - confirmed);
   const full = vacancies > 0 && confirmed >= vacancies;
 
-  const app = postId ? readAppForPost(postId) : null;
-  const conflict = getShiftDayConflict(dateKey, workerWmId, postId);
+  const app = readAppForTarget(postId);
+  const conflict = getShiftDayConflict(dateKey, workerMlId, postId);
 
   let status: EmployeeAvailabilityDayStatus = "open";
   if (conflict) status = "conflict";
@@ -104,7 +115,7 @@ function buildDay(
     status = "confirmed";
   else if (app?.status === "shortlisted") status = "shortlisted";
   else if (app?.status === "waiting") status = "waiting";
-  else if (app || (postId && isAlreadyApplied(postId))) status = "applied";
+  else if (app || isAlreadyApplied(postId)) status = "applied";
   else if (full) status = "full";
 
   const selectable = status === "open" && !conflict;
@@ -112,6 +123,8 @@ function buildDay(
   return {
     dateKey,
     postId,
+    slotId,
+    applyTargetId: postId,
     payPerDay,
     status,
     selectable,
@@ -133,24 +146,157 @@ function buildDay(
   };
 }
 
+function buildDayNative(args: {
+  dateKey: string;
+  slotId: string;
+  payPerDay: number;
+  workers: number;
+  indexStatus: "active" | "cancelled";
+  workerMlId: string;
+  now: number;
+}): EmployeeAvailabilityDay {
+  const { dateKey, slotId, payPerDay, workers, indexStatus, workerMlId, now } = args;
+
+  if (indexStatus === "cancelled") {
+    return {
+      dateKey,
+      slotId,
+      applyTargetId: slotId,
+      payPerDay: 0,
+      status: "cancelled",
+      selectable: false,
+      badges: [],
+    };
+  }
+
+  const dayStart = new Date(`${dateKey}T00:00:00`).getTime();
+  if (dayStart < new Date(now).setHours(0, 0, 0, 0)) {
+    return {
+      dateKey,
+      slotId,
+      applyTargetId: slotId,
+      payPerDay: 0,
+      status: "past",
+      selectable: false,
+    };
+  }
+
+  const app = readAppForTarget(slotId);
+  const conflict = getShiftDayConflict(dateKey, workerMlId, slotId);
+
+  let confirmedCount = 0;
+  try {
+    const raw = localStorage.getItem(APPS_KEY);
+    const parsed: unknown = raw ? JSON.parse(raw) : [];
+    if (Array.isArray(parsed)) {
+      confirmedCount = parsed.filter((item) => {
+        if (typeof item !== "object" || item === null) return false;
+        const rec = item as Record<string, unknown>;
+        return rec.postId === slotId && rec.status === "confirmed";
+      }).length;
+    }
+  } catch {
+    /* safe */
+  }
+
+  const vacanciesRemaining = Math.max(0, workers - confirmedCount);
+  const full = workers > 0 && confirmedCount >= workers;
+
+  let status: EmployeeAvailabilityDayStatus = "open";
+  if (conflict) status = "conflict";
+  else if (app?.status === "confirmed") status = "confirmed";
+  else if (app?.status === "shortlisted") status = "shortlisted";
+  else if (app?.status === "waiting") status = "waiting";
+  else if (app || isAlreadyApplied(slotId)) status = "applied";
+  else if (full) status = "full";
+
+  const selectable = status === "open" && !conflict;
+
+  return {
+    dateKey,
+    slotId,
+    applyTargetId: slotId,
+    payPerDay,
+    status,
+    selectable,
+    vacanciesTotal: workers,
+    vacanciesRemaining,
+    conflict: conflict ?? undefined,
+    applicationId: app?.id,
+    applicationStatus: app?.status,
+    badges:
+      status === "full"
+        ? ["full"]
+        : status === "applied"
+          ? ["applied"]
+          : status === "confirmed"
+            ? ["confirmed"]
+            : status === "conflict"
+              ? ["conflict"]
+              : [],
+  };
+}
+
 export const employeeAvailabilityService = {
   build(input: BuildEmployeeAvailabilityInput): EmployeeAvailability {
     const now = input.now ?? Date.now();
     const slotDates = [...input.indexEntry.slotDates].sort();
-    const days = slotDates.map((dateKey) =>
-      buildDay(
+    const days = slotDates.map((dateKey) => {
+      const postId = input.indexEntry.postIdsByDate[dateKey];
+      const slotId =
+        input.indexEntry.slotIdsByDate?.[dateKey] ??
+        (postId?.startsWith("sl_") ? postId : undefined);
+      const pay = input.indexEntry.payByDate?.[dateKey] ?? input.indexEntry.payMin ?? 0;
+      const workers = input.indexEntry.workersByDate?.[dateKey] ?? 1;
+
+      if (postId) {
+        const post = getEmployerShiftPosts().find((p) => p.id === postId);
+        if (post) {
+          return buildDayFromPost({
+            dateKey,
+            postId,
+            slotId,
+            indexStatus: input.indexEntry.status,
+            workerMlId: input.workerMlId,
+            now,
+          });
+        }
+        // Indexed postId missing in Shift store → treat as native target id.
+        return buildDayNative({
+          dateKey,
+          slotId: postId,
+          payPerDay: pay,
+          workers,
+          indexStatus: input.indexEntry.status,
+          workerMlId: input.workerMlId,
+          now,
+        });
+      }
+
+      if (!slotId) {
+        return {
+          dateKey,
+          payPerDay: 0,
+          status: "unavailable" as const,
+          selectable: false,
+        };
+      }
+
+      return buildDayNative({
         dateKey,
-        input.indexEntry.postIdsByDate[dateKey],
-        input.indexEntry.status,
-        input.workerWmId,
+        slotId,
+        payPerDay: pay,
+        workers,
+        indexStatus: input.indexEntry.status,
+        workerMlId: input.workerMlId,
         now,
-      ),
-    );
+      });
+    });
 
     const selectedDateKeys = input.initialSelectedDateKeys ?? [];
 
     return {
-      workerWmId: input.workerWmId,
+      workerMlId: input.workerMlId,
       planId: input.planId,
       planName: input.indexEntry.planName,
       companyName: input.indexEntry.companyName,

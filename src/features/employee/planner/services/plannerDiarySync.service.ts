@@ -1,10 +1,12 @@
 // Job Mitra | plannerDiarySync.service.ts | Section 6.10.4
 
-import type { ShiftPost } from "../../../employer/shiftJobs/storage/employerShift.types";
-import type { EmployeeShiftApplication } from "../../../employer/shiftJobs/storage/employerShift.types";
-import { findWorkspaceIdForPostAndWorker } from "../../../employer/shiftJobs/helpers/directInviteWorkspace.helpers";
-import { readPlannerPublicPlanName } from "../../../employer/planner/storage/plannerPublicIndex.read";
-import { personalCalendarShiftStorage } from "../../shiftJobs/storage/personalCalendarShift.storage";
+import type {
+  ShiftPostPublic as ShiftPost,
+  EmployeeShiftApplicationPublic as EmployeeShiftApplication,
+} from "../../../shared/planner/ports/plannerLegacyShiftBridge";
+import { findWorkspaceIdForPostAndWorkerPublic as findWorkspaceIdForPostAndWorker } from "../../../shared/planner/ports/plannerLegacyShiftBridge";
+import { readPlannerPublicPlanName } from "../../../shared/planner/plannerPublic";
+import { personalCalendarShiftStorage } from "../../../shared/planner/ports/plannerLegacyShiftBridge";
 
 function dateKeyFromPost(startAt: number): string {
   const d = new Date(startAt);
@@ -20,11 +22,11 @@ export const plannerDiarySyncService = {
   upsertConfirmedDay(post: ShiftPost, application: EmployeeShiftApplication): DiaryUpsertResult {
     if (post.source !== "planner" || !post.planId) return { ok: true };
 
-    const workerWmId = application.profileSnapshot?.uniqueId?.trim();
-    if (!workerWmId) return { ok: true };
+    const workerMlId = application.profileSnapshot?.uniqueId?.trim();
+    if (!workerMlId) return { ok: true };
 
     const planName = readPlannerPublicPlanName(post.planId) ?? post.jobName;
-    const workspaceId = findWorkspaceIdForPostAndWorker(post.id, workerWmId) ?? undefined;
+    const workspaceId = findWorkspaceIdForPostAndWorker(post.id, workerMlId) ?? undefined;
 
     try {
       personalCalendarShiftStorage.upsert({

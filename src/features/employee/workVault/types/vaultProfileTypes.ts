@@ -35,6 +35,8 @@ export type VaultWorkStats = {
   totalCareerPositions: number;
   verifiedPositions: number;
   totalShiftsCompleted: number;
+  /** Finalized + open planner epoch summaries (Hybrid A2 P1.4). */
+  totalPlannerEpochs: number;
   totalWorkforceCompanies: number;
   totalCompaniesWorked: number;
 };
@@ -75,7 +77,7 @@ export type VaultPerformanceRecord = {
 export type VaultReference = {
   companyName: string;
   rating: number;
-  source: "shift" | "workforce" | "career";
+  source: "shift" | "workforce" | "career" | "planner";
   jobId?: string;
   jobTitle?: string;
   comment?: string;

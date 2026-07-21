@@ -1,3 +1,7 @@
+// WARNING DEC-012 / MIG-008: Client-side OTP path (plaintext)
+// Server OTP path (Argon2 hashed) exists at server/modules/vault/
+// This client path MUST BE REMOVED before production cutover
+// See architecture-audits/Phase-DB-Migration-Readiness-Audit-001.md
 // src/features/employee/workVault/components/VaultDocumentsTab.tsx
 
 import { useNavigate } from "react-router-dom";
@@ -9,9 +13,7 @@ import { IconPlus } from "./vaultHomeIcons";
 /* ------------------------------------------------ */
 /* System folder names (cannot delete)              */
 /* ------------------------------------------------ */
-const SYSTEM_FOLDER_NAMES = new Set(
-  DEFAULT_FOLDER_SUGGESTIONS.map((s) => s.name),
-);
+const SYSTEM_FOLDER_NAMES = new Set(DEFAULT_FOLDER_SUGGESTIONS.map((s) => s.name));
 
 /* ------------------------------------------------ */
 /* Props                                            */
@@ -42,7 +44,6 @@ export function VaultDocumentsTab({
 
   return (
     <div style={{ marginTop: 12 }}>
-
       {/* Privacy Guide */}
       <div
         style={{
@@ -58,13 +59,17 @@ export function VaultDocumentsTab({
           Your documents are private
         </div>
         <div style={{ fontSize: 12, color: "var(--wm-emp-muted)" }}>
-          <span style={{ fontWeight: 700, color: "var(--wm-emp-text)" }}>Visible</span> — employers can view this folder only with your OTP permission.
+          <span style={{ fontWeight: 700, color: "var(--wm-emp-text)" }}>Visible</span> — employers
+          can view this folder only with your OTP permission.
         </div>
         <div style={{ fontSize: 12, color: "var(--wm-emp-muted)", marginTop: 4 }}>
-          <span style={{ fontWeight: 700, color: "var(--wm-emp-text)" }}>Hidden</span> — completely invisible to employers, even with OTP.
+          <span style={{ fontWeight: 700, color: "var(--wm-emp-text)" }}>Hidden</span> — completely
+          invisible to employers, even with OTP.
         </div>
         <div style={{ fontSize: 12, color: "var(--wm-emp-muted)", marginTop: 4 }}>
-          <span style={{ fontWeight: 700, color: "var(--wm-emp-text)" }}>OTP</span> — a 6-digit code you share with an employer. They can view your visible documents for 30 minutes only. You can revoke access anytime.
+          <span style={{ fontWeight: 700, color: "var(--wm-emp-text)" }}>OTP</span> — a 6-digit code
+          you share with an employer. They can view your visible documents for 30 minutes only. You
+          can revoke access anytime.
         </div>
       </div>
 
@@ -95,9 +100,15 @@ export function VaultDocumentsTab({
             type="button"
             onClick={() => onBulkVisibility("visible")}
             style={{
-              height: 28, padding: "0 10px", borderRadius: 8,
-              border: "1px solid rgba(22, 163, 74, 0.25)", background: "rgba(22, 163, 74, 0.08)",
-              color: "#15803d", fontSize: 11, fontWeight: 700, cursor: "pointer",
+              height: 28,
+              padding: "0 10px",
+              borderRadius: 8,
+              border: "1px solid rgba(22, 163, 74, 0.25)",
+              background: "rgba(22, 163, 74, 0.08)",
+              color: "#15803d",
+              fontSize: 11,
+              fontWeight: 700,
+              cursor: "pointer",
             }}
           >
             Show All
@@ -106,9 +117,15 @@ export function VaultDocumentsTab({
             type="button"
             onClick={() => onBulkVisibility("hidden")}
             style={{
-              height: 28, padding: "0 10px", borderRadius: 8,
-              border: "1px solid rgba(220, 38, 38, 0.25)", background: "rgba(220, 38, 38, 0.08)",
-              color: "#dc2626", fontSize: 11, fontWeight: 700, cursor: "pointer",
+              height: 28,
+              padding: "0 10px",
+              borderRadius: 8,
+              border: "1px solid rgba(220, 38, 38, 0.25)",
+              background: "rgba(220, 38, 38, 0.08)",
+              color: "#dc2626",
+              fontSize: 11,
+              fontWeight: 700,
+              cursor: "pointer",
             }}
           >
             Hide All
@@ -122,10 +139,19 @@ export function VaultDocumentsTab({
           type="button"
           onClick={onCreateFolder}
           style={{
-            flex: 1, height: 44, borderRadius: 12, border: "none",
-            background: VAULT_ACCENT, color: "#fff", fontWeight: 700,
-            fontSize: 14, cursor: "pointer", display: "flex",
-            alignItems: "center", justifyContent: "center", gap: 8,
+            flex: 1,
+            height: 44,
+            borderRadius: 12,
+            border: "none",
+            background: VAULT_ACCENT,
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: 14,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
           }}
         >
           <IconPlus /> New Folder
@@ -134,11 +160,19 @@ export function VaultDocumentsTab({
           type="button"
           onClick={() => nav("/employee/vault/otp")}
           style={{
-            flex: 1, height: 44, borderRadius: 12,
-            border: `1.5px solid ${VAULT_ACCENT}`, background: "transparent",
-            color: VAULT_ACCENT, fontWeight: 700, fontSize: 14,
-            cursor: "pointer", display: "flex", alignItems: "center",
-            justifyContent: "center", gap: 6,
+            flex: 1,
+            height: 44,
+            borderRadius: 12,
+            border: `1.5px solid ${VAULT_ACCENT}`,
+            background: "transparent",
+            color: VAULT_ACCENT,
+            fontWeight: 700,
+            fontSize: 14,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
           }}
         >
           Generate OTP
@@ -150,11 +184,19 @@ export function VaultDocumentsTab({
         type="button"
         onClick={() => nav("/employee/vault/access-log")}
         style={{
-          width: "100%", marginTop: 8, padding: "10px 16px", borderRadius: 12,
+          width: "100%",
+          marginTop: 8,
+          padding: "10px 16px",
+          borderRadius: 12,
           border: "1px solid var(--wm-emp-border, rgba(15, 23, 42, 0.08))",
-          background: "#fff", cursor: "pointer", display: "flex",
-          alignItems: "center", justifyContent: "space-between",
-          fontSize: 13, fontWeight: 700, color: "var(--wm-emp-text)",
+          background: "#fff",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          fontSize: 13,
+          fontWeight: 700,
+          color: "var(--wm-emp-text)",
         }}
       >
         <span>Access History</span>
@@ -165,15 +207,25 @@ export function VaultDocumentsTab({
       <div style={{ marginTop: 16 }}>
         <div
           style={{
-            fontSize: 12, fontWeight: 700, color: "var(--wm-emp-muted)",
-            letterSpacing: 0.5, marginBottom: 10,
+            fontSize: 12,
+            fontWeight: 700,
+            color: "var(--wm-emp-muted)",
+            letterSpacing: 0.5,
+            marginBottom: 10,
           }}
         >
           Your folders
         </div>
 
         {folders.length === 0 ? (
-          <div style={{ padding: "32px 16px", textAlign: "center", color: "var(--wm-emp-muted)", fontSize: 13 }}>
+          <div
+            style={{
+              padding: "32px 16px",
+              textAlign: "center",
+              color: "var(--wm-emp-muted)",
+              fontSize: 13,
+            }}
+          >
             No folders yet. Tap &quot;New Folder&quot; to get started.
           </div>
         ) : (
@@ -196,12 +248,22 @@ export function VaultDocumentsTab({
                         onClick={() => onDeleteFolder(folder.id)}
                         aria-label={`Delete ${folder.name}`}
                         style={{
-                          position: "absolute", top: 8, right: 8,
-                          width: 24, height: 24, borderRadius: 6,
-                          border: "none", background: "rgba(220, 38, 38, 0.08)",
-                          color: "#dc2626", fontSize: 14, fontWeight: 700,
-                          cursor: "pointer", display: "flex",
-                          alignItems: "center", justifyContent: "center", lineHeight: 1,
+                          position: "absolute",
+                          top: 8,
+                          right: 8,
+                          width: 24,
+                          height: 24,
+                          borderRadius: 6,
+                          border: "none",
+                          background: "rgba(220, 38, 38, 0.08)",
+                          color: "#dc2626",
+                          fontSize: 14,
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          lineHeight: 1,
                         }}
                       >
                         {"\u00D7"}

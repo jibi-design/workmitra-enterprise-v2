@@ -1,8 +1,10 @@
 // Job Mitra | plannerDayConflict.helpers.ts | Section 8.10.2
 
-import { getEmployerShiftPosts } from "../../../employer/shiftJobs/storage/employerShift.postActions";
+import {
+  getEmployerShiftPostsPublic as getEmployerShiftPosts,
+  shiftWorkspacesStorage,
+} from "../../../shared/planner/ports/plannerLegacyShiftBridge";
 import type { PlannerDayConflict } from "../types/employeeAvailability.types";
-import { shiftWorkspacesStorage } from "../../shiftJobs/storage/shiftWorkspaces.storage";
 
 const APPS_KEY = "wm_employee_shift_applications_v1";
 
@@ -53,26 +55,26 @@ function readApps(): AppRecord[] {
   }
 }
 
-function appBelongsToWorker(app: AppRecord, workerWmId: string): boolean {
+function appBelongsToWorker(app: AppRecord, workerMlId: string): boolean {
   const uid = app.profileSnapshot?.uniqueId?.trim();
-  if (uid) return uid === workerWmId;
+  if (uid) return uid === workerMlId;
   return true;
 }
 
 function workspaceBelongsToWorker(
-  ws: { workerWmId?: string; appId?: string },
-  workerWmId: string,
+  ws: { workerMlId?: string; appId?: string },
+  workerMlId: string,
   apps: AppRecord[],
 ): boolean {
-  if (ws.workerWmId?.trim()) return ws.workerWmId.trim() === workerWmId;
+  if (ws.workerMlId?.trim()) return ws.workerMlId.trim() === workerMlId;
   if (!ws.appId) return true;
   const app = apps.find((a) => a.id === ws.appId);
-  return app ? appBelongsToWorker(app, workerWmId) : true;
+  return app ? appBelongsToWorker(app, workerMlId) : true;
 }
 
 export function getShiftDayConflict(
   dateKey: string,
-  workerWmId: string,
+  workerMlId: string,
   excludePostId?: string,
 ): PlannerDayConflict | null {
   const posts = getEmployerShiftPosts();
@@ -83,7 +85,7 @@ export function getShiftDayConflict(
 
   for (const app of apps) {
     if (app.status !== "confirmed") continue;
-    if (!appBelongsToWorker(app, workerWmId)) continue;
+    if (!appBelongsToWorker(app, workerMlId)) continue;
 
     const post = posts.find((p) => p.id === app.postId);
     if (!post || post.id === excludePostId) continue;
@@ -101,7 +103,7 @@ export function getShiftDayConflict(
 
   for (const ws of workspaces) {
     if (ws.status !== "active" && ws.status !== "upcoming") continue;
-    if (!workspaceBelongsToWorker(ws, workerWmId, apps)) continue;
+    if (!workspaceBelongsToWorker(ws, workerMlId, apps)) continue;
 
     const post = posts.find((p) => p.id === ws.postId);
     if (!post || post.id === excludePostId) continue;

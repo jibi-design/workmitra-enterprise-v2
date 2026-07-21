@@ -6,37 +6,15 @@ import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import type { NoticeData } from "../../../../shared/components/NoticeModal";
 import { DEFAULT_STEP1_DATA, type Step1Data } from "../components/wizard/DemandPlannerStep1.types";
 import {
-  getFillStatus,
   validateDemandPlannerIdentity,
   validateDemandPlannerSchedule,
   validateDemandPlannerDaySlots,
 } from "../helpers/employerDemandPlanner.helpers";
-import { getAutoFillData } from "../../shiftJobs/helpers/shiftCreateHelpers";
+import { getAutoFillData } from "../../../shared/planner/ports/plannerLegacyShiftBridge";
 import { demandPlannerStorage, generateDates, type DaySlot } from "../storage/demandPlannerStorage";
-import { employerShiftStorage } from "../../shiftJobs/storage/employerShift.storage";
 import type { DemandPlannerStep, SlotResult } from "../types/employerDemandPlanner.types";
-import { ensurePlanBroadcastGroup } from "../services/planBroadcast.service";
-import { plannerPublicIndex } from "../storage/plannerPublicIndex.storage";
-
-function buildStep1FromDraft(
-  draft: NonNullable<ReturnType<typeof demandPlannerStorage.getById>>,
-): Step1Data {
-  return {
-    name: draft.name,
-    companyName: draft.companyName,
-    locationName: draft.locationName,
-    category: draft.category,
-    experience: draft.experience,
-    startDate: draft.startDate,
-    endDate: draft.endDate,
-    workingDays: draft.workingDays,
-    description: draft.description ?? "",
-    defaultWorkers: draft.slots[0]?.workers || 2,
-    waitingBuffer: 2,
-    shiftTiming: "",
-    mapsLink: "",
-  };
-}
+import { buildStep1FromDraft } from "./useEmployerDemandPlannerState.helpers";
+import { submitDemandPlannerPlan } from "./useEmployerDemandPlannerState.submit";
 
 export function useEmployerDemandPlannerState() {
   const nav = useNavigate();
@@ -154,133 +132,16 @@ export function useEmployerDemandPlannerState() {
   }
 
   function handleSubmit() {
-    const hasWorkers = slots.some((s) => s.workers > 0 && s.payPerDay > 0);
-    if (!hasWorkers) {
-      setNotice({
-        title: "Workers & pay required",
-        message: "Set workers and pay for at least one day before publishing.",
-      });
-      return;
-    }
-
-    setSubmitting(true);
-
-    try {
-      let activePlanId = planId;
-      if (!activePlanId) {
-        activePlanId = demandPlannerStorage.create({
-          name: step1.name.trim(),
-          companyName: step1.companyName.trim(),
-          locationName: step1.locationName.trim(),
-          category: step1.category,
-          experience: step1.experience,
-          startDate: step1.startDate,
-          endDate: step1.endDate,
-          workingDays: step1.workingDays,
-          slots,
-          description: step1.description.trim(),
-        });
-        setPlanId(activePlanId);
-      }
-
-      const existing = demandPlannerStorage.getById(activePlanId);
-      if (existing?.status === "active") {
-        nav(ROUTE_PATHS.employerPlannerDetail.replace(":planId", activePlanId));
-        return;
-      }
-
-      const publishRequestId = `${activePlanId}:${Date.now()}`;
-      demandPlannerStorage.updatePlan(activePlanId, {
-        publishStatus: "publishing",
-        publishRequestId,
-        slots,
-        ...step1,
-        name: step1.name.trim(),
-        companyName: step1.companyName.trim(),
-        locationName: step1.locationName.trim(),
-        description: step1.description.trim(),
-      });
-
-      const postIds: Record<string, string> = {};
-      const results: SlotResult[] = [];
-
-      for (const slot of slots) {
-        if (slot.workers <= 0) continue;
-
-        const existingSlotPostId = existing?.slots.find((s) => s.date === slot.date)?.postId;
-        if (existingSlotPostId) {
-          postIds[slot.date] = existingSlotPostId;
-          results.push({
-            date: slot.date,
-            postId: existingSlotPostId,
-            workers: slot.workers,
-            confirmed: 0,
-            status: getFillStatus(0, slot.workers),
-          });
-          continue;
-        }
-
-        const postId = employerShiftStorage.createPost({
-          companyName: step1.companyName.trim() || "Company",
-          jobName: step1.name.trim(),
-          category: slot.category ?? step1.category,
-          experience: step1.experience,
-          payPerDay: slot.payPerDay,
-          locationName: step1.locationName.trim(),
-          distanceKm: 0,
-          startAt: new Date(`${slot.date}T00:00:00`).getTime(),
-          endAt: new Date(`${slot.date}T23:59:59`).getTime(),
-          description: step1.description.trim(),
-          shiftTiming: step1.shiftTiming.trim(),
-          mapsLink: step1.mapsLink.trim(),
-          isHiddenFromSearch: true,
-          planId: activePlanId,
-          planSlotDate: slot.date,
-          source: "planner",
-          mustHave: [],
-          goodToHave: [],
-          vacancies: slot.workers,
-          waitingBuffer: step1.waitingBuffer,
-          jobType: "one-time",
-          settings: {
-            backupSlots: step1.waitingBuffer,
-            autoPromoteBackup: true,
-            notifyBackup: true,
-          },
-        });
-
-        postIds[slot.date] = postId;
-        results.push({
-          date: slot.date,
-          postId,
-          workers: slot.workers,
-          confirmed: 0,
-          status: getFillStatus(0, slot.workers),
-        });
-      }
-
-      const submitted = demandPlannerStorage.submit(activePlanId, postIds);
-      if (submitted) {
-        ensurePlanBroadcastGroup(activePlanId, submitted.name, submitted.companyName);
-        plannerPublicIndex.publishFromPlan(submitted);
-      }
-
-      setSubmitResults(results);
-      nav(ROUTE_PATHS.employerPlannerDetail.replace(":planId", activePlanId));
-    } catch {
-      if (planId) {
-        demandPlannerStorage.updatePlan(planId, {
-          publishStatus: "failed",
-          publishError: "Publish failed",
-        });
-      }
-      setNotice({
-        title: "Publish failed",
-        message: "Something went wrong. Please try again.",
-      });
-    } finally {
-      setSubmitting(false);
-    }
+    void submitDemandPlannerPlan({
+      nav,
+      planId,
+      setPlanId,
+      step1,
+      slots,
+      setSubmitting,
+      setNotice,
+      setSubmitResults,
+    });
   }
 
   function goToPlannerHome() {

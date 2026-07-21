@@ -1,6 +1,6 @@
 // Job Mitra | DemandPlannerStep1.types.ts
 
-import type { ExperienceLabel } from "../../../shiftJobs/storage/employerShift.storage";
+import type { ExperienceLabel } from "../../storage/demandPlannerStorage";
 import type { WorkingDay } from "../../storage/demandPlannerStorage";
 
 export type Step1Data = {

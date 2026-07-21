@@ -4,6 +4,7 @@
 import { ratingStorage } from "./ratingStorage";
 import type { WorkerToEmployerRating } from "./ratingTypes";
 import { workerPointsStorage, WorkerPointsStorageWriteError } from "./workerPointsStorage";
+import { enqueueShiftRetry } from "../shift/shiftRetryQueue";
 
 export type SubmitShiftRatingSagaInput = Omit<
   WorkerToEmployerRating,
@@ -16,9 +17,9 @@ export type SubmitShiftRatingSagaResult =
 
 function ratingWasPersisted(input: SubmitShiftRatingSagaInput): boolean {
   const saved = ratingStorage.getWorkerRatingForJob(
-    input.workerWmId,
+    input.workerMlId,
     input.jobId,
-    input.employerWmId,
+    input.employerMlId,
   );
 
   return saved !== null && saved.stars === input.stars;
@@ -36,7 +37,7 @@ export function submitShiftRatingSaga(
     return { ok: false, reason: "rating_write_error" };
   }
 
-  if (ratingStorage.hasWorkerRatedEmployer(input.workerWmId, input.jobId, input.employerWmId)) {
+  if (ratingStorage.hasWorkerRatedEmployer(input.workerMlId, input.jobId, input.employerMlId)) {
     return { ok: false, reason: "already_rated" };
   }
 
@@ -49,15 +50,19 @@ export function submitShiftRatingSaga(
 
   // Step 2 — IMPORTANT: shift completion points (no rollback on failure).
   try {
-    workerPointsStorage.applyEvent(input.workerWmId, "shift_complete", input.jobId);
+    workerPointsStorage.applyEvent(input.workerMlId, "shift_complete", input.jobId);
     return { ok: true, rating, pointsApplied: true };
   } catch (error) {
     if (error instanceof WorkerPointsStorageWriteError) {
       console.warn("[submitShiftRatingSaga] Rating saved but points could not be applied", {
-        workerWmId: input.workerWmId,
+        workerMlId: input.workerMlId,
         jobId: input.jobId,
       });
-      // TODO: enqueue to wm_retry_queue_v1 when retry infrastructure exists.
+      // IMPORTANT: rating is persisted; enqueue points retry.
+      enqueueShiftRetry("rating_points", {
+        workerMlId: input.workerMlId,
+        jobId: input.jobId,
+      });
       return { ok: true, rating, pointsApplied: false };
     }
 

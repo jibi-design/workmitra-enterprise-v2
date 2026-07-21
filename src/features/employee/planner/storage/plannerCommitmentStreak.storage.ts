@@ -1,7 +1,7 @@
 // Job Mitra | plannerCommitmentStreak.storage.ts | Section 6.10.3
 
 export type PlannerCommitmentStreakRecord = {
-  workerWmId: string;
+  workerMlId: string;
   planId: string;
   planApplyBatchId: string;
   consecutiveDaysCount: number;
@@ -12,12 +12,29 @@ export type PlannerCommitmentStreakRecord = {
 const KEY = "wm_planner_commitment_streaks_v1";
 const CHANGED = "wm:planner-commitment-streak-changed";
 
+function normalizeStreak(raw: unknown): PlannerCommitmentStreakRecord | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const rec = raw as Record<string, unknown>;
+  // Dual-read: prefer workerMlId; accept legacy workerWmId from older localStorage JSON.
+  const workerMlId =
+    typeof rec.workerMlId === "string"
+      ? rec.workerMlId
+      : typeof rec.workerWmId === "string"
+        ? rec.workerWmId
+        : "";
+  if (!workerMlId) return null;
+  return { ...(raw as PlannerCommitmentStreakRecord), workerMlId };
+}
+
 function readAll(): PlannerCommitmentStreakRecord[] {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as PlannerCommitmentStreakRecord[]) : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map(normalizeStreak)
+      .filter((r): r is PlannerCommitmentStreakRecord => r !== null);
   } catch {
     return [];
   }
@@ -48,23 +65,23 @@ export const plannerCommitmentStreakStorage = {
   upsert(record: PlannerCommitmentStreakRecord): void {
     const list = readAll();
     const idx = list.findIndex(
-      (r) => r.workerWmId === record.workerWmId && r.planApplyBatchId === record.planApplyBatchId,
+      (r) => r.workerMlId === record.workerMlId && r.planApplyBatchId === record.planApplyBatchId,
     );
     if (idx >= 0) list[idx] = record;
     else list.push(record);
     writeAll(list);
   },
 
-  hasStreakForPlan(workerWmId: string, planId: string): boolean {
+  hasStreakForPlan(workerMlId: string, planId: string): boolean {
     return readAll().some(
-      (r) => r.workerWmId === workerWmId && r.planId === planId && (r.badgeEarnedAt ?? 0) > 0,
+      (r) => r.workerMlId === workerMlId && r.planId === planId && (r.badgeEarnedAt ?? 0) > 0,
     );
   },
 
-  hasStreakForBatch(workerWmId: string, planApplyBatchId: string): boolean {
+  hasStreakForBatch(workerMlId: string, planApplyBatchId: string): boolean {
     return readAll().some(
       (r) =>
-        r.workerWmId === workerWmId &&
+        r.workerMlId === workerMlId &&
         r.planApplyBatchId === planApplyBatchId &&
         (r.badgeEarnedAt ?? 0) > 0,
     );

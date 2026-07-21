@@ -46,18 +46,20 @@ function parsePointsMap(raw: string | null): Map<string, WorkerPoints> {
     if (!Array.isArray(parsed)) return map;
     for (const x of parsed) {
       if (!isRec(x)) continue;
-      const workerWmId = x["workerWmId"];
+      // Dual-read: prefer workerMlId; accept legacy workerWmId from older localStorage JSON.
+      const workerMlIdRaw = x["workerMlId"] ?? x["workerWmId"];
+      const workerMlId = typeof workerMlIdRaw === "string" ? workerMlIdRaw : undefined;
       const total = x["total"];
-      if (typeof workerWmId !== "string" || typeof total !== "number") continue;
+      if (typeof workerMlId !== "string" || typeof total !== "number") continue;
       const history = Array.isArray(x["history"]) ? x["history"] : [];
       const record: WorkerPoints = {
-        workerWmId,
+        workerMlId,
         total: Math.max(0, total),
         level: calculateLevel(Math.max(0, total)),
         history,
         updatedAt: typeof x["updatedAt"] === "number" ? x["updatedAt"] : Date.now(),
       };
-      map.set(workerWmId, record);
+      map.set(workerMlId, record);
     }
   } catch {
     /* safe */
@@ -116,16 +118,16 @@ export const workerPointsStorage = {
     return Array.from(readCache().values());
   },
 
-  getByWmId(workerWmId: string): WorkerPoints {
-    return readCache().get(workerWmId) ?? createWorkerPoints(workerWmId);
+  getByMlId(workerMlId: string): WorkerPoints {
+    return readCache().get(workerMlId) ?? createWorkerPoints(workerMlId);
   },
 
   /** Award or deduct points for a points event */
-  applyEvent(workerWmId: string, eventType: PointsEventType, jobId?: string): WorkerPoints {
+  applyEvent(workerMlId: string, eventType: PointsEventType, jobId?: string): WorkerPoints {
     const map = new Map(readCache());
-    const current = map.get(workerWmId) ?? createWorkerPoints(workerWmId);
+    const current = map.get(workerMlId) ?? createWorkerPoints(workerMlId);
     const updated = applyPointsEvent(current, eventType, jobId);
-    map.set(workerWmId, updated);
+    map.set(workerMlId, updated);
     write(map);
     return updated;
   },

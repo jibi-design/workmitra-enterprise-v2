@@ -1,3 +1,7 @@
+// WARNING DEC-012 / MIG-008: Client-side OTP path (plaintext)
+// Server OTP path (Argon2 hashed) exists at server/modules/vault/
+// This client path MUST BE REMOVED before production cutover
+// See architecture-audits/Phase-DB-Migration-Readiness-Audit-001.md
 // src/features/employee/workVault/helpers/vaultValidation.ts
 
 import {
@@ -8,9 +12,7 @@ import {
   OTP_CODE_LENGTH,
 } from "../constants/vaultConstants";
 
-export type ValidationResult =
-  | { valid: true }
-  | { valid: false; reason: string };
+export type ValidationResult = { valid: true } | { valid: false; reason: string };
 
 /**
  * Validates a folder name.
@@ -68,7 +70,7 @@ export function validateFile(file: File): ValidationResult {
     const maxMB = MAX_DOCUMENT_SIZE_BYTES / 1_000_000;
     return { valid: false, reason: `File size must be under ${maxMB} MB.` };
   }
-  if (!ALLOWED_FILE_TYPES.includes(file.type as typeof ALLOWED_FILE_TYPES[number])) {
+  if (!ALLOWED_FILE_TYPES.includes(file.type as (typeof ALLOWED_FILE_TYPES)[number])) {
     return { valid: false, reason: "Only JPEG, PNG, WebP, and PDF files are allowed." };
   }
   return { valid: true };

@@ -11,7 +11,7 @@ export type VaultCareerHistoryEntry = {
   id: string;
   careerPostId: string;
   employmentId: string;
-  employeeWmId: string;
+  employeeMlId: string;
   employeeName: string;
   companyName: string;
   jobTitle: string;
@@ -61,7 +61,8 @@ function normalizeEntry(raw: unknown): VaultCareerHistoryEntry | null {
 
   const careerPostId = str(raw, "careerPostId");
   const employmentId = str(raw, "employmentId");
-  const employeeWmId = str(raw, "employeeWmId");
+  // Dual-read: prefer employeeMlId; accept legacy employeeWmId from older localStorage JSON.
+  const employeeMlId = str(raw, "employeeMlId") ?? str(raw, "employeeWmId");
   const employeeName = str(raw, "employeeName");
   const companyName = str(raw, "companyName");
   const jobTitle = str(raw, "jobTitle");
@@ -71,7 +72,7 @@ function normalizeEntry(raw: unknown): VaultCareerHistoryEntry | null {
   if (
     !careerPostId ||
     !employmentId ||
-    !employeeWmId ||
+    !employeeMlId ||
     !employeeName ||
     !companyName ||
     !jobTitle ||
@@ -88,7 +89,7 @@ function normalizeEntry(raw: unknown): VaultCareerHistoryEntry | null {
     id: str(raw, "id") ?? makeId(),
     careerPostId,
     employmentId,
-    employeeWmId,
+    employeeMlId,
     employeeName,
     companyName,
     jobTitle,
@@ -143,7 +144,7 @@ export function getVaultCareerHistory(): VaultCareerHistoryEntry[] {
 export function upsertVaultCareerHistoryOnClosure(input: {
   careerPostId: string;
   employmentId: string;
-  employeeWmId: string;
+  employeeMlId: string;
   employeeName: string;
   companyName: string;
   jobTitle: string;
@@ -158,7 +159,7 @@ export function upsertVaultCareerHistoryOnClosure(input: {
     id: prior?.id ?? makeId(),
     careerPostId: input.careerPostId,
     employmentId: input.employmentId,
-    employeeWmId: input.employeeWmId,
+    employeeMlId: input.employeeMlId,
     employeeName: input.employeeName,
     companyName: input.companyName,
     jobTitle: input.jobTitle,
@@ -201,6 +202,19 @@ export type FinalizeVaultCareerHistoryResult =
   { ok: true; entry: VaultCareerHistoryEntry | null } | { ok: false; reason: "storage_error" };
 
 export function finalizeVaultCareerHistory(careerPostId: string): FinalizeVaultCareerHistoryResult {
+  return applyVaultCareerFinalize(careerPostId, { requireRatings: true });
+}
+
+export function finalizeVaultCareerHistoryOnClosure(
+  careerPostId: string,
+): FinalizeVaultCareerHistoryResult {
+  return applyVaultCareerFinalize(careerPostId, { requireRatings: false });
+}
+
+function applyVaultCareerFinalize(
+  careerPostId: string,
+  options: { requireRatings: boolean },
+): FinalizeVaultCareerHistoryResult {
   const existing = readAll();
   const index = existing.findIndex((entry) => entry.careerPostId === careerPostId);
   if (index < 0) return { ok: true, entry: null };
@@ -211,7 +225,11 @@ export function finalizeVaultCareerHistory(careerPostId: string): FinalizeVaultC
   const hasEmployerRating =
     typeof current.employerRating === "number" && current.employerRating > 0;
 
-  if (!hasEmployeeRating && !hasEmployerRating) {
+  if (options.requireRatings && !hasEmployeeRating && !hasEmployerRating) {
+    return { ok: true, entry: current };
+  }
+
+  if (current.vaultFinalized) {
     return { ok: true, entry: current };
   }
 

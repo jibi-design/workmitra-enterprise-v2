@@ -22,7 +22,7 @@ const LEVEL_ICON: Record<RatingLevel, string> = {
 
 export function WorkerLevelCard() {
   const wmId = useMemo(() => employeeProfileStorage.get().uniqueId ?? "", []);
-  const points = useMemo(() => workerPointsStorage.getByWmId(wmId), [wmId]);
+  const points = useMemo(() => workerPointsStorage.getByMlId(wmId), [wmId]);
 
   const level = points.level;
   const threshold = LEVEL_THRESHOLDS[level];

@@ -20,9 +20,9 @@ export type SubmitEmployerShiftRatingSagaResult =
 
 function ratingWasPersisted(input: SubmitEmployerShiftRatingSagaInput): boolean {
   const saved = ratingStorage.getEmployerRatingForJob(
-    input.employerWmId,
+    input.employerMlId,
     input.jobId,
-    input.workerWmId,
+    input.workerMlId,
   );
 
   return saved !== null && saved.stars === input.stars;
@@ -35,7 +35,7 @@ export function submitEmployerShiftRatingSaga(
     return { ok: false, reason: "invalid_domain" };
   }
 
-  if (ratingStorage.hasEmployerRatedWorker(input.employerWmId, input.jobId, input.workerWmId)) {
+  if (ratingStorage.hasEmployerRatedWorker(input.employerMlId, input.jobId, input.workerMlId)) {
     return { ok: false, reason: "already_rated" };
   }
 
@@ -47,20 +47,20 @@ export function submitEmployerShiftRatingSaga(
 
   try {
     if (input.stars === 5)
-      workerPointsStorage.applyEvent(input.workerWmId, "rating_5star", input.jobId);
+      workerPointsStorage.applyEvent(input.workerMlId, "rating_5star", input.jobId);
     else if (input.stars === 4)
-      workerPointsStorage.applyEvent(input.workerWmId, "rating_4star", input.jobId);
+      workerPointsStorage.applyEvent(input.workerMlId, "rating_4star", input.jobId);
     else if (input.stars <= 2)
-      workerPointsStorage.applyEvent(input.workerWmId, "rating_1or2star", input.jobId);
+      workerPointsStorage.applyEvent(input.workerMlId, "rating_1or2star", input.jobId);
 
     if (input.tags.includes("Reliable")) {
-      workerPointsStorage.applyEvent(input.workerWmId, "tag_reliable", input.jobId);
+      workerPointsStorage.applyEvent(input.workerMlId, "tag_reliable", input.jobId);
     }
 
     if (input.hireAgain) {
-      workerPointsStorage.applyEvent(input.workerWmId, "hire_again", input.jobId);
+      workerPointsStorage.applyEvent(input.workerMlId, "hire_again", input.jobId);
       favoritesStorage.addFromRating({
-        workerWmId: input.workerWmId,
+        workerMlId: input.workerMlId,
         workerName: input.workerName,
         jobTitle: input.jobTitle,
         stars: input.stars,
@@ -71,7 +71,7 @@ export function submitEmployerShiftRatingSaga(
   } catch (error) {
     if (error instanceof WorkerPointsStorageWriteError) {
       console.warn("[submitEmployerShiftRatingSaga] Rating saved but points could not be applied", {
-        workerWmId: input.workerWmId,
+        workerMlId: input.workerMlId,
         jobId: input.jobId,
       });
       return { ok: true, rating, pointsApplied: false };

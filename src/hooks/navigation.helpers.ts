@@ -31,12 +31,18 @@ const EXTRA_ACTIVE_PREFIXES: Record<string, readonly string[]> = {
   [ROUTE_PATHS.employeeCareerSearch]: ["/employee/career/post/"],
   [ROUTE_PATHS.employerShiftPosts]: ["/employer/shift/post/"],
   [ROUTE_PATHS.employerCareerPosts]: ["/employer/career/post/", "/employer/career/create"],
-  [ROUTE_PATHS.employeePlannerApplications]: [
+  [ROUTE_PATHS.employeePlannerDiscover]: [
+    "/employee/planner/browse",
+    "/employee/planner/projects/",
+  ],
+  [ROUTE_PATHS.employeePlannerApplications]: ["/employee/planner/applications/plan/"],
+  [ROUTE_PATHS.employeePlannerWorkspaceHub]: [
     "/employee/planner/workspace/",
     "/employee/planner/workspaces",
-    "/employee/planner/projects/",
-    "/employee/planner/applications/plan/",
   ],
+  [ROUTE_PATHS.employerPlannerApplications]: ["/employer/planner/applications"],
+  [ROUTE_PATHS.employerPlannerRoster]: ["/employer/planner/roster/"],
+  [ROUTE_PATHS.employerPlannerCreate]: ["/employer/planner/new", "/employer/planner/create"],
   [ROUTE_PATHS.employerShiftWorkspaces]: ["/employer/shift/workspace/"],
   [ROUTE_PATHS.employerMyStaff]: ["/employer/my-staff/"],
 };

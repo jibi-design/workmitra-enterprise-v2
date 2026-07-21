@@ -1,3 +1,7 @@
+// WARNING DEC-012 / MIG-008: Client-side OTP path (plaintext)
+// Server OTP path (Argon2 hashed) exists at server/modules/vault/
+// This client path MUST BE REMOVED before production cutover
+// See architecture-audits/Phase-DB-Migration-Readiness-Audit-001.md
 // src/features/employee/workVault/pages/EmployeeVaultHomePage.tsx
 //
 // Work Vault home — 3 tabs: Profile, Documents, Verify Employer.
@@ -131,8 +135,11 @@ function EmployeeVaultHomeContent({ initialTab }: { initialTab: TabId }) {
   }
   function handleRevokeSession() {
     if (!sessionInfo) return;
-    if (sessionInfo.source === "vault") revokeVaultSession(sessionInfo.sessionId);
-    else docAccessSessionStorage.revokeSession();
+    if (sessionInfo.source === "vault") {
+      void revokeVaultSession(sessionInfo.sessionId);
+    } else {
+      docAccessSessionStorage.revokeSession();
+    }
     setSessionInfo(null);
     window.dispatchEvent(new Event("wm:doc-access-session-changed"));
     setNotice({
@@ -147,13 +154,14 @@ function EmployeeVaultHomeContent({ initialTab }: { initialTab: TabId }) {
   return (
     <div>
       {/* Header */}
-      <div className="wm-pageHead">
-        <div>
-          <div className="wm-pageTitle" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <IconShield /> My Work Vault
-          </div>
-          <div className="wm-pageSub">Your complete digital work identity</div>
+      <div className="wm-vault-page-hero">
+        <div
+          className="wm-vault-page-hero__title"
+          style={{ display: "flex", alignItems: "center", gap: 8 }}
+        >
+          <IconShield /> Work Vault
         </div>
+        <div className="wm-vault-page-hero__sub">Your documents, secured</div>
       </div>
 
       {/* Tab bar */}
@@ -169,9 +177,10 @@ function EmployeeVaultHomeContent({ initialTab }: { initialTab: TabId }) {
             key={tab}
             type="button"
             onClick={() => setActiveTab(tab)}
-            className="wm-typeHelper"
+            className="wm-typeHelper wm-vault-tap"
             style={{
               flex: 1,
+              minHeight: 44,
               padding: "10px 0",
               border: "none",
               borderBottom:
@@ -219,7 +228,25 @@ function EmployeeVaultHomeContent({ initialTab }: { initialTab: TabId }) {
       )}
       {activeTab === "verify" && <VaultVerifyEmployerTab />}
 
-      <div style={{ height: 80 }} />
+      <div style={{ height: 96 }} />
+
+      {activeTab === "documents" ? (
+        <button
+          type="button"
+          className="wm-vault-fab"
+          aria-label="Add folder"
+          onClick={() => setShowCreateModal(true)}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M12 5v14M5 12h14"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        </button>
+      ) : null}
 
       {/* Modals */}
       <VaultCreateFolderModal

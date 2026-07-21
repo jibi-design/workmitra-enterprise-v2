@@ -10,17 +10,19 @@ import { EditedBadge } from "../../components/rating/EditedBadge";
 import { EmployerRateWorkerModal } from "../../components/rating/EmployerRateWorkerModal";
 import { WorkerRateEmployerModal } from "../../components/rating/WorkerRateEmployerModal";
 
+import type { RatingDomain } from "../ratingTypes";
+
 /* ------------------------------------------------ */
 /* Props                                            */
 /* ------------------------------------------------ */
 type Props = {
   jobId: string;
   jobTitle: string;
-  raterWmId: string;
-  targetWmId: string;
+  raterMlId: string;
+  targetMlId: string;
   targetName: string;
   ratingType: "employer" | "worker";
-  domain: "shift" | "career";
+  domain: RatingDomain;
 };
 
 /* ------------------------------------------------ */
@@ -44,16 +46,16 @@ function StarRow({ count }: { count: number }) {
 export function RatingDisplayCard({
   jobId,
   jobTitle,
-  raterWmId,
-  targetWmId,
+  raterMlId,
+  targetMlId,
   targetName,
   ratingType,
   domain,
 }: Props) {
   const fetchRating = () =>
     ratingType === "employer"
-      ? ratingStorage.getEmployerRatingForJob(raterWmId, jobId, targetWmId)
-      : ratingStorage.getWorkerRatingForJob(raterWmId, jobId, targetWmId);
+      ? ratingStorage.getEmployerRatingForJob(raterMlId, jobId, targetMlId)
+      : ratingStorage.getWorkerRatingForJob(raterMlId, jobId, targetMlId);
 
   const [rating, setRating] = useState(fetchRating);
   const [editOpen, setEditOpen] = useState(false);
@@ -62,8 +64,8 @@ export function RatingDisplayCard({
 
   const canEdit =
     ratingType === "employer"
-      ? ratingStorage.canEditEmployerRating(raterWmId, jobId, targetWmId)
-      : ratingStorage.canEditWorkerRating(raterWmId, jobId, targetWmId);
+      ? ratingStorage.canEditEmployerRating(raterMlId, jobId, targetMlId)
+      : ratingStorage.canEditWorkerRating(raterMlId, jobId, targetMlId);
 
   function handleEditDone() {
     setEditOpen(false);
@@ -79,7 +81,23 @@ export function RatingDisplayCard({
   const accentColor =
     domain === "career"
       ? "var(--wm-er-accent-career, #1d4ed8)"
-      : "var(--wm-er-accent-shift, #16a34a)";
+      : domain === "planner"
+        ? "var(--wm-planner-accent, #0891b2)"
+        : "var(--wm-er-accent-shift, #16a34a)";
+
+  const cardBg =
+    domain === "career"
+      ? "rgba(29,78,216,0.04)"
+      : domain === "planner"
+        ? "rgba(8,145,178,0.05)"
+        : "rgba(22,163,74,0.04)";
+
+  const cardBorder =
+    domain === "career"
+      ? "1px solid rgba(29,78,216,0.15)"
+      : domain === "planner"
+        ? "1px solid rgba(8,145,178,0.2)"
+        : "1px solid rgba(22,163,74,0.15)";
 
   return (
     <>
@@ -88,11 +106,8 @@ export function RatingDisplayCard({
           marginTop: 10,
           padding: "14px 16px",
           borderRadius: 14,
-          background: domain === "career" ? "rgba(29,78,216,0.04)" : "rgba(22,163,74,0.04)",
-          border:
-            domain === "career"
-              ? "1px solid rgba(29,78,216,0.15)"
-              : "1px solid rgba(22,163,74,0.15)",
+          background: cardBg,
+          border: cardBorder,
         }}
       >
         {/* Header */}
@@ -130,7 +145,12 @@ export function RatingDisplayCard({
                   fontWeight: 600,
                   padding: "3px 10px",
                   borderRadius: 999,
-                  background: domain === "career" ? "rgba(29,78,216,0.08)" : "rgba(22,163,74,0.08)",
+                  background:
+                    domain === "career"
+                      ? "rgba(29,78,216,0.08)"
+                      : domain === "planner"
+                        ? "rgba(8,145,178,0.1)"
+                        : "rgba(22,163,74,0.08)",
                   color: accentColor,
                 }}
               >
@@ -202,8 +222,8 @@ export function RatingDisplayCard({
           editMode
           jobId={jobId}
           jobTitle={jobTitle}
-          employerWmId={raterWmId}
-          workerWmId={targetWmId}
+          employerMlId={raterMlId}
+          workerMlId={targetMlId}
           workerName={targetName}
           domain={domain}
           onSubmitted={handleEditDone}
@@ -216,8 +236,8 @@ export function RatingDisplayCard({
           editMode
           jobId={jobId}
           jobTitle={jobTitle}
-          workerWmId={raterWmId}
-          employerWmId={targetWmId}
+          workerMlId={raterMlId}
+          employerMlId={targetMlId}
           companyName={targetName}
           domain={domain}
           onSubmitted={handleEditDone}

@@ -28,6 +28,13 @@ import {
   aggregateWorkforceReferences,
 } from "./vaultWorkforceAggregator";
 
+import {
+  aggregatePlannerStats,
+  aggregatePlannerReferences,
+  aggregatePlannerAttendanceRate,
+  aggregatePlannerReliabilityScore,
+} from "./vaultPlannerAggregator";
+
 import { vaultProfileService } from "./vaultProfileService";
 import { computeAchievements } from "./vaultAchievementService";
 
@@ -141,16 +148,19 @@ export function getVaultSectionData(): VaultSectionData {
   const careerStats = aggregateCareerStats();
   const shiftStats = aggregateShiftStats();
   const wfStats = aggregateWorkforceStats();
+  const plannerStats = aggregatePlannerStats();
 
   const allCompanies = new Set<string>([
     ...careerStats.uniqueCompanies,
     ...shiftStats.uniqueCompanies,
+    ...plannerStats.uniqueCompanies,
   ]);
 
   const workStats: VaultWorkStats = {
     totalCareerPositions: careerStats.totalCareerPositions,
     verifiedPositions: careerStats.verifiedPositions,
     totalShiftsCompleted: shiftStats.totalShiftsCompleted,
+    totalPlannerEpochs: plannerStats.totalPlannerEpochs,
     totalWorkforceCompanies: wfStats.totalWorkforceCompanies,
     totalCompaniesWorked: allCompanies.size,
   };
@@ -168,25 +178,32 @@ export function getVaultSectionData(): VaultSectionData {
   const careerRatings = aggregateCareerRatings();
   const shiftRatings = aggregateShiftRatings();
   const wfRatings = aggregateWorkforceRatings();
+  // Planner ratings intentionally excluded from overallRating (Hybrid A2 board rule).
 
   const allRatings = [...careerRatings.ratings, ...shiftRatings.ratings, ...wfRatings.ratings];
   if (wfRatings.staffRating !== null) {
     allRatings.push(wfRatings.staffRating);
   }
 
+  const shiftAttendance = aggregateAttendanceRate();
+  const shiftReliability = aggregateReliabilityScore();
+  const plannerAttendance = aggregatePlannerAttendanceRate();
+  const plannerReliability = aggregatePlannerReliabilityScore();
+
   const performance: VaultPerformanceRecord = {
     overallRating: computeOverallRating(allRatings),
     totalReviews: allRatings.length,
     ratingBreakdown: computeBreakdown(allRatings),
-    attendanceRate: aggregateAttendanceRate(),
-    reliabilityScore: aggregateReliabilityScore(),
+    attendanceRate: shiftAttendance ?? plannerAttendance,
+    reliabilityScore: shiftReliability ?? plannerReliability,
   };
 
   // ── Section 8: References ──
   const shiftRefs = aggregateShiftReferences();
   const wfRefs = aggregateWorkforceReferences();
   const careerRefs = aggregateCareerReferences();
-  const references = [...careerRefs, ...shiftRefs, ...wfRefs];
+  const plannerRefs = aggregatePlannerReferences();
+  const references = [...careerRefs, ...shiftRefs, ...wfRefs, ...plannerRefs];
 
   // ── Section 9: Achievements ──
   const achievements = computeAchievements(workStats, performance);

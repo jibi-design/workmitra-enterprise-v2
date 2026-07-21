@@ -2,18 +2,18 @@
 // File name: shiftVaultHistory.service.ts
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\workVault\services\shiftVaultHistory.service.ts
 
-import type { ShiftWorkspace } from "../../../employer/shiftJobs/types/shiftWorkspaceTypes";
-import { readEmployeeApplications } from "../../../employer/shiftJobs/storage/employerShift.employeeBridge";
+import type { ShiftWorkspace } from "../../../shared/shift/shiftEmployerPublic";
+import { readEmployeeApplications } from "../../../shared/shift/shiftEmployerPublic";
 import { ratingStorage } from "../../../../shared/rating/ratingStorage";
-import { employerSettingsStorage } from "../../../employer/company/storage/employerSettings.storage";
+import { employerSettingsStorage } from "../../../../shared/employerProfile/employerSettingsPublic";
 import {
   finalizeVaultShiftHistory,
   updateVaultShiftHistoryRatings,
   upsertVaultShiftHistoryOnComplete,
 } from "../storage/vaultShiftHistory.storage";
 
-function resolveWorkerWmId(workspace: ShiftWorkspace): string {
-  const direct = workspace.workerWmId?.trim();
+function resolveWorkerMlId(workspace: ShiftWorkspace): string {
+  const direct = workspace.workerMlId?.trim();
   if (direct) return direct;
 
   const appId = workspace.appId?.trim();
@@ -27,13 +27,13 @@ export function recordShiftCompletedInVault(
   workspace: ShiftWorkspace,
   completedAt = Date.now(),
 ): void {
-  const workerWmId = resolveWorkerWmId(workspace);
-  if (!workerWmId) return;
+  const workerMlId = resolveWorkerMlId(workspace);
+  if (!workerMlId) return;
 
   upsertVaultShiftHistoryOnComplete({
     workspaceId: workspace.id,
     postId: workspace.postId,
-    workerWmId,
+    workerMlId,
     workerName: workspace.workerName?.trim() || "Worker",
     companyName: workspace.companyName,
     jobTitle: workspace.jobName,
@@ -44,18 +44,18 @@ export function recordShiftCompletedInVault(
 }
 
 export function syncVaultShiftRatings(workspace: ShiftWorkspace): void {
-  const workerWmId = resolveWorkerWmId(workspace);
-  if (!workerWmId) return;
+  const workerMlId = resolveWorkerMlId(workspace);
+  if (!workerMlId) return;
 
-  const employerWmId = employerSettingsStorage.get().uniqueId?.trim() ?? "";
+  const employerMlId = employerSettingsStorage.get().uniqueId?.trim() ?? "";
 
   const workerRating =
     workspace.rating ??
-    ratingStorage.getWorkerRatingForJob(workerWmId, workspace.postId, employerWmId)?.stars;
+    ratingStorage.getWorkerRatingForJob(workerMlId, workspace.postId, employerMlId)?.stars;
 
   const employerRating =
     workspace.employerRating ??
-    ratingStorage.getEmployerRatingForJob(employerWmId, workspace.postId, workerWmId)?.stars;
+    ratingStorage.getEmployerRatingForJob(employerMlId, workspace.postId, workerMlId)?.stars;
 
   updateVaultShiftHistoryRatings(workspace.id, {
     workerRating,

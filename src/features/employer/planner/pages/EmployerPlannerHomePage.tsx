@@ -4,7 +4,7 @@ import { useMemo, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { demandPlannerStorage } from "../storage/demandPlannerStorage";
-import { employerShiftStorage } from "../../shiftJobs/storage/employerShift.storage";
+import { employerShiftStorage } from "../../../shared/planner/ports/plannerLegacyShiftBridge";
 import { formatPlannerPayTotal } from "../helpers/plannerPayDisplay.helpers";
 import { PlannerEmployerCommandGrid } from "../components/PlannerEmployerCommandGrid";
 import { PlannerEmployerPlanStatusSection } from "../components/PlannerEmployerPlanStatusSection";
@@ -72,7 +72,7 @@ export function EmployerPlannerHomePage() {
       <DomainHero
         variant="planner"
         audience="employer"
-        title="Gig Projects"
+        title="Demand Planner"
         subtitle="Agency command home — plan, publish, and fill multi-day crews"
       >
         <div className="wm-planner-kpiStrip" style={{ marginTop: 0 }}>
@@ -105,11 +105,13 @@ export function EmployerPlannerHomePage() {
         status="draft"
         plans={metrics.drafts}
         onOpenPlan={openPlan}
+        onCreate={() => nav(ROUTE_PATHS.employerPlannerNew)}
       />
       <PlannerEmployerPlanStatusSection
         status="active"
         plans={metrics.active}
         onOpenPlan={openPlan}
+        onCreate={() => nav(ROUTE_PATHS.employerPlannerNew)}
       />
       <PlannerEmployerPlanStatusSection
         status="completed"
@@ -121,6 +123,22 @@ export function EmployerPlannerHomePage() {
         plans={metrics.cancelled}
         onOpenPlan={openPlan}
       />
+
+      <button
+        type="button"
+        className="wm-planner-fab"
+        aria-label="Create new plan"
+        onClick={() => nav(ROUTE_PATHS.employerPlannerNew)}
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M12 5v14M5 12h14"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+          />
+        </svg>
+      </button>
     </PlannerShell>
   );
 }

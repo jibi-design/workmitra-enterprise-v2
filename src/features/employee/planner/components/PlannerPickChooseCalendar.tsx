@@ -2,9 +2,9 @@
 
 import type { EmployeeAvailability } from "../types/employeeAvailability.types";
 import type { SmartEarningsPredictorPayload } from "../types/employeeAvailability.types";
-import { fmtPlanDate } from "../../../employer/planner/storage/demandPlannerStorage";
+import { fmtPlanDate } from "../../../shared/planner/plannerPublic";
 import { triggerSelectionHaptic } from "../../../../shared/platform/haptics";
-import { formatPlannerPayAmount } from "../../../employer/planner/helpers/plannerPayDisplay.helpers";
+import { formatPlannerPayAmount } from "../../../shared/planner/plannerPublic";
 import { PlannerOdometerAmount } from "./PlannerOdometerAmount";
 
 type Props = {

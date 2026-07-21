@@ -8,7 +8,7 @@ export type PlanBroadcastGroup = {
   planName: string;
   companyName: string;
   memberWorkspaceIds: string[];
-  memberWorkerWmIds: string[];
+  memberWorkerMlIds: string[];
   createdAt: number;
   updatedAt: number;
   schemaVersion: 1;
@@ -17,8 +17,25 @@ export type PlanBroadcastGroup = {
 const KEY = "wm_planner_broadcast_groups_v1";
 const CHANGED = "wm:planner-broadcast-groups-changed";
 
+function normalizeGroup(raw: unknown): PlanBroadcastGroup | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const rec = raw as Record<string, unknown> & PlanBroadcastGroup;
+  const legacyWm = (rec as Record<string, unknown>).memberWorkerWmIds;
+  const memberWorkerMlIds = Array.isArray(rec.memberWorkerMlIds)
+    ? rec.memberWorkerMlIds.filter((id): id is string => typeof id === "string")
+    : Array.isArray(legacyWm)
+      ? legacyWm.filter((id): id is string => typeof id === "string")
+      : [];
+  return {
+    ...rec,
+    memberWorkerMlIds,
+  };
+}
+
 function readAll(): PlanBroadcastGroup[] {
-  return plannerReadJson<PlanBroadcastGroup[]>(KEY, []);
+  const raw = plannerReadJson<unknown[]>(KEY, []);
+  if (!Array.isArray(raw)) return [];
+  return raw.map(normalizeGroup).filter((g): g is PlanBroadcastGroup => g !== null);
 }
 
 function writeAll(groups: PlanBroadcastGroup[]): boolean {
@@ -43,7 +60,7 @@ export const planBroadcastGroupStorage = {
       planName,
       companyName,
       memberWorkspaceIds: [],
-      memberWorkerWmIds: [],
+      memberWorkerMlIds: [],
       createdAt: now,
       updatedAt: now,
       schemaVersion: 1,
@@ -57,8 +74,8 @@ export const planBroadcastGroupStorage = {
     return readAll().find((g) => g.planId === planId) ?? null;
   },
 
-  enrollWorkspace(planId: string, workspaceId: string, workerWmId: string): boolean {
-    const wmKey = workerWmId.trim().toUpperCase();
+  enrollWorkspace(planId: string, workspaceId: string, workerMlId: string): boolean {
+    const wmKey = workerMlId.trim().toUpperCase();
     if (!wmKey || !workspaceId) return false;
 
     const all = readAll();
@@ -70,22 +87,22 @@ export const planBroadcastGroupStorage = {
       ? group.memberWorkspaceIds
       : [...group.memberWorkspaceIds, workspaceId];
 
-    const workerIds = group.memberWorkerWmIds.includes(wmKey)
-      ? group.memberWorkerWmIds
-      : [...group.memberWorkerWmIds, wmKey];
+    const workerIds = group.memberWorkerMlIds.includes(wmKey)
+      ? group.memberWorkerMlIds
+      : [...group.memberWorkerMlIds, wmKey];
 
     all[idx] = {
       ...group,
       memberWorkspaceIds: workspaceIds,
-      memberWorkerWmIds: workerIds,
+      memberWorkerMlIds: workerIds,
       updatedAt: Date.now(),
     };
 
     return writeAll(all);
   },
 
-  unenrollWorkspace(planId: string, workspaceId: string, workerWmId: string): void {
-    const wmKey = workerWmId.trim().toUpperCase();
+  unenrollWorkspace(planId: string, workspaceId: string, workerMlId: string): void {
+    const wmKey = workerMlId.trim().toUpperCase();
     const all = readAll();
     const idx = all.findIndex((g) => g.planId === planId);
     if (idx < 0) return;
@@ -94,7 +111,7 @@ export const planBroadcastGroupStorage = {
     all[idx] = {
       ...group,
       memberWorkspaceIds: group.memberWorkspaceIds.filter((id) => id !== workspaceId),
-      memberWorkerWmIds: group.memberWorkerWmIds.filter((id) => id !== wmKey),
+      memberWorkerMlIds: group.memberWorkerMlIds.filter((id) => id !== wmKey),
       updatedAt: Date.now(),
     };
 

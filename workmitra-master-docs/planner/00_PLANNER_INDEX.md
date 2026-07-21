@@ -1,7 +1,7 @@
 <!-- App name: WorkMitra / Job Mitra
 File name: 00_PLANNER_INDEX.md
 Full file path: C:\projects\WorkMitra_Enterprise_v2\workmitra-master-docs\planner\00_PLANNER_INDEX.md
-Document version: v1.8 -->
+Document version: v1.9 -->
 
 # SHIFT DEMAND PLANNER — DOCUMENT INDEX
 
@@ -12,15 +12,18 @@ Phase-0 ships as Shift demand-planning; domain scope lock in doc 02 — **never 
 
 **Domain freeze:** `02_PLANNER_DOMAIN_SCOPE_LOCK_v1.0.md` — Planner is **not** a Shift feature.
 
+**Phase-1:** `03_PLANNER_HYBRID_A2_PHASE1_ROADMAP_v1.0.md` — Hybrid A2 + Zero Dead-End (active).
+
 **Quick version check:** see `Document version:` on **line 4** of this file and `01_SHIFT_DEMAND_PLANNER_MASTER_DOCUMENT.md` header — both must always match.
 
 ## Documents
 
-| #   | File                                         | Status                                                             |
-| --- | -------------------------------------------- | ------------------------------------------------------------------ |
-| 01  | `01_SHIFT_DEMAND_PLANNER_MASTER_DOCUMENT.md` | **Locked for implementation (v1.9)**                               |
-| 02  | `02_PLANNER_DOMAIN_SCOPE_LOCK_v1.0.md`       | **☑ FROZEN — separate Workforce Intelligence Domain (2026-07-04)** |
-| —   | V2 intelligence spec                         | **`second-update/04_PLANNER_WORKFORCE_INTELLIGENCE_V2.md`**        |
+| #   | File                                          | Status                                                             |
+| --- | --------------------------------------------- | ------------------------------------------------------------------ |
+| 01  | `01_SHIFT_DEMAND_PLANNER_MASTER_DOCUMENT.md`  | **Locked for implementation (v1.9)**                               |
+| 02  | `02_PLANNER_DOMAIN_SCOPE_LOCK_v1.0.md`        | **☑ FROZEN — separate Workforce Intelligence Domain (2026-07-04)** |
+| 03  | `03_PLANNER_HYBRID_A2_PHASE1_ROADMAP_v1.0.md` | **ACTIVE — Hybrid A2 Phase-1 + Zero Dead-End (2026-07-21)**        |
+| —   | V2 intelligence spec                          | **`second-update/04_PLANNER_WORKFORCE_INTELLIGENCE_V2.md`**        |
 
 ## v1.7 Summary (2026-07-01) — Availability + Earnings Predictor Types
 
@@ -52,6 +55,7 @@ P1 is not shippable until Appendix D (31 steps) + F1–F32 pass.
 
 | Version | Date       | Summary                                                         |
 | ------- | ---------- | --------------------------------------------------------------- |
+| v1.9    | 2026-07-21 | Hybrid A2 Phase-1 roadmap doc 03 + Zero Dead-End route contract |
 | v1.8    | 2026-07-04 | Domain scope lock doc 02 — Workforce Intelligence Domain frozen |
 | v1.7    | 2026-07-01 | Employee Availability + Smart Earnings Predictor types          |
 | v1.6    | 2026-07-01 | Ultra-Premium Employee Gig features                             |
@@ -62,4 +66,4 @@ P1 is not shippable until Appendix D (31 steps) + F1–F32 pass.
 | v1.1    | 2026-07-01 | Mega Card + Mega Workspace Merge                                |
 | v1.0    | 2026-07-01 | Initial Planner master document                                 |
 
-**Last updated:** 2026-07-04 (added Planner V2 doc 04 reference in index v1.8)
+**Last updated:** 2026-07-21 (added Hybrid A2 Phase-1 roadmap doc 03)
