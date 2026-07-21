@@ -20,6 +20,7 @@ import {
 } from "../../shiftJobs/storage/employerShift.storage";
 import { employerShiftDraftStorage } from "../storage/employerShiftDraft.storage";
 import { shiftTemplatesStorage } from "../storage/shiftTemplatesStorage";
+import { showEnterpriseToast } from "../../../../shared/components/enterprise";
 
 type StatusFilter = "applied" | "shortlisted" | "confirmed" | null;
 
@@ -142,6 +143,10 @@ export function useEmployerShiftPostsPageState() {
     setSavingPostId(null);
     setTemplateName("");
     setSaveSuccess(`Saved as "${name}"`);
+    showEnterpriseToast({
+      tone: "success",
+      message: `Template saved as "${name}".`,
+    });
     window.setTimeout(() => setSaveSuccess(""), 2500);
   }
 

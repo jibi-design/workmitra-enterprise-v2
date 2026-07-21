@@ -1,6 +1,7 @@
 /** Job Mitra | SlideOver.tsx | Universal right drawer for quick-action views */
+/** Luxury L2 — spring enter + reduced-motion class hook */
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 export type SlideOverProps = {
   open: boolean;
@@ -13,6 +14,20 @@ export type SlideOverProps = {
   testId?: string;
 };
 
+function usePrefersReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReduced(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  return reduced;
+}
+
 export function SlideOver({
   open,
   onClose,
@@ -23,6 +38,8 @@ export function SlideOver({
   ariaLabel,
   testId,
 }: SlideOverProps) {
+  const prefersReducedMotion = usePrefersReducedMotion();
+
   useEffect(() => {
     if (!open) return;
     const previous = document.body.style.overflow;
@@ -43,17 +60,20 @@ export function SlideOver({
 
   if (!open) return null;
 
+  const motionClass = prefersReducedMotion ? " wm-ent-slide--reduced" : "";
+
   return (
     <div
-      className="wm-ent-slide-backdrop"
+      className={`wm-ent-slide-backdrop${motionClass}`}
       role="dialog"
       aria-modal="true"
       aria-label={ariaLabel ?? title}
       data-testid={testId ?? "wm-ent-slideover"}
+      data-reduced-motion={prefersReducedMotion ? "true" : "false"}
       onClick={onClose}
     >
       <div
-        className="wm-ent-slide-panel"
+        className={`wm-ent-slide-panel${motionClass}`}
         onClick={(e) => e.stopPropagation()}
         data-testid="wm-ent-slideover-panel"
       >
@@ -64,7 +84,7 @@ export function SlideOver({
           </div>
           <button
             type="button"
-            className="wm-outlineBtn"
+            className="wm-outlineBtn wm-press-btn"
             onClick={onClose}
             data-testid="wm-ent-slideover-close"
             aria-label="Close"

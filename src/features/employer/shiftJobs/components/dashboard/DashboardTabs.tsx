@@ -1,6 +1,6 @@
 // App name: Job Mitra
 // File name: DashboardTabs.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\components\dashboard\DashboardTabs.tsx
+// Luxury L2 — CLS-safe spring tab transitions via enterprise CSS classes
 
 import { PulseNode } from "../../../../pulse/PulseNode";
 import type { DashboardTab } from "../../helpers/shiftDashboardHelpers";
@@ -24,16 +24,7 @@ const TAB_LABELS: Record<DashboardTab, string> = {
 
 export function DashboardTabs({ activeTab, counts, onChange }: DashboardTabsProps) {
   return (
-    <div
-      style={{
-        marginTop: 12,
-        padding: 6,
-        borderRadius: 18,
-        border: "1px solid rgba(226,232,240,0.95)",
-        background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
-        boxShadow: "0 10px 24px rgba(15,23,42,0.04)",
-      }}
-    >
+    <div className="wm-ent-tab-shell" data-testid="shift-dashboard-tabs">
       <EnterpriseResponsiveGrid
         minItemWidth={88}
         gap={6}
@@ -98,40 +89,12 @@ function DashboardTabButton({
     <button
       type="button"
       onClick={onClick}
-      style={{
-        minHeight: 44,
-        padding: "7px 6px",
-        borderRadius: 14,
-        border: isActive ? "1px solid rgba(22,163,74,0.22)" : "1px solid transparent",
-        background: isActive ? "rgba(22,163,74,0.08)" : "transparent",
-        cursor: "pointer",
-        color: isActive ? "var(--wm-er-accent-shift)" : "var(--wm-er-muted)",
-        fontSize: 11,
-        fontWeight: isActive ? 950 : 750,
-      }}
+      className={`wm-ent-tab-btn${isActive ? " is-active" : ""}`}
+      aria-pressed={isActive}
     >
       <div>{label}</div>
 
-      {count > 0 && (
-        <span
-          style={{
-            marginTop: 4,
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            minWidth: 20,
-            height: 18,
-            padding: "0 6px",
-            borderRadius: 999,
-            background: isActive ? "var(--wm-er-accent-shift)" : "rgba(226,232,240,0.95)",
-            color: isActive ? "#fff" : "var(--wm-er-muted)",
-            fontSize: 10,
-            fontWeight: 900,
-          }}
-        >
-          {count}
-        </span>
-      )}
+      {count > 0 ? <span className="wm-ent-tab-count">{count}</span> : null}
     </button>
   );
 }

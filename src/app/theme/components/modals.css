@@ -12,7 +12,7 @@
   justify-content: center;
   padding: 16px;
   z-index: 9000;
-  animation: wm-fadeIn var(--wm-motion-base) var(--wm-motion-ease);
+  animation: wm-fadeIn var(--wm-motion-base) var(--wm-motion-spring);
 }
 
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -30,7 +30,7 @@
   border: var(--wm-material-glass-border);
   border-radius: var(--wm-radius-employer-card);
   box-shadow: var(--wm-er-elevation-shadow);
-  animation: wm-scaleIn var(--wm-motion-base) var(--wm-motion-spring);
+  animation: wm-scaleIn var(--wm-motion-slow) var(--wm-motion-spring);
   overflow: hidden;
 }
 
@@ -64,7 +64,7 @@
   box-shadow:
     var(--wm-shadow-xl),
     inset 0 1px 0 rgba(255, 255, 255, 0.92);
-  animation: wm-scaleIn var(--wm-motion-base) var(--wm-motion-spring);
+  animation: wm-scaleIn var(--wm-motion-slow) var(--wm-motion-spring);
 }
 
 .wm-confirmModal-neutral {

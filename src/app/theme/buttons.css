@@ -81,6 +81,8 @@
   letter-spacing: -0.01em;
   line-height: 1;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
   transition:
     transform var(--wm-motion-fast) var(--wm-motion-spring),
     border-color var(--wm-motion-base) var(--wm-motion-spring),

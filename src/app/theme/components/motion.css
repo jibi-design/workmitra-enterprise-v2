@@ -137,22 +137,82 @@
 }
 
 /* ------------------------------------------------ */
-/* Breathing Light System — keyframe & utilities    */
+/* Breathing Light System — premium LED variants    */
 /* ------------------------------------------------ */
 
-@keyframes wm-breathe {
+@keyframes wm-led-breathe-normal {
   0%,
   100% {
-    opacity: 0.4;
+    opacity: 0.65;
+    box-shadow:
+      0 0 0 2px var(--wm-led-color-a),
+      0 0 8px 3px var(--wm-led-color-b);
   }
 
   50% {
     opacity: 1;
+    box-shadow:
+      0 0 0 2.5px var(--wm-led-color-a),
+      0 0 16px 6px var(--wm-led-color-b);
   }
 }
 
+@keyframes wm-led-breathe-warning {
+  0%,
+  100% {
+    opacity: 0.6;
+    box-shadow:
+      0 0 0 2px rgba(245, 158, 11, 0.25),
+      0 0 8px 3px rgba(245, 158, 11, 0.35);
+  }
+
+  50% {
+    opacity: 1;
+    box-shadow:
+      0 0 0 2.5px rgba(245, 158, 11, 0.4),
+      0 0 16px 6px rgba(245, 158, 11, 0.55);
+  }
+}
+
+@keyframes wm-led-breathe-urgent {
+  0%,
+  100% {
+    opacity: 0.55;
+    box-shadow:
+      0 0 0 2px rgba(239, 68, 68, 0.25),
+      0 0 8px 3px rgba(239, 68, 68, 0.4);
+  }
+
+  50% {
+    opacity: 1;
+    box-shadow:
+      0 0 0 2.5px rgba(239, 68, 68, 0.45),
+      0 0 18px 7px rgba(239, 68, 68, 0.6);
+  }
+}
+
+.wm-led {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+/* LED breathe/arrival owned by pulse-engine.css (GPU opacity+transform only).
+   Keyframes above remain for legacy non-engine callers (e.g. employee.css). */
+.wm-led-normal,
+.wm-led-warning,
+.wm-led-urgent,
+.wm-led-guide,
+.wm-led-arrival,
+.wm-led-static {
+  animation: none;
+}
+
+/* Keep wm-breathe alias — animation applied in pulse-engine.css */
 .wm-breathe {
-  animation: wm-breathe 3.5s ease-in-out infinite;
+  /* no-op here; see pulse-engine.css */
 }
 
 /* ------------------------------------------------ */
@@ -355,6 +415,13 @@
   .wm-pulseSoft,
   .wm-skeleton,
   .wm-breathe,
+  .wm-breathe-arrival,
+  .wm-led-normal,
+  .wm-led-warning,
+  .wm-led-urgent,
+  .wm-led-guide,
+  .wm-led-arrival,
+  .wm-led-static,
   .wm-actionDone,
   .wm-actionLocked,
   .wm-saveFlash,
@@ -362,7 +429,18 @@
   .wm-collapseOut,
   .wm-press-btn,
   .wm-press-card,
-  .wm-pressable {
+  .wm-pressable,
+  .wm-ent-slide-backdrop,
+  .wm-ent-slide-panel,
+  .wm-ent-slide--reduced,
+  .wm-ent-cmd-panel,
+  .wm-ent-cmd-backdrop,
+  .wm-ent-tab-btn,
+  .wm-shift-cta,
+  .wm-career-cta,
+  .wm-planner-btnPrimary,
+  .wm-planner-btnGhost,
+  .wm-planner-btnOutline {
     animation: none !important;
     transition: none !important;
   }
@@ -376,7 +454,13 @@
 
   .wm-press-btn:active,
   .wm-press-card:active,
-  .wm-pressable:active {
+  .wm-pressable:active,
+  .wm-ent-tab-btn:active,
+  .wm-shift-cta:active,
+  .wm-career-cta:active,
+  .wm-planner-btnPrimary:active,
+  .wm-planner-btnGhost:active,
+  .wm-planner-btnOutline:active {
     transform: none !important;
   }
 }

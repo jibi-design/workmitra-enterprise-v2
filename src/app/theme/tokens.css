@@ -140,7 +140,7 @@
   --wm-emp-card: rgba(255, 255, 255, 0.98);
   --wm-emp-card-soft: rgba(248, 250, 252, 0.94);
   --wm-emp-text: var(--wm-neutral-900);
-  --wm-emp-muted: var(--wm-neutral-500);
+  --wm-emp-muted: var(--wm-neutral-600);
   --wm-emp-subtle: var(--wm-neutral-400);
   --wm-emp-border: rgba(148, 163, 184, 0.18);
   --wm-emp-divider: rgba(226, 232, 240, 0.9);
@@ -161,17 +161,18 @@
   --wm-er-card: rgba(255, 255, 255, 0.74);
   --wm-er-card-strong: rgba(255, 255, 255, 0.9);
   --wm-er-card-soft: rgba(255, 255, 255, 0.58);
-  --wm-er-border: rgba(148, 163, 184, 0.24);
-  --wm-er-border-strong: rgba(148, 163, 184, 0.34);
-  --wm-er-divider: rgba(226, 232, 240, 0.86);
+  --wm-er-border: rgba(100, 116, 139, 0.28);
+  --wm-er-border-strong: rgba(71, 85, 105, 0.36);
+  --wm-er-divider: rgba(226, 232, 240, 0.92);
   --wm-er-text: var(--wm-neutral-950);
-  --wm-er-muted: var(--wm-neutral-500);
-  --wm-er-subtle: var(--wm-neutral-400);
+  /* Luxury L4 — muted steps up to 600 for WCAG-friendlier secondary copy on light glass */
+  --wm-er-muted: var(--wm-neutral-600);
+  --wm-er-subtle: var(--wm-neutral-500);
 
   /* ------------------------------------------------ */
   /* Universal text / state tokens                    */
   /* ------------------------------------------------ */
-  --wm-text-muted: var(--wm-neutral-500);
+  --wm-text-muted: var(--wm-neutral-600);
   --wm-zero-text: var(--wm-neutral-700);
   --wm-zero-bg: var(--wm-neutral-100);
 
@@ -182,6 +183,14 @@
 
   --wm-warning: var(--wm-amber-600);
   --wm-error: var(--wm-red-600);
+
+  /* Focus ring SSOT (Luxury L4) */
+  --wm-focus-ring: rgba(37, 99, 235, 0.55);
+  --wm-focus-ring-shift: rgba(22, 163, 74, 0.32);
+  --wm-focus-ring-planner: rgba(8, 145, 178, 0.4);
+  --wm-focus-ring-career: rgba(29, 78, 216, 0.4);
+  --wm-focus-ring-width: 3px;
+  --wm-focus-ring-offset: 3px;
 
   /* ------------------------------------------------ */
   /* Admin mood � preserved, not polished in Step 14A */
@@ -266,7 +275,7 @@
   --wm-type-helper-size: var(--wm-font-sm);
   --wm-type-helper-size-md: var(--wm-font-md);
   --wm-type-helper-weight: var(--wm-weight-regular);
-  --wm-type-helper-color: var(--wm-neutral-500);
+  --wm-type-helper-color: var(--wm-neutral-600);
 
   /* ------------------------------------------------ */
   /* Elevation                                        */
@@ -355,6 +364,23 @@ select {
 input::placeholder,
 textarea::placeholder {
   font-weight: 400;
-  color: var(--wm-neutral-400);
+  color: var(--wm-neutral-500);
   font-size: 14px;
+}
+
+/*
+  Luxury L4 — dark theme scaffolding only.
+  Not activated by default. Product dark launch is out of scope for this track.
+  Future: set html[data-theme="dark"] after contrast QA across employer shells.
+*/
+html[data-theme="dark"],
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --wm-theme-scaffold-dark: 1;
+  --wm-er-bg-scaffold: #0b1220;
+  --wm-er-card-scaffold: rgba(15, 23, 42, 0.92);
+  --wm-er-text-scaffold: #e8eef9;
+  --wm-er-muted-scaffold: #94a3b8;
+  --wm-er-border-scaffold: rgba(148, 163, 184, 0.28);
+  --wm-focus-ring-scaffold: rgba(96, 165, 250, 0.55);
 }

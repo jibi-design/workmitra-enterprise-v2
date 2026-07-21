@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import type { NoticeData } from "../../../../shared/components/NoticeModal";
+import { showEnterpriseToast } from "../../../../shared/components/enterprise";
 import { DEFAULT_STEP1_DATA, type Step1Data } from "../components/wizard/DemandPlannerStep1.types";
 import {
   validateDemandPlannerIdentity,
@@ -59,7 +60,7 @@ export function useEmployerDemandPlannerState() {
     return [];
   });
 
-  function persistDraft(nextStep?: DemandPlannerStep) {
+  function persistDraft(nextStep?: DemandPlannerStep): boolean {
     const payload = {
       name: step1.name.trim(),
       companyName: step1.companyName.trim(),
@@ -87,7 +88,7 @@ export function useEmployerDemandPlannerState() {
             confirmLabel: "Reload",
           });
         }
-        return;
+        return false;
       }
       setBaselineUpdatedAt(result.plan.updatedAt);
     } else {
@@ -97,10 +98,16 @@ export function useEmployerDemandPlannerState() {
       setBaselineUpdatedAt(created?.updatedAt ?? Date.now());
     }
     setDraftSavedAt(Date.now());
+    return true;
   }
 
   function handleSaveDraft() {
-    persistDraft(step);
+    if (persistDraft(step)) {
+      showEnterpriseToast({
+        tone: "success",
+        message: "Draft saved on this device.",
+      });
+    }
   }
 
   function handleStep1Next() {

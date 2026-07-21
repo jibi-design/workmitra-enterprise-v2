@@ -48,14 +48,22 @@ a:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: 3px solid rgba(22, 163, 74, 0.22);
-  outline-offset: 3px;
+  outline: var(--wm-focus-ring-width, 3px) solid var(--wm-focus-ring-shift, rgba(22, 163, 74, 0.32));
+  outline-offset: var(--wm-focus-ring-offset, 3px);
 }
 
 .wm-ee-vPlanner button:focus-visible,
-.wm-planner-gigSection button:focus-visible {
-  outline: 3px solid rgba(8, 145, 178, 0.28);
-  outline-offset: 3px;
+.wm-planner-gigSection button:focus-visible,
+.wm-er-shellPlanner button:focus-visible {
+  outline-color: var(--wm-focus-ring-planner, rgba(8, 145, 178, 0.4));
+}
+
+.wm-er-vCareer button:focus-visible,
+.wm-er-vCareer a:focus-visible,
+.wm-er-vCareer input:focus-visible,
+.wm-er-vCareer textarea:focus-visible,
+.wm-er-vCareer select:focus-visible {
+  outline-color: var(--wm-focus-ring-career, rgba(29, 78, 216, 0.4));
 }
 
 /* ------------------------------------------------ */
@@ -72,7 +80,7 @@ select {
 input::placeholder,
 textarea::placeholder {
   font-weight: 400;
-  color: #9ca3af;
+  color: var(--wm-neutral-500);
   font-size: 14px;
 }
 
@@ -98,7 +106,7 @@ select:disabled {
 
 /* Shell-only bottom clearance above fixed BottomNav + safe area */
 .pb-safe-nav {
-  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
 }
 
 /* ------------------------------------------------ */
@@ -139,26 +147,47 @@ select:disabled {
   align-items: center;
   justify-content: space-between;
   gap: var(--wm-space-12);
-  padding: var(--wm-space-12) var(--wm-space-16);
-  border-bottom: 1px solid var(--wm-glass-border);
-  background: var(--wm-emp-glass-bg);
+  box-sizing: border-box;
+  height: 56px;
+  min-height: 56px;
+  padding: 0 var(--wm-space-16);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.85);
   box-shadow: var(--wm-emp-surface-shadow);
+  transition:
+    box-shadow var(--wm-motion-base) var(--wm-motion-spring),
+    border-color var(--wm-motion-base) var(--wm-motion-spring),
+    background var(--wm-motion-base) var(--wm-motion-spring);
+}
+
+.wm-topbar.wm-topbarScrolled {
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  border-bottom-color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.92);
 }
 
 .wm-shellEmployee .wm-topbar {
-  border-bottom: 1px solid var(--wm-glass-border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
   background:
     radial-gradient(circle at 50% -80%, rgba(255, 255, 255, 0.96), transparent 68%),
-    var(--wm-emp-glass-bg-strong);
+    rgba(255, 255, 255, 0.85);
   box-shadow: var(--wm-emp-card-shadow);
 }
 
 .wm-shellEmployer .wm-topbar {
-  border-bottom: 1px solid var(--wm-glass-border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
   background:
     radial-gradient(circle at 50% -80%, rgba(255, 255, 255, 0.96), transparent 68%),
-    var(--wm-er-glass-bg);
+    rgba(255, 255, 255, 0.85);
   box-shadow: var(--wm-er-elevation-shadow);
+}
+
+.wm-shellEmployee .wm-topbar.wm-topbarScrolled,
+.wm-shellEmployer .wm-topbar.wm-topbarScrolled {
+  background:
+    radial-gradient(circle at 50% -80%, rgba(255, 255, 255, 0.98), transparent 70%),
+    rgba(255, 255, 255, 0.92);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
 }
 
 .wm-shellEmployee .wm-topbar .wm-iconbtn:hover,
@@ -170,28 +199,32 @@ select:disabled {
   .wm-topbar,
   .wm-shellEmployee .wm-topbar,
   .wm-shellEmployer .wm-topbar {
-    backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
-    -webkit-backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
+    backdrop-filter: blur(16px) var(--wm-glass-saturate);
+    -webkit-backdrop-filter: blur(16px) var(--wm-glass-saturate);
   }
 }
 
 .wm-title {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
+  min-width: 0;
 }
 
 .wm-title h1 {
   margin: 0;
-  font-size: 16px;
-  line-height: 1.2;
-  letter-spacing: -0.015em;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
   color: var(--wm-neutral-950);
 }
 
 .wm-title p {
   margin: 0;
-  font-size: 12px;
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 500;
   color: var(--wm-emp-muted);
 }
 
@@ -207,6 +240,111 @@ select:disabled {
   display: inline-flex;
   align-items: center;
   gap: 10px;
+}
+
+/* Avatar — domain ring kept; hover/active polish only */
+.wm-avatarBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+  overflow: hidden;
+  padding: 0;
+  transition:
+    transform var(--wm-motion-fast) var(--wm-motion-spring),
+    box-shadow var(--wm-motion-base) var(--wm-motion-spring);
+}
+
+.wm-shellEmployee .wm-avatarBtn {
+  border: 2px solid rgba(22, 163, 74, 0.28);
+  background: rgba(22, 163, 74, 0.1);
+  color: #16a34a;
+  box-shadow: 0 0 0 0 rgba(22, 163, 74, 0);
+}
+
+.wm-shellEmployer .wm-avatarBtn {
+  border: 2px solid rgba(124, 58, 237, 0.22);
+  background: rgba(124, 58, 237, 0.1);
+  color: #7c3aed;
+  box-shadow: 0 0 0 0 rgba(124, 58, 237, 0);
+}
+
+@media (hover: hover) {
+  .wm-shellEmployee .wm-avatarBtn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.16);
+  }
+
+  .wm-shellEmployer .wm-avatarBtn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.14);
+  }
+}
+
+.wm-avatarBtn:active {
+  transform: scale(0.96);
+}
+
+.wm-avatarBtn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Notification badge — pill + bounce on new */
+.wm-bellBadge {
+  position: absolute;
+  top: -6px;
+  right: -7px;
+  min-width: 18px;
+  height: 16px;
+  border-radius: 999px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: var(--wm-error);
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.wm-bellBadgeBounce {
+  animation: wm-bellBadgeBounce 520ms var(--wm-motion-spring);
+}
+
+@keyframes wm-bellBadgeBounce {
+  0% {
+    transform: scale(0.7);
+  }
+  45% {
+    transform: scale(1.22);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wm-bellBadgeBounce {
+    animation: none;
+  }
+
+  .wm-topbar,
+  .wm-avatarBtn {
+    transition: none;
+  }
 }
 
 /* ------------------------------------------------ */

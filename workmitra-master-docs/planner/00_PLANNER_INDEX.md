@@ -18,17 +18,20 @@ Phase-0 ships as Shift demand-planning; domain scope lock in doc 02 — **never 
 
 **Employer UI:** `05_EMPLOYER_ULTRA_ENTERPRISE_UI_SYSTEM_v1.0.md` — Ultra-Enterprise UI unification (U0–U5).
 
+**Luxury Polish:** `06_GLOBAL_LUXURY_ENTERPRISE_POLISH_TRACK_v1.0.md` — Command Palette / motion / toast / theme (L0–L4).
+
 **Quick version check:** see `Document version:` on **line 4** of this file and `01_SHIFT_DEMAND_PLANNER_MASTER_DOCUMENT.md` header — both must always match.
 
 ## Documents
 
-| #   | File                                              | Status                                                                |
-| --- | ------------------------------------------------- | --------------------------------------------------------------------- |
-| 01  | `01_SHIFT_DEMAND_PLANNER_MASTER_DOCUMENT.md`      | **Locked for implementation (v1.9)**                                  |
-| 02  | `02_PLANNER_DOMAIN_SCOPE_LOCK_v1.0.md`            | **☑ FROZEN — separate Workforce Intelligence Domain (2026-07-04)**    |
-| 03  | `03_PLANNER_HYBRID_A2_PHASE1_ROADMAP_v1.0.md`     | **COMPLETE — Hybrid A2 Phase-1 (2026-07-21)**                         |
-| 04  | `04_PLANNER_HYBRID_A2_PHASE2_OPS_ROADMAP_v1.0.md` | **COMPLETE — Phase-2 Ops & Trust (P2.0–P2.5 RTW; snapshot deferred)** |
-| 05  | `05_EMPLOYER_ULTRA_ENTERPRISE_UI_SYSTEM_v1.0.md`  | **ACTIVE — Employer UI unification (U0–U5)**                          |
+| #   | File                                               | Status                                                                |
+| --- | -------------------------------------------------- | --------------------------------------------------------------------- |
+| 01  | `01_SHIFT_DEMAND_PLANNER_MASTER_DOCUMENT.md`       | **Locked for implementation (v1.9)**                                  |
+| 02  | `02_PLANNER_DOMAIN_SCOPE_LOCK_v1.0.md`             | **☑ FROZEN — separate Workforce Intelligence Domain (2026-07-04)**    |
+| 03  | `03_PLANNER_HYBRID_A2_PHASE1_ROADMAP_v1.0.md`      | **COMPLETE — Hybrid A2 Phase-1 (2026-07-21)**                         |
+| 04  | `04_PLANNER_HYBRID_A2_PHASE2_OPS_ROADMAP_v1.0.md`  | **COMPLETE — Phase-2 Ops & Trust (P2.0–P2.5 RTW; snapshot deferred)** |
+| 05  | `05_EMPLOYER_ULTRA_ENTERPRISE_UI_SYSTEM_v1.0.md`   | **COMPLETE — Employer UI unification (U0–U5)**                        |
+| 06  | `06_GLOBAL_LUXURY_ENTERPRISE_POLISH_TRACK_v1.0.md` | **COMPLETE — Luxury polish (L0–L4)**                                  |
 
 | — | V2 intelligence spec | **`second-update/04_PLANNER_WORKFORCE_INTELLIGENCE_V2.md`** |
 
