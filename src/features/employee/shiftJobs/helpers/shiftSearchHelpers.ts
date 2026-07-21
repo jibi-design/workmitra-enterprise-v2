@@ -4,6 +4,13 @@
 
 import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
 import { employeeSettingsStorage } from "../../settings/storage/employeeSettings.storage";
+import {
+  applicationsContainBatchId,
+  claimBatchActionLock,
+  hasSeenApplyBatchId,
+  markApplyBatchIdSeen,
+  releaseBatchActionLock,
+} from "../../../shared/planner/services/plannerConcurrency.service";
 
 type Rec = Record<string, unknown>;
 type ActiveApplicationStatus = "applied" | "shortlisted" | "waiting" | "confirmed";
@@ -251,52 +258,65 @@ export function multiApplyGroup(
 ): number {
   if (!isProfileComplete()) return 0;
 
-  const profile = employeeProfileStorage.get();
-  const raw = localStorage.getItem(APPS_KEY);
-  const existing: unknown[] = raw ? JSON.parse(raw) : [];
-
   const batchId = meta?.planApplyBatchId ?? `pb_${Date.now().toString(36)}`;
 
-  const appliedPostIds = new Set(
-    (existing as Rec[])
-      .filter((a) => ACTIVE_APPLICATION_STATUSES.has(a["status"] as ActiveApplicationStatus))
-      .map((a) => a["postId"] as string),
-  );
-
-  const newApps: unknown[] = [];
-
-  for (const postId of postIds) {
-    if (appliedPostIds.has(postId)) continue;
-
-    newApps.push({
-      id: `app_${Math.random().toString(16).slice(2)}_${Date.now().toString(16)}`,
-      postId,
-      createdAt: Date.now(),
-      status: "applied",
-      planId: meta?.planId,
-      planApplyBatchId: batchId,
-      selectedDates: meta?.selectedDates,
-      profileSnapshot: {
-        uniqueId: profile.uniqueId || undefined,
-        fullName: profile.fullName.trim() || undefined,
-        city: profile.city.trim() || undefined,
-        experience: profile.experience || undefined,
-        skills: profile.skills.length > 0 ? profile.skills : undefined,
-        languages: profile.languages.length > 0 ? profile.languages : undefined,
-      },
-      mustHaveAnswers: {},
-      goodToHaveAnswers: {},
-      notes: {},
-    });
+  // Hybrid A2 P2.2 — idempotent apply: same planApplyBatchId must not create a second batch.
+  if (hasSeenApplyBatchId(batchId) || applicationsContainBatchId(batchId)) {
+    return 0;
   }
 
-  if (newApps.length === 0) return 0;
+  const claim = claimBatchActionLock(batchId, "apply");
+  if (!claim.ok) return 0;
 
   try {
-    localStorage.setItem(APPS_KEY, JSON.stringify([...newApps, ...existing]));
-    window.dispatchEvent(new Event("wm:employee-shift-applications-changed"));
-    return newApps.length;
-  } catch {
-    return 0;
+    const profile = employeeProfileStorage.get();
+    const raw = localStorage.getItem(APPS_KEY);
+    const existing: unknown[] = raw ? JSON.parse(raw) : [];
+
+    const appliedPostIds = new Set(
+      (existing as Rec[])
+        .filter((a) => ACTIVE_APPLICATION_STATUSES.has(a["status"] as ActiveApplicationStatus))
+        .map((a) => a["postId"] as string),
+    );
+
+    const newApps: unknown[] = [];
+
+    for (const postId of postIds) {
+      if (appliedPostIds.has(postId)) continue;
+
+      newApps.push({
+        id: `app_${Math.random().toString(16).slice(2)}_${Date.now().toString(16)}`,
+        postId,
+        createdAt: Date.now(),
+        status: "applied",
+        planId: meta?.planId,
+        planApplyBatchId: batchId,
+        selectedDates: meta?.selectedDates,
+        profileSnapshot: {
+          uniqueId: profile.uniqueId || undefined,
+          fullName: profile.fullName.trim() || undefined,
+          city: profile.city.trim() || undefined,
+          experience: profile.experience || undefined,
+          skills: profile.skills.length > 0 ? profile.skills : undefined,
+          languages: profile.languages.length > 0 ? profile.languages : undefined,
+        },
+        mustHaveAnswers: {},
+        goodToHaveAnswers: {},
+        notes: {},
+      });
+    }
+
+    if (newApps.length === 0) return 0;
+
+    try {
+      localStorage.setItem(APPS_KEY, JSON.stringify([...newApps, ...existing]));
+      window.dispatchEvent(new Event("wm:employee-shift-applications-changed"));
+      markApplyBatchIdSeen(batchId);
+      return newApps.length;
+    } catch {
+      return 0;
+    }
+  } finally {
+    releaseBatchActionLock(batchId, "apply", claim.token);
   }
 }

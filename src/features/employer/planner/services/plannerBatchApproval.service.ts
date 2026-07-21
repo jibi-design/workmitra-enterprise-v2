@@ -18,6 +18,11 @@ import {
   hasRealShiftPost,
   rejectPlannerApplicationNative,
 } from "../../../shared/planner/services/plannerNativeApplication.helpers";
+import { appendPlannerAudit } from "../storage/plannerAuditLog.storage";
+import {
+  claimBatchActionLock,
+  releaseBatchActionLock,
+} from "../../../shared/planner/services/plannerConcurrency.service";
 
 export type PlannerBatchReviewStatus = "pending" | "partial" | "confirmed" | "rejected" | "closed";
 
@@ -130,35 +135,60 @@ export async function approvePlannerApplicationBatch(
     return { ok: false, processed: 0, failed: 0, reason: "nothing_pending" };
   }
 
+  const claim = claimBatchActionLock(planApplyBatchId, "approve");
+  if (!claim.ok) {
+    return { ok: false, processed: 0, failed: 0, reason: "locked" };
+  }
+
   let processed = 0;
   let failed = 0;
 
-  for (const app of pending) {
-    try {
-      if (hasRealShiftPost(app.postId)) {
-        const workspaceId = await employerShiftStorage.confirmCandidate(app.postId, app.id);
-        if (workspaceId) processed += 1;
-        else failed += 1;
-      } else if (confirmPlannerApplicationNative(app.id)) {
-        processed += 1;
-      } else {
+  try {
+    for (const app of pending) {
+      try {
+        if (hasRealShiftPost(app.postId)) {
+          const workspaceId = await employerShiftStorage.confirmCandidate(app.postId, app.id);
+          if (workspaceId) processed += 1;
+          else failed += 1;
+        } else if (confirmPlannerApplicationNative(app.id)) {
+          processed += 1;
+        } else {
+          failed += 1;
+        }
+      } catch {
         failed += 1;
       }
-    } catch {
-      failed += 1;
     }
-  }
 
-  if (processed > 0) {
-    plannerPublicIndex.refreshOpenCounts(batch.planId);
-  }
+    if (processed > 0) {
+      plannerPublicIndex.refreshOpenCounts(batch.planId);
+      const plan = demandPlannerStorage.getById(batch.planId);
+      appendPlannerAudit({
+        planId: batch.planId,
+        actor: "employer",
+        actorMlId: plan?.legalEntityMlId,
+        siteManagerId: plan?.siteManagerId,
+        action: "batch_approved",
+        summary: `Batch approved · ${processed} day(s) · ${batch.workerName}`,
+        meta: {
+          planApplyBatchId,
+          processed,
+          failed,
+          workerMlId: batch.workerMlId,
+          nativePath: batch.applications.some((a) => !hasRealShiftPost(a.postId)),
+        },
+      });
+    }
 
-  return {
-    ok: failed === 0 && processed > 0,
-    processed,
-    failed,
-    reason: failed > 0 ? "partial_failure" : undefined,
-  };
+    return {
+      ok: failed === 0 && processed > 0,
+      processed,
+      failed,
+      reason: failed > 0 ? "partial_failure" : undefined,
+    };
+  } finally {
+    releaseBatchActionLock(planApplyBatchId, "approve", claim.token);
+  }
 }
 
 export function rejectPlannerApplicationBatch(planApplyBatchId: string): BatchActionResult {
@@ -172,19 +202,42 @@ export function rejectPlannerApplicationBatch(planApplyBatchId: string): BatchAc
     return { ok: false, processed: 0, failed: 0, reason: "nothing_pending" };
   }
 
-  let processed = 0;
-  for (const app of pending) {
-    if (hasRealShiftPost(app.postId)) {
-      employerShiftStorage.rejectCandidate(app.postId, app.id);
-      processed += 1;
-    } else if (rejectPlannerApplicationNative(app.id)) {
-      processed += 1;
+  const claim = claimBatchActionLock(planApplyBatchId, "reject");
+  if (!claim.ok) {
+    return { ok: false, processed: 0, failed: 0, reason: "locked" };
+  }
+
+  try {
+    let processed = 0;
+    for (const app of pending) {
+      if (hasRealShiftPost(app.postId)) {
+        employerShiftStorage.rejectCandidate(app.postId, app.id);
+        processed += 1;
+      } else if (rejectPlannerApplicationNative(app.id)) {
+        processed += 1;
+      }
     }
-  }
 
-  if (processed > 0) {
-    plannerPublicIndex.refreshOpenCounts(batch.planId);
-  }
+    if (processed > 0) {
+      plannerPublicIndex.refreshOpenCounts(batch.planId);
+      const plan = demandPlannerStorage.getById(batch.planId);
+      appendPlannerAudit({
+        planId: batch.planId,
+        actor: "employer",
+        actorMlId: plan?.legalEntityMlId,
+        siteManagerId: plan?.siteManagerId,
+        action: "batch_rejected",
+        summary: `Batch rejected · ${processed} day(s) · ${batch.workerName}`,
+        meta: {
+          planApplyBatchId,
+          processed,
+          workerMlId: batch.workerMlId,
+        },
+      });
+    }
 
-  return { ok: processed > 0, processed, failed: 0 };
+    return { ok: processed > 0, processed, failed: 0 };
+  } finally {
+    releaseBatchActionLock(planApplyBatchId, "reject", claim.token);
+  }
 }

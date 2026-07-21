@@ -1,17 +1,36 @@
 /**
  * Job Mitra | EmployerPlannerRosterDetailPage.tsx
  * Hybrid A2 S7 — plan-scoped roster console.
+ * Hybrid A2 P2.4 — no-show / miss check-in PulseTargetCard.
+ * Hybrid A2 P2.5 — Visa / Right-to-Work expiry badge + PulseTargetCard.
  */
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { PulseTargetCard } from "../../../pulse/PulseTarget";
+import { getPlannerEscalation } from "../../../shared/planner/plannerEscalationRegistry";
 import { demandPlannerStorage } from "../storage/demandPlannerStorage";
+import {
+  getPlannerRtwRecord,
+  getPlannerRtwWarnDays,
+  setPlannerRtwWarnDays,
+  upsertPlannerRtwRecord,
+} from "../storage/plannerRtw.storage";
 import { getPlannerExecutionPort } from "../../../shared/planner/ports/plannerExecutionPort";
 import {
   getAssignmentEpochProgress,
   runPlannerMilestoneEngine,
 } from "../../../shared/planner/services/plannerMilestone.engine";
+import {
+  fireNoShowEscalations,
+  listNoShowWorkerMlIdsForPlan,
+} from "../../../shared/planner/services/plannerEscalationTriggers.service";
+import {
+  fireRtwEscalations,
+  getPlannerRtwFlagLevel,
+  listRtwFlaggedWorkerMlIdsForPlan,
+} from "../../../shared/planner/services/plannerRtw.service";
 import { listPlannerRosterAssignments } from "../../../shared/planner/services/plannerRoster.helpers";
 import { getVaultPlannerHistory } from "../../../shared/planner/plannerVault";
 
@@ -32,6 +51,47 @@ export function EmployerPlannerRosterDetailPage() {
     () => getVaultPlannerHistory().filter((e) => e.planId === planId),
     [planId],
   );
+
+  const [warnDays, setWarnDays] = useState(() => getPlannerRtwWarnDays());
+  const [rtwDrafts, setRtwDrafts] = useState<Record<string, string>>({});
+  const [rtwTick, setRtwTick] = useState(0);
+
+  // rtwTick re-reads storage after Save RTW / warn-days updates.
+  void rtwTick;
+  const noShowWorkers = planId ? listNoShowWorkerMlIdsForPlan(planId) : new Set<string>();
+  const rtwWorkers = planId ? listRtwFlaggedWorkerMlIdsForPlan(planId) : new Set<string>();
+
+  const noshowPulseId =
+    getPlannerEscalation("PLANNER_NO_SHOW_CHECKIN").pulseNodeId ?? "employer-planner-roster-noshow";
+  const rtwPulseId =
+    getPlannerEscalation("PLANNER_RTW_EXPIRING").pulseNodeId ?? "employer-planner-roster-rtw";
+
+  useEffect(() => {
+    if (!planId) return;
+    fireNoShowEscalations(undefined, planId);
+    fireRtwEscalations(undefined, planId);
+  }, [planId, rtwTick]);
+
+  function handleSaveRtw(workerMlId: string, workerName: string) {
+    const expiresOn = (
+      rtwDrafts[workerMlId] ??
+      getPlannerRtwRecord(workerMlId)?.expiresOn ??
+      ""
+    ).trim();
+    if (!expiresOn) return;
+    upsertPlannerRtwRecord({
+      workerMlId,
+      workerName,
+      expiresOn,
+      documentKind: "right_to_work",
+    });
+    setRtwTick((n) => n + 1);
+  }
+
+  function handleWarnDaysSave() {
+    setWarnDays(setPlannerRtwWarnDays(warnDays));
+    setRtwTick((n) => n + 1);
+  }
 
   if (!planId) {
     return (
@@ -91,6 +151,38 @@ export function EmployerPlannerRosterDetailPage() {
           {plan?.companyName ?? "Employer"} · epoch {plan?.epochDays ?? 30} days · cursor{" "}
           {plan?.milestoneCursor ?? 0}
         </p>
+        <div
+          data-testid="planner-roster-rtw-settings"
+          style={{
+            marginTop: 12,
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 8,
+            alignItems: "center",
+            fontSize: 12,
+          }}
+        >
+          <span style={{ fontWeight: 700, color: "#0f172a" }}>RTW warn (days before expiry)</span>
+          <input
+            type="number"
+            min={1}
+            max={365}
+            value={warnDays}
+            data-testid="planner-roster-rtw-warn-days"
+            onChange={(e) => setWarnDays(Number(e.target.value) || 1)}
+            style={{ width: 72, padding: "6px 8px", borderRadius: 8, border: "1px solid #cbd5e1" }}
+          />
+          <button
+            type="button"
+            className="wm-outlineBtn"
+            data-testid="planner-roster-rtw-warn-save"
+            onClick={handleWarnDaysSave}
+            style={{ padding: "6px 10px", borderRadius: 8, fontWeight: 700 }}
+          >
+            Save
+          </button>
+          <span style={{ color: "#64748b" }}>Visa / Right-to-Work only — not clinical NMC.</span>
+        </div>
       </section>
 
       {assignments.length === 0 ? (
@@ -118,11 +210,19 @@ export function EmployerPlannerRosterDetailPage() {
               assignment.workerMlId,
             );
             const checked = dayStatuses.filter((d) => d.attendanceConfirmed).length;
-            return (
+            const isNoShow = noShowWorkers.has(assignment.workerMlId);
+            const isRtw = rtwWorkers.has(assignment.workerMlId);
+            const rtwStatus = getPlannerRtwFlagLevel(assignment.workerMlId);
+            const storedExpiry = rtwStatus.record?.expiresOn ?? "";
+            const draftExpiry = rtwDrafts[assignment.workerMlId] ?? storedExpiry;
+
+            const article = (
               <article
-                key={assignment.workerMlId}
                 data-testid="planner-roster-worker-card"
                 data-worker={assignment.workerMlId}
+                data-noshow={isNoShow ? "1" : "0"}
+                data-rtw={isRtw ? "1" : "0"}
+                data-rtw-level={rtwStatus.level}
                 style={{
                   padding: 14,
                   borderRadius: 16,
@@ -133,10 +233,77 @@ export function EmployerPlannerRosterDetailPage() {
                 <div style={{ fontWeight: 900 }}>{assignment.workerName}</div>
                 <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>
                   {assignment.workerMlId} · {assignment.days.length} days · check-ins {checked}
+                  {isNoShow ? " · missed check-in" : ""}
                 </div>
+                {(rtwStatus.level === "warning" || rtwStatus.level === "expired") && (
+                  <div
+                    data-testid="planner-roster-rtw-badge"
+                    style={{
+                      marginTop: 8,
+                      display: "inline-block",
+                      padding: "4px 8px",
+                      borderRadius: 8,
+                      fontSize: 11,
+                      fontWeight: 800,
+                      background:
+                        rtwStatus.level === "expired"
+                          ? "rgba(220,38,38,0.12)"
+                          : "rgba(217,119,6,0.14)",
+                      color: rtwStatus.level === "expired" ? "#b91c1c" : "#b45309",
+                    }}
+                  >
+                    RTW {rtwStatus.level}
+                    {rtwStatus.daysRemaining !== null
+                      ? rtwStatus.level === "expired"
+                        ? ` · ${Math.abs(rtwStatus.daysRemaining)}d overdue`
+                        : ` · ${rtwStatus.daysRemaining}d left`
+                      : ""}
+                  </div>
+                )}
                 <div style={{ marginTop: 8, fontSize: 12 }}>
                   Epoch {progress.currentEpochIndex + 1}: {progress.daysCompleted}/
                   {progress.daysScheduled} ({progress.attendanceRate}%)
+                </div>
+                <div
+                  data-testid="planner-roster-rtw-editor"
+                  style={{
+                    marginTop: 10,
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 8,
+                    alignItems: "center",
+                    fontSize: 12,
+                  }}
+                >
+                  <label style={{ fontWeight: 700 }}>
+                    RTW expiry
+                    <input
+                      type="date"
+                      value={draftExpiry}
+                      data-testid="planner-roster-rtw-date"
+                      onChange={(e) =>
+                        setRtwDrafts((prev) => ({
+                          ...prev,
+                          [assignment.workerMlId]: e.target.value,
+                        }))
+                      }
+                      style={{
+                        marginLeft: 8,
+                        padding: "6px 8px",
+                        borderRadius: 8,
+                        border: "1px solid #cbd5e1",
+                      }}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    className="wm-outlineBtn"
+                    data-testid="planner-roster-rtw-save"
+                    onClick={() => handleSaveRtw(assignment.workerMlId, assignment.workerName)}
+                    style={{ padding: "6px 10px", borderRadius: 8, fontWeight: 700 }}
+                  >
+                    Save RTW
+                  </button>
                 </div>
                 <div style={{ marginTop: 8, display: "grid", gap: 4 }}>
                   {assignment.days.map((day) => (
@@ -155,6 +322,17 @@ export function EmployerPlannerRosterDetailPage() {
                   ))}
                 </div>
               </article>
+            );
+
+            const pulseId = isNoShow ? noshowPulseId : isRtw ? rtwPulseId : null;
+            if (!pulseId) {
+              return <div key={assignment.workerMlId}>{article}</div>;
+            }
+
+            return (
+              <PulseTargetCard key={assignment.workerMlId} pulseId={pulseId} radius="16px">
+                {article}
+              </PulseTargetCard>
             );
           })}
         </div>
@@ -179,8 +357,8 @@ export function EmployerPlannerRosterDetailPage() {
                   fontSize: 12,
                 }}
               >
-                {m.employeeName} · Epoch {m.epochIndex + 1} · {m.attendanceRate}% ·{" "}
-                {m.vaultFinalized ? "finalized" : "active summary"}
+                {m.employeeName} · epoch {m.epochIndex + 1} · {m.daysCompleted}/{m.daysScheduled}{" "}
+                days · {m.attendanceRate}% attendance
               </div>
             ))}
           </div>

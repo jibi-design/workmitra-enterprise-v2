@@ -84,6 +84,15 @@ function genId(): string {
   return `dp_${Math.random().toString(36).slice(2)}_${Date.now().toString(36)}`;
 }
 
+export type UpdatePlanOptions = {
+  /** When set, reject write if stored updatedAt differs (multi-tab stale guard). */
+  expectedUpdatedAt?: number;
+};
+
+export type UpdatePlanResult =
+  | { ok: true; plan: DemandPlan }
+  | { ok: false; reason: "not_found" | "stale"; currentUpdatedAt?: number };
+
 export function generateDates(
   startDate: string,
   endDate: string,
@@ -158,7 +167,25 @@ export const demandPlannerStorage = {
     return id;
   },
 
-  updatePlan(id: string, patch: Partial<DemandPlan>): DemandPlan | null {
+  updatePlan(
+    id: string,
+    patch: Partial<DemandPlan>,
+    options?: UpdatePlanOptions,
+  ): UpdatePlanResult {
+    const current = this.getById(id);
+    if (!current) return { ok: false, reason: "not_found" };
+
+    if (
+      typeof options?.expectedUpdatedAt === "number" &&
+      current.updatedAt !== options.expectedUpdatedAt
+    ) {
+      return {
+        ok: false,
+        reason: "stale",
+        currentUpdatedAt: current.updatedAt,
+      };
+    }
+
     let updated: DemandPlan | null = null;
     write(
       read().map((p) => {
@@ -185,7 +212,8 @@ export const demandPlannerStorage = {
         return updated;
       }),
     );
-    return updated;
+    if (!updated) return { ok: false, reason: "not_found" };
+    return { ok: true, plan: updated };
   },
 
   updateSlots(id: string, slots: DaySlot[]): void {

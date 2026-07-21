@@ -14,7 +14,7 @@ export function EmployerPlannerNewPage() {
 
   return (
     <div className="wm-er-vPlanner wm-planner-page">
-      <NoticeModal notice={state.notice} onClose={() => state.setNotice(null)} />
+      <NoticeModal notice={state.notice} onClose={state.handleNoticeClose} />
 
       <EmployerDemandPlannerHeader
         showCancel

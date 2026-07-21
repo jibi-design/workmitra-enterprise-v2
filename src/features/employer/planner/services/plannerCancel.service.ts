@@ -13,6 +13,7 @@ import { demandPlannerStorage } from "../storage/demandPlannerStorage";
 import { plannerPublicIndex } from "../storage/plannerPublicIndex.storage";
 import { plannerDiarySyncService } from "../../../shared/planner/plannerEmployeeBridge";
 import { recordPlannerOffboardInVault } from "../../../shared/planner/plannerVault";
+import { appendPlannerAudit } from "../storage/plannerAuditLog.storage";
 
 const PENDING: EmployeeShiftApplication["status"][] = ["applied", "shortlisted", "waiting"];
 
@@ -158,6 +159,21 @@ export function cancelActivePlan(planId: string, reason?: string): PlannerCancel
       });
     }
   }
+
+  appendPlannerAudit({
+    planId,
+    actor: "employer",
+    actorMlId: plan.legalEntityMlId,
+    siteManagerId: plan.siteManagerId,
+    action: "cancelled",
+    summary: `Cancelled plan “${plan.name}”${reason ? ` — ${reason}` : ""}`,
+    meta: {
+      closedPostCount: closedPostIds.length,
+      closedApplicationCount: closedApplicationIds.length,
+      cancelledConfirmedCount: cancelledConfirmedApplicationIds.length,
+      reason: reason ?? "",
+    },
+  });
 
   return {
     ok: true,

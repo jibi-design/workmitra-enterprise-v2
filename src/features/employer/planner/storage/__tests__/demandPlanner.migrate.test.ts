@@ -160,10 +160,11 @@ describe("demandPlanner schema v2 migrator (Hybrid A2 S2)", () => {
     const reloaded = demandPlannerStorage.getById(id);
     expect(reloaded?.legalEntityMlId).toBe("ML-LEGAL-9");
 
-    demandPlannerStorage.updatePlan(id, {
+    const updated = demandPlannerStorage.updatePlan(id, {
       name: "Draft Updated",
       slots: [{ date: "2026-09-01", workers: 2, payPerDay: 800 }],
     });
+    expect(updated.ok).toBe(true);
 
     const edited = demandPlannerStorage.getById(id);
     expect(edited?.name).toBe("Draft Updated");

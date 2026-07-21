@@ -1,6 +1,7 @@
 /**
  * Job Mitra | plannerNativeApplication.helpers.ts
  * Hybrid A2 S8 — planner-native apply/confirm when no dual-write ShiftPost exists.
+ * Hybrid A2 P2.1 — audit native confirms.
  */
 
 import {
@@ -9,6 +10,8 @@ import {
   writeEmployeeApplications,
   type EmployeeShiftApplication,
 } from "../ports/plannerLegacyShiftBridge";
+import { appendPlannerAudit } from "../../../employer/planner/storage/plannerAuditLog.storage";
+import { demandPlannerStorage } from "../../../employer/planner/storage/demandPlannerStorage";
 
 const PENDING: ReadonlySet<EmployeeShiftApplication["status"]> = new Set([
   "applied",
@@ -51,6 +54,25 @@ export function confirmPlannerApplicationNative(appId: string): boolean {
     notes: { ...app.notes, plannerNativeConfirm: "s8" },
   };
   writeEmployeeApplications(next);
+
+  const planId = app.planId?.trim();
+  if (planId) {
+    const plan = demandPlannerStorage.getById(planId);
+    appendPlannerAudit({
+      planId,
+      actor: "employer",
+      actorMlId: plan?.legalEntityMlId,
+      siteManagerId: plan?.siteManagerId,
+      action: "native_confirmed",
+      summary: `Native confirm · ${app.profileSnapshot?.fullName?.trim() || "Worker"} · target ${app.postId}`,
+      meta: {
+        applicationId: app.id,
+        targetId: app.postId,
+        workerMlId: app.profileSnapshot?.uniqueId?.trim() || "",
+      },
+    });
+  }
+
   return true;
 }
 

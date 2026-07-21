@@ -1,18 +1,34 @@
 /**
  * Job Mitra | EmployerPlannerRosterPage.tsx
  * Hybrid A2 S7 — roster management console index.
+ * Hybrid A2 P2.4 — understaff escalation PulseTargetCard.
  */
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { PulseTargetCard } from "../../../pulse/PulseTarget";
+import { getPlannerEscalation } from "../../../shared/planner/plannerEscalationRegistry";
 import { runPlannerMilestoneEngine } from "../../../shared/planner/services/plannerMilestone.engine";
+import {
+  fireUnderstaffEscalations,
+  listUnderstaffPlanIds,
+} from "../../../shared/planner/services/plannerEscalationTriggers.service";
 import { listActivePlannerPlansForRoster } from "../../../shared/planner/services/plannerRoster.helpers";
 
 export function EmployerPlannerRosterPage() {
   const plans = useMemo(() => {
     runPlannerMilestoneEngine();
     return listActivePlannerPlansForRoster();
+  }, []);
+
+  const understaffPlanIds = listUnderstaffPlanIds();
+  const understaffPulseId =
+    getPlannerEscalation("PLANNER_UNDERSTAFF_RISK").pulseNodeId ??
+    "employer-planner-roster-understaff";
+
+  useEffect(() => {
+    fireUnderstaffEscalations();
   }, []);
 
   return (
@@ -107,29 +123,45 @@ export function EmployerPlannerRosterPage() {
         </section>
       ) : (
         <div style={{ display: "grid", gap: 12 }}>
-          {plans.map((plan) => (
-            <Link
-              key={plan.planId}
-              to={ROUTE_PATHS.employerPlannerRosterDetail.replace(":planId", plan.planId)}
-              data-testid="planner-roster-plan-card"
-              data-plan-id={plan.planId}
-              style={{
-                display: "block",
-                padding: 14,
-                borderRadius: 16,
-                border: "1px solid rgba(8,145,178,0.22)",
-                background: "#fff",
-                textDecoration: "none",
-                color: "inherit",
-              }}
-            >
-              <div style={{ fontSize: 11, fontWeight: 800, color: "#0891b2" }}>
-                {plan.workerCount} workers · {plan.confirmedDayCount} confirmed days
-              </div>
-              <div style={{ fontSize: 16, fontWeight: 900, marginTop: 4 }}>{plan.planName}</div>
-              <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>{plan.companyName}</div>
-            </Link>
-          ))}
+          {plans.map((plan) => {
+            const isUnderstaff = understaffPlanIds.has(plan.planId);
+            const card = (
+              <Link
+                to={ROUTE_PATHS.employerPlannerRosterDetail.replace(":planId", plan.planId)}
+                data-testid="planner-roster-plan-card"
+                data-plan-id={plan.planId}
+                data-understaff={isUnderstaff ? "1" : "0"}
+                style={{
+                  display: "block",
+                  padding: 14,
+                  borderRadius: 16,
+                  border: "1px solid rgba(8,145,178,0.22)",
+                  background: "#fff",
+                  textDecoration: "none",
+                  color: "inherit",
+                }}
+              >
+                <div style={{ fontSize: 11, fontWeight: 800, color: "#0891b2" }}>
+                  {plan.workerCount} workers · {plan.confirmedDayCount} confirmed days
+                  {isUnderstaff ? " · understaff risk" : ""}
+                </div>
+                <div style={{ fontSize: 16, fontWeight: 900, marginTop: 4 }}>{plan.planName}</div>
+                <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>
+                  {plan.companyName}
+                </div>
+              </Link>
+            );
+
+            if (!isUnderstaff) {
+              return <div key={plan.planId}>{card}</div>;
+            }
+
+            return (
+              <PulseTargetCard key={plan.planId} pulseId={understaffPulseId} radius="16px">
+                {card}
+              </PulseTargetCard>
+            );
+          })}
         </div>
       )}
     </div>

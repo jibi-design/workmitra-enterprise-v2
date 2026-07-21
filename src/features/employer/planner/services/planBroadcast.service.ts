@@ -10,6 +10,8 @@ import {
 import { planBroadcastGroupStorage } from "../storage/planBroadcastGroup.storage";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { plannerEmployeeNotifications } from "../../../shared/planner/plannerEmployeeBridge";
+import { appendPlannerAudit } from "../storage/plannerAuditLog.storage";
+import { demandPlannerStorage } from "../storage/demandPlannerStorage";
 
 /**
  * BCC MODEL:
@@ -121,6 +123,17 @@ export function broadcastToPlanCrew(
   }
 
   plannerEmployeeNotifications.crewBroadcast(group.planName, ROUTE_PATHS.employeePlannerWorkspaces);
+
+  const plan = demandPlannerStorage.getById(planId);
+  appendPlannerAudit({
+    planId,
+    actor: "employer",
+    actorMlId: plan?.legalEntityMlId,
+    siteManagerId: plan?.siteManagerId,
+    action: "crew_broadcast",
+    summary: `Crew broadcast · ${delivered} workspace(s) · ${title.trim() || "Project update"}`,
+    meta: { delivered, title: title.trim() || "Project update" },
+  });
 
   return { ok: true, delivered };
 }

@@ -10,6 +10,8 @@ export interface NoticeData {
   title: string;
   message: string;
   tone?: NoticeTone;
+  /** Optional primary button label (default OK). Used for Reload CTA on stale plan. */
+  confirmLabel?: string;
 }
 
 interface NoticeModalProps {
@@ -40,7 +42,7 @@ export function NoticeModal({ notice, onClose }: NoticeModalProps) {
 
         <div className="wm-noticeModalActions">
           <button className="wm-outlineBtn" type="button" onClick={onClose}>
-            OK
+            {notice.confirmLabel ?? "OK"}
           </button>
         </div>
       </div>

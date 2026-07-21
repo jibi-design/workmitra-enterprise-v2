@@ -14,6 +14,7 @@ import {
   PlannerDetailBudgetSection,
   PlannerDetailDaysSection,
 } from "./EmployerPlannerDetailPage.parts";
+import { PlannerDetailActivitySection } from "../components/PlannerDetailActivitySection";
 
 export function EmployerPlannerDetailPage() {
   const { planId = "" } = useParams();
@@ -189,6 +190,7 @@ export function EmployerPlannerDetailPage() {
 
       <PlannerDetailBudgetSection estBudget={estBudget} />
       <PlannerDetailDaysSection plan={plan} onNavigate={nav} />
+      <PlannerDetailActivitySection planId={plan.id} />
       <PlannerDetailBroadcastSection
         broadcastTitle={broadcastTitle}
         broadcastBody={broadcastBody}

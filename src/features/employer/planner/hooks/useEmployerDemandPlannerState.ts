@@ -25,6 +25,10 @@ export function useEmployerDemandPlannerState() {
   const resumeStep = Number(searchParams.get("step") ?? "1");
 
   const [planId, setPlanId] = useState<string | null>(resumePlanId);
+  const [baselineUpdatedAt, setBaselineUpdatedAt] = useState<number | null>(() => {
+    if (!resumePlanId) return null;
+    return demandPlannerStorage.getById(resumePlanId)?.updatedAt ?? null;
+  });
   const [step, setStep] = useState<DemandPlannerStep>(
     (resumeStep >= 1 && resumeStep <= 3 ? resumeStep : 1) as DemandPlannerStep,
   );
@@ -71,10 +75,26 @@ export function useEmployerDemandPlannerState() {
     };
 
     if (planId) {
-      demandPlannerStorage.updatePlan(planId, payload);
+      const result = demandPlannerStorage.updatePlan(planId, payload, {
+        expectedUpdatedAt: baselineUpdatedAt ?? undefined,
+      });
+      if (!result.ok) {
+        if (result.reason === "stale") {
+          setNotice({
+            title: "This plan was updated elsewhere",
+            message: "Reload the draft to continue editing without overwriting newer changes.",
+            tone: "warn",
+            confirmLabel: "Reload",
+          });
+        }
+        return;
+      }
+      setBaselineUpdatedAt(result.plan.updatedAt);
     } else {
       const id = demandPlannerStorage.create(payload);
       setPlanId(id);
+      const created = demandPlannerStorage.getById(id);
+      setBaselineUpdatedAt(created?.updatedAt ?? Date.now());
     }
     setDraftSavedAt(Date.now());
   }
@@ -141,11 +161,30 @@ export function useEmployerDemandPlannerState() {
       setSubmitting,
       setNotice,
       setSubmitResults,
+      expectedUpdatedAt: baselineUpdatedAt,
+      onBaselineUpdatedAt: setBaselineUpdatedAt,
     });
   }
 
   function goToPlannerHome() {
     nav(ROUTE_PATHS.employerPlannerHome);
+  }
+
+  /** P2.2 — Reload CTA: pull latest draft from storage when stale notice is dismissed. */
+  function handleNoticeClose() {
+    const isStale = notice?.confirmLabel === "Reload" && notice.title.includes("updated elsewhere");
+    if (isStale && planId) {
+      const draft = demandPlannerStorage.getById(planId);
+      if (draft) {
+        setStep1(buildStep1FromDraft(draft));
+        setSlots(draft.slots);
+        setBaselineUpdatedAt(draft.updatedAt);
+        if (draft.draftStep && draft.draftStep >= 1 && draft.draftStep <= 3) {
+          setStep(draft.draftStep as DemandPlannerStep);
+        }
+      }
+    }
+    setNotice(null);
   }
 
   return {
@@ -166,6 +205,7 @@ export function useEmployerDemandPlannerState() {
     handleSaveDraft,
     handleSubmit,
     goToPlannerHome,
+    handleNoticeClose,
     persistDraft,
   };
 }
