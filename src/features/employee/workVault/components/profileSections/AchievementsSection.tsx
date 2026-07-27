@@ -45,7 +45,7 @@ function GroupHeader({
       style={{
         marginBottom: 7,
         padding: "9px 10px",
-        borderRadius: 15,
+        borderRadius: "var(--wm-radius-chip)",
         border: `1px solid ${tone.border}`,
         background: `linear-gradient(135deg, rgba(255,255,255,1), ${tone.softBg})`,
       }}
@@ -59,7 +59,7 @@ function GroupHeader({
           style={{
             flexShrink: 0,
             padding: "4px 8px",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             background: tone.softBg,
             border: `1px solid ${tone.border}`,
             color: tone.text,
@@ -88,7 +88,7 @@ export function AchievementsSection({ data }: { data: VaultSectionData["achievem
         <div
           style={{
             padding: "12px",
-            borderRadius: 17,
+            borderRadius: "var(--wm-radius-chip)",
             border: "1px solid rgba(124,58,237,0.18)",
             background:
               "radial-gradient(circle at 96% 0%, rgba(124,58,237,0.10), transparent 34%), linear-gradient(135deg, rgba(255,255,255,1), rgba(248,250,252,0.96) 58%, rgba(245,243,255,0.64))",
@@ -108,8 +108,8 @@ export function AchievementsSection({ data }: { data: VaultSectionData["achievem
               lineHeight: 1.45,
             }}
           >
-            Track earned milestones and next goals across shift, career, reputation, and profile
-            growth.
+            Track earned milestones and next goals across shift, career, planner, reputation, and
+            profile growth.
           </div>
 
           <div

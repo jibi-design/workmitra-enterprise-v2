@@ -60,7 +60,7 @@ function ExpandableTextPanel({
     <div
       style={{
         marginTop: 10,
-        borderRadius: 16,
+        borderRadius: "var(--wm-radius-chip)",
         background: "rgba(248,250,252,0.86)",
         border: "1px solid rgba(148,163,184,0.11)",
         overflow: "hidden",

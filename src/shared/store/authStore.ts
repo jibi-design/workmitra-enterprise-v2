@@ -6,42 +6,33 @@ import type { StateStorage } from "zustand/middleware";
 import { AUTH_BACKEND_ENABLED } from "../config/authConfig";
 import { authService } from "../../features/auth/services/authService";
 import { roleStorage } from "../../app/storage/roleStorage";
+import { piiSecureStorage } from "../security/piiSecureStorage";
+import {
+  clearShiftOpsAuthSession,
+  ensureShiftOpsAuthSession,
+} from "../../features/shiftOps/services/authBridge.service";
+import { publishAuthSessionEpoch } from "../auth/authSessionSync";
 
 const AUTH_STORAGE_KEY = "wm-auth-storage";
 
 const safeStorage: StateStorage = {
-  getItem: (name) => {
-    try {
-      return localStorage.getItem(name);
-    } catch (e) {
-      console.error("Storage read error", e);
-      return null;
-    }
-  },
+  getItem: (name) => piiSecureStorage.getItem(name),
   setItem: (name, value) => {
-    try {
-      localStorage.setItem(name, value);
-    } catch (e) {
-      console.error("Storage write error", e);
-    }
+    piiSecureStorage.setItem(name, value);
   },
   removeItem: (name) => {
-    try {
-      localStorage.removeItem(name);
-    } catch (e) {
-      console.error("Storage delete error", e);
-    }
+    piiSecureStorage.removeItem(name);
   },
 };
 
-/** Backend auth: cookie session is SoT — never cache auth state in localStorage. */
-if (AUTH_BACKEND_ENABLED) {
-  try {
+/** Scrub legacy bearer tokens; cookie session is SoT when auth backend is on. */
+try {
+  localStorage.removeItem("wm_auth_token");
+  if (AUTH_BACKEND_ENABLED) {
     localStorage.removeItem(AUTH_STORAGE_KEY);
-    localStorage.removeItem("wm_auth_token");
-  } catch {
-    // ignore
   }
+} catch {
+  // ignore
 }
 
 export type UserRole = "employee" | "employer" | "admin";
@@ -87,13 +78,16 @@ const createAuthSlice: AuthStoreSlice = (set, get) => ({
   token: null,
 
   setAuth: (user, token) => {
+    void token;
     syncRoleBridge(user);
+    // Never keep bearer tokens in client memory/persist (Phase-0 demo uses role bridge only).
     set({
       user,
-      token: AUTH_BACKEND_ENABLED ? null : token,
+      token: null,
       isAuthenticated: true,
       sessionChecked: true,
     });
+    publishAuthSessionEpoch(user.id, user.role);
   },
 
   clearAuth: () => {
@@ -104,12 +98,17 @@ const createAuthSlice: AuthStoreSlice = (set, get) => ({
       isAuthenticated: false,
       sessionChecked: true,
     });
+    publishAuthSessionEpoch(null, null);
   },
 
   updateProfile: (updates) =>
-    set((state) => ({
-      user: state.user ? { ...state.user, ...updates } : null,
-    })),
+    set((state) => {
+      if (!state.user) return {};
+      // P0/P1: role is server-owned — never allow client partials to escalate.
+      const { role: _ignoredRole, ...safeUpdates } = updates;
+      void _ignoredRole;
+      return { user: { ...state.user, ...safeUpdates } };
+    }),
 
   hydrateSession: async () => {
     if (!AUTH_BACKEND_ENABLED) {
@@ -119,14 +118,21 @@ const createAuthSlice: AuthStoreSlice = (set, get) => ({
     const user = await authService.fetchMe();
     if (user) {
       get().setAuth(user, null);
+      void ensureShiftOpsAuthSession().catch(() => {
+        /* bridge optional until server env configured */
+      });
     } else {
       get().clearAuth();
+      void clearShiftOpsAuthSession();
     }
   },
 
   loginWithCredentials: async (email, password) => {
     const user = await authService.login({ email, password });
     get().setAuth(user, null);
+    void ensureShiftOpsAuthSession().catch(() => {
+      /* bridge optional until server env configured */
+    });
     return user;
   },
 
@@ -138,6 +144,7 @@ const createAuthSlice: AuthStoreSlice = (set, get) => ({
         // still clear client state
       }
     }
+    await clearShiftOpsAuthSession();
     get().clearAuth();
   },
 });
@@ -147,13 +154,22 @@ export const useAuthStore = AUTH_BACKEND_ENABLED
   : create<AuthState>()(
       persist(createAuthSlice, {
         name: AUTH_STORAGE_KEY,
-        version: 3,
+        version: 4,
         storage: createJSONStorage(() => safeStorage),
         partialize: (state) => ({
           user: state.user,
           isAuthenticated: state.isAuthenticated,
-          token: state.token,
         }),
+        migrate: (persistedState) => {
+          const p = persistedState as {
+            user?: UserProfile | null;
+            isAuthenticated?: boolean;
+          } | null;
+          return {
+            user: p?.user ?? null,
+            isAuthenticated: Boolean(p?.isAuthenticated && p?.user),
+          };
+        },
         onRehydrateStorage: () => (_state, error) => {
           if (error) console.error("Auth hydration failed", error);
         },

@@ -44,7 +44,7 @@ export function WorkforceCategoryDisplay({ categoryIds, size = "md" }: DisplayPr
           key={catId}
           style={{
             ...chipSize,
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             background: AMBER_BG,
             color: AMBER,
             fontWeight: 700,

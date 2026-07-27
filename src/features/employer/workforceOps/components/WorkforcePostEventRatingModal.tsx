@@ -159,7 +159,7 @@ export function WorkforcePostEventRatingModal({
           fontWeight: 600,
           lineHeight: 1.5,
           padding: "8px 12px",
-          borderRadius: 8,
+          borderRadius: "var(--wm-radius-8)",
           background: "rgba(180,83,9,0.06)",
           border: "1px solid rgba(180,83,9,0.18)",
         }}

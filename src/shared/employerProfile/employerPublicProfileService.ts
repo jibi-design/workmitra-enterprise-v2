@@ -7,6 +7,7 @@
 import { employerSettingsStorage } from "../../features/employer/company/storage/employerSettings.storage";
 import { getEmployerBusinessKey } from "../../features/employer/company/helpers/employerDualId.helpers";
 import { ratingStorage } from "../rating/ratingStorage";
+import { isPublicReputationDomain } from "../rating/plannerRating.helpers";
 import { employerShiftStorage } from "../../features/employer/shiftJobs/storage/employerShift.storage";
 import { getCareerPosts } from "../../features/employer/careerJobs/services/careerPostService";
 import type { WorkerEmployerTag } from "../rating/ratingTypes";
@@ -77,7 +78,7 @@ export type EmployerPublicProfile = {
 
 export type EmployerReview = {
   id: string;
-  workerWmId: string;
+  workerMlId: string;
   stars: 1 | 2 | 3 | 4 | 5;
   tags: string[];
   comment?: string;
@@ -88,15 +89,15 @@ export type EmployerReview = {
 
 /* ── Profile Aggregation ───────────────────────── */
 
-export function getEmployerPublicProfile(employerWmId: string): EmployerPublicProfile | null {
-  if (!employerWmId) return null;
+export function getEmployerPublicProfile(employerMlId: string): EmployerPublicProfile | null {
+  if (!employerMlId) return null;
 
   const profile = employerSettingsStorage.get();
   const businessKey = getEmployerBusinessKey(profile);
-  if (!businessKey || businessKey !== employerWmId) return null;
+  if (!businessKey || businessKey !== employerMlId) return null;
   if (!profile.companyName.trim()) return null;
 
-  const summary = ratingStorage.getEmployerSummary(employerWmId);
+  const summary = ratingStorage.getEmployerSummary(employerMlId);
   const level = calculateEmployerLevel(summary.totalRatings);
 
   const shiftPosts = employerShiftStorage.getPosts();
@@ -108,10 +109,10 @@ export function getEmployerPublicProfile(employerWmId: string): EmployerPublicPr
   const shiftHired = shiftPosts.reduce((sum, p) => sum + p.confirmedIds.length, 0);
   const careerHired = careerPosts.reduce((sum, p) => sum + p.hired, 0);
 
-  const memberSince = deriveMemberSince(shiftPosts, careerPosts, employerWmId);
+  const memberSince = deriveMemberSince(shiftPosts, careerPosts, employerMlId);
 
   return {
-    wmId: employerWmId,
+    wmId: employerMlId,
     companyName: profile.companyName,
     industryType: profile.industryType,
     companySize: profile.companySize,
@@ -133,27 +134,27 @@ export function getEmployerPublicProfile(employerWmId: string): EmployerPublicPr
 
 /* ── Reviews for Vault tab ─────────────────────── */
 
-export function getEmployerReviews(employerWmId: string): EmployerReview[] {
-  if (!employerWmId) return [];
+export function getEmployerReviews(employerMlId: string): EmployerReview[] {
+  if (!employerMlId) return [];
 
   return ratingStorage
     .getAllWRRatings()
-    .filter((r) => r.employerWmId === employerWmId)
+    .filter((r) => r.employerMlId === employerMlId && isPublicReputationDomain(r.domain))
     .map((r) => ({
       id: r.id,
-      workerWmId: r.workerWmId,
+      workerMlId: r.workerMlId,
       stars: r.stars,
       tags: [...r.tags],
       comment: r.comment,
       workAgain: r.workAgain,
       createdAt: r.createdAt,
-      domain: r.domain,
+      domain: r.domain as "shift" | "career",
     }));
 }
 
 /* ── Quick lookup (search cards — lightweight) ──── */
 
-export function getEmployerQuickInfo(employerWmId: string): {
+export function getEmployerQuickInfo(employerMlId: string): {
   wmId: string;
   companyName: string;
   averageStars: number;
@@ -161,17 +162,17 @@ export function getEmployerQuickInfo(employerWmId: string): {
   level: EmployerLevel;
   levelLabel: string;
 } | null {
-  if (!employerWmId) return null;
+  if (!employerMlId) return null;
 
   const profile = employerSettingsStorage.get();
   const businessKey = getEmployerBusinessKey(profile);
-  if (!businessKey || businessKey !== employerWmId) return null;
+  if (!businessKey || businessKey !== employerMlId) return null;
 
-  const summary = ratingStorage.getEmployerSummary(employerWmId);
+  const summary = ratingStorage.getEmployerSummary(employerMlId);
   const level = calculateEmployerLevel(summary.totalRatings);
 
   return {
-    wmId: employerWmId,
+    wmId: employerMlId,
     companyName: profile.companyName,
     averageStars: summary.averageStars,
     totalRatings: summary.totalRatings,
@@ -185,7 +186,7 @@ export function getEmployerQuickInfo(employerWmId: string): {
 function deriveMemberSince(
   shiftPosts: { startAt: number }[],
   careerPosts: { createdAt: number }[],
-  employerWmId: string,
+  employerMlId: string,
 ): number | null {
   const timestamps: number[] = [];
 
@@ -196,7 +197,7 @@ function deriveMemberSince(
     if (typeof p.createdAt === "number" && p.createdAt > 0) timestamps.push(p.createdAt);
   }
 
-  const ratings = ratingStorage.getAllWRRatings().filter((r) => r.employerWmId === employerWmId);
+  const ratings = ratingStorage.getAllWRRatings().filter((r) => r.employerMlId === employerMlId);
   for (const r of ratings) {
     if (typeof r.createdAt === "number" && r.createdAt > 0) timestamps.push(r.createdAt);
   }

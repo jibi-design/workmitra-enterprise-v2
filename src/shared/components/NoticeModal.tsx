@@ -29,7 +29,10 @@ export function NoticeModal({ notice, onClose }: NoticeModalProps) {
 
   return (
     <CenterModal open={!!notice} onBackdropClose={onClose} ariaLabel={notice.title}>
-      <div className={`wm-noticeModal wm-noticeModal-${tone}`}>
+      <div
+        className={`wm-noticeModal wm-noticeModal-${tone}`}
+        role={tone === "error" || tone === "warn" ? "alert" : undefined}
+      >
         <div className="wm-noticeModalHeader">
           <div className="wm-noticeModalIcon">
             <ToneIcon tone={tone} />

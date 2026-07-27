@@ -1,6 +1,4 @@
-// App name: Job Mitra
-// File name: MyShiftWorkspacesTabs.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\components\MyShiftWorkspacesTabs.tsx
+// App name: Job Mitra | MyShiftWorkspacesTabs.tsx — shared seg-tab primitives
 
 import type { MyShiftWorkspaceCounts, MyShiftWorkspaceTab } from "../types/myShiftWorkspaces.types";
 
@@ -11,18 +9,6 @@ const TABS: { key: MyShiftWorkspaceTab; label: string }[] = [
   { key: "closed", label: "Closed" },
   { key: "all", label: "All" },
 ];
-
-const TAB_COLORS_SHIFT = {
-  activeBg: "rgba(22,163,74,0.12)",
-  activeBorder: "rgba(22,163,74,0.28)",
-  activeColor: "var(--wm-er-accent-shift, #16a34a)",
-};
-
-const TAB_COLORS_PLANNER = {
-  activeBg: "rgba(8,145,178,0.12)",
-  activeBorder: "rgba(8,145,178,0.28)",
-  activeColor: "var(--wm-planner-accent, #0891b2)",
-};
 
 type MyShiftWorkspacesTabsProps = {
   tab: MyShiftWorkspaceTab;
@@ -37,27 +23,29 @@ export function MyShiftWorkspacesTabs({
   onTabChange,
   domain = "shift",
 }: MyShiftWorkspacesTabsProps) {
-  const tabColors = domain === "planner" ? TAB_COLORS_PLANNER : TAB_COLORS_SHIFT;
+  const isPlanner = domain === "planner";
 
   return (
-    <div className="wm-chipRow" style={{ marginTop: 12 }}>
+    <div
+      className={isPlanner ? "wm-chipRow" : "wm-shift-seg-tab-row"}
+      role="tablist"
+      aria-label={isPlanner ? "Project workspace filters" : "Work group filters"}
+      data-testid="shift-workspaces-tabs"
+    >
       {TABS.map((item) => {
         const isActive = tab === item.key;
         return (
           <button
             key={item.key}
-            className={`wm-chipBtn ${isActive ? "isActive" : ""}`}
             type="button"
-            onClick={() => onTabChange(item.key)}
-            style={
-              isActive
-                ? {
-                    background: tabColors.activeBg,
-                    borderColor: tabColors.activeBorder,
-                    color: tabColors.activeColor,
-                  }
-                : undefined
+            role="tab"
+            aria-selected={isActive}
+            className={
+              isPlanner
+                ? `wm-chipBtn ${isActive ? "isActive" : ""}`
+                : `wm-shift-seg-tab ${isActive ? "isActive" : ""}`
             }
+            onClick={() => onTabChange(item.key)}
           >
             {item.label} ({counts[item.key]})
           </button>

@@ -2,7 +2,7 @@
 // Recessed glass "Nearby Worker Availability" card — Step 2 (blind count only).
 
 import { useSyncExternalStore } from "react";
-import { availabilityStorage } from "../../../employee/shiftJobs/storage/availabilityStorage";
+import { availabilityStorage } from "../../../shared/shift/availability.reader";
 import { toDateStr } from "../helpers/shiftCreateHelpers";
 
 type Props = {

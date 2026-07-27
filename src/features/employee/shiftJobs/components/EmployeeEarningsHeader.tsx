@@ -1,35 +1,18 @@
-// App name: Job Mitra
-// File name: EmployeeEarningsHeader.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\components\EmployeeEarningsHeader.tsx
+// App name: Job Mitra | EmployeeEarningsHeader.tsx — DomainHero (Wave B)
 
-import { EARNINGS_GREEN } from "../helpers/employeeEarnings.helpers";
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
 
 export function EmployeeEarningsHeader() {
   return (
-    <div className="wm-pageHead">
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <div
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: 12,
-            flexShrink: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "rgba(22,163,74,0.08)",
-            color: EARNINGS_GREEN,
-          }}
-        >
-          <EarningsIcon />
-        </div>
-
-        <div>
-          <div className="wm-pageTitle">Earnings Tracker</div>
-          <div className="wm-pageSub">Your confirmed shift earnings</div>
-        </div>
-      </div>
-    </div>
+    <DomainHero
+      variant="shift"
+      audience="employee"
+      icon={<EarningsIcon />}
+      title="Earnings Tracker"
+      subtitle="Estimated totals from confirmed shifts — not a payout or settlement"
+      description="Track estimated pay from confirmed single-day shifts. Direct payout and settlement are planned for a later release."
+      trailing={<span className="wm-domainHeroBadge">Estimates</span>}
+    />
   );
 }
 

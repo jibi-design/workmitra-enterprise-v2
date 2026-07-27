@@ -8,7 +8,7 @@ import {
   notifyEmployeeCareerSavedJobsChanged,
   safeRead,
   safeWrite,
-} from "../../../employer/careerJobs/helpers/careerStorageUtils";
+} from "../../../career/helpers/careerStoragePublic";
 
 export type EmployeeCareerSavedJobRecord = {
   postId: string;

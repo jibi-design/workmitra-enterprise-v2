@@ -68,7 +68,7 @@ export function ShiftTimelineHeader({
         <span
           style={{
             flexShrink: 0,
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             padding: "6px 10px",
             border: `1px solid ${badgeVisual.border}`,
             background: badgeVisual.background,
@@ -97,7 +97,7 @@ export function ShiftTimelineHeader({
       {status === "replaced" && replacementReason && (
         <div
           style={{
-            borderRadius: 16,
+            borderRadius: "var(--wm-radius-chip)",
             border: "1px solid rgba(220, 38, 38, 0.18)",
             background: "rgba(254, 242, 242, 0.72)",
             padding: "10px 12px",
@@ -121,7 +121,7 @@ function TimelineMetaPill({ label, value }: { readonly label: string; readonly v
         display: "inline-flex",
         alignItems: "center",
         gap: 5,
-        borderRadius: 999,
+        borderRadius: "var(--wm-radius-pill)",
         border: "1px solid rgba(148, 163, 184, 0.2)",
         background: "rgba(255, 255, 255, 0.88)",
         padding: "6px 9px",

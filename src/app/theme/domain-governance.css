@@ -221,33 +221,38 @@
   color: var(--wm-planner-accent);
 }
 
-/* Employer shell — teal chrome when inside /employer/planner/* */
+/* Employer shell — teal page chrome when inside /employer/planner/* (not Shift green) */
 .wm-er-shellPlanner {
   background:
-    radial-gradient(circle at 8% -2%, rgba(8, 145, 178, 0.12), transparent 34%),
+    radial-gradient(circle at 8% -2%, rgba(8, 145, 178, 0.1), transparent 34%),
     linear-gradient(180deg, #f4fbfd 0%, #edf4f8 50%, #f8fafc 100%);
 }
 
-.wm-er-topbarPlanner {
-  border-bottom-color: var(--wm-planner-glass-border) !important;
-  background: linear-gradient(
-    180deg,
-    rgba(236, 254, 255, 0.96),
-    rgba(240, 253, 250, 0.88)
-  ) !important;
-  box-shadow: 0 1px 0 rgba(8, 145, 178, 0.08);
+/* Topbar stays pure white — never Shift green, never mint wash */
+.wm-er-topbarPlanner,
+.wm-er-topbarPlanner.wm-topbarScrolled,
+.wm-shellEmployer .wm-er-topbarPlanner.wm-topbarScrolled {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.22) !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 .wm-er-topbarPlanner .wm-iconbtn {
-  border-color: var(--wm-planner-glass-border) !important;
+  border-color: rgba(148, 163, 184, 0.22) !important;
   background:
-    radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.98), transparent 58%),
-    var(--wm-planner-glass-bg) !important;
+    radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.98), transparent 58%), #ffffff !important;
 }
 
 .wm-er-topbarPlanner .wm-iconbtn:hover {
-  border-color: var(--wm-planner-border-strong) !important;
-  box-shadow: 0 8px 20px rgba(8, 145, 178, 0.12);
+  border-color: rgba(8, 145, 178, 0.28) !important;
+  box-shadow: 0 8px 20px rgba(8, 145, 178, 0.1);
+}
+
+/* Extra scroll clearance — last status cards must clear bottom nav + FAB */
+.wm-er-shellPlanner .wm-container.pb-safe-nav {
+  padding-bottom: calc(132px + env(safe-area-inset-bottom, 0px));
 }
 
 /* ------------------------------------------------ */

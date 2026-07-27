@@ -24,7 +24,7 @@ import { getDirectInviteDateLabelForPost } from "../helpers/shiftDirectInvite.he
 import { useEmployeeDirectInvitePendingFlow } from "../hooks/useEmployeeDirectInvitePendingFlow";
 import { useShiftPostApplyState } from "../hooks/useShiftPostApplyState";
 import { PAGE_STYLE, ShiftPostDetailsApplyHero, getSafeEntityText } from "./shiftPostDetailsApply";
-import { getEmployerShiftPosts } from "../../../employer/shiftJobs/storage/employerShift.postActions";
+import { getEmployerShiftPosts } from "../../../shared/shift/shiftEmployerPublic";
 import { PlannerProjectContextBanner } from "../../planner/components/PlannerProjectContextBanner";
 
 export function ShiftPostDetailsApplyPage() {
@@ -86,7 +86,11 @@ export function ShiftPostDetailsApplyPage() {
     plannerPost?.source === "planner" && plannerPost.planId ? plannerPost.planId : undefined;
 
   return (
-    <div className="wm-ee-vShift" style={PAGE_STYLE}>
+    <div
+      className="wm-ee-vShift wm-stackGrid"
+      data-testid="shift-post-details-page"
+      style={PAGE_STYLE}
+    >
       <ShiftPostDetailsApplyHero employerName={employerName} locationName={locationName} />
 
       {plannerPlanId ? (

@@ -56,7 +56,7 @@ export function CareerAnalysisNumberControl({
         display: "grid",
         gap: 5,
         padding: "8px 9px",
-        borderRadius: 14,
+        borderRadius: "var(--wm-radius-chip)",
         background: "rgba(255,255,255,0.84)",
         border: "1px solid rgba(148,163,184,0.14)",
       }}
@@ -91,7 +91,7 @@ export function CareerAnalysisNumberControl({
         style={{
           width: "100%",
           minHeight: 34,
-          borderRadius: 11,
+          borderRadius: "var(--wm-radius-10)",
           border: "1px solid rgba(148,163,184,0.22)",
           padding: "0 9px",
           fontSize: 13,

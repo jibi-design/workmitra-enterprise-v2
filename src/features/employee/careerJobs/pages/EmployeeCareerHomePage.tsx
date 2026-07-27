@@ -17,17 +17,23 @@ import {
 } from "../helpers/careerWorkspaceHooks";
 
 function isBlockingCareerSearchStage(stage: string): boolean {
-  return stage !== "withdrawn" && stage !== "rejected";
+  return stage !== "withdrawn" && stage !== "rejected" && stage !== "offer_declined";
 }
 
 function isActiveApplicationStage(stage: string): boolean {
   return (
-    stage !== "withdrawn" && stage !== "rejected" && stage !== "hired" && stage !== "completed"
+    stage !== "withdrawn" &&
+    stage !== "rejected" &&
+    stage !== "offer_declined" &&
+    stage !== "hired" &&
+    stage !== "completed"
   );
 }
 
 function isNextStepStage(stage: string): boolean {
   const normalizedStage = stage.toLowerCase();
+
+  if (normalizedStage === "offer_declined" || normalizedStage === "withdrawn") return false;
 
   return (
     normalizedStage.includes("shortlist") ||
@@ -88,7 +94,7 @@ export function EmployeeCareerHomePage() {
   );
 
   return (
-    <div style={{ display: "grid", gap: "var(--wm-stack-gap)" }}>
+    <div className="wm-ee-vCareer wm-stackGrid">
       <EmployeeCareerHomeHeader
         activeJobCount={activeJobCount}
         activeApplicationCount={activeApplicationCount}

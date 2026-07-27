@@ -20,8 +20,11 @@ export function EmployeeSettingsSecuritySection({
   onLogout,
 }: Props) {
   return (
-    <section className="wm-ee-card" style={{ marginTop: 12 }}>
-      <div className="wm-ee-cardTitle" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    <section className="wm-settingsGroup">
+      <div
+        className="wm-ee-cardTitle"
+        style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px 0" }}
+      >
         <svg
           width="16"
           height="16"
@@ -88,7 +91,7 @@ export function EmployeeSettingsSecuritySection({
         <span
           style={{
             padding: "3px 10px",
-            borderRadius: 6,
+            borderRadius: "var(--wm-radius-8)",
             fontSize: 11,
             fontWeight: 800,
             background: "rgba(14,165,233,0.10)",
@@ -116,32 +119,25 @@ export function EmployeeSettingsSecuritySection({
       </div>
 
       {/* Action buttons */}
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" }}>
-        <button
-          className="wm-outlineBtn"
-          type="button"
-          onClick={onClearLocalData}
-          style={{ minWidth: 140, justifyContent: "center" }}
-        >
-          Clear local data
+      <div className="wm-settingsGroup wm-settingsGroup--danger" style={{ marginTop: 12 }}>
+        <div className="wm-settingsGroup__title">Danger zone</div>
+        <button className="wm-settingsRow" type="button" onClick={onClearLocalData}>
+          <span className="wm-settingsRow__label">Clear local data</span>
+          <span className="wm-settingsRow__chevron">→</span>
+        </button>
+
+        <button className="wm-settingsRow wm-settingsRow--danger" type="button" onClick={onLogout}>
+          <span className="wm-settingsRow__label">Logout</span>
+          <span className="wm-settingsRow__chevron">→</span>
         </button>
 
         <button
-          className="wm-outlineBtn"
-          type="button"
-          onClick={onLogout}
-          style={{ minWidth: 100, justifyContent: "center" }}
-        >
-          Logout
-        </button>
-
-        <button
-          className="wm-dangerBtn"
+          className="wm-settingsRow wm-settingsRow--danger"
           type="button"
           onClick={onDeleteAccount}
-          style={{ minWidth: 140, justifyContent: "center" }}
         >
-          Delete account
+          <span className="wm-settingsRow__label">Delete account</span>
+          <span className="wm-settingsRow__chevron">→</span>
         </button>
       </div>
     </section>
@@ -169,7 +165,7 @@ const securityDescStyle: React.CSSProperties = {
 
 const comingSoonStyle: React.CSSProperties = {
   padding: "3px 10px",
-  borderRadius: 6,
+  borderRadius: "var(--wm-radius-8)",
   fontSize: 11,
   fontWeight: 800,
   background: "rgba(100,116,139,0.08)",

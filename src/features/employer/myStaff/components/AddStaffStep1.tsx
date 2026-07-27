@@ -1,7 +1,12 @@
 /** Job Mitra | AddStaffStep1.tsx | C:\projects\WorkMitra_Enterprise_v2\src\features\employer\myStaff\components\AddStaffStep1.tsx */
 
 import type { IdRegistryEntry } from "../helpers/addStaffHelpers";
-import { INPUT_STYLE, LABEL_STYLE, CANCEL_BTN_STYLE, nextBtnStyle } from "../helpers/addStaffStyles";
+import {
+  INPUT_STYLE,
+  LABEL_STYLE,
+  CANCEL_BTN_STYLE,
+  nextBtnStyle,
+} from "../helpers/addStaffStyles";
 
 type AddStaffStep1Props = {
   uniqueId: string;
@@ -31,12 +36,13 @@ export function AddStaffStep1({
           lineHeight: 1.5,
           marginBottom: 12,
           padding: "8px 12px",
-          borderRadius: 8,
+          borderRadius: "var(--wm-radius-8)",
           background: "rgba(3,105,161,0.05)",
           border: "1px solid rgba(3,105,161,0.12)",
         }}
       >
-        Enter the employee&apos;s Job Mitra Unique ID. You can find it on their Work Vault profile or ask them directly.
+        Enter the employee&apos;s Mitra Labs Unique ID. You can find it on their Work Vault profile
+        or ask them directly.
       </div>
 
       <label style={LABEL_STYLE}>Employee Unique ID</label>
@@ -45,7 +51,7 @@ export function AddStaffStep1({
           type="text"
           value={uniqueId}
           onChange={(e) => onUniqueIdChange(e.target.value)}
-          placeholder="Enter Job Mitra ID"
+          placeholder="Enter Mitra Labs ID"
           style={{ ...INPUT_STYLE, flex: 1 }}
         />
         <button
@@ -54,7 +60,7 @@ export function AddStaffStep1({
           disabled={!uniqueId.trim()}
           style={{
             padding: "0 16px",
-            borderRadius: 10,
+            borderRadius: "var(--wm-radius-10)",
             border: "none",
             background: uniqueId.trim() ? "var(--wm-er-accent-console, #0369a1)" : "#e5e7eb",
             color: uniqueId.trim() ? "#fff" : "#9ca3af",
@@ -80,7 +86,7 @@ export function AddStaffStep1({
           style={{
             marginTop: 12,
             padding: 12,
-            borderRadius: 10,
+            borderRadius: "var(--wm-radius-10)",
             background: "rgba(22,163,74,0.06)",
             border: "1px solid rgba(22,163,74,0.15)",
           }}
@@ -114,7 +120,12 @@ export function AddStaffStep1({
         <button type="button" onClick={onCancel} style={CANCEL_BTN_STYLE}>
           Cancel
         </button>
-        <button type="button" onClick={onNext} disabled={!lookupResult} style={nextBtnStyle(!!lookupResult)}>
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={!lookupResult}
+          style={nextBtnStyle(!!lookupResult)}
+        >
           Next
         </button>
       </div>

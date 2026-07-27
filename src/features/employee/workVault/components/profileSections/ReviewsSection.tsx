@@ -94,7 +94,7 @@ function renderReviewCard(
       data-testid={ref.source === "planner" ? "vault-planner-review" : "vault-shift-review"}
       style={{
         padding: 12,
-        borderRadius: 16,
+        borderRadius: "var(--wm-radius-chip)",
         border: theme.border,
         background: theme.background,
       }}
@@ -147,7 +147,7 @@ function renderReviewCard(
         <span
           style={{
             padding: "6px 9px",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             background: theme.badgeBg,
             border: theme.badgeBorder,
             color: ratingColor,
@@ -164,7 +164,7 @@ function renderReviewCard(
         style={{
           marginTop: 8,
           height: 5,
-          borderRadius: 999,
+          borderRadius: "var(--wm-radius-pill)",
           background: "rgba(15,23,42,0.06)",
           overflow: "hidden",
         }}
@@ -173,7 +173,7 @@ function renderReviewCard(
           style={{
             width: `${barPct}%`,
             height: "100%",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             background: ratingColor,
             transition: "width 0.3s ease",
           }}
@@ -184,7 +184,7 @@ function renderReviewCard(
         <span
           style={{
             padding: "4px 8px",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             background: theme.badgeBg,
             border: theme.badgeBorder,
             color: ratingColor,
@@ -199,7 +199,7 @@ function renderReviewCard(
           <span
             style={{
               padding: "4px 8px",
-              borderRadius: 999,
+              borderRadius: "var(--wm-radius-pill)",
               background: ref.hireAgain ? "rgba(22,163,74,0.08)" : "rgba(239,68,68,0.06)",
               border: ref.hireAgain
                 ? "1px solid rgba(22,163,74,0.14)"
@@ -219,7 +219,7 @@ function renderReviewCard(
           <span
             style={{
               padding: "4px 8px",
-              borderRadius: 999,
+              borderRadius: "var(--wm-radius-pill)",
               background: "rgba(15,23,42,0.035)",
               border: "1px solid rgba(148,163,184,0.18)",
               color: "var(--wm-emp-muted)",
@@ -239,7 +239,7 @@ function renderReviewCard(
               key={tag}
               style={{
                 padding: "4px 8px",
-                borderRadius: 999,
+                borderRadius: "var(--wm-radius-pill)",
                 background: "rgba(124,58,237,0.06)",
                 border: "1px solid rgba(124,58,237,0.12)",
                 color: "#7c3aed",
@@ -258,7 +258,7 @@ function renderReviewCard(
           style={{
             marginTop: 9,
             padding: "9px 10px",
-            borderRadius: 13,
+            borderRadius: "var(--wm-radius-chip)",
             background: "rgba(248,250,252,0.96)",
             border: "1px solid rgba(226,232,240,0.9)",
             color: "var(--wm-emp-muted)",

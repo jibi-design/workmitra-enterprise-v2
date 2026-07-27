@@ -14,6 +14,7 @@ type VaultOtpDisplayProps = {
 
 export function VaultOtpDisplay({ code, expiresAt, onExpired }: VaultOtpDisplayProps) {
   const [remainingMs, setRemainingMs] = useState(() => Math.max(0, expiresAt - Date.now()));
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -33,46 +34,43 @@ export function VaultOtpDisplay({ code, expiresAt, onExpired }: VaultOtpDisplayP
   const seconds = totalSeconds % 60;
   const timeStr = `${minutes}:${String(seconds).padStart(2, "0")}`;
   const isUrgent = totalSeconds <= 60;
+  const digits = code.replace(/\s+/g, "").split("");
+
+  async function handleCopy() {
+    if (remainingMs <= 0) return;
+    try {
+      await navigator.clipboard.writeText(code.replace(/\s+/g, ""));
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      /* clipboard may be blocked — keep UI quiet */
+    }
+  }
 
   return (
-    <div style={{ textAlign: "center" }}>
-      <div className="wm-vault-otp-digits" style={{ marginBottom: 16 }}>
-        {code}
-      </div>
-
-      <div
-        style={{ fontSize: 13, color: "var(--wm-emp-muted)", marginBottom: 12, fontWeight: 500 }}
-      >
-        Share this code
+    <div className="wm-vault-otp-display">
+      <div className="wm-vault-otp-stage" aria-label={`Access code ${digits.join(" ")}`}>
+        <div className="wm-vault-otp-digits">
+          {digits.map((digit, index) => (
+            <span key={`${digit}-${index}`} className="wm-vault-otp-digit">
+              {digit}
+            </span>
+          ))}
+        </div>
       </div>
 
       <span className={`wm-vault-otp-expiry${isUrgent ? " wm-vault-otp-expiry--urgent" : ""}`}>
         {remainingMs <= 0 ? "Expired" : `Expires in ${timeStr}`}
       </span>
 
-      <div style={{ marginTop: 16 }}>
-        <button
-          type="button"
-          className="wm-vault-tap"
-          onClick={() => void navigator.clipboard.writeText(code)}
-          disabled={remainingMs <= 0}
-          style={{
-            padding: "0 20px",
-            borderRadius: 12,
-            border: "1.5px solid var(--wm-vault-accent)",
-            background: "transparent",
-            color: "var(--wm-vault-accent)",
-            fontWeight: 800,
-            fontSize: 13,
-            cursor: remainingMs <= 0 ? "not-allowed" : "pointer",
-            opacity: remainingMs <= 0 ? 0.4 : 1,
-            display: "inline-flex",
-            alignItems: "center",
-          }}
-        >
-          Copy Code
-        </button>
-      </div>
+      <button
+        type="button"
+        className="wm-vault-otp-btn wm-vault-otp-btn--ghost"
+        onClick={() => void handleCopy()}
+        disabled={remainingMs <= 0}
+      >
+        {copied ? "Copied" : "Copy Code"}
+      </button>
     </div>
   );
 }

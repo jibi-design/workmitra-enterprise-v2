@@ -7,10 +7,12 @@ export type AppRole = "employee" | "employer" | "admin";
  * - Data stores remain in localStorage (shared) for interaction testing
  *
  * Therefore role is stored in sessionStorage (tab-specific).
+ *
+ * SECURITY: Not authorization when AUTH backend is off.
+ * Wave 2: legacy localStorage role keys are purged — never re-imported into session.
  */
 const KEY_SESSION = "wm_role_session_v1";
 
-// Legacy (previous implementation used localStorage)
 const KEY_V2_LEGACY = "wm_role_v2";
 const KEY_LEGACY = "wm_role";
 
@@ -44,20 +46,17 @@ function safeSessionRemoveItem(key: string) {
   }
 }
 
-function safeLocalGetItem(key: string): string | null {
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
 function safeLocalRemoveItem(key: string) {
   try {
     localStorage.removeItem(key);
   } catch {
     // ignore
   }
+}
+
+function purgeLegacyRoleKeys(): void {
+  safeLocalRemoveItem(KEY_V2_LEGACY);
+  safeLocalRemoveItem(KEY_LEGACY);
 }
 
 function notifyRoleChanged() {
@@ -68,67 +67,31 @@ function notifyRoleChanged() {
   }
 }
 
-function migrateLegacyRoleToSessionIfPresent(): AppRole | null {
-  // If this tab already has session role, keep it.
-  const existing = safeSessionGetItem(KEY_SESSION);
-  if (isRole(existing)) return existing;
-
-  // Otherwise, if legacy localStorage role exists, copy it into this tab's session
-  const v2 = safeLocalGetItem(KEY_V2_LEGACY);
-  if (isRole(v2)) {
-    safeSessionSetItem(KEY_SESSION, v2);
-    return v2;
-  }
-
-  const legacy = safeLocalGetItem(KEY_LEGACY);
-  if (isRole(legacy)) {
-    safeSessionSetItem(KEY_SESSION, legacy);
-    return legacy;
-  }
-
-  return null;
-}
-
 export const roleStorage = {
   isRole,
 
   get(): AppRole | null {
-    // Ensure one-time migration behavior per tab
-    const migrated = migrateLegacyRoleToSessionIfPresent();
-    if (migrated) return migrated;
-
+    // Wave 2 P1: never migrate sticky LS roles into this tab — purge only.
+    purgeLegacyRoleKeys();
     const v = safeSessionGetItem(KEY_SESSION);
     return isRole(v) ? v : null;
   },
 
   set(role: AppRole) {
     safeSessionSetItem(KEY_SESSION, role);
-
-    // We intentionally do NOT write role into localStorage anymore.
-    // Keep legacy keys cleaned to prevent confusion.
-    safeLocalRemoveItem(KEY_V2_LEGACY);
-    safeLocalRemoveItem(KEY_LEGACY);
-
+    purgeLegacyRoleKeys();
     notifyRoleChanged();
   },
 
   clear() {
     safeSessionRemoveItem(KEY_SESSION);
-
-    // Cleanup legacy keys too
-    safeLocalRemoveItem(KEY_V2_LEGACY);
-    safeLocalRemoveItem(KEY_LEGACY);
-
+    purgeLegacyRoleKeys();
     notifyRoleChanged();
   },
 
   subscribe(listener: () => void) {
     const onCustom = () => listener();
-
-    // For role (session-based), we only need same-tab updates.
-    // Cross-tab role sync is NOT desired (it breaks dual-tab testing).
     window.addEventListener(ROLE_CHANGED_EVENT, onCustom);
-
     return () => {
       window.removeEventListener(ROLE_CHANGED_EVENT, onCustom);
     };

@@ -1,6 +1,6 @@
 // App name: Job Mitra
 // File name: EmployerShiftPostsKpiTiles.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\components\EmployerShiftPostsKpiTiles.tsx
+// My Posts KPIs — shared .wm-shift-kpi-tile primitives (Step 2)
 
 type EmployerShiftPostsKpiTilesProps = {
   kpi: {
@@ -15,11 +15,13 @@ type EmployerShiftPostsKpiTone = "neutral" | "shift" | "success";
 
 export function EmployerShiftPostsKpiTiles({ kpi }: EmployerShiftPostsKpiTilesProps) {
   return (
-    <div className="wm-er-tiles wm-shiftPostsKpiGrid">
+    <div
+      className="wm-shift-kpi-grid wm-shiftPostsKpiGrid wm-animateIn"
+      data-testid="shift-posts-kpi-grid"
+      style={{ animationDelay: "60ms" }}
+    >
       <KpiTile label="Total" value={kpi.total} tone="neutral" />
-
       <KpiTile label="Open" value={kpi.open} tone={kpi.open > 0 ? "shift" : "neutral"} />
-
       <KpiTile label="Active" value={kpi.active} tone={kpi.active > 0 ? "success" : "neutral"} />
     </div>
   );
@@ -39,12 +41,13 @@ function KpiTile({
 
   return (
     <div
-      className={["wm-er-tile", "wm-shiftPostsKpiTile", toneClassName, stateClassName]
+      className={["wm-shift-kpi-tile", "wm-shiftPostsKpiTile", toneClassName, stateClassName]
         .filter(Boolean)
         .join(" ")}
+      data-testid={`shift-posts-kpi-${label.toLowerCase()}`}
     >
-      <div className="wm-er-tileLabel">{label}</div>
-      <div className="wm-er-tileValue">{value}</div>
+      <div className="wm-shift-kpi-tile__label">{label}</div>
+      <div className="wm-shift-kpi-tile__value">{value}</div>
     </div>
   );
 }

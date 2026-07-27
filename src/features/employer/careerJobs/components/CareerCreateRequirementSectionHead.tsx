@@ -22,7 +22,7 @@ export function CareerCreateRequirementSectionHead({
           style={{
             width: 32,
             height: 32,
-            borderRadius: 10,
+            borderRadius: "var(--wm-radius-10)",
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",

@@ -6,6 +6,7 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
 import {
   getPlannerExecutionPort,
   type PlannerCheckInResult,
@@ -66,77 +67,38 @@ export function EmployeePlannerWorkspaceHubPage() {
 
   return (
     <div className="wm-ee-vPlanner wm-planner-page" data-testid="planner-employee-workspace-hub">
-      <section
-        style={{
-          marginBottom: 16,
-          padding: 16,
-          borderRadius: 18,
-          border: "1px solid rgba(8,145,178,0.2)",
-          background:
-            "linear-gradient(135deg, rgba(8,145,178,0.1), rgba(255,255,255,0.98) 50%, rgba(236,254,255,0.88))",
-        }}
-      >
-        <div
-          style={{
-            fontSize: 12,
-            fontWeight: 800,
-            letterSpacing: "0.04em",
-            textTransform: "uppercase",
-            color: "#0e7490",
-            marginBottom: 6,
-          }}
-        >
-          Hybrid A2 · Roster Workspace
-        </div>
-        <h1 className="wm-pageTitle" style={{ margin: 0 }}>
-          Candidate Roster Workspace
-        </h1>
-        <p className="wm-pageSub" style={{ marginTop: 6 }}>
-          Active schedules, daily check-ins, and 30-day epoch progress — all under /planner.
-        </p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14 }}>
-          <Link
-            to={ROUTE_PATHS.employeePlannerHome}
-            data-testid="planner-employee-workspace-hub-back"
-            className="wm-outlineBtn"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              padding: "10px 14px",
-              borderRadius: 10,
-              textDecoration: "none",
-              fontWeight: 700,
-            }}
-          >
-            Back to Planner Home
-          </Link>
-          <Link
-            to={ROUTE_PATHS.employeePlannerBrowse}
-            data-testid="planner-employee-workspace-hub-discover"
-            className="wm-primarybtn"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              padding: "10px 14px",
-              borderRadius: 10,
-              textDecoration: "none",
-              fontWeight: 700,
-            }}
-          >
-            Discover projects
-          </Link>
-        </div>
-      </section>
+      <DomainHero
+        variant="planner"
+        audience="employee"
+        eyebrow="Roster workspace"
+        title="Candidate Roster Workspace"
+        subtitle="Active schedules, daily check-ins, and 30-day epoch progress — all under /planner."
+        trailing={
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            <Link
+              to={ROUTE_PATHS.employeePlannerHome}
+              data-testid="planner-employee-workspace-hub-back"
+              className="wm-planner-btnGhost"
+              style={{ textDecoration: "none", minHeight: 36, padding: "6px 12px", fontSize: 12 }}
+            >
+              Planner Home
+            </Link>
+            <Link
+              to={ROUTE_PATHS.employeePlannerBrowse}
+              data-testid="planner-employee-workspace-hub-discover"
+              className="wm-planner-btnPrimary"
+              style={{ textDecoration: "none", minHeight: 36, padding: "6px 12px", fontSize: 12 }}
+            >
+              Discover
+            </Link>
+          </div>
+        }
+      />
 
       <div
         data-testid="planner-execution-checkin-panel"
-        style={{
-          marginBottom: 16,
-          padding: 16,
-          borderRadius: 16,
-          border: "1px solid rgba(8,145,178,0.25)",
-          background: "#fff",
-        }}
+        className="wm-planner-card"
+        style={{ marginTop: 14 }}
       >
         <h2 style={{ margin: "0 0 12px", fontSize: 16 }}>Daily check-in (Execution Port)</h2>
         <label style={{ display: "block", marginBottom: 8, fontSize: 13 }}>

@@ -38,7 +38,7 @@ export function EmployerShiftRatingBlockOverlay({
           width: "100%",
           maxWidth: 480,
           background: "var(--wm-er-card, #fff)",
-          borderRadius: 16,
+          borderRadius: "var(--wm-radius-chip)",
           padding: "20px 20px 24px",
           boxShadow: "0 8px 32px rgba(0,0,0,0.24)",
         }}
@@ -78,7 +78,7 @@ export function EmployerShiftRatingBlockOverlay({
           style={{
             marginBottom: 14,
             padding: "10px 12px",
-            borderRadius: 10,
+            borderRadius: "var(--wm-radius-10)",
             background: "rgba(217,119,6,0.06)",
             border: "1px solid rgba(217,119,6,0.2)",
             fontSize: 12,

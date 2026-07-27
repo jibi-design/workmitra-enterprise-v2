@@ -1,4 +1,4 @@
-/** Job Mitra | EmployeeHomePage.tsx | src/features/employee/home/pages/EmployeeHomePage.tsx */
+/** Job Mitra | EmployeeHomePage.tsx | Cross-domain home — no Shift-ops duplicates */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -7,9 +7,6 @@ import { OnboardingOverlay } from "../../../../shared/components/OnboardingOverl
 import { PendingActionsHub } from "../../../../shared/components/PendingActionsHub";
 import { useEmployeeRoleHomePendingActions } from "../../../../shared/pendingActions/hooks/useEmployeeRoleHomePendingActions";
 import { useEmployeeUrgentPendingHubItems } from "../../../../shared/pendingActions/hooks/useEmployeeUrgentPendingHubItems";
-import { ShiftDirectInviteSafetyModals } from "../../shiftJobs/components/ShiftDirectInviteSafetyModals";
-import { ShiftToast } from "../../shiftJobs/components/ShiftPostDetailSections";
-import { useEmployeeDirectInvitePendingFlow } from "../../shiftJobs/hooks/useEmployeeDirectInvitePendingFlow";
 import {
   EMPLOYEE_HOME_WELCOME_KEY,
   EMPLOYEE_ONBOARDING_KEY,
@@ -23,8 +20,14 @@ import { EmployeeHomeTopTiles } from "../components/EmployeeHomeTopTiles";
 import { EmployeeHomeWelcomeCard } from "../components/EmployeeHomeWelcomeCard";
 import { ProfileNudgeCard } from "../components/ProfileNudgeCard";
 import { formatNumber, n, readDemo } from "../helpers/employeeHomeHelpers";
+import {
+  hasPendingGroupJoin,
+  resolvePendingGroupJoinOrchestration,
+} from "../../../shiftOps/helpers/groupJoinDeepLink";
+import { PendingGroupJoinBanner } from "../../../shiftOps/components/PendingGroupJoinBanner";
+import { IncomingCallAnswerBanner } from "../../../shared/calling";
+import { resolveIncomingCallerIdentity } from "../../shiftJobs/helpers/incomingCallIdentity";
 
-// AUDIT: Storage check functions preserved for future expansion but kept internal
 function hasSeenEmployeeOnboarding(): boolean {
   try {
     return (
@@ -56,10 +59,9 @@ export function EmployeeHomePage() {
   const nav = useNavigate();
   const pendingActions = useEmployeeRoleHomePendingActions(nav);
   const urgentPendingActions = useEmployeeUrgentPendingHubItems(nav);
-  const directInviteFlow = useEmployeeDirectInvitePendingFlow();
   const allPendingActions = useMemo(
-    () => [...directInviteFlow.hubItems, ...urgentPendingActions, ...pendingActions],
-    [directInviteFlow.hubItems, urgentPendingActions, pendingActions],
+    () => [...urgentPendingActions, ...pendingActions],
+    [urgentPendingActions, pendingActions],
   );
 
   const [showOnboarding, setShowOnboarding] = useState(() => !hasSeenEmployeeOnboarding());
@@ -83,6 +85,8 @@ export function EmployeeHomePage() {
     return profile.fullName || "User";
   }, []);
 
+  const employeeMlId = useMemo(() => employeeProfileStorage.get().uniqueId?.trim() ?? "", []);
+
   const isFirstTime = useMemo(() => !flags.shiftEnabled && !flags.careerEnabled, [flags]);
 
   useEffect(() => {
@@ -98,6 +102,14 @@ export function EmployeeHomePage() {
       clearTimeout(removeTimer);
     };
   }, [isFirstTime, showWelcome]);
+
+  useEffect(() => {
+    if (showOnboarding) return;
+    const next = resolvePendingGroupJoinOrchestration();
+    if (next && next.includes("/employee/shift-ops/invite")) {
+      nav(next, { replace: true });
+    }
+  }, [showOnboarding, nav]);
 
   const hrRecords = useEmployeeHRRecords();
   const pendingOffers = hrRecords.filter((record) => record.status === "offered");
@@ -118,19 +130,21 @@ export function EmployeeHomePage() {
     nav(ROUTE_PATHS.employeeCareerSearch);
   }, [nav]);
 
-  const handleViewHistory = useCallback(() => {
-    nav(ROUTE_PATHS.employeeShiftEarnings);
-  }, [nav]);
-
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--wm-stack-gap)",
-        fontFamily: `"Inter", "Plus Jakarta Sans", system-ui, sans-serif`,
-      }}
-    >
+    <div className="wm-homePage">
+      {hasPendingGroupJoin() ? (
+        <div style={{ marginBottom: "var(--wm-stack-gap)" }}>
+          <PendingGroupJoinBanner />
+        </div>
+      ) : null}
+
+      {employeeMlId ? (
+        <IncomingCallAnswerBanner
+          partyMl={employeeMlId}
+          resolveCaller={resolveIncomingCallerIdentity}
+        />
+      ) : null}
+
       <EmployeeHomeTopTiles
         userName={userDisplayName}
         upcomingShiftDisplay={formatNumber(upcomingShift)}
@@ -141,16 +155,6 @@ export function EmployeeHomePage() {
 
       <PendingActionsHub items={allPendingActions} />
 
-      <ShiftDirectInviteSafetyModals
-        modal={directInviteFlow.modal}
-        isBusy={directInviteFlow.isBusy}
-        onCancel={directInviteFlow.closeModal}
-        onConfirm={directInviteFlow.confirmModalAction}
-      />
-
-      {directInviteFlow.toast ? <ShiftToast message={directInviteFlow.toast} /> : null}
-
-      {/* 2. DYNAMIC CONTENT AREA */}
       <div style={{ display: "flex", flexDirection: "column", gap: "var(--wm-stack-gap)" }}>
         {isFirstTime && showWelcome && (
           <EmployeeHomeWelcomeCard
@@ -161,7 +165,6 @@ export function EmployeeHomePage() {
 
         <ProfileNudgeCard />
 
-        {/* BENTO GRID ACTION CARDS - AUDIT: Aligned with simplified Props */}
         <EmployeeHomeMainSections
           anyDomain={anyDomain}
           showShift={showShift}
@@ -169,7 +172,6 @@ export function EmployeeHomePage() {
           pendingOffers={pendingOffers}
           onFindShifts={handleFindShifts}
           onCareerSearch={handleCareerSearch}
-          onViewHistory={handleViewHistory}
         />
       </div>
 
@@ -180,7 +182,8 @@ export function EmployeeHomePage() {
           storageKey={EMPLOYEE_ONBOARDING_KEY}
           onComplete={() => {
             setShowOnboarding(false);
-            nav(ROUTE_PATHS.employeeProfile);
+            const next = resolvePendingGroupJoinOrchestration() ?? ROUTE_PATHS.employeeProfile;
+            nav(next);
           }}
         />
       )}

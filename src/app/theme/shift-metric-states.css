@@ -15,6 +15,7 @@
 .wm-shiftEmployeeStatsTile:not(.isPositive) .wm-shiftEmployeeStatsValue,
 .wm-shiftHomeKpiTile.isZero .wm-shiftHomeKpiValue,
 .wm-shiftPostsKpiTile.isZero .wm-er-tileValue,
+.wm-shiftPostsKpiTile.isZero .wm-shift-kpi-tile__value,
 .wm-shiftHomeMiniMetric.isZero .wm-shiftHomeMiniMetricValue,
 .wm-ee-tileValue.is-zero,
 .wm-er-tileValue.is-zero {
@@ -34,6 +35,7 @@
 
 .wm-shiftHomeKpiTile.isZero .wm-shiftHomeKpiLabel,
 .wm-shiftPostsKpiTile.isZero .wm-er-tileLabel,
+.wm-shiftPostsKpiTile.isZero .wm-shift-kpi-tile__label,
 .wm-shiftEmployeeStatsTile:not(.isPositive) .wm-shiftEmployeeStatsLabel,
 .wm-shiftHomeMiniMetric.isZero .wm-shiftHomeMiniMetricLabel {
   color: var(--wm-neutral-500);
@@ -79,17 +81,21 @@
 /* ------------------------------------------------ */
 /* Positive Employer Shift Posts metric state       */
 /* ------------------------------------------------ */
-.wm-shiftPostsKpiTile:not(.isZero).isShift .wm-er-tileValue {
+.wm-shiftPostsKpiTile:not(.isZero).isShift .wm-er-tileValue,
+.wm-shiftPostsKpiTile:not(.isZero).isShift .wm-shift-kpi-tile__value {
   color: var(--wm-er-accent-shift);
   opacity: 1;
 }
 
-.wm-shiftPostsKpiTile:not(.isZero).isSuccess .wm-er-tileValue {
+.wm-shiftPostsKpiTile:not(.isZero).isSuccess .wm-er-tileValue,
+.wm-shiftPostsKpiTile:not(.isZero).isSuccess .wm-shift-kpi-tile__value {
   color: var(--wm-success);
   opacity: 1;
 }
 
-.wm-shiftPostsKpiTile:not(.isZero).isPositive:not(.isShift):not(.isSuccess) .wm-er-tileValue {
+.wm-shiftPostsKpiTile:not(.isZero).isPositive:not(.isShift):not(.isSuccess) .wm-er-tileValue,
+.wm-shiftPostsKpiTile:not(.isZero).isPositive:not(.isShift):not(.isSuccess)
+  .wm-shift-kpi-tile__value {
   color: var(--wm-er-text);
   opacity: 1;
 }

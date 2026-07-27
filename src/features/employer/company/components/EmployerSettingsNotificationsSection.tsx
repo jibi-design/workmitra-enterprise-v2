@@ -60,7 +60,7 @@ export function EmployerSettingsNotificationsSection({ data, editMode, onFieldCh
           justifyContent: "space-between",
           marginBottom: 14,
           padding: "10px 12px",
-          borderRadius: 10,
+          borderRadius: "var(--wm-radius-10)",
           background: pulseEnabled ? "rgba(139,92,246,0.05)" : "rgba(100,116,139,0.04)",
           border: pulseEnabled
             ? "1px solid rgba(139,92,246,0.16)"
@@ -165,7 +165,7 @@ export function EmployerSettingsNotificationsSection({ data, editMode, onFieldCh
               style={{
                 width: "100%",
                 height: 38,
-                borderRadius: 8,
+                borderRadius: "var(--wm-radius-8)",
                 border: "1.5px solid #d1d5db",
                 background: "var(--wm-er-card)",
                 padding: "0 10px",
@@ -188,7 +188,7 @@ export function EmployerSettingsNotificationsSection({ data, editMode, onFieldCh
               style={{
                 width: "100%",
                 height: 38,
-                borderRadius: 8,
+                borderRadius: "var(--wm-radius-8)",
                 border: "1.5px solid #d1d5db",
                 background: "var(--wm-er-card)",
                 padding: "0 10px",

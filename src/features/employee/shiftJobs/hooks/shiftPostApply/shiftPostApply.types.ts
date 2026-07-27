@@ -16,6 +16,11 @@ export type ShiftDetailWithdrawableStatus = Extract<
   "applied" | "shortlisted" | "waiting"
 >;
 
+export type ShiftDetailConfirmedCancellableStatus = Extract<
+  ShiftApplicationRecord["status"],
+  "confirmed"
+>;
+
 export type EmployeeProfileSnapshotSource = {
   readonly uniqueId?: string;
   readonly fullName: string;

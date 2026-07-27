@@ -33,7 +33,7 @@ export function EmployerGivenWorkerRatings({
         <div
           style={{
             padding: "24px 16px",
-            borderRadius: 22,
+            borderRadius: "var(--wm-radius-employee-card)",
             textAlign: "center",
             background:
               "radial-gradient(circle at top, rgba(22,163,74,0.08), transparent 32%), linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
@@ -45,7 +45,7 @@ export function EmployerGivenWorkerRatings({
             style={{
               display: "inline-flex",
               padding: "5px 10px",
-              borderRadius: 999,
+              borderRadius: "var(--wm-radius-pill)",
               background: "rgba(22,163,74,0.08)",
               border: "1px solid rgba(22,163,74,0.14)",
               color: "#16a34a",

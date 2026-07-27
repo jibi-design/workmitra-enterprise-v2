@@ -1,6 +1,7 @@
 /** Job Mitra | employeeLazyPages.ts | Employee route lazy imports */
 
 import { lazyPage } from "../lazyPage";
+import { ensureThemeBundle } from "../../theme/ensureThemeBundle";
 
 export const EmployeeHomePage = lazyPage(() =>
   import("../../../features/employee/home/pages/EmployeeHomePage").then((m) => ({
@@ -8,9 +9,11 @@ export const EmployeeHomePage = lazyPage(() =>
   })),
 );
 export const EmployeePlannerHomePage = lazyPage(() =>
-  import("../../../features/employee/planner/pages/EmployeePlannerHomePage").then((m) => ({
-    default: m.EmployeePlannerHomePage,
-  })),
+  ensureThemeBundle("shift-planner").then(() =>
+    import("../../../features/employee/planner/pages/EmployeePlannerHomePage").then((m) => ({
+      default: m.EmployeePlannerHomePage,
+    })),
+  ),
 );
 export const EmployeePlannerBrowsePage = lazyPage(() =>
   import("../../../features/employee/planner/pages/EmployeePlannerBrowsePage").then((m) => ({
@@ -195,5 +198,41 @@ export const EmployeeGroupWrapper = lazyPage(() =>
 export const EmployeeTimesheetWrapper = lazyPage(() =>
   import("../../../features/employer/workforceOps/pages/WorkforceRouteWrappers").then((m) => ({
     default: m.EmployeeTimesheetWrapper,
+  })),
+);
+
+export const ShiftOpsInviteLandingPage = lazyPage(() =>
+  import("../../../features/shiftOps/pages/ShiftOpsInviteLandingPage").then((m) => ({
+    default: m.ShiftOpsInviteLandingPage,
+  })),
+);
+export const ShiftOpsDualVerifyPage = lazyPage(() =>
+  import("../../../features/shiftOps/pages/ShiftOpsDualVerifyPage").then((m) => ({
+    default: m.ShiftOpsDualVerifyPage,
+  })),
+);
+export const ShiftOpsPendingApprovalPage = lazyPage(() =>
+  import("../../../features/shiftOps/pages/ShiftOpsPendingApprovalPage").then((m) => ({
+    default: m.ShiftOpsPendingApprovalPage,
+  })),
+);
+export const ShiftOpsAcceptDeclinePage = lazyPage(() =>
+  import("../../../features/shiftOps/pages/ShiftOpsAcceptDeclinePage").then((m) => ({
+    default: m.ShiftOpsAcceptDeclinePage,
+  })),
+);
+export const ShiftOpsReadyStatePage = lazyPage(() =>
+  import("../../../features/shiftOps/pages/ShiftOpsReadyStatePage").then((m) => ({
+    default: m.ShiftOpsReadyStatePage,
+  })),
+);
+export const ShiftOpsControlCenterPage = lazyPage(() =>
+  import("../../../features/shiftOps/pages/ShiftOpsControlCenterPage").then((m) => ({
+    default: m.ShiftOpsControlCenterPage,
+  })),
+);
+export const ShiftOpsPostApprovalGate = lazyPage(() =>
+  import("../../../features/shiftOps/pages/ShiftOpsPostApprovalGate").then((m) => ({
+    default: m.ShiftOpsPostApprovalGate,
   })),
 );

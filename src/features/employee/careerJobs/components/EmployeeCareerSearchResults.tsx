@@ -2,6 +2,7 @@
 // File name: EmployeeCareerSearchResults.tsx
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\careerJobs\components\EmployeeCareerSearchResults.tsx
 
+import { CareerEmptyState } from "../../../career/components/CareerEmptyState";
 import type {
   CareerSearchApplicationState,
   CareerSearchPost,
@@ -26,8 +27,8 @@ type EmployeeCareerSearchResultsProps = {
 };
 
 const CAREER_ACCENT = "var(--wm-er-accent-career, #1d4ed8)";
-const CAREER_TEXT = "var(--wm-emp-text, #111827)";
-const CAREER_MUTED = "var(--wm-emp-muted, #64748b)";
+const CAREER_TEXT = "var(--wm-career-text, #111827)";
+const CAREER_MUTED = "var(--wm-career-muted, #64748b)";
 
 export function EmployeeCareerSearchResults({
   posts,
@@ -67,7 +68,7 @@ export function EmployeeCareerSearchResults({
           display: "flex",
           alignItems: "flex-start",
           justifyContent: "space-between",
-          gap: 10,
+          gap: "var(--wm-space-10)",
         }}
       >
         <div>
@@ -90,16 +91,19 @@ export function EmployeeCareerSearchResults({
         {hasFilters && (
           <button
             type="button"
+            className="wm-career-tap"
             onClick={onClearFilters}
             style={{
-              padding: "7px 11px",
-              borderRadius: 999,
+              padding: "0 14px",
+              borderRadius: "var(--wm-radius-pill)",
               border: "1px solid rgba(29,78,216,0.16)",
               background: "rgba(239,246,255,0.9)",
               color: CAREER_ACCENT,
-              fontSize: 11,
-              fontWeight: 950,
+              fontSize: 12,
+              fontWeight: 800,
               cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
             }}
           >
             Reset Filters
@@ -109,7 +113,7 @@ export function EmployeeCareerSearchResults({
 
       <div
         style={{
-          marginTop: 10,
+          marginTop: "var(--wm-space-10)",
           display: "flex",
           flexDirection: "column",
           gap: "12px",
@@ -162,43 +166,15 @@ type EmptyCareerResultsProps = {
 
 function EmptyCareerResults({ hasFilters, query, onClearFilters }: EmptyCareerResultsProps) {
   return (
-    <div
-      style={{
-        textAlign: "center",
-        padding: "22px 18px",
-        borderRadius: 22,
-        border: "1px solid rgba(203,213,225,0.95)",
-        background: "linear-gradient(135deg, rgba(255,255,255,1), rgba(248,250,252,0.98))",
-        boxShadow: "0 4px 10px rgba(15,23,42,0.02)",
-      }}
-    >
-      <div style={{ fontWeight: 950, fontSize: 14.5, color: CAREER_TEXT }}>
-        {query ? "No matching roles found" : "No jobs found"}
-      </div>
-      <div style={{ marginTop: 7, fontSize: 12.5, color: CAREER_MUTED, lineHeight: 1.55 }}>
-        {query
-          ? `No results for "${query}". Please adjust your search.`
-          : "No active jobs are available in this view."}
-      </div>
-      {hasFilters && (
-        <button
-          type="button"
-          onClick={onClearFilters}
-          style={{
-            marginTop: 13,
-            padding: "6px 12px",
-            fontSize: 12,
-            fontWeight: 700,
-            background: "#f1f5f9",
-            border: "1px solid #cbd5e1",
-            borderRadius: "8px",
-            cursor: "pointer",
-            color: CAREER_TEXT,
-          }}
-        >
-          Clear filters
-        </button>
-      )}
-    </div>
+    <CareerEmptyState
+      title={query ? "No matching roles found" : "No jobs found"}
+      subtitle={
+        query
+          ? `No results for "${query}". Try different keywords or location.`
+          : "Try different keywords or location"
+      }
+      ctaLabel={hasFilters ? "Clear filters" : undefined}
+      onCta={hasFilters ? onClearFilters : undefined}
+    />
   );
 }

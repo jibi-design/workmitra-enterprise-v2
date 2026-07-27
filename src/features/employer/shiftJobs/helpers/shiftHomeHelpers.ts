@@ -5,11 +5,11 @@ import {
   employerShiftStorage,
   type ShiftPost,
 } from "../../shiftJobs/storage/employerShift.storage";
+import { countApplicationsForPostIndexed } from "./appsByPostIndex";
 
 /* ------------------------------------------------ */
 /* Constants                                        */
 /* ------------------------------------------------ */
-const APPS_KEY = "wm_employee_shift_applications_v1";
 const WS_KEY = "wm_employee_shift_workspaces_v1";
 
 export const POSTS_CHANGED_EVENT = employerShiftStorage._events.employerShiftPostsChanged;
@@ -47,21 +47,7 @@ export function subscribePosts(callback: () => void): () => void {
 /* Application count helper                         */
 /* ------------------------------------------------ */
 export function countApplicationsForPost(postId: string, statusFilter?: string): number {
-  try {
-    const raw = localStorage.getItem(APPS_KEY);
-    if (!raw) return 0;
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return 0;
-    return parsed.filter((item) => {
-      if (typeof item !== "object" || item === null) return false;
-      const rec = item as Record<string, unknown>;
-      if (rec["postId"] !== postId) return false;
-      if (statusFilter) return rec["status"] === statusFilter;
-      return true;
-    }).length;
-  } catch {
-    return 0;
-  }
+  return countApplicationsForPostIndexed(postId, statusFilter);
 }
 
 /* ------------------------------------------------ */

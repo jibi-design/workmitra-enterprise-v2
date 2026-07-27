@@ -10,6 +10,8 @@ import { BulkNotificationsHeader } from "../components/bulkNotifications/BulkNot
 import type { ExtendedTarget } from "../helpers/bulkNotificationsHelpers";
 import { companyNoticeStorage } from "../storage/companyNotice.storage";
 import { hrManagementStorage } from "../storage/hrManagement.storage";
+import { hrEmployerScopedKey } from "../storage/hrStorageKeys";
+import { hrService } from "../services/hrService";
 import type { CompanyNotice, NoticeTarget } from "../types/companyNotice.types";
 import type { HRCandidateRecord } from "../types/hrManagement.types";
 
@@ -38,6 +40,7 @@ export function BulkNotificationsPage() {
     const refresh = () => setNotices(companyNoticeStorage.getAll());
 
     refresh();
+    void hrService.hydrateReads();
 
     return companyNoticeStorage.subscribe(refresh);
   }, []);
@@ -122,19 +125,9 @@ export function BulkNotificationsPage() {
     });
   }
 
-  function handleSendConfirm() {
+  async function handleSendConfirm() {
     if (target === "specific") {
-      const key = "wm_company_notices_v1";
-      const existing = (() => {
-        try {
-          const raw = localStorage.getItem(key);
-          if (!raw) return [];
-          return JSON.parse(raw) as CompanyNotice[];
-        } catch {
-          return [];
-        }
-      })();
-
+      const prior = companyNoticeStorage.getAll();
       const notice: CompanyNotice = {
         id: "ntc_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8),
         title: title.trim(),
@@ -146,11 +139,26 @@ export function BulkNotificationsPage() {
         readReceipts: [],
         createdAt: Date.now(),
       };
-
-      localStorage.setItem(key, JSON.stringify([notice, ...existing]));
+      localStorage.setItem(
+        hrEmployerScopedKey("company_notices_v1"),
+        JSON.stringify([notice, ...prior]),
+      );
       window.dispatchEvent(new Event("wm:company-notices-changed"));
+
+      if (hrService.isSyncEnabled()) {
+        const synced = await hrService.createCompanyNotice({
+          title: notice.title,
+          body: notice.body,
+          target: "all",
+          targetValue: notice.targetValue,
+        });
+        if (!synced) {
+          localStorage.setItem(hrEmployerScopedKey("company_notices_v1"), JSON.stringify(prior));
+          window.dispatchEvent(new Event("wm:company-notices-changed"));
+        }
+      }
     } else {
-      companyNoticeStorage.sendNotice({
+      await hrService.createCompanyNotice({
         title,
         body,
         target: target as NoticeTarget,

@@ -164,6 +164,37 @@
   border-color: rgba(29, 78, 216, 0.35);
 }
 
+/* Explicit error surface for 4-state audits (VIS-4) */
+.wm-ent-error {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid var(--wm-ent-tone-critical-border);
+  background: var(--wm-ent-tone-critical-wash);
+  color: var(--wm-ent-tone-critical);
+}
+
+.wm-ent-error__title {
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.wm-ent-error__subtitle {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.45;
+  color: var(--wm-er-muted, #64748b);
+}
+
+.wm-ent-error__actions {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 /* ---------- Skeleton ---------- */
 .wm-ent-skeleton {
   display: grid;

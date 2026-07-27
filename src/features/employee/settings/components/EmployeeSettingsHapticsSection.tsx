@@ -22,14 +22,14 @@ export function EmployeeSettingsHapticsSection({ settings, onToggle }: Props) {
   }
 
   return (
-    <section className="wm-ee-card" style={{ marginTop: 12 }}>
+    <section className="wm-settingsGroup">
       <div className="wm-ee-cardTitle" style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <svg
           width="16"
           height="16"
           viewBox="0 0 24 24"
           aria-hidden="true"
-          style={{ color: "#6366f1", flexShrink: 0 }}
+          style={{ color: "var(--wm-indigo-500)", flexShrink: 0 }}
         >
           <path
             d="M12 3a9 9 0 0 1 9 9 9 9 0 0 1-9 9A9 9 0 0 1 3 12a9 9 0 0 1 9-9Zm0 2a7 7 0 1 0 0 14A7 7 0 0 0 12 5Zm0 2a5 5 0 1 1 0 10A5 5 0 0 1 12 7Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"
@@ -96,7 +96,12 @@ export function EmployeeSettingsHapticsSection({ settings, onToggle }: Props) {
           defaultValue={80}
           disabled
           aria-disabled="true"
-          style={{ width: "100%", accentColor: "#6366f1", opacity: 0.45, cursor: "not-allowed" }}
+          style={{
+            width: "100%",
+            accentColor: "var(--wm-indigo-500)",
+            opacity: 0.45,
+            cursor: "not-allowed",
+          }}
         />
         <div className="wm-ee-helperText">Volume control ships in Phase 1.</div>
       </div>

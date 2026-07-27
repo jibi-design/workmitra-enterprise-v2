@@ -35,7 +35,7 @@ export function CareerCandidateScreeningAnswersCard({
                 key={question.id}
                 style={{
                   padding: "10px",
-                  borderRadius: 16,
+                  borderRadius: "var(--wm-radius-chip)",
                   border: "1px solid rgba(148,163,184,0.13)",
                   background:
                     "linear-gradient(135deg, rgba(255,255,255,0.96), rgba(248,250,252,0.9))",
@@ -53,7 +53,7 @@ export function CareerCandidateScreeningAnswersCard({
                     style={{
                       width: 22,
                       height: 22,
-                      borderRadius: 999,
+                      borderRadius: "var(--wm-radius-pill)",
                       background: "rgba(29,78,216,0.08)",
                       border: "1px solid rgba(29,78,216,0.12)",
                       color: CAREER_REVIEW_BLUE_DEEP,

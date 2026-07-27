@@ -64,14 +64,18 @@ export const EmployerDemandPlannerPage = lazyPage(() =>
   })),
 );
 export const EmployerPlannerHomePage = lazyPage(() =>
-  import("../../../features/employer/planner/pages/EmployerPlannerHomePage").then((m) => ({
-    default: m.EmployerPlannerHomePage,
-  })),
+  ensureThemeBundle("shift-planner").then(() =>
+    import("../../../features/employer/planner/pages/EmployerPlannerHomePage").then((m) => ({
+      default: m.EmployerPlannerHomePage,
+    })),
+  ),
 );
 export const EmployerPlannerPlansListPage = lazyPage(() =>
-  import("../../../features/employer/planner/pages/EmployerPlannerPlansListPage").then((m) => ({
-    default: m.EmployerPlannerPlansListPage,
-  })),
+  ensureThemeBundle("shift-planner").then(() =>
+    import("../../../features/employer/planner/pages/EmployerPlannerPlansListPage").then((m) => ({
+      default: m.EmployerPlannerPlansListPage,
+    })),
+  ),
 );
 export const EmployerPlannerDetailPage = lazyPage(() =>
   import("../../../features/employer/planner/pages/EmployerPlannerDetailPage").then((m) => ({
@@ -268,3 +272,9 @@ export const EmployerAnalyticsPage = lazyPage(async () => {
   const m = await import("../../../features/employer/home/pages/EmployerAnalyticsPage");
   return { default: m.EmployerAnalyticsPage };
 });
+
+export const ShiftOpsManagerApprovalsPage = lazyPage(() =>
+  import("../../../features/shiftOps/pages/ShiftOpsManagerApprovalsPage").then((m) => ({
+    default: m.ShiftOpsManagerApprovalsPage,
+  })),
+);

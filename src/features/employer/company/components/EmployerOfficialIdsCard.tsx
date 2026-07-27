@@ -8,7 +8,7 @@ const PURPLE_LIGHT = "rgba(124,58,237,0.08)";
 const EXECUTIVE_SHELL = {
   marginTop: 12,
   padding: 18,
-  borderRadius: 24,
+  borderRadius: "var(--wm-radius-employer-card)",
   background:
     "linear-gradient(145deg, rgba(255,255,255,0.94) 0%, rgba(250,245,255,0.9) 52%, rgba(255,255,255,0.88) 100%)",
   border: "1px solid rgba(255,255,255,0.4)",
@@ -38,7 +38,7 @@ function IdPill({ title, badge, badgeTone, description, idValue, onCopy, accent 
     <div
       style={{
         padding: 14,
-        borderRadius: 18,
+        borderRadius: "var(--wm-radius-chip)",
         background: "rgba(255,255,255,0.72)",
         border: "1px solid rgba(255,255,255,0.55)",
         boxShadow: "inset 0 1px 0 rgba(255,255,255,0.8)",
@@ -59,7 +59,7 @@ function IdPill({ title, badge, badgeTone, description, idValue, onCopy, accent 
             fontSize: 10,
             fontWeight: 800,
             padding: "3px 9px",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             letterSpacing: 0.3,
             ...badgeStyles,
           }}
@@ -103,7 +103,7 @@ function IdPill({ title, badge, badgeTone, description, idValue, onCopy, accent 
             style={{
               flexShrink: 0,
               padding: "8px 14px",
-              borderRadius: 10,
+              borderRadius: "var(--wm-radius-10)",
               border: `1px solid ${accent}40`,
               background: `${accent}10`,
               color: accent,
@@ -216,7 +216,7 @@ export function EmployerOfficialIdsCard({
             style={{
               marginTop: 14,
               padding: 14,
-              borderRadius: 16,
+              borderRadius: "var(--wm-radius-chip)",
               background: "rgba(255,255,255,0.8)",
               border: "1px solid rgba(245,158,11,0.22)",
             }}

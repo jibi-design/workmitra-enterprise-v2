@@ -32,15 +32,16 @@ export const POSTS_PREMIUM_STYLE_SHEET = `
   }
 `;
 
-export const POSTS_PAGE_STYLE: CSSProperties = { display: "grid", gap: 16, paddingBottom: 40 };
+export const POSTS_PAGE_STYLE: CSSProperties = {
+  display: "grid",
+  gap: "var(--wm-stack-gap)",
+  paddingBottom: 40,
+};
 
+/** @deprecated Wave 2 — use DomainHero via EmployerCareerPostsHeader */
 export const POSTS_HERO_STYLE: CSSProperties = {
-  padding: 24,
-  borderRadius: 28,
-  border: "1px solid rgba(255, 255, 255, 0.9)",
-  background: "linear-gradient(135deg, rgba(239,246,255,0.8), rgba(255,255,255,0.95))",
-  boxShadow: "0 12px 32px -4px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255,255,255,1)",
-  backdropFilter: "blur(24px)",
+  padding: "var(--wm-card-padding)",
+  borderRadius: "var(--wm-radius-employer-card)",
 };
 
 export const POSTS_EYEBROW_STYLE: CSSProperties = {
@@ -71,7 +72,7 @@ export const POSTS_CREATE_BUTTON_STYLE: CSSProperties = {
   marginTop: 16,
   width: "100%",
   minHeight: 52,
-  borderRadius: 16,
+  borderRadius: "var(--wm-radius-chip)",
   border: "none",
   background: "linear-gradient(135deg, #2563eb, #1d4ed8)",
   color: "#fff",
@@ -81,12 +82,15 @@ export const POSTS_CREATE_BUTTON_STYLE: CSSProperties = {
   boxShadow: "0 8px 20px rgba(37,99,235,0.2)",
 };
 
-export const POSTS_FILTER_CARD_STYLE: CSSProperties = { display: "grid", gap: 10 };
+export const POSTS_FILTER_CARD_STYLE: CSSProperties = {
+  display: "grid",
+  gap: "var(--wm-space-10)",
+};
 
 export const POSTS_INPUT_STYLE: CSSProperties = {
   width: "100%",
   minHeight: 46,
-  borderRadius: 16,
+  borderRadius: "var(--wm-radius-chip)",
   border: "1px solid rgba(148,163,184,0.3)",
   background: "#fff",
   padding: "0 16px",
@@ -112,7 +116,7 @@ export const POSTS_SEARCH_ICON_STYLE: CSSProperties = {
 export const POSTS_EMPTY_GUIDE_STYLE: CSSProperties = {
   marginTop: 24,
   padding: 16,
-  borderRadius: 16,
+  borderRadius: "var(--wm-radius-chip)",
   background: "rgba(255,255,255,0.8)",
   textAlign: "left",
 };
@@ -154,7 +158,7 @@ export const POSTS_CARD_META_STYLE: CSSProperties = {
 export const POSTS_STATUS_BADGE_STYLE: CSSProperties = {
   flexShrink: 0,
   padding: "6px 12px",
-  borderRadius: 20,
+  borderRadius: "var(--wm-radius-employee-card)",
   fontSize: 10,
   fontWeight: 900,
   whiteSpace: "nowrap",
@@ -163,7 +167,7 @@ export const POSTS_STATUS_BADGE_STYLE: CSSProperties = {
 
 export const POSTS_STAT_STYLE: CSSProperties = {
   padding: "10px",
-  borderRadius: 14,
+  borderRadius: "var(--wm-radius-chip)",
   background: "rgba(255,255,255,0.8)",
   border: "1px solid rgba(0,0,0,0.04)",
   minWidth: 0,

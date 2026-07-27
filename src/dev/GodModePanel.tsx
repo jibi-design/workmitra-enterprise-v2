@@ -63,13 +63,14 @@ function GodModePanelInner() {
   }
 
   return (
-    <>
-      {/* Floating trigger button */}
+    <div className="wm-dev-audit-sandbox" data-audit-sandbox="dev" data-wm-audit-ignore="true">
+      {/* Floating trigger button — sandboxed so production-grade audits ignore DEV noise */}
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-label="God Mode Dev Panel"
         title="God Mode Dev Panel"
+        className="wm-dev-audit-sandbox__fab"
         style={{
           position: "fixed",
           bottom: 90,
@@ -183,7 +184,7 @@ function GodModePanelInner() {
           )}
         </div>
       )}
-    </>
+    </div>
   );
 }
 

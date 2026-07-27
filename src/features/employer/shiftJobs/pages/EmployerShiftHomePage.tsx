@@ -1,14 +1,12 @@
 // App name: Job Mitra
 // File name: EmployerShiftHomePage.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\pages\EmployerShiftHomePage.tsx
+// Employer Shift Jobs Home — discovery + compact workspace actions
 
 import { useMemo, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
-import { getEmployerPendingShiftReviewCount } from "../../../shared/reviewCenter/adapters/employerShiftReviewCenter.adapter";
 import { favoritesStorage } from "../storage/favoritesStorage";
 import { shiftTemplatesStorage } from "../storage/shiftTemplatesStorage";
-import { getWorkspacesSnapshot, subscribeWorkspaces } from "../storage/shiftWorkspaceStorage";
 import {
   countActiveWorkspaceGroups,
   countApplicationsForPost,
@@ -18,7 +16,6 @@ import {
 import {
   ShiftHomeActionRow,
   ShiftHomeAnalyzedSection,
-  ShiftHomeHowItWorks,
   ShiftHomeKpiTiles,
   ShiftHomeRecentPosts,
   ShiftHomeTemplatesHint,
@@ -34,25 +31,12 @@ export function EmployerShiftHomePage() {
 
   const posts = useSyncExternalStore(subscribePosts, getPostsSnapshot, getPostsSnapshot);
 
-  const workspaces = useSyncExternalStore(
-    subscribeWorkspaces,
-    getWorkspacesSnapshot,
-    getWorkspacesSnapshot,
-  );
-
-  const reviewPendingCount = useMemo(
-    () => getEmployerPendingShiftReviewCount(workspaces),
-    [workspaces],
-  );
-
-  // Gap 5: Live reactive counts via useSyncExternalStore
   const favCount = useSyncExternalStore(
     favoritesStorage.subscribe,
     () => favoritesStorage.getAll().length,
     () => favoritesStorage.getAll().length,
   );
 
-  // Gap 4: Templates count for hint
   const templateCount = useSyncExternalStore(
     shiftTemplatesStorage.subscribe,
     () => shiftTemplatesStorage.getAll().length,
@@ -106,7 +90,6 @@ export function EmployerShiftHomePage() {
     nav(ROUTE_PATHS.employerShiftPostDashboard.replace(":postId", postId));
   }
 
-  // Gap 2: KPI tile navigation
   function goToPostsFiltered(status: string) {
     nav(`${ROUTE_PATHS.employerShiftPosts}?status=${status}`);
   }
@@ -136,7 +119,6 @@ export function EmployerShiftHomePage() {
 
       <EmployerShiftDraftReminderCard />
 
-      {/* Gap 2: KPI tiles with navigation */}
       <ShiftHomeKpiTiles
         kpi={kpi}
         onApplied={kpi.applied > 0 ? () => goToPostsFiltered("applied") : undefined}
@@ -149,25 +131,21 @@ export function EmployerShiftHomePage() {
       <LocalWorkersRadarCard />
 
       <ShiftHomeActionRow
+        postsCount={kpi.total}
+        activeShiftsCount={kpi.active}
         groups={kpi.groups}
         favCount={favCount}
-        reviewPendingCount={reviewPendingCount}
         onPosts={() => nav(ROUTE_PATHS.employerShiftPosts)}
         onGroups={() => nav(ROUTE_PATHS.employerShiftWorkspaces + "?mode=groups")}
-        onBroadcasts={() => nav(ROUTE_PATHS.employerShiftWorkspaces + "?mode=broadcasts")}
         onFavorites={() => nav(ROUTE_PATHS.employerShiftFavorites)}
-        onReviews={() => nav(ROUTE_PATHS.employerReviewCenter)}
       />
 
       <ShiftHomeAnalyzedSection posts={recentlyAnalyzed} onOpen={openPost} />
 
-      {/* Gap 4: Templates hint — mounted near the create/action area */}
       <ShiftHomeTemplatesHint
         count={templateCount}
         onClick={() => nav(ROUTE_PATHS.employerShiftTemplates)}
       />
-
-      <ShiftHomeHowItWorks />
 
       <ShiftHomeRecentPosts
         posts={recentPosts}

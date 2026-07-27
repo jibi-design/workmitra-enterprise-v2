@@ -1,0 +1,139 @@
+{
+  "harness": "node-shift-chaos-fanout",
+  "vus": 500,
+  "base": "http://localhost:3001",
+  "chaos": true,
+  "elapsedMs": 3139.8692,
+  "okRate": 0.978,
+  "failCount": 11,
+  "transportDead": 2,
+  "p95Ms": 173.0702,
+  "isolatedFailures": [
+    {
+      "clientId": 29,
+      "failedAction": "HTTP_503",
+      "route": "/v1/jobmitra/employee/shift/availability?workerMlId=node-fanout",
+      "payload": {
+        "url": "http://localhost:3001/v1/jobmitra/employee/shift/availability?workerMlId=node-fanout",
+        "status": 503,
+        "chaos": true
+      },
+      "ms": 137.0255
+    },
+    {
+      "clientId": 59,
+      "failedAction": "HTTP_500",
+      "route": "/v1/jobmitra/employer/shift/favorites",
+      "payload": {
+        "url": "http://localhost:3001/v1/jobmitra/employer/shift/favorites",
+        "status": 500,
+        "chaos": true
+      },
+      "ms": 136.0367
+    },
+    {
+      "clientId": 61,
+      "failedAction": "HTTP_500",
+      "route": "/v1/jobmitra/employee/shift/availability?workerMlId=node-fanout",
+      "payload": {
+        "url": "http://localhost:3001/v1/jobmitra/employee/shift/availability?workerMlId=node-fanout",
+        "status": 500,
+        "chaos": true
+      },
+      "ms": 136.06220000000002
+    },
+    {
+      "clientId": 63,
+      "failedAction": "HTTP_500",
+      "route": "/v1/jobmitra/employer/shift/favorites",
+      "payload": {
+        "url": "http://localhost:3001/v1/jobmitra/employer/shift/favorites",
+        "status": 500,
+        "chaos": true
+      },
+      "ms": 136.1385
+    },
+    {
+      "clientId": 69,
+      "failedAction": "HTTP_500",
+      "route": "/v1/jobmitra/employee/shift/availability?workerMlId=node-fanout",
+      "payload": {
+        "url": "http://localhost:3001/v1/jobmitra/employee/shift/availability?workerMlId=node-fanout",
+        "status": 500,
+        "chaos": true
+      },
+      "ms": 136.1916
+    },
+    {
+      "clientId": 71,
+      "failedAction": "HTTP_500",
+      "route": "/v1/jobmitra/employer/shift/favorites",
+      "payload": {
+        "url": "http://localhost:3001/v1/jobmitra/employer/shift/favorites",
+        "status": 500,
+        "chaos": true
+      },
+      "ms": 136.1876
+    },
+    {
+      "clientId": 75,
+      "failedAction": "HTTP_503",
+      "route": "/v1/jobmitra/employer/shift/favorites",
+      "payload": {
+        "url": "http://localhost:3001/v1/jobmitra/employer/shift/favorites",
+        "status": 503,
+        "chaos": true
+      },
+      "ms": 136.2073
+    },
+    {
+      "clientId": 78,
+      "failedAction": "TRANSPORT_OR_ABORT",
+      "route": "/v1/jobmitra/employer/shift/availability-pool",
+      "payload": {
+        "url": "http://localhost:3001/v1/jobmitra/employer/shift/availability-pool",
+        "error": "fetch failed",
+        "chaos": true
+      },
+      "ms": 176.137
+    },
+    {
+      "clientId": 90,
+      "failedAction": "HTTP_502",
+      "route": "/v1/jobmitra/employer/shift/availability-pool",
+      "payload": {
+        "url": "http://localhost:3001/v1/jobmitra/employer/shift/availability-pool",
+        "status": 502,
+        "chaos": true
+      },
+      "ms": 170.2509
+    },
+    {
+      "clientId": 103,
+      "failedAction": "HTTP_503",
+      "route": "/v1/jobmitra/employer/shift/favorites",
+      "payload": {
+        "url": "http://localhost:3001/v1/jobmitra/employer/shift/favorites",
+        "status": 503,
+        "chaos": true
+      },
+      "ms": 170.1142
+    },
+    {
+      "clientId": 110,
+      "failedAction": "TRANSPORT_OR_ABORT",
+      "route": "/v1/jobmitra/employer/shift/availability-pool",
+      "payload": {
+        "url": "http://localhost:3001/v1/jobmitra/employer/shift/availability-pool",
+        "error": "fetch failed",
+        "chaos": true
+      },
+      "ms": 174.3064
+    }
+  ],
+  "thresholds": {
+    "okRateMin": 0.85,
+    "p95MsMax": 3000,
+    "allowApiDown": false
+  }
+}

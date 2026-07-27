@@ -8,6 +8,5 @@ export {
   CurrentEmploymentCard,
   WorkforceCard,
   WorkVaultCard,
-  InsightsCard,
   SimpleModal,
 } from "./EmployeeStatusCards";

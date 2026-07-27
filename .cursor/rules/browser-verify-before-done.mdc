@@ -1,0 +1,16 @@
+---
+description: Verify UI in browser before claiming task complete
+alwaysApply: true
+---
+
+# Browser Verify Before Done
+
+Before telling the user a UI/page/nav/feature task is **complete** or **fixed**:
+
+1. Do **not** report success from code review or build/lint alone.
+2. Start or use the running app and open the **exact route the user uses** (nav click path, not only a guessed URL).
+3. Use browser automation (Cursor browser / snapshot) to confirm the expected sections, CTAs, and labels are **visible**.
+4. If the screen still shows the old page (e.g. only Availability / Test alert instead of Control Center), treat the task as **failed** — fix routing or entry points, then re-check.
+5. Only after a successful browser check may you send the completion report (including AI Studio copy).
+
+Exceptions: pure backend/SQL/docs with no UI surface; user explicitly waives browser check.

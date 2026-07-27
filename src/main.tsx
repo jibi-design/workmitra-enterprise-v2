@@ -2,13 +2,17 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { normalizeHashRouterDeepLink } from "./app/router/pendingRoute";
+import { installIncomingCallNativeBridge } from "./features/shared/calling";
 import "./index.css";
 import App from "./App.tsx";
 import { GodModePanel } from "./dev/GodModePanel.tsx";
 import { initAppHaptics } from "./shared/platform/haptics";
+import { installShiftRetryQueueDrain } from "./shared/shift/shiftRetryQueue.drain";
 
 normalizeHashRouterDeepLink();
+installIncomingCallNativeBridge();
 initAppHaptics();
+installShiftRetryQueueDrain();
 
 if (import.meta.env.DEV && "serviceWorker" in navigator) {
   void navigator.serviceWorker.getRegistrations().then((registrations) => {

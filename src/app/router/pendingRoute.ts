@@ -1,6 +1,11 @@
 // Job Mitra | pendingRoute.ts | Preserve deep links across landing role pick
 
 import { plannerPublicIndex } from "../../features/employer/planner/storage/plannerPublicIndex.storage";
+import { resolvePendingGroupJoinOrchestration } from "../../features/shiftOps/helpers/groupJoinDeepLink";
+import {
+  isShiftOpsInvitePath,
+  stashPendingGroupJoinFromPath,
+} from "../../features/shiftOps/storage/pendingGroupJoin.storage";
 import type { AppRole } from "../storage/roleStorage";
 
 const PENDING_ROUTE_KEY = "wm_pending_route_v1";
@@ -11,6 +16,9 @@ export function stashPendingRoute(path: string): void {
   const normalized = path.trim();
   if (!normalized || normalized === "/") return;
   if (!/^\/(employee|employer|admin)(\/|$)/.test(normalized)) return;
+
+  // P0: do not write group-join tokens to localStorage until post-auth consume.
+  // Invite intent stays in session pending route only (per-tab).
 
   try {
     sessionStorage.setItem(PENDING_ROUTE_KEY, normalized);
@@ -44,6 +52,10 @@ export function sanitizeAppRoute(path: string, role: AppRole, fallback: string):
   if (!normalized || normalized === "/") return fallback;
   if (!normalized.startsWith(`/${role}`)) return fallback;
 
+  if (role === "employee" && isShiftOpsInvitePath(normalized)) {
+    return normalized;
+  }
+
   if (role === "employee" && !isPlannerProjectRouteAvailable(normalized)) {
     return fallback;
   }
@@ -53,6 +65,18 @@ export function sanitizeAppRoute(path: string, role: AppRole, fallback: string):
 
 export function resolvePostAuthRoute(role: AppRole, fallback: string): string {
   const pending = consumePendingRoute();
+
+  if (pending && isShiftOpsInvitePath(pending)) {
+    stashPendingGroupJoinFromPath(pending);
+  }
+
+  if (role === "employee") {
+    const orchestrated = resolvePendingGroupJoinOrchestration();
+    if (orchestrated) {
+      return sanitizeAppRoute(orchestrated, role, fallback);
+    }
+  }
+
   if (!pending) return fallback;
   return sanitizeAppRoute(pending, role, fallback);
 }

@@ -1,10 +1,13 @@
 // App name: Job Mitra
 // File name: useEmployerCareerHomeState.ts
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\careerJobs\hooks\useEmployerCareerHomeState.ts
+// Wave 3 — hydrate Loading / Empty / Error signals
 
-import { useMemo, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { hydrateCareerPostsFromServer } from "../../../career/services/careerPostDbTruth.service";
+import { hydrateEmploymentsFromDb } from "../../../career/services/employmentDbTruth.service";
+import { isCareerApiSyncEnabled } from "../../../career/services/careerGateApi.service";
 import {
   careerEmploymentFeedbackStorage,
   type CareerEmploymentFeedbackTask,
@@ -67,6 +70,43 @@ function isPastPost(post: CareerJobPost): boolean {
 
 export function useEmployerCareerHomeState() {
   const nav = useNavigate();
+  const [isHydrating, setIsHydrating] = useState(() => isCareerApiSyncEnabled());
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [retryToken, setRetryToken] = useState(0);
+
+  const retryLoad = useCallback(() => {
+    setLoadError(null);
+    setRetryToken((value) => value + 1);
+  }, []);
+
+  useEffect(() => {
+    if (!isCareerApiSyncEnabled()) {
+      return;
+    }
+
+    let cancelled = false;
+
+    void (async () => {
+      setIsHydrating(true);
+      setLoadError(null);
+      try {
+        await Promise.all([hydrateCareerPostsFromServer(), hydrateEmploymentsFromDb("employer")]);
+        if (!cancelled) {
+          setIsHydrating(false);
+          setLoadError(null);
+        }
+      } catch {
+        if (!cancelled) {
+          setIsHydrating(false);
+          setLoadError("Unable to refresh Career posts from the server.");
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [retryToken]);
 
   const posts = useSyncExternalStore(
     subscribeCareerHomePosts,
@@ -132,6 +172,13 @@ export function useEmployerCareerHomeState() {
     [staffRecords],
   );
 
+  const viewState = useMemo(() => {
+    if (isHydrating) return "loading" as const;
+    if (loadError && posts.length === 0) return "error" as const;
+    if (posts.length === 0) return "empty" as const;
+    return "active" as const;
+  }, [isHydrating, loadError, posts.length]);
+
   function openCreate() {
     nav(ROUTE_PATHS.employerCareerCreate);
   }
@@ -164,6 +211,9 @@ export function useEmployerCareerHomeState() {
   }
 
   return {
+    viewState,
+    loadError,
+    retryLoad,
     kpi,
     postSummary,
     activeStaffRecords,

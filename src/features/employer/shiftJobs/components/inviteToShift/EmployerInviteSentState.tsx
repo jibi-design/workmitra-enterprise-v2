@@ -24,7 +24,7 @@ export function EmployerInviteSentState({ workerName, onClose }: Props) {
         style={{
           marginTop: 16,
           padding: "9px 24px",
-          borderRadius: 10,
+          borderRadius: "var(--wm-radius-10)",
           border: "none",
           background: "var(--wm-er-accent-shift, #16a34a)",
           color: "#fff",

@@ -1,16 +1,18 @@
-// App name: Job Mitra
-// File name: CompanyInfoSection.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\components\shiftPostDetails\CompanyInfoSection.tsx
+// App name: Job Mitra | CompanyInfoSection.tsx — surface-glass (post-details polish)
 
 import { EmployerTrustBadge } from "../../../../../shared/employerProfile/EmployerTrustBadge";
-import { CARD_STYLE, SECTION_TITLE_STYLE } from "./shiftPostDetail.styles";
+import { SECTION_PAD, SECTION_TITLE_STYLE } from "./shiftPostDetail.styles";
 import { getSafeEntityText } from "./shiftPostDetail.utils";
 
 export function CompanyInfoSection({ companyName }: { readonly companyName: string }) {
   const displayName = getSafeEntityText(companyName, "Employer not specified");
 
   return (
-    <div className="wm-ee-card" style={CARD_STYLE}>
+    <section
+      className="wm-shift-surface-glass wm-shift-surface-glass--shift wm-animateIn"
+      data-testid="shift-post-company"
+      style={{ ...SECTION_PAD, animationDelay: "60ms" }}
+    >
       <div style={SECTION_TITLE_STYLE}>Company info</div>
 
       <div
@@ -27,6 +29,6 @@ export function CompanyInfoSection({ companyName }: { readonly companyName: stri
       <div style={{ marginTop: 8 }}>
         <EmployerTrustBadge variant="full" />
       </div>
-    </div>
+    </section>
   );
 }

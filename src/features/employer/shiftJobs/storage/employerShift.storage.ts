@@ -1,6 +1,5 @@
 ﻿// App name: Job Mitra
-// File name: employerShift.storage.ts
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\storage\employerShift.storage.ts
+// File name: employerShift.storage.ts — facade
 
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import {
@@ -8,7 +7,6 @@ import {
   EMPLOYEE_WORKSPACES_CHANGED_EVENT,
   EMPLOYER_SHIFT_ACTIVITY_CHANGED_EVENT,
   EMPLOYER_SHIFT_POSTS_CHANGED_EVENT,
-  EMP_POSTS_KEY,
 } from "./employerShift.keys";
 import { pushEmployerActivity, readEmployerActivityAll } from "./employerShift.activityStorage";
 import {
@@ -27,16 +25,16 @@ import {
   waitlistEmployerShiftCandidate,
 } from "./employerShift.postActions";
 import {
-  readEmployerPosts,
-  syncToEmployeeSearch,
-  writeEmployerPosts,
-} from "./employerShift.postStorage";
-import {
   readEmployeeApplications,
   writeEmployeeApplications,
 } from "./employerShift.employeeBridge";
-import { notifyEmployerShiftPostsChanged, safeWrite } from "./employerShift.utils";
 import { completePostSaga, type CompletePostSagaResult } from "./employerShift.postCompleteActions";
+import {
+  checkExpiredEmployerShiftPosts,
+  resetEmployerShiftAnalysis,
+} from "./employerShift.storage.lifecycle";
+import { cascadeRejectOpenShiftApplications } from "../services/shiftApplicationCascade.service";
+import { uniq } from "./employerShift.utils";
 import type {
   EmployeeShiftApplication,
   EmployerShiftActivityEntry,
@@ -69,9 +67,7 @@ export type {
 
 export const employerShiftStorage = {
   getPosts(): ShiftPost[] {
-    const posts = getEmployerShiftPosts();
-    syncToEmployeeSearch(posts);
-    return posts;
+    return getEmployerShiftPosts();
   },
 
   getPost(postId: string): ShiftPost | null {
@@ -84,13 +80,13 @@ export const employerShiftStorage = {
       .slice(0, 50);
   },
 
-  createPost(
+  async createPost(
     input: Omit<
       ShiftPost,
       "id" | "analysisStatus" | "shortlistIds" | "waitingIds" | "confirmedIds" | "rejectedIds"
     >,
-  ): string {
-    const post = saveEmployerShiftPost({
+  ): Promise<string | null> {
+    const post = await saveEmployerShiftPost({
       ...input,
       analysisStatus: "not_started",
       shortlistIds: [],
@@ -99,7 +95,7 @@ export const employerShiftStorage = {
       rejectedIds: [],
     });
 
-    return post.id;
+    return post?.id ?? null;
   },
 
   updatePost(postId: string, patch: Partial<ShiftPost>): ShiftPost | null {
@@ -139,52 +135,7 @@ export const employerShiftStorage = {
     reason = "Employer reset analysis",
     opts: { unhideFromSearch?: boolean } = {},
   ): void {
-    const current = getEmployerShiftPost(postId);
-    if (!current) return;
-
-    const priorPosts = readEmployerPosts();
-    const priorApps = readEmployeeApplications();
-
-    const patch: Partial<ShiftPost> = {
-      analysisStatus: "not_started",
-      analyzedAt: undefined,
-      analysisNote: `Reset: ${reason}`,
-      shortlistIds: [],
-      waitingIds: [],
-      rejectedIds: current.rejectedIds,
-    };
-
-    if (opts.unhideFromSearch) {
-      patch.isHiddenFromSearch = false;
-    }
-
-    const updated = updateEmployerShiftPost(postId, patch);
-    if (!updated) return;
-
-    const apps = priorApps.map((app) => {
-      if (app.postId !== postId) return app;
-
-      if (app.status === "shortlisted" || app.status === "waiting") {
-        return { ...app, status: "applied" as const };
-      }
-
-      return app;
-    });
-
-    const appWrite = writeEmployeeApplications(apps);
-    if (!appWrite.ok) {
-      writeEmployerPosts(priorPosts);
-      syncToEmployeeSearch(priorPosts);
-      return;
-    }
-
-    pushEmployerActivity({
-      postId,
-      kind: "analysis_reset",
-      title: "Analysis reset",
-      body: `Reason: ${reason}.${opts.unhideFromSearch ? " Post unhidden from search." : ""}`,
-      route: ROUTE_PATHS.employerShiftPostDashboard.replace(":postId", postId),
-    });
+    resetEmployerShiftAnalysis(postId, reason, opts);
   },
 
   moveToShortlist(postId: string, appId: string): void {
@@ -204,13 +155,13 @@ export const employerShiftStorage = {
     rejectEmployerShiftCandidate(postId, appId);
   },
 
-  confirmCandidate(postId: string, appId: string): string | null {
-    const result = confirmEmployerShiftCandidate(postId, appId);
+  async confirmCandidate(postId: string, appId: string): Promise<string | null> {
+    const result = await confirmEmployerShiftCandidate(postId, appId);
     return result?.workspaceId ?? null;
   },
 
-  confirm(postId: string, appId: string): string | null {
-    const result = confirmEmployerShiftCandidate(postId, appId);
+  async confirm(postId: string, appId: string): Promise<string | null> {
+    const result = await confirmEmployerShiftCandidate(postId, appId);
     return result?.workspaceId ?? null;
   },
 
@@ -241,10 +192,21 @@ export const employerShiftStorage = {
 
     if (!post) return false;
 
+    const cascade = cascadeRejectOpenShiftApplications({
+      postId,
+      jobName: post.jobName,
+      companyName: post.companyName,
+      reason,
+    });
+    const rejectedSet = new Set(cascade.rejectedAppIds);
+
     const updated = updateEmployerShiftPost(postId, {
       status: "cancelled",
       isHiddenFromSearch: true,
       analysisNote: reason,
+      shortlistIds: post.shortlistIds.filter((id) => !rejectedSet.has(id)),
+      waitingIds: post.waitingIds.filter((id) => !rejectedSet.has(id)),
+      rejectedIds: uniq([...post.rejectedIds, ...cascade.rejectedAppIds]),
     });
 
     if (!updated) return false;
@@ -276,52 +238,7 @@ export const employerShiftStorage = {
   },
 
   checkExpiredPosts(): void {
-    const now = Date.now();
-    const posts = readEmployerPosts();
-    let changed = false;
-
-    const apps = readEmployeeApplications();
-    const pendingActivities: Array<Omit<EmployerShiftActivityEntry, "id" | "createdAt">> = [];
-
-    const next = posts.map((post) => {
-      if (post.status === "completed" || post.status === "cancelled") return post;
-      if (post.endAt > now) return post;
-
-      if (post.confirmedIds.length > 0) {
-        changed = true;
-        return { ...post, status: "completed" as const };
-      }
-
-      const hasApps = apps.some((app) => app.postId === post.id && app.status !== "withdrawn");
-
-      if (!hasApps) {
-        changed = true;
-
-        pendingActivities.push({
-          postId: post.id,
-          kind: "post_expired",
-          title: "Shift expired",
-          body: `${post.jobName} expired with no applications. Consider reposting.`,
-          route: ROUTE_PATHS.employerShiftPostDashboard.replace(":postId", post.id),
-        });
-
-        return { ...post, status: "cancelled" as const };
-      }
-
-      return post;
-    });
-
-    if (!changed) return;
-
-    const postWrite = safeWrite(EMP_POSTS_KEY, next);
-    if (!postWrite.ok) return;
-
-    notifyEmployerShiftPostsChanged();
-    syncToEmployeeSearch(next);
-
-    for (const activity of pendingActivities) {
-      pushEmployerActivity(activity);
-    }
+    checkExpiredEmployerShiftPosts();
   },
 
   completePost(postId: string): CompletePostSagaResult {

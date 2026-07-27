@@ -11,7 +11,7 @@ export function ExitDoneBanner() {
         style={{
           background: "rgba(22,163,74,0.08)",
           border: "1px solid rgba(22,163,74,0.2)",
-          borderRadius: 12,
+          borderRadius: "var(--wm-radius-button)",
           padding: 14,
           display: "flex",
           alignItems: "center",

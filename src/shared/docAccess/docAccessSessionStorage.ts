@@ -24,7 +24,7 @@ export type DocAccessSession = {
   id: string;
   employerId: string;
   employerName: string;
-  workerWmId: string;
+  workerMlId: string;
   domain: "shift" | "career";
   startedAt: number;
   expiresAt: number;
@@ -35,7 +35,7 @@ export type DocAccessLogEntry = {
   id: string;
   employerId: string;
   employerName: string;
-  workerWmId: string;
+  workerMlId: string;
   domain: "shift" | "career";
   accessedAt: number;
   status: "viewed" | "expired" | "revoked";
@@ -48,11 +48,35 @@ function uid(): string {
   return `das_${Math.random().toString(16).slice(2)}_${Date.now().toString(16)}`;
 }
 
+function pickWorkerMlId(rec: Record<string, unknown>): string {
+  // Dual-read: prefer workerMlId; accept legacy workerWmId from older localStorage JSON.
+  const ml = rec.workerMlId;
+  if (typeof ml === "string" && ml.trim()) return ml;
+  const legacy = rec.workerWmId;
+  return typeof legacy === "string" ? legacy : "";
+}
+
+function normalizeSession(raw: unknown): DocAccessSession | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const rec = raw as Record<string, unknown>;
+  const workerMlId = pickWorkerMlId(rec);
+  if (!workerMlId) return null;
+  return { ...(raw as DocAccessSession), workerMlId };
+}
+
+function normalizeLogEntry(raw: unknown): DocAccessLogEntry | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const rec = raw as Record<string, unknown>;
+  const workerMlId = pickWorkerMlId(rec);
+  if (!workerMlId) return null;
+  return { ...(raw as DocAccessLogEntry), workerMlId };
+}
+
 function safeReadSession(): DocAccessSession | null {
   try {
     const raw = localStorage.getItem(SESSION_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as DocAccessSession;
+    return normalizeSession(JSON.parse(raw) as unknown);
   } catch {
     return null;
   }
@@ -76,7 +100,9 @@ function readLog(): DocAccessLogEntry[] {
   try {
     const raw = localStorage.getItem(ACCESS_LOG_KEY);
     if (!raw) return [];
-    return JSON.parse(raw) as DocAccessLogEntry[];
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map(normalizeLogEntry).filter((e): e is DocAccessLogEntry => e !== null);
   } catch {
     return [];
   }
@@ -124,7 +150,7 @@ export const docAccessSessionStorage = {
   createSession(params: {
     employerId: string;
     employerName: string;
-    workerWmId: string;
+    workerMlId: string;
     domain: "shift" | "career";
   }): DocAccessSession {
     const now = Date.now();
@@ -148,7 +174,7 @@ export const docAccessSessionStorage = {
     pushLog({
       employerId: params.employerId,
       employerName: params.employerName,
-      workerWmId: params.workerWmId,
+      workerMlId: params.workerMlId,
       domain: params.domain,
       accessedAt: now,
       status: "viewed",

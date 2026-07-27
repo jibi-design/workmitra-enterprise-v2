@@ -1,6 +1,6 @@
 // App name: Job Mitra
 // File name: ShiftWorkspaceUpdateFeed.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\components\ShiftWorkspaceUpdateFeed.tsx
+// Neutral tokens + reply limit affordance (P2-1 / P2-9)
 
 import { useCallback, useState } from "react";
 
@@ -16,6 +16,9 @@ import {
 import { shiftWorkspacesStorage } from "../../shiftJobs/storage/shiftWorkspaces.storage";
 import type { ShiftWorkspace } from "../../shiftJobs/storage/shiftWorkspaces.storage";
 
+const REPLY_LIMIT = 360;
+const REPLY_WARN_AT = 300;
+
 type Props = {
   workspace: ShiftWorkspace;
   readOnly: boolean;
@@ -28,7 +31,7 @@ export function ShiftWorkspaceUpdateFeed({ workspace, readOnly, onReplySuccess }
   const sendReply = useCallback(() => {
     if (readOnly) return;
 
-    const message = clampText(replyText, 360);
+    const message = clampText(replyText, REPLY_LIMIT);
     if (!message) return;
 
     shiftWorkspacesStorage.replyToEmployer(workspace.id, message);
@@ -38,15 +41,9 @@ export function ShiftWorkspaceUpdateFeed({ workspace, readOnly, onReplySuccess }
 
   return (
     <section
-      className="wm-ee-card"
-      style={{
-        marginTop: 12,
-        padding: 16,
-        borderRadius: 20,
-        border: "1px solid rgba(226,232,240,0.95)",
-        background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
-        boxShadow: "0 10px 24px rgba(15,23,42,0.045)",
-      }}
+      className="wm-shift-surface-glass wm-shift-surface-glass--shift wm-animateIn wm-shift-stagger--feed"
+      data-testid="shift-workspace-updates"
+      style={{ padding: 16 }}
     >
       <div
         style={{
@@ -57,27 +54,18 @@ export function ShiftWorkspaceUpdateFeed({ workspace, readOnly, onReplySuccess }
         }}
       >
         <div>
-          <div style={{ fontWeight: 950, fontSize: 14, color: "var(--wm-emp-text)" }}>Updates</div>
+          <div style={{ fontWeight: 950, fontSize: 14, color: "var(--wm-neutral-900)" }}>
+            Updates
+          </div>
 
           <div
-            style={{ marginTop: 4, fontSize: 12, color: "var(--wm-emp-muted)", lineHeight: 1.45 }}
+            style={{ marginTop: 4, fontSize: 12, color: "var(--wm-neutral-600)", lineHeight: 1.45 }}
           >
             Shift updates, replies, and local workspace records.
           </div>
         </div>
 
-        <span
-          style={{
-            padding: "5px 9px",
-            borderRadius: 999,
-            background: "rgba(22,163,74,0.08)",
-            border: "1px solid rgba(22,163,74,0.16)",
-            color: "var(--wm-er-accent-shift, #16a34a)",
-            fontSize: 10,
-            fontWeight: 950,
-            whiteSpace: "nowrap",
-          }}
-        >
+        <span className="wm-shift-pill wm-shift-pill--outline" style={{ fontSize: 10 }}>
           {workspace.updates.length}
         </span>
       </div>
@@ -85,13 +73,11 @@ export function ShiftWorkspaceUpdateFeed({ workspace, readOnly, onReplySuccess }
       <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
         {workspace.updates.length === 0 ? (
           <div
+            className="wm-shift-surface-glass"
             style={{
               padding: "12px 14px",
-              borderRadius: 14,
-              background: "rgba(248,250,252,0.96)",
-              border: "1px solid rgba(226,232,240,0.9)",
               fontSize: 12,
-              color: "var(--wm-emp-muted)",
+              color: "var(--wm-neutral-600)",
               lineHeight: 1.45,
             }}
           >
@@ -121,7 +107,7 @@ function WorkspaceUpdateCard({ update }: { update: ShiftWorkspace["updates"][num
       style={{
         border: rowStyle.border,
         background: rowStyle.bg,
-        borderRadius: 16,
+        borderRadius: "var(--wm-radius-chip)",
         padding: 12,
       }}
     >
@@ -135,7 +121,12 @@ function WorkspaceUpdateCard({ update }: { update: ShiftWorkspace["updates"][num
       >
         <div style={{ minWidth: 0 }}>
           <div
-            style={{ fontSize: 13, fontWeight: 950, color: "var(--wm-emp-text)", lineHeight: 1.3 }}
+            style={{
+              fontSize: 13,
+              fontWeight: 950,
+              color: "var(--wm-neutral-900)",
+              lineHeight: 1.3,
+            }}
           >
             {update.title}
           </div>
@@ -153,7 +144,7 @@ function WorkspaceUpdateCard({ update }: { update: ShiftWorkspace["updates"][num
           style={{
             fontSize: 11,
             fontWeight: 800,
-            color: "var(--wm-emp-muted)",
+            color: "var(--wm-neutral-600)",
             whiteSpace: "nowrap",
           }}
         >
@@ -166,7 +157,7 @@ function WorkspaceUpdateCard({ update }: { update: ShiftWorkspace["updates"][num
           style={{
             marginTop: 9,
             fontSize: 12,
-            color: "var(--wm-emp-muted)",
+            color: "var(--wm-neutral-600)",
             fontWeight: 600,
             lineHeight: 1.5,
           }}
@@ -184,7 +175,7 @@ function UpdatePill({ label, tone }: { label: string; tone: Parameters<typeof ba
       style={{
         height: 22,
         padding: "0 8px",
-        borderRadius: 999,
+        borderRadius: "var(--wm-radius-pill)",
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
@@ -209,9 +200,12 @@ function ReplyBox({
   onReplyTextChange: (value: string) => void;
   onSendReply: () => void;
 }) {
+  const nearLimit = replyText.length > REPLY_WARN_AT;
+  const counterColor = nearLimit ? "var(--wm-amber-700)" : "var(--wm-neutral-600)";
+
   return (
     <div style={{ marginTop: 14, borderTop: "1px solid rgba(226,232,240,0.95)", paddingTop: 14 }}>
-      <div style={{ fontWeight: 950, fontSize: 14, color: "var(--wm-emp-text)" }}>
+      <div style={{ fontWeight: 950, fontSize: 14, color: "var(--wm-neutral-900)" }}>
         Reply to Employer
       </div>
 
@@ -220,7 +214,7 @@ function ReplyBox({
           style={{
             marginTop: 8,
             fontSize: 12,
-            color: "var(--wm-emp-muted)",
+            color: "var(--wm-neutral-600)",
             fontWeight: 600,
             lineHeight: 1.45,
           }}
@@ -232,47 +226,53 @@ function ReplyBox({
           <div className="wm-field" style={{ marginTop: 10 }}>
             <textarea
               className="wm-input"
-              style={{ height: 92, paddingTop: 10, fontFamily: "inherit" }}
+              style={{
+                height: 92,
+                paddingTop: 10,
+                fontFamily: "inherit",
+                ...(nearLimit
+                  ? {
+                      borderColor: "var(--wm-amber-600)",
+                      boxShadow:
+                        "0 0 0 1px color-mix(in srgb, var(--wm-amber-600) 35%, transparent)",
+                    }
+                  : null),
+              }}
               value={replyText}
               onChange={(event) => onReplyTextChange(event.target.value)}
               placeholder="Type your reply"
-              maxLength={360}
+              maxLength={REPLY_LIMIT}
+              aria-describedby="shift-reply-limit-hint"
             />
 
             <div
+              id="shift-reply-limit-hint"
               style={{
                 marginTop: 5,
                 fontSize: 11,
-                color: "var(--wm-emp-muted)",
+                color: counterColor,
                 display: "flex",
                 justifyContent: "space-between",
                 gap: 10,
               }}
             >
-              <span>Keep it clear and professional.</span>
-              <span>{replyText.length}/360</span>
+              <span>
+                {nearLimit
+                  ? "Approaching the 360-character limit."
+                  : "Keep it clear and professional."}
+              </span>
+              <span style={{ fontWeight: nearLimit ? 850 : 600 }}>
+                {replyText.length}/{REPLY_LIMIT}
+              </span>
             </div>
           </div>
 
           <button
             type="button"
+            className="wm-primarybtn wm-shift-pressable"
             onClick={onSendReply}
             disabled={!replyText.trim()}
-            style={{
-              width: "100%",
-              marginTop: 12,
-              padding: "11px 12px",
-              borderRadius: 14,
-              border: "none",
-              background: replyText.trim()
-                ? "var(--wm-er-accent-shift, #16a34a)"
-                : "rgba(148,163,184,0.45)",
-              color: "#fff",
-              fontSize: 13,
-              fontWeight: 950,
-              cursor: replyText.trim() ? "pointer" : "not-allowed",
-              boxShadow: replyText.trim() ? "0 10px 22px rgba(22,163,74,0.16)" : "none",
-            }}
+            style={{ width: "100%", marginTop: 12 }}
           >
             Send Reply
           </button>

@@ -52,7 +52,7 @@ export function EmployeeWorkforceTimesheetSummary({
           style={{
             marginTop: 10,
             padding: "6px 16px",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             border: `1px solid ${AMBER}`,
             background: "#fff",
             color: AMBER,

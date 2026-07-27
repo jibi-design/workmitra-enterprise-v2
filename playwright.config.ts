@@ -1,13 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
 
 /**
- * Job Mitra E2E — Playwright configuration
- *
- * The app uses HashRouter, so tests navigate with `/#/employer/shift` style paths.
- * Vite dev server must be running (or started via webServer below).
+ * Job Mitra E2E — Playwright configuration (MNC matrix-ready)
+ * HashRouter paths: `/#/employer/shift/...`
  */
 export default defineConfig({
-  testDir: "./tests/e2e",
+  testDir: ".",
+  testMatch: ["**/tests/e2e/**/*.spec.ts", "**/playwright/e2e/**/*.spec.ts"],
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
@@ -18,25 +17,26 @@ export default defineConfig({
 
   use: {
     baseURL: "http://localhost:5173",
-    // Local Windows runs: trace/video stacks files can race ENOENT and abort tests mid-step.
-    // Enable explicitly with PW_TRACE=1 when debugging a failure.
     trace: process.env.PW_TRACE === "1" ? "on" : process.env.CI ? "on-first-retry" : "off",
     screenshot: "only-on-failure",
     video: process.env.CI ? "retain-on-failure" : "off",
-    ...devices["Desktop Chrome"],
   },
 
   projects: [
+    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    { name: "firefox", use: { ...devices["Desktop Firefox"] } },
+    { name: "webkit", use: { ...devices["Desktop Safari"] } },
     {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      name: "mobile-safari",
+      use: { ...devices["iPhone 13"] },
     },
   ],
 
   webServer: {
     command: "npm run dev",
     url: "http://localhost:5173",
-    reuseExistingServer: true,
+    // PW_FORCE_FRESH=1 kills reuse so inspection hits a newly spawned Vite (no stale HMR shell).
+    reuseExistingServer: process.env.PW_FORCE_FRESH === "1" ? false : !process.env.CI,
     timeout: 120_000,
   },
 });

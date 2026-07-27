@@ -1,7 +1,6 @@
-// App name: Job Mitra
-// File name: EmployerShiftWorkspaceHeader.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\components\EmployerShiftWorkspaceHeader.tsx
+// App name: Job Mitra | EmployerShiftWorkspaceHeader.tsx — DomainHero (Wave 2)
 
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
 import { fmtDateRange, statusLabel } from "../types/shiftWorkspaceTypes";
 import type { ShiftWorkspace } from "../types/shiftWorkspaceTypes";
 
@@ -14,77 +13,31 @@ export function EmployerShiftWorkspaceHeader({ workspace }: EmployerShiftWorkspa
   const range = fmtDateRange(workspace.startAt, workspace.endAt);
 
   return (
-    <section
-      style={{
-        marginTop: 2,
-        padding: "16px 16px",
-        borderRadius: 22,
-        border: "1px solid rgba(22,163,74,0.16)",
-        background:
-          "linear-gradient(135deg, rgba(22,163,74,0.13), rgba(255,255,255,0.98) 48%, rgba(240,253,244,0.86))",
-        boxShadow: "0 18px 40px rgba(15,23,42,0.07)",
-      }}
+    <DomainHero
+      variant="shift"
+      audience="employer"
+      icon={<WorkspaceHeroIcon />}
+      title={title}
+      subtitle={`${workspace.locationName} · ${range}`}
+      description="Confirmed work group — updates, workers, and attendance intent live here."
+      trailing={<span className="wm-domainHeroBadge">{statusLabel(workspace.status)}</span>}
     >
       <div
-        style={{
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          gap: 12,
-        }}
+        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--wm-kpi-grid-gap)" }}
       >
-        <div style={{ minWidth: 0 }}>
-          <div
-            style={{ fontSize: 18, fontWeight: 950, color: "var(--wm-er-text)", lineHeight: 1.25 }}
-          >
-            {title}
-          </div>
-
-          <div
-            style={{ marginTop: 5, fontSize: 12, color: "var(--wm-er-muted)", lineHeight: 1.45 }}
-          >
-            {workspace.locationName} · {range}
-          </div>
-        </div>
-
-        <span
-          style={{
-            padding: "6px 10px",
-            borderRadius: 999,
-            background: "rgba(22,163,74,0.08)",
-            border: "1px solid rgba(22,163,74,0.16)",
-            color: "var(--wm-er-accent-shift, #16a34a)",
-            fontSize: 11,
-            fontWeight: 950,
-            whiteSpace: "nowrap",
-          }}
-        >
-          {statusLabel(workspace.status)}
-        </span>
-      </div>
-
-      <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
         <InfoBox label="Workspace ID" value={workspace.id.slice(-6).toUpperCase()} />
         <InfoBox
           label="Last activity"
           value={new Date(workspace.lastActivityAt).toLocaleDateString()}
         />
       </div>
-    </section>
+    </DomainHero>
   );
 }
 
 function InfoBox({ label, value }: { label: string; value: string }) {
   return (
-    <div
-      style={{
-        padding: "9px 10px",
-        borderRadius: 14,
-        background: "rgba(255,255,255,0.72)",
-        border: "1px solid rgba(226,232,240,0.9)",
-        minWidth: 0,
-      }}
-    >
+    <div className="wm-shift-surface-glass wm-shift-surface-glass--inset" style={{ minWidth: 0 }}>
       <div
         style={{
           fontSize: 9,
@@ -99,5 +52,16 @@ function InfoBox({ label, value }: { label: string; value: string }) {
         {value}
       </div>
     </div>
+  );
+}
+
+function WorkspaceHeroIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M16 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-8 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5Zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5Z"
+      />
+    </svg>
   );
 }

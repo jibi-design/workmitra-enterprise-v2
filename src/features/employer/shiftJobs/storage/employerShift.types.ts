@@ -90,6 +90,8 @@ export type EmployeeShiftApplication = {
   postId: string;
   createdAt: number;
   status: ApplicantStatus;
+  /** Client clock when status last moved (shortlist/wait/reject/confirm path). */
+  statusChangedAt?: number;
   profileSnapshot?: ApplicantProfileSnapshot;
   mustHaveAnswers: Record<string, RequirementAnswer>;
   goodToHaveAnswers: Record<string, RequirementAnswer>;
@@ -129,7 +131,7 @@ export type EmployeeWorkspace = {
   id: string;
   postId: string;
   appId?: string;
-  workerWmId?: string;
+  workerMlId?: string;
   workerName?: string;
   companyName: string;
   jobName: string;

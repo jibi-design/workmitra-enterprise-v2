@@ -1,6 +1,5 @@
 // App: Job Mitra / WorkMitra_Enterprise_v2
 // File: LandingRolePickPage.tsx
-// Path: C:\projects\WorkMitra_Enterprise_v2\src\features\auth\pages\LandingRolePickPage.tsx
 
 import { useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -19,6 +18,7 @@ import {
 
 const SUPPORT_EMAIL = "support@mitralabs.app";
 const PRIVACY_POLICY_URL = "https://jibi-design.github.io/workmitra-privacy/";
+const ROLE_ACCENT = "var(--wm-neutral-900)";
 
 function routeForRole(role: AppRole): string {
   if (role === "employee") return ROUTE_PATHS.employeeHome;
@@ -39,16 +39,15 @@ export function LandingRolePickPage() {
       {
         role: "employee" as const,
         title: "Employee",
-        /* Changed 'and' to '&' and added \u00A0 (Non-breaking space) to prevent lonely words */
         desc: "Find shifts, apply jobs & track\u00A0work.",
-        accent: "#0F172A",
+        accent: ROLE_ACCENT,
         Icon: RoleIconEmployee,
       },
       {
         role: "employer" as const,
         title: "Employer",
         desc: "Post jobs, manage hiring & work\u00A0records.",
-        accent: "#0F172A",
+        accent: ROLE_ACCENT,
         Icon: RoleIconEmployer,
       },
     ],
@@ -85,28 +84,27 @@ export function LandingRolePickPage() {
 
   return (
     <div
+      className="wm-landing-role-pick"
       style={{
         display: "flex",
         flexDirection: "column",
         minHeight: "100dvh",
-        background: "#F1F5F9" /* Slightly deeper enterprise slate */,
+        background: "var(--wm-neutral-100)",
         alignItems: "center",
         justifyContent: "center",
-        padding: 16 /* Reduced outer padding for mobile screens */,
-        fontFamily: `"Inter", "SF Pro Display", system-ui, sans-serif`,
+        padding: 16,
+        fontFamily: "var(--wm-font-sans, system-ui, -apple-system, sans-serif)",
       }}
     >
-      {/* STRICT ENTERPRISE AUTH PANEL */}
       <div
         style={{
           width: "100%",
           maxWidth: 420,
-          background: "#FFFFFF",
-          borderRadius: 24,
-          /* Upgraded Shadow & Premium Inset Glow */
+          background: "var(--wm-neutral-25, #fff)",
+          borderRadius: "var(--wm-radius-24, 24px)",
           boxShadow:
-            "0 24px 48px -12px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(15, 23, 42, 0.04), inset 0 1px 0 rgba(255, 255, 255, 1)",
-          padding: "36px 20px" /* Optimized inner padding to give cards more width */,
+            "0 24px 48px -12px color-mix(in srgb, var(--wm-neutral-900) 12%, transparent), 0 0 0 1px color-mix(in srgb, var(--wm-neutral-900) 4%, transparent)",
+          padding: "36px 20px",
           display: "flex",
           flexDirection: "column",
         }}
@@ -131,21 +129,18 @@ export function LandingRolePickPage() {
 
         <button
           type="button"
-          className="wm-press-btn"
+          className="wm-press-btn wm-primarybtn"
           onClick={() => goTo(selectedRole)}
           style={{
             width: "100%",
             marginTop: 28,
             padding: "14px 24px",
-            borderRadius: 12 /* Sharp Enterprise Button */,
+            borderRadius: "var(--wm-radius-12, 12px)",
             fontSize: 15,
             fontWeight: 600,
-            color: "#FFFFFF",
-            background: "#0F172A",
+            color: "var(--wm-neutral-25, #fff)",
+            background: "var(--wm-neutral-900)",
             border: "none",
-            /* The 'Apple Hardware' Button Inset Shadow Fix */
-            boxShadow:
-              "0 6px 16px -4px rgba(15, 23, 42, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
             cursor: "pointer",
           }}
         >

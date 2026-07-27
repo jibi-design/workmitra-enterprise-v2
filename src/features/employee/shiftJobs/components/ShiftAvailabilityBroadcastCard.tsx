@@ -22,7 +22,10 @@ export function ShiftAvailabilityBroadcastCard({
   const selectedLabel = availabilityStorage.formatSelectedDatesLabel(selectedDates);
 
   return (
-    <div className="wm-ee-card wm-shiftAvailabilityCalendar">
+    <div
+      className="wm-shift-surface-glass wm-shift-surface-glass--shift wm-shiftAvailabilityCalendar"
+      data-testid="shift-availability-broadcast-card"
+    >
       <div className="wm-typeCardTitle">My availability — next 7 days</div>
 
       <p className="wm-typeHelperMd" style={{ marginTop: 4 }}>

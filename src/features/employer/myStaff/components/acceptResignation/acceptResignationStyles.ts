@@ -17,7 +17,7 @@ export const CARD: React.CSSProperties = {
   width: "100%",
   maxWidth: 420,
   background: "#fff",
-  borderRadius: 16,
+  borderRadius: "var(--wm-radius-chip)",
   padding: 20,
   boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
 };
@@ -44,7 +44,7 @@ export const BTN_ROW: React.CSSProperties = {
 
 export const CANCEL_BTN: React.CSSProperties = {
   padding: "10px 18px",
-  borderRadius: 10,
+  borderRadius: "var(--wm-radius-10)",
   border: "1.5px solid rgba(0,0,0,0.12)",
   background: "transparent",
   fontWeight: 600,
@@ -56,7 +56,7 @@ export const CANCEL_BTN: React.CSSProperties = {
 export function nextBtnStyle(enabled: boolean): React.CSSProperties {
   return {
     padding: "10px 18px",
-    borderRadius: 10,
+    borderRadius: "var(--wm-radius-10)",
     border: "none",
     background: enabled ? "#16a34a" : "#e5e7eb",
     color: enabled ? "#fff" : "#9ca3af",

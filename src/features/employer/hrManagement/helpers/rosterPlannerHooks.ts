@@ -3,53 +3,45 @@
 // Subscription hooks for Team Calendar / Roster Planner (Root Map Section 7.4.15).
 // Uses useSyncExternalStore for lint-safe reactive updates.
 
-import { useCallback, useMemo, useSyncExternalStore } from "react";
+import { useCallback, useRef, useSyncExternalStore } from "react";
 import { rosterPlannerStorage } from "../storage/rosterPlanner.storage";
 import type { RosterAssignment } from "../types/rosterPlanner.types";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Hook: useRosterForRange — assignments within a date range
-// ─────────────────────────────────────────────────────────────────────────────
-
+/** P1-2 — stable array snapshot keyed by revision + range (no stringify-per-tick). */
 export function useRosterForRange(startDate: string, endDate: string): RosterAssignment[] {
-  const subscribe = useCallback(
-    (cb: () => void) => rosterPlannerStorage.subscribe(cb),
-    [],
-  );
+  const cacheRef = useRef<{ key: string; list: RosterAssignment[] }>({ key: "", list: [] });
 
-  const getSnapshot = useCallback(
-    () => JSON.stringify(rosterPlannerStorage.getForDateRange(startDate, endDate)),
-    [startDate, endDate],
-  );
+  const subscribe = useCallback((cb: () => void) => rosterPlannerStorage.subscribe(cb), []);
 
-  const raw = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  const getSnapshot = useCallback(() => {
+    const key = `${rosterPlannerStorage.getRevision()}|${startDate}|${endDate}`;
+    if (cacheRef.current.key === key) return cacheRef.current.list;
+    const list = rosterPlannerStorage.getForDateRange(startDate, endDate);
+    cacheRef.current = { key, list };
+    return cacheRef.current.list;
+  }, [startDate, endDate]);
 
-  return useMemo(() => {
-    try { return JSON.parse(raw); } catch { return []; }
-  }, [raw]);
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Hook: useEmployeeSchedule — upcoming assignments for an employee
-// ─────────────────────────────────────────────────────────────────────────────
-
 export function useEmployeeSchedule(hrCandidateId: string | null): RosterAssignment[] {
-  const subscribe = useCallback(
-    (cb: () => void) => rosterPlannerStorage.subscribe(cb),
-    [],
-  );
+  const cacheRef = useRef<{ key: string; list: RosterAssignment[] }>({ key: "", list: [] });
 
-  const getSnapshot = useCallback(
-    () => {
-      if (!hrCandidateId) return "[]";
-      return JSON.stringify(rosterPlannerStorage.getUpcomingForEmployee(hrCandidateId));
-    },
-    [hrCandidateId],
-  );
+  const subscribe = useCallback((cb: () => void) => rosterPlannerStorage.subscribe(cb), []);
 
-  const raw = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  const getSnapshot = useCallback(() => {
+    if (!hrCandidateId) {
+      const emptyKey = `${rosterPlannerStorage.getRevision()}|none`;
+      if (cacheRef.current.key === emptyKey) return cacheRef.current.list;
+      cacheRef.current = { key: emptyKey, list: [] };
+      return cacheRef.current.list;
+    }
+    const key = `${rosterPlannerStorage.getRevision()}|emp|${hrCandidateId}`;
+    if (cacheRef.current.key === key) return cacheRef.current.list;
+    const list = rosterPlannerStorage.getUpcomingForEmployee(hrCandidateId);
+    cacheRef.current = { key, list };
+    return cacheRef.current.list;
+  }, [hrCandidateId]);
 
-  return useMemo(() => {
-    try { return JSON.parse(raw); } catch { return []; }
-  }, [raw]);
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }

@@ -44,7 +44,7 @@ export function EmployeeEarningsMiniBarChart({ data }: EmployeeEarningsMiniBarCh
             <div
               style={{
                 width: "100%",
-                borderRadius: "4px 4px 0 0",
+                borderRadius: "var(--wm-radius-8) var(--wm-radius-8) 0 0",
                 height: `${Math.max(4, percent * 0.44)}px`,
                 background: `rgba(22,163,74,${0.4 + percent / 200})`,
                 transition: "height 0.3s ease",

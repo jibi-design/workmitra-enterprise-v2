@@ -58,7 +58,7 @@ export type AdminUserStatusEntry = {
 // Keys
 // ─────────────────────────────────────────────────────────────────────────────
 
-const EMPLOYER_PROFILE_KEY = "wm:employer-profile";
+const EMPLOYER_PROFILE_KEY = "wm_employer_profile_v1";
 const EMPLOYEE_PROFILE_KEY = "wm_employee_profile_v1";
 const SHIFT_POSTS_KEY = "wm_employer_shift_posts_v1";
 const CAREER_POSTS_KEY = "wm_employer_career_posts_v1";
@@ -130,7 +130,10 @@ function writeStatusEntries(entries: AdminUserStatusEntry[]): void {
   }
 }
 
-function getStatusForUser(userId: string, entries: AdminUserStatusEntry[]): { status: UserStatus; reason?: string; changedAt?: number } {
+function getStatusForUser(
+  userId: string,
+  entries: AdminUserStatusEntry[],
+): { status: UserStatus; reason?: string; changedAt?: number } {
   const entry = entries.find((e) => e.userId === userId);
   if (!entry) return { status: "active" };
   return { status: entry.status, reason: entry.reason, changedAt: entry.changedAt };
@@ -173,7 +176,9 @@ export function getEmployerList(): AdminEmployerRecord[] {
     phone: str(profile, "phone"),
     industryType: str(profile, "industryType"),
     companySize: str(profile, "companySize"),
-    location: [str(profile, "locationCity"), str(profile, "locationState")].filter(Boolean).join(", "),
+    location: [str(profile, "locationCity"), str(profile, "locationState")]
+      .filter(Boolean)
+      .join(", "),
     totalShiftPosts: shiftPosts.length,
     totalCareerPosts: careerPosts.length,
     totalHires,
@@ -212,7 +217,8 @@ export function getEmployeeList(): AdminEmployeeRecord[] {
   if (str(profile, "city")) profileCompletion += 15;
   if (skills.length > 0) profileCompletion += 20;
   if (languages.length > 0) profileCompletion += 10;
-  if (str(profile, "experience") && str(profile, "experience") !== "fresher") profileCompletion += 15;
+  if (str(profile, "experience") && str(profile, "experience") !== "fresher")
+    profileCompletion += 15;
   profileCompletion = Math.min(100, profileCompletion);
 
   const statusEntries = readStatusEntries();
@@ -244,7 +250,12 @@ export function getEmployeeList(): AdminEmployeeRecord[] {
 // Status Actions
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function setUserStatus(userId: string, role: "employer" | "employee", status: UserStatus, reason: string): void {
+export function setUserStatus(
+  userId: string,
+  role: "employer" | "employee",
+  status: UserStatus,
+  reason: string,
+): void {
   const entries = readStatusEntries();
   const filtered = entries.filter((e) => e.userId !== userId);
   if (status !== "active") {
@@ -252,7 +263,11 @@ export function setUserStatus(userId: string, role: "employer" | "employee", sta
   }
   writeStatusEntries(filtered);
   pushAdminAuditEntry(
-    status === "active" ? "user_reactivated" : status === "suspended" ? "user_suspended" : "user_blocked",
+    status === "active"
+      ? "user_reactivated"
+      : status === "suspended"
+        ? "user_suspended"
+        : "user_blocked",
     `${role === "employer" ? "Employer" : "Employee"} ${userId} — ${status === "active" ? "Reactivated" : status === "suspended" ? "Suspended" : "Blocked"}`,
     `Reason: ${reason || "No reason provided"}.`,
   );
@@ -287,6 +302,6 @@ export function pushAdminAuditEntry(kind: string, title: string, body?: string):
 
 export function getAdminAuditEntries(): AdminAuditEntry[] {
   return (safeArr(ADMIN_AUDIT_KEY) as AdminAuditEntry[]).sort(
-    (a, b) => (num(b as unknown as Rec, "createdAt")) - (num(a as unknown as Rec, "createdAt")),
+    (a, b) => num(b as unknown as Rec, "createdAt") - num(a as unknown as Rec, "createdAt"),
   );
 }

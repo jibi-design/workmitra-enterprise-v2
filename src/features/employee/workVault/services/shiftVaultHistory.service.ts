@@ -6,10 +6,12 @@ import type { ShiftWorkspace } from "../../../shared/shift/shiftEmployerPublic";
 import { readEmployeeApplications } from "../../../shared/shift/shiftEmployerPublic";
 import { ratingStorage } from "../../../../shared/rating/ratingStorage";
 import { employerSettingsStorage } from "../../../../shared/employerProfile/employerSettingsPublic";
+import { employeeNotificationsStorage } from "../../notifications/storage/employeeNotifications.storage";
 import {
   finalizeVaultShiftHistory,
   updateVaultShiftHistoryRatings,
   upsertVaultShiftHistoryOnComplete,
+  VAULT_SHIFT_HISTORY_MAX,
 } from "../storage/vaultShiftHistory.storage";
 
 function resolveWorkerMlId(workspace: ShiftWorkspace): string {
@@ -30,7 +32,7 @@ export function recordShiftCompletedInVault(
   const workerMlId = resolveWorkerMlId(workspace);
   if (!workerMlId) return;
 
-  upsertVaultShiftHistoryOnComplete({
+  const result = upsertVaultShiftHistoryOnComplete({
     workspaceId: workspace.id,
     postId: workspace.postId,
     workerMlId,
@@ -41,6 +43,13 @@ export function recordShiftCompletedInVault(
     endAt: workspace.endAt,
     completedAt,
   });
+
+  if (result && result.trimmedOldest > 0) {
+    employeeNotificationsStorage.pushShift(
+      "Shift history limit reached",
+      `Kept the latest ${VAULT_SHIFT_HISTORY_MAX} completed shifts on this device. ${result.trimmedOldest} older record(s) were removed.`,
+    );
+  }
 }
 
 export function syncVaultShiftRatings(workspace: ShiftWorkspace): void {

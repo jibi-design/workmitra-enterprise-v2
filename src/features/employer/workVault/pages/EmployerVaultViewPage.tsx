@@ -1,28 +1,28 @@
+// Phase 14: employer vault view — verify via server when AUTH_BACKEND_ENABLED.
 // App: Job Mitra / WorkMitra_Enterprise_v2
 // File: EmployerVaultViewPage.tsx
-// Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\workVault\pages\EmployerVaultViewPage.tsx
 
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  getVaultSectionData,
-  type VaultSectionData,
-} from "../../../employee/workVault/services/vaultDataAggregator";
-import { getAllDocuments } from "../../../employee/workVault/services/vaultDocumentService";
-import { getVisibleFolders } from "../../../employee/workVault/services/vaultFolderService";
-import { verifyOtp } from "../../../employee/workVault/services/vaultOtpService";
-import {
+  clearStoredEmployerSessionId,
   createSession,
+  createSessionFromApiResult,
+  endEmployerLocalSession,
   expireOldSessions,
   getActiveSession,
+  getAllDocuments,
+  getVaultSectionData,
+  getVisibleFolders,
   isSessionValid,
-  revokeSession,
-} from "../../../employee/workVault/services/vaultAccessService";
-import type {
-  VaultDocument,
-  VaultFolder,
-  VaultSession,
-} from "../../../employee/workVault/types/vaultTypes";
+  isVaultApiSyncEnabled,
+  verifyOtp,
+  verifyOtpViaApi,
+  type VaultDocument,
+  type VaultFolder,
+  type VaultSectionData,
+  type VaultSession,
+} from "../../../shared/workVault/vaultPublic";
 import { employerSettingsStorage } from "../../company/storage/employerSettings.storage";
 import { EmployerVaultProfileView } from "../components/EmployerVaultProfileView";
 import { EmployerVaultOtpSection } from "../components/vaultView/EmployerVaultOtpSection";
@@ -40,6 +40,7 @@ export function EmployerVaultViewPage() {
   });
 
   const [otpError, setOtpError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const [sectionData, setSectionData] = useState<VaultSectionData | null>(() => {
     if (session && isSessionValid(session.id)) {
@@ -68,14 +69,18 @@ export function EmployerVaultViewPage() {
     return [];
   });
 
-  const loadVaultData = useCallback(() => {
+  const loadVaultData = useCallback((visibleFolderIds?: string[]) => {
     setSectionData(getVaultSectionData());
 
     const visibleFolders = getVisibleFolders();
+    const scoped =
+      visibleFolderIds && visibleFolderIds.length > 0
+        ? visibleFolders.filter((f) => visibleFolderIds.includes(f.id))
+        : visibleFolders;
     const allDocs = getAllDocuments();
-    const visibleIds = visibleFolders.map((folder) => folder.id);
+    const visibleIds = scoped.map((folder) => folder.id);
 
-    setFolders(visibleFolders);
+    setFolders(scoped);
     setDocuments(allDocs.filter((document) => visibleIds.includes(document.folderId)));
   }, []);
 
@@ -88,40 +93,80 @@ export function EmployerVaultViewPage() {
         setSectionData(null);
         setFolders([]);
         setDocuments([]);
+        clearStoredEmployerSessionId();
       }
     }, 2000);
 
     return () => clearInterval(interval);
   }, [session]);
 
-  function handleOtpSubmit(code: string) {
-    const verified = verifyOtp(code);
-
-    if (!verified) {
-      setOtpError("Invalid or expired code. Please ask the employee for a new code.");
-      return;
-    }
-
+  async function handleOtpSubmit(code: string) {
+    if (submitting) return;
+    setSubmitting(true);
     setOtpError("");
 
-    const employer = employerSettingsStorage.get();
-    const employerName = employer.companyName || employer.fullName || "Unknown Employer";
-    const employerId = employer.uniqueId ?? "unknown";
+    try {
+      const employer = employerSettingsStorage.get();
+      const employerName = employer.companyName || employer.fullName || "Unknown Employer";
+      const employerMlId = employer.uniqueId ?? "unknown";
 
-    const newSession = createSession(employerId, employerName);
+      if (isVaultApiSyncEnabled()) {
+        const verified = await verifyOtpViaApi({
+          code,
+          employeeRouteId: employeeId ?? "",
+          employerName,
+          employerMlId,
+        });
 
-    if (!newSession.ok) {
-      setOtpError("Could not start vault session. Free up browser storage and try again.");
-      return;
+        if (!verified.ok) {
+          setOtpError(
+            verified.message ?? "Invalid or expired code. Please ask the employee for a new code.",
+          );
+          return;
+        }
+
+        const newSession = createSessionFromApiResult({
+          sessionId: verified.sessionId,
+          employerIdentifier: employerMlId,
+          employerName,
+          visibleFolderIds: verified.visibleFolderIds,
+          expiresAt: verified.expiresAt,
+        });
+
+        if (!newSession.ok) {
+          setOtpError("Could not start vault session. Free up browser storage and try again.");
+          return;
+        }
+
+        setSession(newSession.session);
+        loadVaultData(verified.visibleFolderIds);
+        return;
+      }
+
+      const verified = await verifyOtp(code);
+
+      if (!verified) {
+        setOtpError("Invalid or expired code. Please ask the employee for a new code.");
+        return;
+      }
+
+      const newSession = createSession(employerMlId, employerName);
+
+      if (!newSession.ok) {
+        setOtpError("Could not start vault session. Free up browser storage and try again.");
+        return;
+      }
+
+      setSession(newSession.session);
+      loadVaultData();
+    } finally {
+      setSubmitting(false);
     }
-
-    setSession(newSession.session);
-    loadVaultData();
   }
 
   function handleEndSession() {
     if (session) {
-      revokeSession(session.id);
+      endEmployerLocalSession(session.id);
     }
 
     setSession(null);
@@ -134,7 +179,7 @@ export function EmployerVaultViewPage() {
   const isActive = session ? isSessionValid(session.id) : false;
 
   return (
-    <div>
+    <div className="wm-stackGrid">
       <EmployerVaultViewHeader isActive={isActive} onBack={() => nav("/employer/vault")} />
 
       {!isActive && (
@@ -152,7 +197,7 @@ export function EmployerVaultViewPage() {
 
           <EmployerVaultSecurityNote />
 
-          <div style={{ marginTop: 16 }}>
+          <div>
             <EmployerVaultProfileView
               data={sectionData}
               unlocked={true}

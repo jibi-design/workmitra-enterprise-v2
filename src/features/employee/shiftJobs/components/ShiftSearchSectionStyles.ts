@@ -20,7 +20,7 @@ export const shiftSearchMiniCardStyle: CSSProperties = {
   minWidth: 292,
   maxWidth: 340,
   padding: "14px 16px",
-  borderRadius: 18,
+  borderRadius: "var(--wm-radius-chip)",
   border: "1px solid var(--wm-er-border)",
   borderLeft: `4px solid ${SHIFT_SEARCH_GREEN}`,
   background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.98))",
@@ -33,7 +33,7 @@ export const shiftSearchMiniCardStyle: CSSProperties = {
 export const shiftSearchSectionWrapStyle: CSSProperties = {
   marginTop: 14,
   padding: "12px 16px",
-  borderRadius: 18,
+  borderRadius: "var(--wm-radius-chip)",
   background: "rgba(22, 163, 74, 0.03)",
   border: "1px solid rgba(22, 163, 74, 0.12)",
 };
@@ -66,7 +66,7 @@ export const shiftSearchFadeRightStyle: CSSProperties = {
   background: "linear-gradient(to right, transparent, rgba(255,255,255,0.9))",
   pointerEvents: "none",
   zIndex: 1,
-  borderRadius: "0 12px 12px 0",
+  borderRadius: "0 var(--wm-radius-button) var(--wm-radius-button) 0",
 };
 
 export const shiftSearchFadeLeftStyle: CSSProperties = {
@@ -78,7 +78,7 @@ export const shiftSearchFadeLeftStyle: CSSProperties = {
   background: "linear-gradient(to left, transparent, rgba(255,255,255,0.9))",
   pointerEvents: "none",
   zIndex: 1,
-  borderRadius: "12px 0 0 12px",
+  borderRadius: "var(--wm-radius-button) 0 0 var(--wm-radius-button)",
 };
 
 export const shiftSearchAppliedBadgeStyle: CSSProperties = {
@@ -87,7 +87,7 @@ export const shiftSearchAppliedBadgeStyle: CSSProperties = {
   justifyContent: "center",
   height: 22,
   padding: "0 8px",
-  borderRadius: 999,
+  borderRadius: "var(--wm-radius-pill)",
   background: "rgba(22,163,74,0.1)",
   color: SHIFT_SEARCH_GREEN,
   fontSize: 10,

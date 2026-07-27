@@ -30,12 +30,12 @@ export function EmployerReviewCenterPage() {
   const shiftReviewItems = getEmployerShiftReviewItems(workspaces);
 
   const receivedShiftReviews = useMemo(() => {
-    const employerWmId = employerSettingsStorage.get().uniqueId ?? "";
+    const employerMlId = employerSettingsStorage.get().uniqueId ?? "";
     const workspacePostIds = new Set(workspaces.map((workspace) => workspace.postId));
 
     return workerReviews.filter((review) => {
       if (review.domain !== "shift") return false;
-      if (employerWmId && review.employerWmId === employerWmId) return true;
+      if (employerMlId && review.employerMlId === employerMlId) return true;
       return workspacePostIds.has(review.jobId);
     });
   }, [workerReviews, workspaces]);

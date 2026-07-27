@@ -1,6 +1,10 @@
+// WARNING DEC-012 / MIG-008: Client-side OTP path (plaintext)
+// Server OTP path (Argon2 hashed) exists at server/modules/vault/
+// This client path MUST BE REMOVED before production cutover
+// See architecture-audits/Phase-DB-Migration-Readiness-Audit-001.md
 // src/features/employer/workVault/components/EmployerVaultLockedSection.tsx
 
-import { VAULT_ACCENT } from "../../../employee/workVault/constants/vaultConstants";
+import { VAULT_ACCENT, vaultAccentMix } from "../../../shared/workVault/vaultPublic";
 
 type Props = {
   title: string;
@@ -12,9 +16,9 @@ export function EmployerVaultLockedSection({ title, sectionNumber }: Props) {
     <div
       style={{
         padding: "14px 16px",
-        borderRadius: 12,
-        background: `${VAULT_ACCENT}04`,
-        border: `1px solid ${VAULT_ACCENT}10`,
+        borderRadius: "var(--wm-radius-button)",
+        background: `${vaultAccentMix(2)}`,
+        border: `1px solid ${vaultAccentMix(6)}`,
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
@@ -26,8 +30,8 @@ export function EmployerVaultLockedSection({ title, sectionNumber }: Props) {
           style={{
             width: 28,
             height: 28,
-            borderRadius: 8,
-            background: `${VAULT_ACCENT}08`,
+            borderRadius: "var(--wm-radius-8)",
+            background: `${vaultAccentMix(4)}`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -65,9 +69,9 @@ export function EmployerVaultLockedSection({ title, sectionNumber }: Props) {
           fontSize: 9,
           fontWeight: 900,
           padding: "3px 10px",
-          borderRadius: 999,
-          background: `${VAULT_ACCENT}08`,
-          border: `1px solid ${VAULT_ACCENT}18`,
+          borderRadius: "var(--wm-radius-pill)",
+          background: `${vaultAccentMix(4)}`,
+          border: `1px solid ${vaultAccentMix(10)}`,
           color: VAULT_ACCENT,
           whiteSpace: "nowrap",
           flexShrink: 0,

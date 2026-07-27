@@ -3,10 +3,10 @@
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\workforceOps\pages\EmployeeWorkforceAnnounceDetailPage.tsx
 
 import { useCallback, useMemo, useState } from "react";
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
 import { readAnnouncements } from "../../../../shared/domains/workforce/helpers/workforceNormalizers";
 import { WF_ANNOUNCEMENTS_KEY } from "../../../../shared/domains/workforce/storage/workforceStorageUtils";
 import { IconBack } from "../../../../shared/domains/workforce/ui/workforceIcons";
-import { AMBER } from "../../../../shared/domains/workforce/ui/workforceStyles";
 import { EmployeeWorkforceAnnounceDetailContent } from "../components/EmployeeWorkforceAnnounceDetailContent";
 import { employeeWorkforceHelpers } from "../services/employeeWorkforceHelpers";
 
@@ -108,22 +108,23 @@ export function EmployeeWorkforceAnnounceDetailPage({ announcementId, onBack }: 
   if (!announcement) {
     return (
       <div style={{ padding: "0 16px" }}>
-        <div className="wm-pageHead">
-          <button
-            type="button"
-            onClick={onBack}
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: AMBER,
-              padding: 4,
-            }}
-          >
-            <IconBack />
-          </button>
-          <div className="wm-pageTitle">Announcement not found</div>
-        </div>
+        <DomainHero
+          variant="workforce"
+          audience="employee"
+          icon={
+            <button
+              type="button"
+              className="wm-domainHeroIconBtn"
+              onClick={onBack}
+              aria-label="Back"
+            >
+              <IconBack />
+            </button>
+          }
+          title="Announcement not found"
+          subtitle="This announcement may have been removed"
+          description="Return to Workforce Ops Hub to continue."
+        />
       </div>
     );
   }

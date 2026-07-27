@@ -1,0 +1,53 @@
+// Shared career localStorage helpers — re-export from employer implementation.
+// Employee career features must not import employer/careerJobs/helpers directly.
+
+export {
+  CAREER_POSTS_KEY,
+  CAREER_APPS_KEY,
+  CAREER_WORKSPACES_KEY,
+  CAREER_ACTIVITY_KEY,
+  EMPLOYEE_SEARCH_CAREER_KEY,
+  EMPLOYEE_CAREER_SAVED_JOBS_KEY,
+  EMPLOYEE_CAREER_RECENT_JOBS_KEY,
+  CAREER_POSTS_CHANGED,
+  CAREER_APPS_CHANGED,
+  CAREER_WORKSPACES_CHANGED,
+  CAREER_ACTIVITY_CHANGED,
+  EMPLOYEE_NOTES_CHANGED,
+  EMPLOYEE_CAREER_SAVED_JOBS_CHANGED,
+  EMPLOYEE_CAREER_RECENT_JOBS_CHANGED,
+  EMPLOYEE_CAREER_SEARCH_CHANGED,
+  isRecord,
+  getString,
+  getNumber,
+  getStringArray,
+  safeParse,
+  safeWrite,
+  safeRead,
+  safeDispatch,
+  notifyCareerPostsChanged,
+  notifyCareerAppsChanged,
+  notifyCareerWorkspacesChanged,
+  notifyCareerActivityChanged,
+  notifyEmployeeNotesChanged,
+  notifyEmployeeCareerSavedJobsChanged,
+  notifyEmployeeCareerRecentJobsChanged,
+  notifyEmployeeCareerSearchChanged,
+  uid,
+} from "../../employer/careerJobs/helpers/careerStorageUtils";
+export type {
+  UnknownRecord,
+  CareerStorageWriteResult,
+} from "../../employer/careerJobs/helpers/careerStorageUtils";
+
+export { clampApplicationStage } from "../../employer/careerJobs/helpers/careerNormalizers";
+export {
+  readCareerActivityAll,
+  readCareerApps,
+  readCareerPosts,
+  readCareerWorkspaces,
+  writeCareerActivityAll,
+  writeCareerApps,
+  writeCareerPosts,
+  writeCareerWorkspaces,
+} from "../../employer/careerJobs/helpers/careerNormalizers";

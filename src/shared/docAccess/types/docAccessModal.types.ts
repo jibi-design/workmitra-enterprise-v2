@@ -10,7 +10,7 @@ export type DocAccessStep = "requesting" | "otp" | "viewing";
 
 export type DocAccessModalProps = {
   workerName: string;
-  workerWmId: string;
+  workerMlId: string;
   profile: DocAccessProfile;
   domain: DocAccessDomain;
   onClose: () => void;

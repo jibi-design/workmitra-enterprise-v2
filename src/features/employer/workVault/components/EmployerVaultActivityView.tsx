@@ -1,6 +1,6 @@
 // src/features/employer/workVault/components/EmployerVaultActivityView.tsx
 
-import type { VaultActivityData } from "../../../employee/workVault/types/vaultProfileTypes";
+import type { VaultActivityData } from "../../../shared/workVault/vaultPublic";
 
 /* ------------------------------------------------------------------ */
 /* Info Row                                                           */
@@ -38,7 +38,7 @@ export function EmployerVaultActivityView({ data }: Props) {
     <div
       style={{
         padding: "14px 16px",
-        borderRadius: 12,
+        borderRadius: "var(--wm-radius-button)",
         background: "var(--wm-er-bg, #fff)",
         border: "1px solid var(--wm-er-divider, rgba(15, 23, 42, 0.08))",
         display: "grid",
@@ -56,12 +56,26 @@ export function EmployerVaultActivityView({ data }: Props) {
         </span>
       </InfoRow>
       <InfoRow label="Response rate">
-        <span style={{ fontSize: 11, fontWeight: 700, color: "var(--wm-er-muted)", fontStyle: "italic" }}>
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            color: "var(--wm-er-muted)",
+            fontStyle: "italic",
+          }}
+        >
           Available in full version
         </span>
       </InfoRow>
       <InfoRow label="Profile views">
-        <span style={{ fontSize: 11, fontWeight: 700, color: "var(--wm-er-muted)", fontStyle: "italic" }}>
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            color: "var(--wm-er-muted)",
+            fontStyle: "italic",
+          }}
+        >
           Available in full version
         </span>
       </InfoRow>

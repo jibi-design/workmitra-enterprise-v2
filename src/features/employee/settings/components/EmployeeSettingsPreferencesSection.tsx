@@ -32,7 +32,7 @@ export function EmployeeSettingsPreferencesSection({ settings, onSave, onToggle 
   }
 
   return (
-    <section className="wm-ee-card" style={{ marginTop: 12 }}>
+    <section className="wm-settingsGroup">
       <div className="wm-ee-cardTitle">Preferences</div>
 
       <div className="wm-field" style={{ marginTop: 8 }}>

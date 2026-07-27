@@ -78,16 +78,17 @@ export function getShiftDayConflict(
   excludePostId?: string,
 ): PlannerDayConflict | null {
   const posts = getEmployerShiftPosts();
+  const postMap = new Map(posts.map((p) => [p.id, p]));
   const apps = readApps();
   const workspaces = shiftWorkspacesStorage.getAll();
-  const excluded = excludePostId ? posts.find((p) => p.id === excludePostId) : null;
+  const excluded = excludePostId ? postMap.get(excludePostId) : null;
   const excludePlanId = excluded?.planId;
 
   for (const app of apps) {
     if (app.status !== "confirmed") continue;
     if (!appBelongsToWorker(app, workerMlId)) continue;
 
-    const post = posts.find((p) => p.id === app.postId);
+    const post = postMap.get(app.postId);
     if (!post || post.id === excludePostId) continue;
     if (dateKeyFromPost(post.startAt) !== dateKey) continue;
     if (excludePlanId && post.planId === excludePlanId) continue;
@@ -105,7 +106,7 @@ export function getShiftDayConflict(
     if (ws.status !== "active" && ws.status !== "upcoming") continue;
     if (!workspaceBelongsToWorker(ws, workerMlId, apps)) continue;
 
-    const post = posts.find((p) => p.id === ws.postId);
+    const post = postMap.get(ws.postId);
     if (!post || post.id === excludePostId) continue;
     if (dateKeyFromPost(post.startAt) !== dateKey) continue;
     if (excludePlanId && post.planId === excludePlanId) continue;

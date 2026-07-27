@@ -5,11 +5,15 @@
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
 import { ratingStorage } from "../../../../shared/rating/ratingStorage";
-import { VAULT_ACCENT } from "../../../employee/workVault/constants/vaultConstants";
 import type { IdRegistryEntry } from "../../../../shared/identity/types/identityTypes";
-import { getVaultSectionData } from "../../../employee/workVault/services/vaultDataAggregator";
-import type { VaultSectionData } from "../../../employee/workVault/services/vaultDataAggregator";
+import {
+  getVaultSectionData,
+  VAULT_ACCENT,
+  vaultAccentMix,
+  type VaultSectionData,
+} from "../../../shared/workVault/vaultPublic";
 import { employerSettingsStorage } from "../../company/storage/employerSettings.storage";
 import {
   getWorkspacesSnapshot,
@@ -78,23 +82,23 @@ export function EmployerVaultLookupPage() {
   );
 
   const receivedWorkerReviews = useMemo(() => {
-    const employerWmId = employerSettingsStorage.get().uniqueId ?? "";
+    const employerMlId = employerSettingsStorage.get().uniqueId ?? "";
     const workspacePostIds = new Set(workspaces.map((workspace) => workspace.postId));
 
     return workerReviews.filter((review) => {
       if (review.domain !== "shift") return false;
-      if (employerWmId && review.employerWmId === employerWmId) return true;
+      if (employerMlId && review.employerMlId === employerMlId) return true;
       return workspacePostIds.has(review.jobId);
     });
   }, [workerReviews, workspaces]);
 
   const givenWorkerRatings = useMemo(() => {
-    const employerWmId = employerSettingsStorage.get().uniqueId ?? "";
+    const employerMlId = employerSettingsStorage.get().uniqueId ?? "";
     const workspacePostIds = new Set(workspaces.map((workspace) => workspace.postId));
 
     return employerWorkerRatings.filter((rating) => {
       if (rating.domain !== "shift") return false;
-      if (employerWmId && rating.employerWmId === employerWmId) return true;
+      if (employerMlId && rating.employerMlId === employerMlId) return true;
       return workspacePostIds.has(rating.jobId);
     });
   }, [employerWorkerRatings, workspaces]);
@@ -114,30 +118,27 @@ export function EmployerVaultLookupPage() {
   }
 
   return (
-    <div>
-      <div className="wm-pageHead">
-        <div>
-          <div className="wm-pageTitle" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ color: VAULT_ACCENT }}>
-              <IconShield />
-            </span>
-            Employer Trust Vault
-          </div>
-
-          <div className="wm-pageSub">
-            Permanent trust records, worker feedback, and worker access tools.
-          </div>
-        </div>
-      </div>
+    <div className="wm-stackGrid">
+      <DomainHero
+        variant="settings"
+        audience="employer"
+        icon={
+          <span style={{ color: VAULT_ACCENT }}>
+            <IconShield />
+          </span>
+        }
+        title="Employer Trust Vault"
+        subtitle="Permanent trust records, worker feedback, and worker access tools"
+        description="Look up workers, review trust records, and manage verification sessions."
+      />
 
       <div
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
           gap: 8,
-          marginTop: 14,
           padding: 5,
-          borderRadius: 18,
+          borderRadius: "var(--wm-radius-18)",
           background: "rgba(248,250,252,0.94)",
           border: "1px solid rgba(226,232,240,0.9)",
         }}
@@ -152,8 +153,8 @@ export function EmployerVaultLookupPage() {
               onClick={() => setActiveTab(tab)}
               style={{
                 minHeight: 40,
-                border: active ? `1px solid ${VAULT_ACCENT}33` : "1px solid transparent",
-                borderRadius: 14,
+                border: active ? `1px solid ${vaultAccentMix(20)}` : "1px solid transparent",
+                borderRadius: "var(--wm-radius-chip)",
                 background: active
                   ? "linear-gradient(180deg, rgba(245,243,255,0.96), rgba(255,255,255,0.98))"
                   : "transparent",
@@ -182,14 +183,10 @@ export function EmployerVaultLookupPage() {
       {activeTab === "verify" && (
         <>
           <section
-            className="wm-ee-card"
+            className="wm-vault-card"
             style={{
               marginTop: 16,
-              padding: "16px",
-              borderRadius: 18,
-              border: `1px solid ${VAULT_ACCENT}22`,
-              background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
-              boxShadow: "0 10px 24px rgba(15,23,42,0.045)",
+              padding: 16,
             }}
           >
             <EmployerVaultLookup onEmployeeFound={handleEmployeeFound} />
@@ -201,24 +198,9 @@ export function EmployerVaultLookupPage() {
 
               <button
                 type="button"
+                className="wm-vault-cta wm-vault-cta--primary"
                 onClick={handleUnlockProfile}
-                style={{
-                  width: "100%",
-                  marginTop: 20,
-                  height: 48,
-                  borderRadius: 14,
-                  border: "none",
-                  background: VAULT_ACCENT,
-                  color: "#fff",
-                  fontWeight: 850,
-                  fontSize: 14,
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  boxShadow: "0 12px 24px rgba(124,58,237,0.18)",
-                }}
+                style={{ marginTop: 20 }}
               >
                 <IconUnlock />
                 Unlock Full Profile

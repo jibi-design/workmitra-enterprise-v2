@@ -1,0 +1,6 @@
+# Supabase local config — Shift Ops functions only
+# Full project link/deploy is operator-owned. SQL apply remains LOCKED until explicit approve.
+
+[functions.shift-ops-otp-dispatch]
+# Callers use service_role bearer or x-shift-ops-cron-secret — not end-user JWT.
+verify_jwt = false

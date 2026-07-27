@@ -3,7 +3,7 @@
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\careerJobs\components\EmployeeMyCurrentJobCard.tsx
 
 import { useSyncExternalStore } from "react";
-import type { CareerWorkspace } from "../../../employer/careerJobs/types/careerTypes";
+import type { CareerWorkspace } from "../../../career/types/careerDomainTypes";
 import {
   getCareerWorkspacesSnapshot,
   subscribeCareerWorkspaces,
@@ -74,7 +74,7 @@ export function EmployeeMyCurrentJobCard({ onOpen }: { onOpen: () => void }) {
           display: "flex",
           alignItems: "flex-end",
           justifyContent: "space-between",
-          gap: 10,
+          gap: "var(--wm-space-10)",
           padding: "0 4px",
         }}
       >
@@ -90,7 +90,7 @@ export function EmployeeMyCurrentJobCard({ onOpen }: { onOpen: () => void }) {
         <div
           style={{
             padding: "6px 12px",
-            borderRadius: 20,
+            borderRadius: "var(--wm-radius-employee-card)",
             background: hasActiveRecords ? "rgba(37, 99, 235, 0.08)" : "rgba(15, 23, 42, 0.04)",
             color: hasActiveRecords ? CAREER_BLUE_DEEP : CAREER_MUTED,
             fontSize: 11,
@@ -106,15 +106,16 @@ export function EmployeeMyCurrentJobCard({ onOpen }: { onOpen: () => void }) {
 
       {activeWorkspaces.length === 0 ? (
         <div
+          className="wm-ee-card wm-career-card"
           style={{
             padding: 18,
-            borderRadius: 24,
+            borderRadius: "var(--wm-radius-employer-card)",
             background: "rgba(255, 255, 255, 0.65)",
             border: "1px solid rgba(255, 255, 255, 0.9)",
             boxShadow: "0 8px 24px rgba(15, 23, 42, 0.03)",
             backdropFilter: "blur(12px)",
             display: "flex",
-            gap: 14,
+            gap: "var(--wm-space-14)",
             alignItems: "flex-start",
           }}
         >
@@ -122,7 +123,7 @@ export function EmployeeMyCurrentJobCard({ onOpen }: { onOpen: () => void }) {
             style={{
               width: 46,
               height: 46,
-              borderRadius: 14,
+              borderRadius: "var(--wm-radius-chip)",
               background: "linear-gradient(135deg, #eff6ff, #dbeafe)",
               color: CAREER_BLUE,
               border: "1px solid rgba(255, 255, 255, 0.8)",
@@ -156,9 +157,9 @@ export function EmployeeMyCurrentJobCard({ onOpen }: { onOpen: () => void }) {
 
             <div
               style={{
-                marginTop: 12,
+                marginTop: "var(--wm-space-12)",
                 padding: "10px 12px",
-                borderRadius: 12,
+                borderRadius: "var(--wm-radius-button)",
                 background: "rgba(37, 99, 235, 0.05)",
                 color: CAREER_BLUE_DEEP,
                 fontSize: 11.5,
@@ -171,7 +172,7 @@ export function EmployeeMyCurrentJobCard({ onOpen }: { onOpen: () => void }) {
           </div>
         </div>
       ) : (
-        <div style={{ display: "grid", gap: 12 }}>
+        <div style={{ display: "grid", gap: "var(--wm-space-12)" }}>
           {activeWorkspaces.map((workspace) => (
             <button
               key={workspace.id}
@@ -180,7 +181,7 @@ export function EmployeeMyCurrentJobCard({ onOpen }: { onOpen: () => void }) {
               style={{
                 width: "100%",
                 padding: 18,
-                borderRadius: 24,
+                borderRadius: "var(--wm-radius-employer-card)",
                 border: "1px solid rgba(255, 255, 255, 0.9)",
                 background: "linear-gradient(135deg, rgba(255,255,255,0.9), rgba(248,250,252,0.7))",
                 boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
@@ -195,7 +196,7 @@ export function EmployeeMyCurrentJobCard({ onOpen }: { onOpen: () => void }) {
                   display: "flex",
                   alignItems: "flex-start",
                   justifyContent: "space-between",
-                  gap: 12,
+                  gap: "var(--wm-space-12)",
                 }}
               >
                 <div style={{ minWidth: 0 }}>
@@ -225,7 +226,7 @@ export function EmployeeMyCurrentJobCard({ onOpen }: { onOpen: () => void }) {
                     fontSize: 11,
                     fontWeight: 700,
                     padding: "6px 12px",
-                    borderRadius: 20,
+                    borderRadius: "var(--wm-radius-employee-card)",
                     color: CAREER_BLUE_DEEP,
                     background: "rgba(37, 99, 235, 0.08)",
                     border: "1px solid rgba(37, 99, 235, 0.1)",
@@ -237,16 +238,16 @@ export function EmployeeMyCurrentJobCard({ onOpen }: { onOpen: () => void }) {
 
               <div
                 style={{
-                  marginTop: 16,
+                  marginTop: "var(--wm-stack-gap)",
                   display: "grid",
                   gridTemplateColumns: workspace.hiredAt ? "1fr 1fr" : "1fr",
-                  gap: 10,
+                  gap: "var(--wm-space-10)",
                 }}
               >
                 <div
                   style={{
                     padding: "10px",
-                    borderRadius: 12,
+                    borderRadius: "var(--wm-radius-button)",
                     background: "rgba(37, 99, 235, 0.05)",
                     color: CAREER_BLUE_DEEP,
                     fontSize: 11.5,
@@ -262,7 +263,7 @@ export function EmployeeMyCurrentJobCard({ onOpen }: { onOpen: () => void }) {
                   <div
                     style={{
                       padding: "10px",
-                      borderRadius: 12,
+                      borderRadius: "var(--wm-radius-button)",
                       background: "rgba(15, 23, 42, 0.03)",
                       color: CAREER_MUTED,
                       fontSize: 11.5,

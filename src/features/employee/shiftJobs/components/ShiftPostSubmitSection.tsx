@@ -1,6 +1,4 @@
-// App name: Job Mitra
-// File name: ShiftPostSubmitSection.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\components\ShiftPostSubmitSection.tsx
+// App name: Job Mitra | ShiftPostSubmitSection.tsx — pressable CTAs (post-details polish)
 
 type ShiftPostSubmitSectionProps = {
   show: boolean;
@@ -35,32 +33,29 @@ export function ShiftPostSubmitSection({
   const visibleBlockReason = submitBlockReason || fallbackBlockReason;
 
   return (
-    <div style={{ marginTop: 16, paddingBottom: 48, display: "grid", gap: 10 }}>
+    <div
+      className="wm-animateIn"
+      data-testid="shift-post-submit"
+      style={{ paddingBottom: 48, display: "grid", gap: 10, animationDelay: "160ms" }}
+    >
       <button
         type="button"
+        className="wm-outlineBtn wm-shift-pressable"
         onClick={onToggleSaved}
-        style={{
-          width: "100%",
-          padding: 13,
-          borderRadius: 12,
-          border: "1px solid rgba(22,163,74,0.2)",
-          background: isSaved ? "rgba(22,163,74,0.12)" : "rgba(22,163,74,0.06)",
-          color: "var(--wm-er-accent-shift, #16a34a)",
-          fontSize: 14,
-          fontWeight: 850,
-          cursor: "pointer",
-        }}
+        style={{ width: "100%" }}
+        aria-pressed={isSaved}
       >
         {isSaved ? "Saved Shift" : "Save Shift"}
       </button>
 
-      {show && (
+      {show ? (
         <>
-          {!canSubmit && visibleBlockReason && (
+          {!canSubmit && visibleBlockReason ? (
             <div
+              className="wm-shift-surface-glass"
+              role="status"
               style={{
                 padding: "10px 12px",
-                borderRadius: 14,
                 border: "1px solid rgba(217,119,6,0.24)",
                 background:
                   "linear-gradient(180deg, rgba(255,251,235,0.92), rgba(255,247,237,0.74))",
@@ -73,30 +68,19 @@ export function ShiftPostSubmitSection({
             >
               {visibleBlockReason}
             </div>
-          )}
+          ) : null}
 
           <button
             type="button"
+            className="wm-primarybtn wm-shift-pressable"
             onClick={onSubmit}
             disabled={!canSubmit}
-            style={{
-              width: "100%",
-              padding: 14,
-              borderRadius: 12,
-              border: canSubmit ? "none" : "1px solid rgba(148,163,184,0.42)",
-              background: canSubmit
-                ? "var(--wm-er-accent-shift, #16a34a)"
-                : "linear-gradient(180deg, rgba(226,232,240,0.96), rgba(203,213,225,0.92))",
-              color: canSubmit ? "#fff" : "#64748b",
-              fontSize: 14,
-              fontWeight: 850,
-              cursor: canSubmit ? "pointer" : "not-allowed",
-            }}
+            style={{ width: "100%" }}
           >
             {isClosedOrExpired ? "Applications Closed" : "Submit Application"}
           </button>
         </>
-      )}
+      ) : null}
     </div>
   );
 }

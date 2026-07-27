@@ -2,6 +2,7 @@
 // File name: EmployerShiftWorkspacesList.tsx
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\components\EmployerShiftWorkspacesList.tsx
 
+import { useSyncExternalStore } from "react";
 import {
   formatWorkspaceDateRange,
   formatWorkspaceLastActivity,
@@ -14,6 +15,15 @@ import type {
 import { EnterpriseEmpty } from "../../../../shared/components/enterprise";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { GatedCallButton } from "../../../shared/calling";
+import { getEmployerBusinessKey } from "../../company/helpers/employerDualId.helpers";
+import { employerSettingsStorage } from "../../company/storage/employerSettings.storage";
+import { getEmployerShiftPost } from "../storage/employerShift.postActions.crud";
+import {
+  getSiteMembershipTruth,
+  resolveShiftOpsSiteIdForPost,
+  subscribeSiteMembershipTruth,
+} from "../../../shared/shiftOps/shiftJobsMembershipBridge";
 
 type EmployerShiftWorkspacesListProps = {
   mode: EmployerWorkspaceMode;
@@ -31,7 +41,11 @@ export function EmployerShiftWorkspacesList({
   onOpenPost,
 }: EmployerShiftWorkspacesListProps) {
   return (
-    <section style={{ marginTop: 12, display: "grid", gap: 12, minHeight: 240 }}>
+    <section
+      className="wm-shiftWorkspacesList"
+      style={{ display: "grid", gap: 12, minHeight: 240 }}
+      data-testid="employer-shift-workspaces-list"
+    >
       {workspaces.length === 0 && <EmptyState mode={mode} allCount={allCount} />}
 
       {workspaces.map((workspace) => (
@@ -84,19 +98,26 @@ function WorkspaceCard({
   const statusLabel = getWorkspaceStatusLabel(workspace.status);
   const needsAttention = workspace.status === "left" || workspace.status === "replaced";
   const isGroups = mode === "groups";
+  const initiatorMl = getEmployerBusinessKey(employerSettingsStorage.get()) ?? "";
+  const receiverMl = workspace.workerMlId?.trim() ?? "";
+  const post = getEmployerShiftPost(workspace.postId);
+  const groupId = resolveShiftOpsSiteIdForPost(post ?? {});
+  const membership = useSyncExternalStore(
+    subscribeSiteMembershipTruth,
+    () => getSiteMembershipTruth(groupId, receiverMl),
+    () => getSiteMembershipTruth(groupId, receiverMl),
+  );
 
   return (
     <article
+      className="wm-shift-card wm-shift-card--employer wm-shift-pressable"
       style={{
         padding: 14,
-        borderRadius: 20,
-        border: "1px solid rgba(226,232,240,0.95)",
         borderLeft: needsAttention
           ? "4px solid #dc2626"
           : "4px solid var(--wm-er-accent-shift, #16a34a)",
-        background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
-        boxShadow: "0 10px 24px rgba(15,23,42,0.045)",
       }}
+      data-testid={`employer-shift-workspace-card-${workspace.id}`}
     >
       <div
         style={{
@@ -132,7 +153,7 @@ function WorkspaceCard({
         <span
           style={{
             padding: "5px 9px",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             background: needsAttention ? "rgba(220,38,38,0.08)" : "rgba(22,163,74,0.08)",
             border: needsAttention
               ? "1px solid rgba(220,38,38,0.16)"
@@ -160,7 +181,7 @@ function WorkspaceCard({
           style={{
             marginTop: 10,
             padding: "8px 10px",
-            borderRadius: 12,
+            borderRadius: "var(--wm-radius-button)",
             background: "rgba(220,38,38,0.06)",
             border: "1px solid rgba(220,38,38,0.16)",
             fontSize: 11,
@@ -180,6 +201,7 @@ function WorkspaceCard({
           justifyContent: "flex-end",
           gap: 8,
           flexWrap: "wrap",
+          alignItems: "flex-start",
         }}
       >
         {isGroups && (
@@ -190,6 +212,31 @@ function WorkspaceCard({
             style={{ fontSize: 12 }}
           >
             View Post
+          </button>
+        )}
+
+        {receiverMl ? (
+          <GatedCallButton
+            groupId={groupId}
+            membershipStatus={membership?.status}
+            workerMlId={receiverMl}
+            initiatorMl={initiatorMl}
+            peerLabel={workspace.workerName}
+            extraDisabled={!initiatorMl || workspace.status === "completed"}
+            shiftEndAt={workspace.endAt}
+            workspaceStatus={workspace.status}
+          />
+        ) : (
+          <button
+            type="button"
+            data-testid="call-worker-button"
+            className="wm-outlineBtn"
+            disabled
+            aria-disabled
+            title="Worker ID not available yet"
+            style={{ fontSize: 12 }}
+          >
+            Call
           </button>
         )}
 
@@ -220,15 +267,7 @@ function MiniInfo({
   highlight?: boolean;
 }) {
   return (
-    <div
-      style={{
-        padding: "8px 8px",
-        borderRadius: 12,
-        background: "rgba(248,250,252,0.96)",
-        border: "1px solid rgba(226,232,240,0.9)",
-        minWidth: 0,
-      }}
-    >
+    <div className="wm-shift-surface-glass" style={{ padding: "8px", minWidth: 0 }}>
       <div
         style={{
           fontSize: 9,

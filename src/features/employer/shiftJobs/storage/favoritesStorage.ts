@@ -1,16 +1,16 @@
 // src/features/employer/shiftJobs/storage/favoritesStorage.ts
 //
 // Favorites / Hire Again storage.
-// Workers saved by WM ID. Auto-added when employer selects "Hire Again = Yes".
-// Employer can also manually add by WM ID or remove.
+// Workers saved by Mitra Labs ID. Auto-added when employer selects "Hire Again = Yes".
+// Employer can also manually add by Mitra Labs ID or remove.
 
 /* ------------------------------------------------ */
 /* Types                                            */
 /* ------------------------------------------------ */
 export type FavoriteWorker = {
   id: string;
-  /** Worker WM ID — primary identifier */
-  workerWmId: string;
+  /** Worker Mitra Labs ID — primary identifier */
+  workerMlId: string;
   workerName: string;
   /** Optional snapshot from last rating */
   jobTitle?: string;
@@ -28,7 +28,7 @@ export type FavoriteWorker = {
 /* ------------------------------------------------ */
 /* Constants                                        */
 /* ------------------------------------------------ */
-const KEY     = "wm_employer_shift_favorites_v1";
+const KEY = "wm_employer_shift_favorites_v1";
 const CHANGED = "wm:employer-shift-favorites-changed";
 
 /* ------------------------------------------------ */
@@ -39,15 +39,54 @@ function read(): FavoriteWorker[] {
     const raw = localStorage.getItem(KEY);
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as FavoriteWorker[]) : [];
-  } catch { return []; }
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((item): FavoriteWorker | null => {
+        if (typeof item !== "object" || item === null) return null;
+        const rec = item as Record<string, unknown>;
+        // Dual-read: prefer workerMlId; accept legacy workerWmId from older localStorage JSON.
+        const workerMlId =
+          typeof rec.workerMlId === "string"
+            ? rec.workerMlId
+            : typeof rec.workerWmId === "string"
+              ? rec.workerWmId
+              : "";
+        if (!workerMlId) return null;
+        const id = typeof rec.id === "string" ? rec.id : "";
+        const workerName = typeof rec.workerName === "string" ? rec.workerName : "";
+        const addedAt = typeof rec.addedAt === "number" ? rec.addedAt : Date.now();
+        const shiftsWorked = typeof rec.shiftsWorked === "number" ? rec.shiftsWorked : 0;
+        const avgStars = typeof rec.avgStars === "number" ? rec.avgStars : 0;
+        const addedVia =
+          rec.addedVia === "hire_again_rating" || rec.addedVia === "manual"
+            ? rec.addedVia
+            : "manual";
+        return {
+          id: id || `fav_${workerMlId}`,
+          workerMlId,
+          workerName,
+          jobTitle: typeof rec.jobTitle === "string" ? rec.jobTitle : undefined,
+          lastRatedAt: typeof rec.lastRatedAt === "number" ? rec.lastRatedAt : undefined,
+          shiftsWorked,
+          avgStars,
+          addedAt,
+          addedVia,
+          notes: typeof rec.notes === "string" ? rec.notes : undefined,
+        };
+      })
+      .filter((f): f is FavoriteWorker => f !== null);
+  } catch {
+    return [];
+  }
 }
 
 function write(list: FavoriteWorker[]): void {
   try {
     localStorage.setItem(KEY, JSON.stringify(list));
     window.dispatchEvent(new Event(CHANGED));
-  } catch { /* safe */ }
+  } catch {
+    /* safe */
+  }
 }
 
 function genId(): string {
@@ -62,23 +101,23 @@ export const favoritesStorage = {
     return read().sort((a, b) => b.addedAt - a.addedAt);
   },
 
-  find(workerWmId: string): FavoriteWorker | null {
-    return read().find((f) => f.workerWmId === workerWmId) ?? null;
+  find(workerMlId: string): FavoriteWorker | null {
+    return read().find((f) => f.workerMlId === workerMlId) ?? null;
   },
 
-  isFavorite(workerWmId: string): boolean {
-    return !!this.find(workerWmId);
+  isFavorite(workerMlId: string): boolean {
+    return !!this.find(workerMlId);
   },
 
   /** Called automatically when employer rates "Hire Again = Yes" */
   addFromRating(params: {
-    workerWmId: string;
+    workerMlId: string;
     workerName: string;
     jobTitle: string;
     stars: number;
   }): void {
     const list = read();
-    const existing = list.find((f) => f.workerWmId === params.workerWmId);
+    const existing = list.find((f) => f.workerMlId === params.workerMlId);
     const now = Date.now();
 
     if (existing) {
@@ -86,55 +125,70 @@ export const favoritesStorage = {
       const idx = list.indexOf(existing);
       list[idx] = {
         ...existing,
-        workerName:  params.workerName,
-        jobTitle:    params.jobTitle,
+        workerName: params.workerName,
+        jobTitle: params.jobTitle,
         lastRatedAt: now,
         shiftsWorked: existing.shiftsWorked + 1,
-        avgStars: existing.avgStars === 0
-          ? params.stars
-          : Math.round(((existing.avgStars * existing.shiftsWorked + params.stars) / (existing.shiftsWorked + 1)) * 10) / 10,
+        avgStars:
+          existing.avgStars === 0
+            ? params.stars
+            : Math.round(
+                ((existing.avgStars * existing.shiftsWorked + params.stars) /
+                  (existing.shiftsWorked + 1)) *
+                  10,
+              ) / 10,
       };
       write(list);
     } else {
-      write([{
-        id: genId(),
-        workerWmId: params.workerWmId,
-        workerName: params.workerName,
-        jobTitle:   params.jobTitle,
-        lastRatedAt: now,
-        shiftsWorked: 1,
-        avgStars: params.stars,
-        addedAt: now,
-        addedVia: "hire_again_rating",
-      }, ...list]);
+      write([
+        {
+          id: genId(),
+          workerMlId: params.workerMlId,
+          workerName: params.workerName,
+          jobTitle: params.jobTitle,
+          lastRatedAt: now,
+          shiftsWorked: 1,
+          avgStars: params.stars,
+          addedAt: now,
+          addedVia: "hire_again_rating",
+        },
+        ...list,
+      ]);
     }
   },
 
-  /** Manual add by WM ID */
-  addManual(params: { workerWmId: string; workerName: string }): boolean {
+  /** Manual add by Mitra Labs ID */
+  addManual(params: { workerMlId: string; workerName: string }): boolean {
     const list = read();
-    if (list.some((f) => f.workerWmId === params.workerWmId)) return false;
-    write([{
-      id: genId(),
-      workerWmId: params.workerWmId,
-      workerName: params.workerName,
-      shiftsWorked: 0,
-      avgStars: 0,
-      addedAt: Date.now(),
-      addedVia: "manual",
-    }, ...list]);
+    if (list.some((f) => f.workerMlId === params.workerMlId)) return false;
+    write([
+      {
+        id: genId(),
+        workerMlId: params.workerMlId,
+        workerName: params.workerName,
+        shiftsWorked: 0,
+        avgStars: 0,
+        addedAt: Date.now(),
+        addedVia: "manual",
+      },
+      ...list,
+    ]);
     return true;
   },
 
   /** Update notes */
-  updateNotes(workerWmId: string, notes: string): void {
+  updateNotes(workerMlId: string, notes: string): void {
     const list = read();
-    write(list.map((f) => f.workerWmId === workerWmId ? { ...f, notes: notes.trim() || undefined } : f));
+    write(
+      list.map((f) =>
+        f.workerMlId === workerMlId ? { ...f, notes: notes.trim() || undefined } : f,
+      ),
+    );
   },
 
   /** Remove from favorites */
-  remove(workerWmId: string): void {
-    write(read().filter((f) => f.workerWmId !== workerWmId));
+  remove(workerMlId: string): void {
+    write(read().filter((f) => f.workerMlId !== workerMlId));
   },
 
   subscribe(cb: () => void): () => void {

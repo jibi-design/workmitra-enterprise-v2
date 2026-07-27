@@ -12,13 +12,13 @@ import type {
   DocAccessDomain,
   DocAccessStep,
 } from "../../../../shared/docAccess/types/docAccessModal.types";
-import { getAllDocuments } from "../../../employee/workVault/services/vaultDocumentService";
-import { getVisibleFolders } from "../../../employee/workVault/services/vaultFolderService";
-import { verifyOtp } from "../../../employee/workVault/services/vaultOtpService";
+import { getAllDocuments } from "../../../shared/workVault/vaultPublic";
+import { getVisibleFolders } from "../../../shared/workVault/vaultPublic";
+import { docAccessOtpService } from "../../../../shared/docAccess/docAccessOtpService";
 import { employerSettingsStorage } from "../../company/storage/employerSettings.storage";
 
 type UseDocAccessModalStateArgs = {
-  workerWmId: string;
+  workerMlId: string;
   domain: DocAccessDomain;
   onClose: () => void;
 };
@@ -42,10 +42,10 @@ function getVisibleSharedDocuments() {
   };
 }
 
-function getInitialAccessState(workerWmId: string, domain: DocAccessDomain): AccessState {
+function getInitialAccessState(workerMlId: string, domain: DocAccessDomain): AccessState {
   const activeSession = docAccessSessionStorage.getActiveSession();
 
-  if (activeSession && activeSession.workerWmId === workerWmId && activeSession.domain === domain) {
+  if (activeSession && activeSession.workerMlId === workerMlId && activeSession.domain === domain) {
     const visible = getVisibleSharedDocuments();
 
     return {
@@ -67,12 +67,12 @@ function getInitialAccessState(workerWmId: string, domain: DocAccessDomain): Acc
 }
 
 export function useDocAccessModalState({
-  workerWmId,
+  workerMlId,
   domain,
   onClose,
 }: UseDocAccessModalStateArgs) {
   const [access, setAccess] = useState<AccessState>(() =>
-    getInitialAccessState(workerWmId, domain),
+    getInitialAccessState(workerMlId, domain),
   );
 
   useEffect(() => {
@@ -83,7 +83,7 @@ export function useDocAccessModalState({
 
       if (
         !activeSession ||
-        activeSession.workerWmId !== workerWmId ||
+        activeSession.workerMlId !== workerMlId ||
         activeSession.domain !== domain
       ) {
         setAccess({
@@ -97,15 +97,16 @@ export function useDocAccessModalState({
     }, 2000);
 
     return () => window.clearInterval(timer);
-  }, [access.step, workerWmId, domain]);
+  }, [access.step, workerMlId, domain]);
 
-  function handleOtpSubmit(code: string) {
-    const isValid = verifyOtp(code);
+  async function handleOtpSubmit(code: string) {
+    const isValid = await docAccessOtpService.verify(code);
 
     if (!isValid) {
       setAccess((current) => ({
         ...current,
-        otpError: "Invalid or expired code. Ask the employee to generate a new Work Vault code.",
+        otpError:
+          "Invalid or expired code. Ask the employee to approve the document access request.",
       }));
       return;
     }
@@ -115,7 +116,7 @@ export function useDocAccessModalState({
     docAccessSessionStorage.createSession({
       employerId: employer.uniqueId ?? "unknown",
       employerName: employer.companyName || employer.fullName || "Employer",
-      workerWmId,
+      workerMlId,
       domain,
     });
 

@@ -20,7 +20,7 @@ import { EmployerWorkforceAnnounceDashboardBody } from "../components/announceDa
 import { EmployerWorkforceAnnounceNotFound } from "../components/announceDash/EmployerWorkforceAnnounceNotFound";
 import { workforceAnnouncementService } from "../services/workforceAnnouncementService";
 import { workforceCategoryService } from "../services/workforceCategoryService";
-import { workforceGroupService } from "../services/workforceGroupService";
+import { workforceService } from "../services/workforceService";
 
 type Props = {
   announcementId: string;
@@ -170,7 +170,7 @@ export function EmployerWorkforceAnnounceDashPage({
     setTemplateError(result.errors?.[0] ?? "Failed.");
   }, [announcementId, templateName]);
 
-  const handleConfirmGroup = useCallback(() => {
+  const handleConfirmGroup = useCallback(async () => {
     if (!data.announcement) return;
 
     const selectedApps = data.applications.filter(
@@ -190,7 +190,7 @@ export function EmployerWorkforceAnnounceDashPage({
       assignedShiftIds: application.shiftIds,
     }));
 
-    const result = workforceGroupService.createFromAnnouncement({
+    const result = await workforceService.createFromAnnouncement({
       announcement: data.announcement,
       confirmedMembers,
     });

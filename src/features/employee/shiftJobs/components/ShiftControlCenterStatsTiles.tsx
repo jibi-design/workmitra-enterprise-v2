@@ -1,6 +1,6 @@
 // App name: Job Mitra
 // File name: ShiftControlCenterStatsTiles.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\components\ShiftControlCenterStatsTiles.tsx
+// Shift Jobs Home — KPI row aligned to Applications / Earnings primitives
 
 import type { ShiftControlCenterCounts } from "../types/shiftControlCenter.types";
 
@@ -10,23 +10,32 @@ type ShiftControlCenterStatsTilesProps = {
 
 export function ShiftControlCenterStatsTiles({ counts }: ShiftControlCenterStatsTilesProps) {
   return (
-    <div className="wm-shiftEmployeeStatsGrid wm-animateIn">
-      <StatsTile label="Available" value={counts.availableShifts} />
-      <StatsTile label="Applications" value={counts.totalApps} />
-      <StatsTile label="Workspaces" value={counts.activeWs} />
-    </div>
-  );
-}
-
-function StatsTile({ label, value }: { label: string; value: number }) {
-  return (
     <div
-      className={["wm-shiftEmployeeStatsTile", value > 0 ? "isPositive" : ""]
-        .filter(Boolean)
-        .join(" ")}
+      className="wm-shift-kpi-grid wm-shift-kpi-grid--cols2 wm-animateIn"
+      data-testid="shift-jobs-stats-tiles"
+      style={{ animationDelay: "40ms" }}
     >
-      <div className="wm-shiftEmployeeStatsLabel">{label}</div>
-      <div className="wm-shiftEmployeeStatsValue">{value}</div>
+      <div
+        className={[
+          "wm-shift-kpi-tile",
+          counts.availableShifts > 0 ? "isShift isPositive" : "isZero",
+        ].join(" ")}
+        data-testid="shift-jobs-stat-available"
+      >
+        <div className="wm-shift-kpi-tile__label">Available</div>
+        <div className="wm-shift-kpi-tile__value">{counts.availableShifts}</div>
+      </div>
+
+      <div
+        className={[
+          "wm-shift-kpi-tile",
+          counts.totalApps > 0 ? "isShift isPositive" : "isZero",
+        ].join(" ")}
+        data-testid="shift-jobs-stat-applications"
+      >
+        <div className="wm-shift-kpi-tile__label">Applications</div>
+        <div className="wm-shift-kpi-tile__value">{counts.totalApps}</div>
+      </div>
     </div>
   );
 }

@@ -20,6 +20,16 @@ export function getReviewCenterTheme(domain: ReviewDomain): ReviewCenterTheme {
     };
   }
 
+  if (domain === "planner") {
+    return {
+      domain,
+      label: "Gig Projects",
+      accent: "#0891b2",
+      softBg: "rgba(8,145,178,0.08)",
+      border: "rgba(8,145,178,0.18)",
+    };
+  }
+
   return {
     domain,
     label: "Shift Jobs",

@@ -13,7 +13,7 @@ import { countApplicationsForPost } from "../helpers/shiftHomeHelpers";
 import {
   splitEmployerPostsForMyPosts,
   applyPlanPostsDisplayMode,
-} from "../../planner/helpers/employerPlannerPostsGrouping";
+} from "../../../shared/planner/ports/plannerShiftJobsBridge";
 import {
   employerShiftStorage,
   type ShiftPost,

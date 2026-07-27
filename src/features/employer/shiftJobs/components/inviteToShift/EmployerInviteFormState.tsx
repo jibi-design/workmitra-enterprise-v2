@@ -37,7 +37,7 @@ export function EmployerInviteFormState({
         <div
           style={{
             padding: "16px 12px",
-            borderRadius: 10,
+            borderRadius: "var(--wm-radius-10)",
             background: "rgba(148,163,184,0.08)",
             border: "1px solid var(--wm-er-border)",
             fontSize: 12,
@@ -63,7 +63,7 @@ export function EmployerInviteFormState({
                 onClick={() => onSelectedPostIdChange(post.id)}
                 style={{
                   padding: "10px 12px",
-                  borderRadius: 10,
+                  borderRadius: "var(--wm-radius-10)",
                   textAlign: "left",
                   border: isSelected
                     ? "1.5px solid var(--wm-er-accent-shift, #16a34a)"
@@ -90,7 +90,7 @@ export function EmployerInviteFormState({
           style={{
             marginTop: 10,
             padding: "10px 12px",
-            borderRadius: 10,
+            borderRadius: "var(--wm-radius-10)",
             background: "rgba(220,38,38,0.08)",
             border: "1px solid rgba(220,38,38,0.2)",
             fontSize: 12,
@@ -107,7 +107,7 @@ export function EmployerInviteFormState({
           onClick={onClose}
           style={{
             padding: "8px 16px",
-            borderRadius: 10,
+            borderRadius: "var(--wm-radius-10)",
             border: "1px solid var(--wm-er-border)",
             background: "none",
             fontSize: 12,
@@ -125,7 +125,7 @@ export function EmployerInviteFormState({
           disabled={!selectedPostId}
           style={{
             padding: "8px 18px",
-            borderRadius: 10,
+            borderRadius: "var(--wm-radius-10)",
             border: "none",
             background: selectedPostId ? "var(--wm-er-accent-shift, #16a34a)" : "#e5e7eb",
             color: selectedPostId ? "#fff" : "#9ca3af",

@@ -1,6 +1,10 @@
-import { employeeCareerRepository } from "./career.repository.js";
+import { employeeCareerRepository, isCareerUuid } from "./career.repository.js";
 import type { AuthUser } from "../../auth/types.js";
-import type { CareerApplicationRow } from "../../career/types.js";
+import type {
+  CareerApplicationRow,
+  CareerEmploymentRow,
+  CareerPostRow,
+} from "../../career/types.js";
 
 export type AcceptOfferResult =
   | { ok: true; application: CareerApplicationRow }
@@ -10,20 +14,127 @@ export type DeclineOfferResult =
   | { ok: true; application: CareerApplicationRow }
   | { ok: false; code: string; message: string; httpStatus: number };
 
+export type ApplyToJobResult =
+  | { ok: true; application: CareerApplicationRow }
+  | { ok: false; code: string; message: string; httpStatus: number };
+
+export type ListApplicationsResult =
+  | { ok: true; applications: CareerApplicationRow[] }
+  | { ok: false; code: string; message: string; httpStatus: number };
+
 export const employeeCareerService = {
+  async listPublishedPosts(): Promise<
+    | { ok: true; posts: CareerPostRow[] }
+    | { ok: false; code: string; message: string; httpStatus: number }
+  > {
+    try {
+      const posts = await employeeCareerRepository.listPublishedPosts();
+      return { ok: true, posts };
+    } catch {
+      return {
+        ok: false,
+        code: "DB_ERROR",
+        message: "Failed to list career posts",
+        httpStatus: 500,
+      };
+    }
+  },
+
+  async getMyApplication(
+    applicationId: string,
+    employee: AuthUser,
+  ): Promise<
+    | { ok: true; application: CareerApplicationRow }
+    | { ok: false; code: string; message: string; httpStatus: number }
+  > {
+    if (!isCareerUuid(applicationId)) {
+      return {
+        ok: false,
+        code: "VALIDATION_ERROR",
+        message: "applicationId must be a valid UUID",
+        httpStatus: 400,
+      };
+    }
+
+    const application = await employeeCareerRepository.findApplicationById(applicationId);
+    if (!application) {
+      return { ok: false, code: "NOT_FOUND", message: "Application not found", httpStatus: 404 };
+    }
+    if (application.applicant_user_id !== employee.id) {
+      return {
+        ok: false,
+        code: "FORBIDDEN",
+        message: "You are not the applicant for this application",
+        httpStatus: 403,
+      };
+    }
+    return { ok: true, application };
+  },
+
   /**
-   * Step 2 of the Career Employment gate.
-   * Employee accepts the offer issued by the employer.
-   *
-   * Validations:
-   * - Application exists
-   * - Caller is the applicant (never trust client-supplied IDs)
-   * - Application status is 'offer_issued'
-   * - A pending offer exists and has not expired
-   *
-   * After this step the employer may call confirm-hire (Step 3).
-   * Employment is NOT created here — only after employer confirmation.
+   * Employee applies to a published Career post.
+   * Identity comes from the authenticated session only — never from the body.
    */
+  async applyToJob(
+    postId: string,
+    employee: AuthUser,
+    coverNote: string | null,
+  ): Promise<ApplyToJobResult> {
+    if (!isCareerUuid(postId)) {
+      return {
+        ok: false,
+        code: "VALIDATION_ERROR",
+        message: "postId must be a valid UUID",
+        httpStatus: 400,
+      };
+    }
+
+    const post = await employeeCareerRepository.findPublishedPostById(postId);
+    if (!post) {
+      return {
+        ok: false,
+        code: "NOT_FOUND",
+        message: "Career post not found or not published",
+        httpStatus: 404,
+      };
+    }
+
+    const existing = await employeeCareerRepository.findApplicationByPostAndApplicant(
+      postId,
+      employee.id,
+    );
+    if (existing) {
+      return {
+        ok: false,
+        code: "CONFLICT",
+        message: "You have already applied to this career post",
+        httpStatus: 409,
+      };
+    }
+
+    const application = await employeeCareerRepository.createApplication({
+      postId,
+      applicantUserId: employee.id,
+      coverNote,
+    });
+
+    await employeeCareerRepository.logLifecycleEvent({
+      applicationId: application.id,
+      actorUserId: employee.id,
+      actorRole: "employee",
+      eventType: "application_submitted",
+      previousStatus: null,
+      newStatus: "pending",
+    });
+
+    return { ok: true, application };
+  },
+
+  async listMyApplications(employee: AuthUser): Promise<ListApplicationsResult> {
+    const applications = await employeeCareerRepository.listApplicationsByApplicant(employee.id);
+    return { ok: true, applications };
+  },
+
   async acceptOffer(applicationId: string, employee: AuthUser): Promise<AcceptOfferResult> {
     const application = await employeeCareerRepository.findApplicationById(applicationId);
     if (!application) {
@@ -95,12 +206,6 @@ export const employeeCareerService = {
     return { ok: true, application: updated! };
   },
 
-  /**
-   * Employee declines the offer.
-   * No Employment is created. Application moves to 'offer_declined'.
-   *
-   * Validations mirror acceptOffer — same ownership and state checks.
-   */
   async declineOffer(applicationId: string, employee: AuthUser): Promise<DeclineOfferResult> {
     const application = await employeeCareerRepository.findApplicationById(applicationId);
     if (!application) {
@@ -161,5 +266,69 @@ export const employeeCareerService = {
 
     const updated = await employeeCareerRepository.findApplicationById(applicationId);
     return { ok: true, application: updated! };
+  },
+
+  async listMyEmployments(
+    employee: AuthUser,
+  ): Promise<
+    | { ok: true; employments: CareerEmploymentRow[] }
+    | { ok: false; code: string; message: string; httpStatus: number }
+  > {
+    try {
+      const employments = await employeeCareerRepository.listEmploymentsByEmployee(employee.id);
+      return { ok: true, employments };
+    } catch {
+      return {
+        ok: false,
+        code: "DB_ERROR",
+        message: "Failed to list employments",
+        httpStatus: 500,
+      };
+    }
+  },
+
+  async updateEmployment(
+    employmentId: string,
+    employee: AuthUser,
+    body: Record<string, unknown>,
+  ): Promise<
+    | { ok: true; employment: CareerEmploymentRow }
+    | { ok: false; code: string; message: string; httpStatus: number }
+  > {
+    if (!isCareerUuid(employmentId)) {
+      return {
+        ok: false,
+        code: "VALIDATION_ERROR",
+        message: "employmentId must be a valid UUID",
+        httpStatus: 400,
+      };
+    }
+
+    const statusRaw = typeof body.status === "string" ? body.status.trim() : undefined;
+    const details =
+      body.details && typeof body.details === "object" && !Array.isArray(body.details)
+        ? (body.details as Record<string, unknown>)
+        : undefined;
+
+    if (statusRaw && !["active", "resigned", "terminated"].includes(statusRaw)) {
+      return {
+        ok: false,
+        code: "VALIDATION_ERROR",
+        message: "Invalid employment status",
+        httpStatus: 400,
+      };
+    }
+
+    const updated = await employeeCareerRepository.updateEmploymentByEmployee(
+      employmentId,
+      employee.id,
+      { status: statusRaw, details },
+    );
+
+    if (!updated) {
+      return { ok: false, code: "NOT_FOUND", message: "Employment not found", httpStatus: 404 };
+    }
+
+    return { ok: true, employment: updated };
   },
 };

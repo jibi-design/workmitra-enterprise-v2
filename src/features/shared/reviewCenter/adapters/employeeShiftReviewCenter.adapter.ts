@@ -18,12 +18,12 @@ export type EmployeeShiftReviewItem = {
 function hasEmployeeRatedEmployer(workspace: ShiftWorkspace): boolean {
   if (workspace.rating) return true;
 
-  const workerWmId = employeeProfileStorage.get().uniqueId?.trim() || "";
-  const employerWmId = employerSettingsStorage.get().uniqueId?.trim() || "";
+  const workerMlId = employeeProfileStorage.get().uniqueId?.trim() || "";
+  const employerMlId = employerSettingsStorage.get().uniqueId?.trim() || "";
 
-  if (!workerWmId || !employerWmId) return false;
+  if (!workerMlId || !employerMlId) return false;
 
-  return ratingStorage.hasWorkerRatedEmployer(workerWmId, workspace.postId, employerWmId);
+  return ratingStorage.hasWorkerRatedEmployer(workerMlId, workspace.postId, employerMlId);
 }
 
 export function getEmployeeShiftReviewItems(

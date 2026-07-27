@@ -28,6 +28,7 @@ export const CAREER_ACTIVITY_CHANGED = "wm:employer-career-activity-changed";
 export const EMPLOYEE_NOTES_CHANGED = "wm:employee-notifications-changed";
 export const EMPLOYEE_CAREER_SAVED_JOBS_CHANGED = "wm:employee-career-saved-jobs-changed";
 export const EMPLOYEE_CAREER_RECENT_JOBS_CHANGED = "wm:employee-career-recent-jobs-changed";
+export const EMPLOYEE_CAREER_SEARCH_CHANGED = "wm:employee-career-search-changed";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Type Guard
@@ -130,6 +131,10 @@ export function notifyEmployeeCareerSavedJobsChanged(): void {
 
 export function notifyEmployeeCareerRecentJobsChanged(): void {
   safeDispatch(EMPLOYEE_CAREER_RECENT_JOBS_CHANGED);
+}
+
+export function notifyEmployeeCareerSearchChanged(): void {
+  safeDispatch(EMPLOYEE_CAREER_SEARCH_CHANGED);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

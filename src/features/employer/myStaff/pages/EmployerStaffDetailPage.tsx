@@ -1,14 +1,11 @@
 // App: Job Mitra / WorkMitra_Enterprise_v2
-// File: EmployerStaffDetailPage.tsx
-// Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\myStaff\pages\EmployerStaffDetailPage.tsx
+// File: EmployerStaffDetailPage.tsx — facade
 
-import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  employmentActions,
-  employmentStorage,
-} from "../../../../shared/employment/employmentStorage";
-import { employmentLifecycleStorage } from "../../../employee/employment/storage/employmentLifecycle.storage";
+import { employmentStorage } from "../../../../shared/employment/employmentStorage";
+import { listHrStaffEmployments } from "../../hrManagement/services/hrEmploymentService";
+import { employmentLifecycleStorage } from "../../../../shared/employment/employmentLifecycle.storage";
 import { AcceptResignationModal } from "../components/AcceptResignationModal";
 import { ExitProcessingModal } from "../components/ExitProcessingModal";
 import {
@@ -23,65 +20,14 @@ import {
   StaffJoinConfirmationAction,
 } from "../components/StaffDetailSections";
 import { durationText, statusMeta } from "../helpers/staffDetailHelpers";
-import { careerEmploymentFeedbackStorage } from "../storage/careerEmploymentFeedback.storage";
-import { myStaffStorage, type StaffDepartment, type StaffRecord } from "../storage/myStaff.storage";
-
-const DAY_MS = 86_400_000;
-
-function formatDateLabel(timestamp: number | null | undefined): string {
-  if (!timestamp) return "Not set";
-
-  try {
-    return new Date(timestamp).toLocaleDateString(undefined, {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-  } catch {
-    return "Not set";
-  }
-}
-
-function getDaysLeft(lastWorkingDay: number | null | undefined, nowMs: number): number | null {
-  if (!lastWorkingDay) return null;
-
-  return Math.max(0, Math.ceil((lastWorkingDay - nowMs) / DAY_MS));
-}
-
-function createPendingFeedbackTask(record: StaffRecord, companyName: string): void {
-  careerEmploymentFeedbackStorage.createPending({
-    staffId: record.id,
-    careerPostId: record.careerPostId,
-    employeeUniqueId: record.employeeUniqueId,
-    employeeName: record.employeeName,
-    jobTitle: record.jobTitle,
-    companyName,
-  });
-}
-
-type StaffDetailSnapshot = {
-  records: StaffRecord[];
-  departments: StaffDepartment[];
-};
-
-let cachedSnapshot: StaffDetailSnapshot = { records: [], departments: [] };
-let cachedSnapshotKey = "";
-
-function getStaffDetailSnapshot(): StaffDetailSnapshot {
-  const fresh: StaffDetailSnapshot = {
-    records: myStaffStorage.getAll(),
-    departments: myStaffStorage.getDepartments(),
-  };
-
-  const freshKey = JSON.stringify(fresh);
-
-  if (freshKey !== cachedSnapshotKey) {
-    cachedSnapshot = fresh;
-    cachedSnapshotKey = freshKey;
-  }
-
-  return cachedSnapshot;
-}
+import { myStaffStorage } from "../storage/myStaff.storage";
+import { isCareerApiSyncEnabled } from "../../../career/services/careerGateApi.service";
+import {
+  formatDateLabel,
+  getDaysLeft,
+  getStaffDetailSnapshot,
+} from "./EmployerStaffDetailPage.helpers";
+import { createStaffDetailHandlers } from "./EmployerStaffDetailPage.handlers";
 
 export function EmployerStaffDetailPage() {
   const { staffId } = useParams<{ staffId: string }>();
@@ -90,6 +36,11 @@ export function EmployerStaffDetailPage() {
   const [showExitModal, setShowExitModal] = useState(false);
   const [showResignModal, setShowResignModal] = useState(false);
   const [exitDone, setExitDone] = useState(false);
+
+  useEffect(() => {
+    if (!isCareerApiSyncEnabled()) return;
+    void listHrStaffEmployments();
+  }, []);
 
   const subscribe = useCallback((cb: () => void) => myStaffStorage.subscribe(cb), []);
   const snapshot = useSyncExternalStore(subscribe, getStaffDetailSnapshot, getStaffDetailSnapshot);
@@ -149,126 +100,19 @@ export function EmployerStaffDetailPage() {
   const duration = durationText(record.joinedAt, nowMs);
   const isJoiningPending = record.status === "joining_pending";
   const isResignPending = record.status === "resignation_pending";
-  const canEndEmployment =
-    record.status === "active" ||
-    record.status === "probation" ||
-    record.status === "notice_period";
 
-  const handleConfirmJoined = () => {
-    const joinedAt = Date.now();
-
-    myStaffStorage.updateStaff(record.id, {
-      status: "active",
-      joinedAt,
-      employeeConfirmed: true,
-    });
-
-    const empRecords = employmentLifecycleStorage.getAll();
-    const empRec = empRecords.find(
-      (item) => item.careerPostId === record.careerPostId && item.status !== "exited",
-    );
-
-    if (empRec) {
-      employmentLifecycleStorage.update(empRec.id, {
-        status: "active",
-        joinedAt,
-        verified: true,
-      });
-    }
-
-    if (record.careerPostId) {
-      employmentActions.markAsJoined(record.careerPostId, joinedAt);
-    }
-  };
-
-  const handleExitComplete = (
-    exitReason: StaffRecord["exitReason"],
-    exitedAt: number,
-    rating: number,
-    comment: string,
-  ) => {
-    if (!exitReason) return;
-
-    myStaffStorage.endEmployment(record.id, exitReason, exitedAt, rating, comment || undefined);
-    createPendingFeedbackTask(
-      record,
-      sharedEmploymentRecord?.companyName ?? lifecycleRecord?.companyName ?? "Career Employment",
-    );
-
-    const empRecords = employmentLifecycleStorage.getAll();
-    const empRec = empRecords.find(
-      (item) => item.careerPostId === record.careerPostId && item.status !== "exited",
-    );
-
-    if (empRec) {
-      employmentLifecycleStorage.update(empRec.id, {
-        status: "exited",
-        exitReason: exitReason as
-          "resigned" | "terminated" | "layoff" | "contract_end" | "mutual_agreement",
-        exitedAt,
-        employerRating: rating,
-        employerComment: comment || undefined,
-        verified: true,
-      });
-    }
-
-    setShowExitModal(false);
-    setExitDone(true);
-  };
-
-  const handleResignAccept = (exitedAt: number) => {
-    if (!canCloseEmployment) return;
-
-    myStaffStorage.acceptResignation(record.id, exitedAt);
-    createPendingFeedbackTask(record, sharedEmploymentRecord?.companyName ?? "Career Employment");
-
-    const empRecords = employmentLifecycleStorage.getAll();
-    const empRec = empRecords.find(
-      (item) => item.careerPostId === record.careerPostId && item.status !== "exited",
-    );
-
-    if (empRec) {
-      employmentLifecycleStorage.update(empRec.id, {
-        status: "exited",
-        exitReason: "resigned",
-        exitedAt,
-        verified: true,
-      });
-    }
-
-    if (record.careerPostId) {
-      employmentActions.confirmResignation(record.careerPostId);
-    }
-
-    setShowResignModal(false);
-    setExitDone(true);
-  };
-
-  const handleRejectResignation = () => {
-    myStaffStorage.updateStaff(record.id, { status: "active" });
-
-    if (record.careerPostId) {
-      employmentActions.withdrawResignation(record.careerPostId);
-    }
-
-    const empRecords = employmentLifecycleStorage.getAll();
-    const empRec = empRecords.find(
-      (item) =>
-        item.careerPostId === record.careerPostId &&
-        (item.status === "resignation_pending" || item.status === "notice_period"),
-    );
-
-    if (empRec) {
-      employmentLifecycleStorage.update(empRec.id, {
-        status: "active",
-        resignationNote: undefined,
-        preferredLastDate: undefined,
-      });
-    }
-  };
+  const handlers = createStaffDetailHandlers(
+    record,
+    sharedEmploymentRecord,
+    lifecycleRecord,
+    canCloseEmployment,
+    setShowExitModal,
+    setShowResignModal,
+    setExitDone,
+  );
 
   return (
-    <div style={{ padding: "8px 0 32px" }}>
+    <div className="wm-er-vCareer wm-stackGrid" style={{ padding: "8px 0 32px" }}>
       {exitDone && <ExitDoneBanner />}
 
       <HeroCard record={record} sm={sm} />
@@ -278,7 +122,7 @@ export function EmployerStaffDetailPage() {
       {isJoiningPending && !exitDone && (
         <StaffJoinConfirmationAction
           employeeName={record.employeeName}
-          onConfirmJoined={handleConfirmJoined}
+          onConfirmJoined={handlers.handleConfirmJoined}
         />
       )}
 
@@ -288,11 +132,11 @@ export function EmployerStaffDetailPage() {
           lastWorkingDateLabel={formatDateLabel(lastWorkingDay)}
           canCloseEmployment={canCloseEmployment}
           onAccept={() => setShowResignModal(true)}
-          onReject={handleRejectResignation}
+          onReject={handlers.handleRejectResignation}
         />
       )}
 
-      {canEndEmployment && !isResignPending && !exitDone && (
+      {canCloseEmployment && !isResignPending && !exitDone && (
         <ExitActions onStartExit={() => setShowExitModal(true)} />
       )}
 
@@ -304,7 +148,7 @@ export function EmployerStaffDetailPage() {
         <ExitProcessingModal
           employeeName={record.employeeName}
           jobTitle={record.jobTitle}
-          onComplete={handleExitComplete}
+          onComplete={handlers.handleExitComplete}
           onClose={() => setShowExitModal(false)}
         />
       )}
@@ -313,7 +157,7 @@ export function EmployerStaffDetailPage() {
         <AcceptResignationModal
           employeeName={record.employeeName}
           jobTitle={record.jobTitle}
-          onComplete={handleResignAccept}
+          onComplete={handlers.handleResignAccept}
           onClose={() => setShowResignModal(false)}
         />
       )}

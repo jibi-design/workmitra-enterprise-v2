@@ -1,4 +1,5 @@
-// Job Mitra | PlannerEmployeeCommandGrid.tsx | Gig Projects domain actions only
+// Job Mitra | PlannerEmployeeCommandGrid.tsx | Gig hub commands (striking enterprise tiles)
+// Domain: Planner only — no Shift/Career imports, no plannerLegacyShiftBridge.
 
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
@@ -48,43 +49,35 @@ export function PlannerEmployeeCommandGrid() {
   ];
 
   return (
-    <div className="wm-planner-card">
-      <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 4 }}>Gig Projects Hub</div>
-      <p
-        style={{ fontSize: 11, color: "var(--wm-neutral-500)", marginBottom: 12, lineHeight: 1.45 }}
-      >
+    <section
+      className="wm-planner-card wm-planner-commandPanel"
+      data-testid="planner-employee-command-grid"
+      aria-label="Gig Projects command center"
+    >
+      <div className="wm-planner-sectionLabel">Command center</div>
+      <div className="wm-planner-sectionTitle">Gig Projects Hub</div>
+      <p className="wm-planner-commandGridIntro">
         Teal Gig domain only — never mixed with green Shift Jobs.
       </p>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(148px, 1fr))",
-          gap: 8,
-        }}
-      >
+      <div className="wm-planner-commandGrid" data-testid="planner-command-grid">
         {commands.map((cmd) => (
           <button
             key={cmd.label}
             type="button"
-            className={cmd.primary ? "wm-planner-btnPrimary" : "wm-planner-btnGhost"}
-            style={{
-              minHeight: 72,
-              flexDirection: "column",
-              alignItems: "flex-start",
-              justifyContent: "flex-start",
-              padding: "10px 12px",
-              textAlign: "left",
-              gap: 4,
-            }}
+            className={`wm-planner-commandTile${cmd.primary ? " wm-planner-commandTile--primary" : ""}`}
             onClick={cmd.onClick}
+            aria-label={`${cmd.label}. ${cmd.description}`}
           >
-            <span style={{ fontSize: 12, fontWeight: 800 }}>{cmd.label}</span>
-            <span style={{ fontSize: 10, fontWeight: 600, opacity: 0.85, lineHeight: 1.35 }}>
-              {cmd.description}
-            </span>
+            <div className="wm-planner-commandTile__body">
+              <div className="wm-planner-commandTile__label">{cmd.label}</div>
+              <div className="wm-planner-commandTile__sep" aria-hidden="true">
+                {" · "}
+              </div>
+              <div className="wm-planner-commandTile__desc">{cmd.description}</div>
+            </div>
           </button>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

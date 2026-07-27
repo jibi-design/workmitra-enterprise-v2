@@ -9,13 +9,16 @@ import type {
   IncidentStatus,
   IncidentNote,
 } from "../types/incidentReport.types";
+import { hrEmployerScopedKey } from "./hrStorageKeys";
 
-const STORAGE_KEY = "wm_incident_reports_v1";
+function storageKey(): string {
+  return hrEmployerScopedKey("incident_reports_v1");
+}
 const CHANGED_EVENT = "wm:incident-reports-changed";
 
 function read(): IncidentReport[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey());
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
     return Array.isArray(parsed) ? (parsed as IncidentReport[]) : [];
@@ -25,7 +28,7 @@ function read(): IncidentReport[] {
 }
 
 function write(reports: IncidentReport[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(reports));
+  localStorage.setItem(storageKey(), JSON.stringify(reports));
   window.dispatchEvent(new Event(CHANGED_EVENT));
 }
 
@@ -34,7 +37,6 @@ function genId(): string {
 }
 
 export const incidentReportStorage = {
-
   // ── Read ──
 
   /** Get all reports for an employer (all employees) — newest first */
@@ -103,7 +105,8 @@ export const incidentReportStorage = {
     all[idx] = {
       ...all[idx],
       status: newStatus,
-      acknowledgedAt: newStatus === "acknowledged" && !all[idx].acknowledgedAt ? now : all[idx].acknowledgedAt,
+      acknowledgedAt:
+        newStatus === "acknowledged" && !all[idx].acknowledgedAt ? now : all[idx].acknowledgedAt,
       resolvedAt: newStatus === "resolved" ? now : undefined,
       updatedAt: now,
     };

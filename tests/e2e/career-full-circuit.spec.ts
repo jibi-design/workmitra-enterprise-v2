@@ -6,9 +6,10 @@ import {
   clickEmployerCareerPipelineTab,
   ensureCareerCircuitWorkerIdentity,
   getFutureInterviewScheduleSlot,
-  getPendingActionAcceptButton,
+  clickPendingActionAccept,
   gotoEmployeeCareerPostApply,
   gotoEmployeeHomeHub,
+  employerMarkCareerCandidateHired,
   gotoEmployerCareerPostDashboard,
   gotoEmployerHome,
   initCareerRoleContext,
@@ -25,6 +26,7 @@ import {
   syncCareerCircuitStorage,
   syncCareerDataOnly,
   waitForCareerCircuitApplicationStage,
+  dismissCareerEmployerNoticeModal,
 } from "./helpers/career-circuit.helpers";
 
 /**
@@ -162,7 +164,7 @@ test.describe("Career Jobs — Full Professional Funnel", () => {
         .toBeVisible({ timeout: 5_000 });
 
       await assertPendingActionAcceptHasPulseHalo(employeePage, interviewActionId);
-      await getPendingActionAcceptButton(employeePage, interviewActionId).click();
+      await clickPendingActionAccept(employeePage, interviewActionId);
 
       // Block A — Employee (before sync barrier)
       await expect.soft
@@ -254,6 +256,7 @@ test.describe("Career Jobs — Full Professional Funnel", () => {
       await sendOfferButton.click();
 
       await waitForCareerCircuitApplicationStage(employerPage, "offered");
+      await dismissCareerEmployerNoticeModal(employerPage);
       await syncCareerDataOnly(employerPage, employeePage);
       await waitForCareerCircuitApplicationStage(employeePage, "offered");
 
@@ -264,7 +267,7 @@ test.describe("Career Jobs — Full Professional Funnel", () => {
       expect(offered, "Application must be in offered stage after send offer").toBeTruthy();
     });
 
-    await test.step("6. Accept Offer — concurrent side-effect matrix", async () => {
+    await test.step("6. Accept Offer + Employer Hire — concurrent side-effect matrix", async () => {
       const employerUnreadBefore = await readEmployerUnreadNotificationCount(employerPage);
 
       await syncCareerDataOnly(employerPage, employeePage);
@@ -288,7 +291,7 @@ test.describe("Career Jobs — Full Professional Funnel", () => {
         .soft(employeePage.getByText("Job offer received"))
         .toBeVisible({ timeout: 5_000 });
       await assertPendingActionAcceptHasPulseHalo(employeePage, offerActionId);
-      await getPendingActionAcceptButton(employeePage, offerActionId).click();
+      await clickPendingActionAccept(employeePage, offerActionId);
 
       // Block A — Employee (before sync barrier)
       await expect.soft
@@ -304,32 +307,14 @@ test.describe("Career Jobs — Full Professional Funnel", () => {
         )
         .toBe(true);
 
-      await waitForCareerCircuitApplicationStage(employeePage, "hired");
+      await waitForCareerCircuitApplicationStage(employeePage, "offer_accepted");
 
-      await expect.soft
-        .poll(
-          async () => {
-            const onWorkspace = /\/#\/employee\/career\/workspace\//.test(employeePage.url());
-            if (!onWorkspace) return false;
-
-            const workspaceMatch = employeePage.url().match(/workspace\/([^/?#]+)/);
-            if (workspaceMatch?.[1]) {
-              capturedWorkspaceId = workspaceMatch[1];
-            }
-
-            const workspaces = await readCareerCircuitWorkspaces(employeePage);
-            return workspaces.some((item) => item.id === capturedWorkspaceId);
-          },
-          { timeout: 5_000, message: "6A-3: Career workspace must be created on offer accept" },
-        )
-        .toBe(true);
-
-      // — SYNC BARRIER —
+      // — SYNC BARRIER (offer accepted) —
       await syncCareerDataOnly(employeePage, employerPage);
       await gotoEmployerHome(employerPage);
       await syncAndDeliverCareerPulse(employeePage, employerPage, "employer");
 
-      // Block B — Employer (after sync barrier)
+      // Block B — Employer offer-accepted signals (before hire confirm)
       await expect.soft
         .poll(
           async () => {
@@ -362,6 +347,28 @@ test.describe("Career Jobs — Full Professional Funnel", () => {
         )
         .toBe(true);
 
+      // Block C — Employer hire confirm (V2: hired + workspace only after employer action)
+      await employerMarkCareerCandidateHired(employerPage);
+      await syncCareerDataOnly(employerPage, employeePage);
+      await syncAndDeliverCareerPulse(employerPage, employeePage, "employee");
+
+      await waitForCareerCircuitApplicationStage(employerPage, "hired");
+      await waitForCareerCircuitApplicationStage(employeePage, "hired");
+
+      await expect.soft
+        .poll(
+          async () => {
+            const workspaces = await readCareerCircuitWorkspaces(employeePage);
+            const workspace = workspaces.find((item) => item.jobId === CAREER_CIRCUIT_IDS.postId);
+            if (workspace?.id) {
+              capturedWorkspaceId = workspace.id;
+            }
+            return Boolean(workspace?.id);
+          },
+          { timeout: 10_000, message: "6C-1: Career workspace must be created on employer hire" },
+        )
+        .toBe(true);
+
       await expect.soft
         .poll(
           async () => {
@@ -372,7 +379,10 @@ test.describe("Career Jobs — Full Professional Funnel", () => {
                 record.applicationId === capturedAppId,
             );
           },
-          { timeout: 5_000, message: "6B-3: HR record must exist in wm_hr_management_v1" },
+          {
+            timeout: 5_000,
+            message: "6C-2: HR record must exist in wm_hr_employer_{id}_management_v1",
+          },
         )
         .toBe(true);
 

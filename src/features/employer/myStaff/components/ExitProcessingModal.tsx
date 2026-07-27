@@ -43,14 +43,14 @@ const CARD: CSSProperties = {
   width: "100%",
   maxWidth: 420,
   background: "#fff",
-  borderRadius: 16,
+  borderRadius: "var(--wm-radius-chip)",
   padding: 20,
   boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
 };
 
 const CANCEL_BTN: CSSProperties = {
   padding: "10px 18px",
-  borderRadius: 10,
+  borderRadius: "var(--wm-radius-10)",
   border: "1.5px solid rgba(0,0,0,0.12)",
   background: "transparent",
   fontWeight: 800,
@@ -62,7 +62,7 @@ const CANCEL_BTN: CSSProperties = {
 function nextBtnStyle(enabled: boolean): CSSProperties {
   return {
     padding: "10px 18px",
-    borderRadius: 10,
+    borderRadius: "var(--wm-radius-10)",
     border: "none",
     background: enabled ? "#dc2626" : "#e5e7eb",
     color: enabled ? "#fff" : "#9ca3af",

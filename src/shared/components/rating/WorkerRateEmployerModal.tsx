@@ -6,6 +6,8 @@ import { submitShiftRatingSaga } from "../../rating/submitShiftRatingSaga";
 import { submitPlannerWorkerRating } from "../../rating/submitPlannerRatingSaga";
 import type { RatingDomain, RatingPlannerMeta, WorkerEmployerTag } from "../../rating/ratingTypes";
 import { WorkerRateEmployerModalForm } from "./WorkerRateEmployerModal.form";
+import { employmentStorage } from "../../employment/employmentStorage";
+import { syncVaultCareerRatingsForPost } from "../../../features/shared/workVault/vaultPublic";
 
 type Props = {
   isOpen: boolean;
@@ -147,6 +149,11 @@ export function WorkerRateEmployerModal({
       comment: comment.trim() || undefined,
       workAgain,
     });
+
+    if (domain === "career") {
+      const record = employmentStorage.getByPostId(jobId);
+      if (record) syncVaultCareerRatingsForPost(jobId, record);
+    }
 
     setSubmitting(false);
     onSubmitted();

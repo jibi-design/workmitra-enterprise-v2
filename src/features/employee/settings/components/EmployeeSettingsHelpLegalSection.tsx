@@ -4,26 +4,28 @@
 
 export function EmployeeSettingsHelpLegalSection() {
   return (
-    <section className="wm-ee-card" style={{ marginTop: 12 }}>
+    <section className="wm-settingsGroup">
       <div className="wm-ee-cardTitle">Help & legal</div>
 
       <div className="wm-linkList" style={{ marginTop: 8 }}>
         <button
-          className="wm-ee-linkBtn"
+          className="wm-settingsRow"
           type="button"
           onClick={() => {
             window.location.hash = "#/employee/help";
           }}
         >
-          Help & Support
+          <span className="wm-settingsRow__label">Help & Support</span>
+          <span className="wm-settingsRow__chevron">→</span>
         </button>
 
         <button
-          className="wm-ee-linkBtn"
+          className="wm-settingsRow"
           type="button"
           onClick={() => window.open("https://jibi-design.github.io/workmitra-privacy/", "_blank")}
         >
-          Privacy Policy
+          <span className="wm-settingsRow__label">Privacy Policy</span>
+          <span className="wm-settingsRow__chevron">→</span>
         </button>
       </div>
     </section>

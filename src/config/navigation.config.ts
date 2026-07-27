@@ -155,12 +155,6 @@ export const NAVIGATION_CONFIG: Record<NavDomain, DomainConfig> = {
         icon: CalendarCheck,
         domain: "employerShift",
       },
-      {
-        label: "Gig",
-        path: ROUTE_PATHS.employerPlannerHome,
-        icon: CalendarRange,
-        domain: "employerShift",
-      },
     ],
   },
   employerPlanner: {

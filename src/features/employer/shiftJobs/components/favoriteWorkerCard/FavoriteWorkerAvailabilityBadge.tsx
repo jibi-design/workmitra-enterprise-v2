@@ -1,23 +1,13 @@
-// App name: Job Mitra
-// Way 2 — availability badge for favorite workers (trusted exception path).
+/** Favorite worker availability badge — reads batched labels from list provider */
 
-import { useSyncExternalStore } from "react";
-import { availabilityStorage } from "../../../../employee/shiftJobs/storage/availabilityStorage";
-
-function readAvailabilityLabel(workerWmId: string): string | null {
-  return availabilityStorage.getAvailabilityDaysLabel(workerWmId);
-}
+import { useFavoriteAvailabilityLabel } from "./useFavoriteAvailabilityLabel";
 
 type Props = {
-  workerWmId: string;
+  workerMlId: string;
 };
 
-export function FavoriteWorkerAvailabilityBadge({ workerWmId }: Props) {
-  const label = useSyncExternalStore(
-    availabilityStorage.subscribe,
-    () => readAvailabilityLabel(workerWmId),
-    () => null,
-  );
+export function FavoriteWorkerAvailabilityBadge({ workerMlId }: Props) {
+  const label = useFavoriteAvailabilityLabel(workerMlId);
 
   if (!label) return null;
 
@@ -30,7 +20,7 @@ export function FavoriteWorkerAvailabilityBadge({ workerWmId }: Props) {
         alignItems: "center",
         gap: 6,
         padding: "7px 12px",
-        borderRadius: 999,
+        borderRadius: "var(--wm-radius-pill)",
         background: "rgba(16,185,129,0.10)",
         border: "1px solid rgba(16,185,129,0.28)",
         fontSize: 12,

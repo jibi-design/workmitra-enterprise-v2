@@ -3,13 +3,31 @@
  * Hybrid A2 S7 — plan-scoped roster console.
  * Hybrid A2 P2.4 — no-show / miss check-in PulseTargetCard.
  * Hybrid A2 P2.5 — Visa / Right-to-Work expiry badge + PulseTargetCard.
+ * Track T1-2 — remove stub testids; missing-plan empty; employer chrome cleanup.
  */
 
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { StatusBadge, TrustStrip } from "../../../../shared/components/enterprise";
 import { PulseTargetCard } from "../../../pulse/PulseTarget";
 import { getPlannerEscalation } from "../../../shared/planner/plannerEscalationRegistry";
+import { getVaultPlannerHistory } from "../../../shared/planner/plannerVault";
+import { getPlannerExecutionPort } from "../../../shared/planner/ports/plannerExecutionPort";
+import {
+  fireNoShowEscalations,
+  listNoShowWorkerMlIdsForPlan,
+} from "../../../shared/planner/services/plannerEscalationTriggers.service";
+import {
+  getAssignmentEpochProgress,
+  runPlannerMilestoneEngine,
+} from "../../../shared/planner/services/plannerMilestone.engine";
+import { listPlannerRosterAssignments } from "../../../shared/planner/services/plannerRoster.helpers";
+import {
+  fireRtwEscalations,
+  getPlannerRtwFlagLevel,
+  listRtwFlaggedWorkerMlIdsForPlan,
+} from "../../../shared/planner/services/plannerRtw.service";
 import { demandPlannerStorage } from "../storage/demandPlannerStorage";
 import {
   getPlannerRtwRecord,
@@ -17,23 +35,18 @@ import {
   setPlannerRtwWarnDays,
   upsertPlannerRtwRecord,
 } from "../storage/plannerRtw.storage";
-import { getPlannerExecutionPort } from "../../../shared/planner/ports/plannerExecutionPort";
-import {
-  getAssignmentEpochProgress,
-  runPlannerMilestoneEngine,
-} from "../../../shared/planner/services/plannerMilestone.engine";
-import {
-  fireNoShowEscalations,
-  listNoShowWorkerMlIdsForPlan,
-} from "../../../shared/planner/services/plannerEscalationTriggers.service";
-import {
-  fireRtwEscalations,
-  getPlannerRtwFlagLevel,
-  listRtwFlaggedWorkerMlIdsForPlan,
-} from "../../../shared/planner/services/plannerRtw.service";
-import { listPlannerRosterAssignments } from "../../../shared/planner/services/plannerRoster.helpers";
-import { getVaultPlannerHistory } from "../../../shared/planner/plannerVault";
-import { StatusBadge, TrustStrip } from "../../../../shared/components/enterprise";
+import { PlannerRosterDragBoard } from "../components/PlannerRosterDragBoard";
+import { PlannerCrewBroadcastPanel } from "../components/PlannerCrewBroadcastPanel";
+import { PlannerRosterSlotEditor } from "../components/PlannerRosterSlotEditor";
+
+const linkBtnStyle = {
+  display: "inline-flex",
+  alignItems: "center",
+  padding: "10px 14px",
+  borderRadius: 10,
+  textDecoration: "none",
+  fontWeight: 700,
+} as const;
 
 export function EmployerPlannerRosterDetailPage() {
   const { planId = "" } = useParams();
@@ -44,12 +57,12 @@ export function EmployerPlannerRosterDetailPage() {
   }, [planId]);
 
   const assignments = useMemo(
-    () => listPlannerRosterAssignments({ planId, confirmedOnly: true }),
+    () => (planId ? listPlannerRosterAssignments({ planId, confirmedOnly: true }) : []),
     [planId],
   );
 
   const milestones = useMemo(
-    () => getVaultPlannerHistory().filter((e) => e.planId === planId),
+    () => (planId ? getVaultPlannerHistory().filter((e) => e.planId === planId) : []),
     [planId],
   );
 
@@ -94,68 +107,96 @@ export function EmployerPlannerRosterDetailPage() {
     setRtwTick((n) => n + 1);
   }
 
-  if (!planId) {
+  if (!planId || !plan) {
     return (
-      <div data-testid="planner-employer-roster-detail">
-        <p>Missing plan id.</p>
-        <Link to={ROUTE_PATHS.employerPlannerRoster}>Back to Roster</Link>
+      <div
+        className="wm-er-vPlanner wm-planner-page"
+        data-testid="planner-employer-roster-detail"
+        data-plan-found="0"
+      >
+        <section
+          className="wm-planner-card wm-planner-empty"
+          data-testid="planner-employer-roster-detail-missing"
+        >
+          <div className="wm-planner-empty__icon" aria-hidden="true">
+            R
+          </div>
+          <div className="wm-planner-empty__copy">
+            <div className="wm-planner-empty__title">
+              {!planId ? "Missing plan id" : "Plan not found"}
+            </div>
+            <div className="wm-planner-empty__sub">
+              Open roster detail from an active plan on the roster console. No workers or RTW tools
+              are shown without a valid plan.
+            </div>
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 12 }}>
+            <Link
+              to={ROUTE_PATHS.employerPlannerRoster}
+              className="wm-planner-btnPrimary"
+              data-testid="planner-employer-roster-detail-back"
+              style={{ ...linkBtnStyle }}
+            >
+              Back to Roster
+            </Link>
+            <Link
+              to={ROUTE_PATHS.employerPlannerPlans}
+              className="wm-outlineBtn"
+              data-testid="planner-employer-roster-detail-plans"
+              style={{ ...linkBtnStyle }}
+            >
+              All plans
+            </Link>
+          </div>
+        </section>
       </div>
     );
   }
 
   return (
-    <div className="wm-ee-vPlanner wm-planner-page" data-testid="planner-employer-roster-detail">
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 14 }}>
-        <Link
-          to={ROUTE_PATHS.employerPlannerRoster}
-          data-testid="planner-employer-roster-detail-stub-back"
-          className="wm-outlineBtn"
-          style={{
-            display: "inline-flex",
-            padding: "10px 14px",
-            borderRadius: 10,
-            textDecoration: "none",
-            fontWeight: 700,
-          }}
-        >
-          Back to Roster
-        </Link>
-        <Link
-          to={ROUTE_PATHS.employerPlannerDetail.replace(":planId", planId)}
-          style={{
-            display: "inline-flex",
-            padding: "10px 14px",
-            borderRadius: 10,
-            textDecoration: "none",
-            fontWeight: 700,
-            border: "1px solid rgba(8,145,178,0.3)",
-          }}
-        >
-          Open plan detail
-        </Link>
-      </div>
-
-      <section
-        style={{
-          marginBottom: 16,
-          padding: 16,
-          borderRadius: 18,
-          border: "1px solid rgba(8,145,178,0.2)",
-          background: "#fff",
-        }}
-      >
-        <div style={{ fontSize: 12, fontWeight: 800, color: "#0e7490" }}>Roster console</div>
+    <div
+      className="wm-er-vPlanner wm-planner-page"
+      data-testid="planner-employer-roster-detail"
+      data-plan-found="1"
+      data-plan-id={planId}
+    >
+      <section className="wm-planner-card" data-testid="planner-employer-roster-detail-hero">
+        <div className="wm-planner-sectionLabel">Hybrid A2 · Roster console</div>
         <h1 className="wm-pageTitle" style={{ margin: "6px 0 0" }}>
-          {plan?.name ?? `Plan ${planId}`}
+          {plan.name}
         </h1>
         <p className="wm-pageSub" style={{ marginTop: 6 }}>
-          {plan?.companyName ?? "Employer"} · epoch {plan?.epochDays ?? 30} days · cursor{" "}
-          {plan?.milestoneCursor ?? 0}
+          {plan.companyName || "Employer"} · epoch {plan.epochDays ?? 30} days · cursor{" "}
+          {plan.milestoneCursor ?? 0}
         </p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14 }}>
+          <Link
+            to={ROUTE_PATHS.employerPlannerRoster}
+            data-testid="planner-employer-roster-detail-back"
+            className="wm-outlineBtn"
+            style={{ ...linkBtnStyle }}
+          >
+            Back to Roster
+          </Link>
+          <Link
+            to={ROUTE_PATHS.employerPlannerDetail.replace(":planId", planId)}
+            data-testid="planner-employer-roster-detail-plan"
+            className="wm-outlineBtn"
+            style={{ ...linkBtnStyle }}
+          >
+            Open plan detail
+          </Link>
+        </div>
+      </section>
+
+      <PlannerRosterDragBoard planId={planId} />
+      <PlannerCrewBroadcastPanel planId={planId} />
+      <PlannerRosterSlotEditor plan={plan} />
+
+      <section className="wm-planner-card" data-testid="planner-roster-rtw-settings-wrap">
         <div
           data-testid="planner-roster-rtw-settings"
           style={{
-            marginTop: 12,
             display: "flex",
             flexWrap: "wrap",
             gap: 8,
@@ -163,7 +204,7 @@ export function EmployerPlannerRosterDetailPage() {
             fontSize: 12,
           }}
         >
-          <span style={{ fontWeight: 700, color: "#0f172a" }}>RTW warn (days before expiry)</span>
+          <span style={{ fontWeight: 700 }}>RTW warn (days before expiry)</span>
           <input
             type="number"
             min={1}
@@ -182,7 +223,9 @@ export function EmployerPlannerRosterDetailPage() {
           >
             Save
           </button>
-          <span style={{ color: "#64748b" }}>Visa / Right-to-Work only — not clinical NMC.</span>
+          <span className="wm-pageSub" style={{ margin: 0 }}>
+            Visa / Right-to-Work only — not clinical NMC.
+          </span>
         </div>
         {rtwWorkers.size > 0 ? (
           <div style={{ marginTop: 12 }}>
@@ -200,22 +243,30 @@ export function EmployerPlannerRosterDetailPage() {
 
       {assignments.length === 0 ? (
         <section
+          className="wm-planner-card wm-planner-empty"
           data-testid="planner-roster-detail-empty"
-          style={{
-            padding: 24,
-            borderRadius: 16,
-            border: "1px dashed rgba(8,145,178,0.35)",
-            textAlign: "center",
-          }}
+          style={{ marginTop: 12 }}
         >
-          <div style={{ fontWeight: 900 }}>No confirmed workers yet</div>
-          <p style={{ color: "#64748b", marginTop: 8 }}>
-            Approve batches to place workers on this roster.
-          </p>
-          <Link to={ROUTE_PATHS.employerPlannerApplications}>Open Batch Approval</Link>
+          <div className="wm-planner-empty__icon" aria-hidden="true">
+            W
+          </div>
+          <div className="wm-planner-empty__copy">
+            <div className="wm-planner-empty__title">No confirmed workers yet</div>
+            <div className="wm-planner-empty__sub">
+              Approve batches to place workers on this roster.
+            </div>
+          </div>
+          <Link
+            to={ROUTE_PATHS.employerPlannerApplications}
+            className="wm-planner-btnPrimary"
+            data-testid="planner-roster-detail-empty-cta"
+            style={{ ...linkBtnStyle, marginTop: 12 }}
+          >
+            Open Batch Approval
+          </Link>
         </section>
       ) : (
-        <div style={{ display: "grid", gap: 12 }}>
+        <div style={{ display: "grid", gap: 12, marginTop: 12 }}>
           {assignments.map((assignment) => {
             const progress = getAssignmentEpochProgress(assignment);
             const dayStatuses = getPlannerExecutionPort().listPlanDayStatuses(
@@ -231,20 +282,16 @@ export function EmployerPlannerRosterDetailPage() {
 
             const article = (
               <article
+                className="wm-planner-card"
                 data-testid="planner-roster-worker-card"
                 data-worker={assignment.workerMlId}
                 data-noshow={isNoShow ? "1" : "0"}
                 data-rtw={isRtw ? "1" : "0"}
                 data-rtw-level={rtwStatus.level}
-                style={{
-                  padding: 14,
-                  borderRadius: 16,
-                  border: "1px solid rgba(8,145,178,0.2)",
-                  background: "#fff",
-                }}
+                style={{ marginBottom: 0 }}
               >
                 <div style={{ fontWeight: 900 }}>{assignment.workerName}</div>
-                <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>
+                <div className="wm-pageSub" style={{ marginTop: 4 }}>
                   {assignment.workerMlId} · {assignment.days.length} days · check-ins {checked}
                   {isNoShow ? " · missed check-in" : ""}
                 </div>
@@ -341,10 +388,18 @@ export function EmployerPlannerRosterDetailPage() {
         </div>
       )}
 
-      <section style={{ marginTop: 18 }} data-testid="planner-roster-milestones">
-        <h2 style={{ fontSize: 15, fontWeight: 900 }}>Committed milestones</h2>
+      <section
+        className="wm-planner-card"
+        style={{ marginTop: 12 }}
+        data-testid="planner-roster-milestones"
+      >
+        <div className="wm-planner-sectionLabel">Committed milestones</div>
         {milestones.length === 0 ? (
-          <p style={{ fontSize: 13, color: "#64748b" }}>
+          <p
+            className="wm-pageSub"
+            style={{ marginTop: 8 }}
+            data-testid="planner-roster-milestones-empty"
+          >
             No epoch summaries committed yet. They appear when a 30-day window completes.
           </p>
         ) : (
@@ -352,13 +407,9 @@ export function EmployerPlannerRosterDetailPage() {
             {milestones.map((m) => (
               <div
                 key={m.id}
+                className="wm-planner-card"
                 data-testid="planner-roster-milestone-row"
-                style={{
-                  padding: 10,
-                  borderRadius: 12,
-                  border: "1px solid rgba(226,232,240,0.95)",
-                  fontSize: 12,
-                }}
+                style={{ marginBottom: 0, fontSize: 12 }}
               >
                 {m.employeeName} · epoch {m.epochIndex + 1} · {m.daysCompleted}/{m.daysScheduled}{" "}
                 days · {m.attendanceRate}% attendance

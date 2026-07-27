@@ -1,6 +1,4 @@
-// App name: Job Mitra
-// File name: MyShiftWorkspacesSearch.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\components\MyShiftWorkspacesSearch.tsx
+// App name: Job Mitra | MyShiftWorkspacesSearch.tsx
 
 type MyShiftWorkspacesSearchProps = {
   query: string;
@@ -9,7 +7,7 @@ type MyShiftWorkspacesSearchProps = {
 
 export function MyShiftWorkspacesSearch({ query, onQueryChange }: MyShiftWorkspacesSearchProps) {
   return (
-    <div className="wm-field" style={{ marginTop: 12 }}>
+    <div className="wm-field wm-shift-surface-glass" style={{ padding: "10px 12px" }}>
       <div className="wm-label">Search groups</div>
       <input
         className="wm-input"
@@ -17,6 +15,7 @@ export function MyShiftWorkspacesSearch({ query, onQueryChange }: MyShiftWorkspa
         onChange={(event) => onQueryChange(event.target.value)}
         placeholder="Company, job, or location"
         aria-label="Search groups"
+        data-testid="shift-workspaces-search"
       />
     </div>
   );

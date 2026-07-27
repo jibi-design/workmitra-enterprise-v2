@@ -60,15 +60,14 @@ export function ShiftWorkspaceExitSection({ workspace, readOnly, onExited }: Pro
   return (
     <>
       <section
-        className="wm-ee-card"
+        className="wm-shift-surface-glass wm-animateIn"
+        data-testid="shift-workspace-exit"
         style={{
-          marginTop: 12,
+          animationDelay: "160ms",
           marginBottom: 32,
           padding: 16,
-          borderRadius: 20,
           border: "1px solid rgba(217,119,6,0.18)",
           background: "linear-gradient(180deg, rgba(255,251,235,0.72), rgba(255,255,255,0.98))",
-          boxShadow: "0 10px 24px rgba(15,23,42,0.045)",
         }}
       >
         <div
@@ -98,15 +97,12 @@ export function ShiftWorkspaceExitSection({ workspace, readOnly, onExited }: Pro
           </div>
 
           <span
+            className="wm-shift-pill"
             style={{
-              padding: "5px 9px",
-              borderRadius: 999,
+              fontSize: 10,
+              color: "#b45309",
               background: "rgba(217,119,6,0.08)",
               border: "1px solid rgba(217,119,6,0.18)",
-              color: "#b45309",
-              fontSize: 10,
-              fontWeight: 950,
-              whiteSpace: "nowrap",
             }}
           >
             Important
@@ -115,18 +111,13 @@ export function ShiftWorkspaceExitSection({ workspace, readOnly, onExited }: Pro
 
         <button
           type="button"
+          className="wm-outlineBtn wm-shift-pressable"
           onClick={openExitModal}
           style={{
             width: "100%",
             marginTop: 14,
-            padding: "11px 12px",
-            borderRadius: 14,
-            border: "1px solid rgba(217,119,6,0.22)",
-            background: "#fff",
             color: "#b45309",
-            fontSize: 13,
-            fontWeight: 950,
-            cursor: "pointer",
+            borderColor: "rgba(217,119,6,0.22)",
           }}
         >
           Leave Work Group
@@ -155,11 +146,11 @@ export function ShiftWorkspaceExitSection({ workspace, readOnly, onExited }: Pro
             Select a reason. The employer can see this update inside the app.
           </div>
 
-          <div className="wm-chipRow" style={{ marginTop: 12 }}>
+          <div className="wm-shift-seg-tab-row" style={{ marginTop: 12 }}>
             {(["emergency", "sick", "travel", "other"] as ExitReason[]).map((reason) => (
               <button
                 key={reason}
-                className={`wm-chipBtn ${exitReason === reason ? "isActive" : ""}`}
+                className={`wm-shift-seg-tab ${exitReason === reason ? "isActive" : ""}`}
                 type="button"
                 onClick={() => setExitReason(reason)}
               >

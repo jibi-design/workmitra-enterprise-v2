@@ -109,7 +109,7 @@ export function AnnounceApplicationCard({
               style={{
                 width: 24,
                 height: 24,
-                borderRadius: 999,
+                borderRadius: "var(--wm-radius-pill)",
                 background: rank <= 3 ? AMBER : "var(--wm-er-border)",
                 color: rank <= 3 ? "#fff" : "var(--wm-er-muted)",
                 display: "flex",
@@ -150,7 +150,7 @@ export function AnnounceApplicationCard({
             fontWeight: 900,
             color: statusColor(application.status),
             padding: "2px 8px",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             background: `${statusColor(application.status)}15`,
             whiteSpace: "nowrap",
             flexShrink: 0,
@@ -187,7 +187,7 @@ export function AnnounceApplicationCard({
               fontWeight: 800,
               color: "var(--wm-warning)",
               padding: "2px 8px",
-              borderRadius: 999,
+              borderRadius: "var(--wm-radius-pill)",
               background: "rgba(217,119,6,0.1)",
             }}
           >
@@ -206,7 +206,7 @@ export function AnnounceApplicationCard({
               style={{
                 flex: 1,
                 padding: "6px 10px",
-                borderRadius: 8,
+                borderRadius: "var(--wm-radius-8)",
                 border: "none",
                 background: "var(--wm-success)",
                 color: "#fff",
@@ -225,7 +225,7 @@ export function AnnounceApplicationCard({
               style={{
                 flex: 1,
                 padding: "6px 10px",
-                borderRadius: 8,
+                borderRadius: "var(--wm-radius-8)",
                 border: "1px solid var(--wm-warning)",
                 background: "rgba(217,119,6,0.06)",
                 color: "var(--wm-warning)",
@@ -244,7 +244,7 @@ export function AnnounceApplicationCard({
               style={{
                 flex: 1,
                 padding: "6px 10px",
-                borderRadius: 8,
+                borderRadius: "var(--wm-radius-8)",
                 border: "1px solid var(--wm-er-border)",
                 background: "var(--wm-er-bg)",
                 color: "var(--wm-er-muted)",

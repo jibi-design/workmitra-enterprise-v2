@@ -5,6 +5,7 @@
 
 import { useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
 import { employeeWorkforceHelpers } from "../services/employeeWorkforceHelpers";
 import { WorkforceAnnounceFeedCard } from "../components/WorkforceAnnounceFeedCard";
 import {
@@ -53,12 +54,14 @@ export function EmployeeWorkforceHomePage() {
   if (!summary.isStaff) {
     return (
       <div className="wm-ee-vWorkforce" style={{ padding: "0 16px" }}>
-        <div className="wm-pageHead">
-          <div>
-            <div className="wm-pageTitle">Workforce Ops Hub</div>
-            <div className="wm-pageSub">Your staff dashboard</div>
-          </div>
-        </div>
+        <DomainHero
+          variant="workforce"
+          audience="employee"
+          icon={<WorkforceHubIcon />}
+          title="Workforce Ops Hub"
+          subtitle="Your staff dashboard"
+          description="When an employer adds you with your unique ID, announcements and groups appear here."
+        />
 
         <div className="wm-er-card" style={{ marginTop: 14 }}>
           <div style={emptyStateStyle}>
@@ -101,39 +104,39 @@ export function EmployeeWorkforceHomePage() {
 
   return (
     <div className="wm-ee-vWorkforce" style={{ padding: "0 16px" }}>
-      {/* â”€â”€ Header â”€â”€ */}
-      <div className="wm-pageHead">
-        <div>
-          <div className="wm-pageTitle">Workforce Ops Hub</div>
-          <div className="wm-pageSub">Your staff dashboard</div>
-        </div>
-      </div>
-
-      {/* â”€â”€ KPI Tiles â”€â”€ */}
-      <div className="wm-er-tiles" style={{ marginTop: 14 }}>
-        <div className="wm-er-tile">
-          <div className="wm-er-tileLabel">Open</div>
-          <div
-            className="wm-er-tileValue"
-            style={{ color: summary.openAnnouncements > 0 ? AMBER : undefined }}
-          >
-            {summary.openAnnouncements}
+      <DomainHero
+        variant="workforce"
+        audience="employee"
+        icon={<WorkforceHubIcon />}
+        title="Workforce Ops Hub"
+        subtitle="Your staff dashboard"
+        description="Open announcements, active groups, and timesheet access in one place."
+      >
+        <div className="wm-er-tiles">
+          <div className="wm-er-tile">
+            <div className="wm-er-tileLabel">Open</div>
+            <div
+              className="wm-er-tileValue"
+              style={{ color: summary.openAnnouncements > 0 ? AMBER : undefined }}
+            >
+              {summary.openAnnouncements}
+            </div>
+          </div>
+          <div className="wm-er-tile">
+            <div className="wm-er-tileLabel">Applied</div>
+            <div className="wm-er-tileValue">{summary.myApplications}</div>
+          </div>
+          <div className="wm-er-tile">
+            <div className="wm-er-tileLabel">Groups</div>
+            <div
+              className="wm-er-tileValue"
+              style={{ color: summary.activeGroups > 0 ? "var(--wm-success)" : undefined }}
+            >
+              {summary.activeGroups}
+            </div>
           </div>
         </div>
-        <div className="wm-er-tile">
-          <div className="wm-er-tileLabel">Applied</div>
-          <div className="wm-er-tileValue">{summary.myApplications}</div>
-        </div>
-        <div className="wm-er-tile">
-          <div className="wm-er-tileLabel">Groups</div>
-          <div
-            className="wm-er-tileValue"
-            style={{ color: summary.activeGroups > 0 ? "var(--wm-success)" : undefined }}
-          >
-            {summary.activeGroups}
-          </div>
-        </div>
-      </div>
+      </DomainHero>
 
       {/* â”€â”€ My Timesheet Link â”€â”€ */}
       <button
@@ -261,7 +264,7 @@ export function EmployeeWorkforceHomePage() {
               key={i}
               style={{
                 padding: "4px 10px",
-                borderRadius: 999,
+                borderRadius: "var(--wm-radius-pill)",
                 background: AMBER_BG,
                 color: AMBER,
                 fontSize: 11,
@@ -274,5 +277,16 @@ export function EmployeeWorkforceHomePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function WorkforceHubIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M16 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-8 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5Zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5Z"
+      />
+    </svg>
   );
 }

@@ -55,6 +55,7 @@ export function CareerCandidateInterviewProgress({
       break;
     case "offered":
     case "offer_accepted":
+    case "offer_declined":
     case "hired":
     case "rejected":
     case "withdrawn":
@@ -62,7 +63,7 @@ export function CareerCandidateInterviewProgress({
       break;
   }
 
-  const isFailed = ["rejected", "withdrawn"].includes(app.stage as string);
+  const isFailed = ["rejected", "withdrawn", "offer_declined"].includes(app.stage as string);
 
   const passedCount = app.roundResults?.filter((item) => item.status === "passed").length || 0;
 
@@ -72,7 +73,7 @@ export function CareerCandidateInterviewProgress({
       style={{
         marginTop: 20,
         padding: "24px 20px",
-        borderRadius: 20,
+        borderRadius: "var(--wm-radius-employee-card)",
         background: "linear-gradient(135deg, #f8fafc, #ffffff)",
         border: "1px solid rgba(15,23,42,0.08)",
         boxShadow: "inset 0 2px 4px rgba(255,255,255,0.8)",
@@ -112,7 +113,7 @@ export function CareerCandidateInterviewProgress({
             height: 3,
             background: "#e2e8f0",
             zIndex: 0,
-            borderRadius: 2,
+            borderRadius: "var(--wm-radius-8)",
           }}
         />
 
@@ -127,7 +128,7 @@ export function CareerCandidateInterviewProgress({
             background: isFailed ? "#cbd5e1" : "#0f172a",
             zIndex: 0,
             transition: "width 0.4s var(--wm-motion-spring)",
-            borderRadius: 2,
+            borderRadius: "var(--wm-radius-8)",
           }}
         />
 
@@ -182,7 +183,7 @@ export function CareerCandidateInterviewProgress({
                 style={{
                   width: 34,
                   height: 34,
-                  borderRadius: 10,
+                  borderRadius: "var(--wm-radius-10)",
                   background: nodeBg,
                   border: nodeBorder,
                   display: "flex",
@@ -235,7 +236,14 @@ export function CareerCandidateInterviewProgress({
                     <polyline points="12 6 12 12 16 14" />
                   </svg>
                 ) : (
-                  <div style={{ width: 8, height: 8, borderRadius: 3, background: nodeColor }} />
+                  <div
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "var(--wm-radius-8)",
+                      background: nodeColor,
+                    }}
+                  />
                 )}
               </div>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -260,7 +268,7 @@ export function CareerCandidateInterviewProgress({
                         marginTop: 6,
                         background: isInterviewActive ? "#fde68a" : "#e2e8f0",
                         padding: "3px 8px",
-                        borderRadius: 6,
+                        borderRadius: "var(--wm-radius-8)",
                       }}
                     >
                       {passedCount}/{totalRounds} Rnds

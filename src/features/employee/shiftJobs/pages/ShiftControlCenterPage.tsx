@@ -1,111 +1,61 @@
 // App name: Job Mitra
 // File name: ShiftControlCenterPage.tsx
-// Level 3.1 — 7-day calendar, direct-invite pending hub, workspace merge on accept.
+// Shift Jobs Home — discovery: stats + Find/Applications + Featured preview
 
-import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
-import { PendingActionsHub } from "../../../../shared/components/PendingActionsHub";
-import { useEmployeeShiftPendingActions } from "../../../../shared/pendingActions/hooks/useEmployeeShiftPendingActions";
-import { useEmployeeUrgentPendingHubItems } from "../../../../shared/pendingActions/hooks/useEmployeeUrgentPendingHubItems";
 import { ShiftDirectInviteSafetyModals } from "../components/ShiftDirectInviteSafetyModals";
 import { ShiftToast } from "../components/ShiftPostDetailSections";
 import { useEmployeeDirectInvitePendingFlow } from "../hooks/useEmployeeDirectInvitePendingFlow";
 import { useShiftControlCenterState } from "../hooks/useShiftControlCenterState";
 import { useShiftAvailabilityMatchPulse } from "../hooks/useShiftAvailabilityMatchPulse";
-import { ShiftAvailabilityBroadcastCard } from "../components/ShiftAvailabilityBroadcastCard";
 import { ShiftControlCenterActionCards } from "../components/ShiftControlCenterActionCards";
+import { ShiftControlCenterPreviewPosts } from "../components/ShiftControlCenterPreviewPosts";
 import { ShiftCalendarIcon } from "../components/ShiftControlCenterIcons";
 import { DomainHero } from "../../../../shared/components/layout/DomainHero";
-import { ShiftControlCenterPreviewPosts } from "../components/ShiftControlCenterPreviewPosts";
 import { ShiftControlCenterStatsTiles } from "../components/ShiftControlCenterStatsTiles";
-import { ShiftHowItWorksCard } from "../components/ShiftHowItWorksCard";
-import { EmployeeGigProjectsPromoStrip } from "../../home/components/EmployeeGigProjectsPromoStrip";
-import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 
 export function ShiftControlCenterPage() {
   useShiftAvailabilityMatchPulse();
-  const nav = useNavigate();
-
   const directInviteFlow = useEmployeeDirectInvitePendingFlow();
-  const urgentPendingActions = useEmployeeUrgentPendingHubItems(nav);
-  const shiftPendingActions = useEmployeeShiftPendingActions();
-  const allPendingActions = useMemo(
-    () => [...directInviteFlow.hubItems, ...urgentPendingActions, ...shiftPendingActions],
-    [directInviteFlow.hubItems, urgentPendingActions, shiftPendingActions],
-  );
 
-  const {
-    counts,
-    previewPosts,
-    howOpen,
-    selectedDates,
-    shiftReviewPendingCount,
-    openSearch,
-    openApplications,
-    openEarnings,
-    openWorkspaces,
-    openReviewCenter,
-    openPost,
-    toggleHowOpen,
-    handleToggleDay,
-  } = useShiftControlCenterState();
+  const { counts, previewPosts, openSearch, openApplications, openPost } =
+    useShiftControlCenterState();
 
   return (
-    <div className="wm-ee-vShift wm-shiftEmployeeHomePage wm-stackGrid">
+    <div
+      className="wm-ee-vShift wm-shiftEmployeeHomePage wm-stackGrid"
+      data-testid="shift-jobs-home-page"
+      style={{ gap: "var(--wm-stack-gap)" }}
+    >
       <DomainHero
         variant="shift"
         audience="employee"
         icon={<ShiftCalendarIcon />}
-        title="Shift Jobs"
-        subtitle="Find shifts, track applications, manage workspaces"
-        description="Search available shifts, follow application status, manage active workspaces, and keep your work records clear."
-        trailing={<span className="wm-domainHeroBadge">Live shift hub</span>}
+        title="Shift Jobs Home"
+        subtitle="Discover shifts and track applications"
+        description="Browse open shifts, manage applications, and jump into live work from Shift Ops — all in one place."
+        trailing={
+          <span className="wm-domainHeroBadge" data-testid="shift-jobs-status-pill">
+            Live work → Shift Ops
+          </span>
+        }
       />
 
       <ShiftControlCenterStatsTiles counts={counts} />
 
-      {allPendingActions.length > 0 ? (
-        <div
-          className="wm-shiftEmployeePendingHubWrap wm-animateIn"
-          style={{ animationDelay: "60ms" }}
-        >
-          <PendingActionsHub items={allPendingActions} />
-        </div>
-      ) : null}
-
-      <div className="wm-animateIn" style={{ animationDelay: "120ms" }}>
-        <ShiftAvailabilityBroadcastCard
-          selectedDates={selectedDates}
-          onToggleDay={handleToggleDay}
-        />
-      </div>
-
-      <div className="wm-animateIn" style={{ animationDelay: "180ms" }}>
-        <EmployeeGigProjectsPromoStrip onOpen={() => nav(ROUTE_PATHS.employeePlannerHome)} />
-      </div>
-
-      <div className="wm-animateIn" style={{ animationDelay: "240ms" }}>
+      <div className="wm-animateIn wm-shift-stagger--1">
         <ShiftControlCenterActionCards
           counts={counts}
-          shiftReviewPendingCount={shiftReviewPendingCount}
           onOpenSearch={openSearch}
           onOpenApplications={openApplications}
-          onOpenEarnings={openEarnings}
-          onOpenWorkspaces={openWorkspaces}
-          onOpenReviews={openReviewCenter}
         />
       </div>
 
-      <div className="wm-animateIn" style={{ animationDelay: "300ms" }}>
+      <div className="wm-animateIn wm-shift-stagger--2">
         <ShiftControlCenterPreviewPosts
           posts={previewPosts}
           onBrowseAll={openSearch}
           onOpenPost={openPost}
         />
-      </div>
-
-      <div className="wm-animateIn" style={{ animationDelay: "360ms" }}>
-        <ShiftHowItWorksCard open={howOpen} onToggle={toggleHowOpen} />
       </div>
 
       <ShiftDirectInviteSafetyModals

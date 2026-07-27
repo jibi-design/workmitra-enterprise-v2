@@ -30,7 +30,7 @@ export function EmployerEmploymentFeedbackPendingCard({
       style={{
         marginTop: 10,
         padding: "10px 11px",
-        borderRadius: 16,
+        borderRadius: "var(--wm-radius-chip)",
         border: "1px solid rgba(79,70,229,0.13)",
         background: "linear-gradient(135deg, rgba(255,255,255,0.98), rgba(248,250,252,0.92))",
         boxShadow: "0 6px 14px rgba(15,23,42,0.035)",
@@ -42,7 +42,7 @@ export function EmployerEmploymentFeedbackPendingCard({
           style={{
             width: 34,
             height: 34,
-            borderRadius: 13,
+            borderRadius: "var(--wm-radius-chip)",
             flexShrink: 0,
             display: "flex",
             alignItems: "center",
@@ -78,16 +78,18 @@ export function EmployerEmploymentFeedbackPendingCard({
             {extraCount > 0 ? ` · +${extraCount} more` : ""}
           </div>
 
-          <div style={{ marginTop: 8, display: "flex", gap: 7, flexWrap: "wrap" }}>
-            <button type="button" onClick={onAddFeedback} style={PRIMARY_BUTTON_STYLE}>
+          <div
+            style={{ marginTop: 8, display: "flex", gap: "var(--wm-space-8)", flexWrap: "wrap" }}
+          >
+            <button type="button" className="wm-primarybtn" onClick={onAddFeedback}>
               Add Feedback
             </button>
 
-            <button type="button" onClick={onRemindLater} style={SECONDARY_BUTTON_STYLE}>
+            <button type="button" className="wm-outlineBtn" onClick={onRemindLater}>
               Remind later
             </button>
 
-            <button type="button" onClick={onDismiss} style={DISMISS_BUTTON_STYLE}>
+            <button type="button" className="wm-ghostBtn" onClick={onDismiss}>
               Hide from Home
             </button>
           </div>
@@ -96,39 +98,3 @@ export function EmployerEmploymentFeedbackPendingCard({
     </section>
   );
 }
-
-const PRIMARY_BUTTON_STYLE = {
-  minHeight: 32,
-  padding: "0 12px",
-  borderRadius: 11,
-  border: "1px solid rgba(79,70,229,0.18)",
-  background: "rgba(255,255,255,0.78)",
-  color: CAREER,
-  fontSize: 11.7,
-  fontWeight: 950,
-  cursor: "pointer",
-} as const;
-
-const SECONDARY_BUTTON_STYLE = {
-  minHeight: 32,
-  padding: "0 12px",
-  borderRadius: 11,
-  border: "1px solid rgba(79,70,229,0.18)",
-  background: "rgba(255,255,255,0.78)",
-  color: CAREER,
-  fontSize: 11.7,
-  fontWeight: 900,
-  cursor: "pointer",
-} as const;
-
-const DISMISS_BUTTON_STYLE = {
-  minHeight: 32,
-  padding: "0 10px",
-  borderRadius: 11,
-  border: "1px solid rgba(148,163,184,0.16)",
-  background: "transparent",
-  color: MUTED,
-  fontSize: 11.7,
-  fontWeight: 850,
-  cursor: "pointer",
-} as const;

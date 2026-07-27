@@ -8,7 +8,7 @@ import {
   employmentLifecycleStorage,
   type EmploymentRecord,
 } from "../storage/employmentLifecycle.storage";
-import { hrManagementStorage } from "../../../employer/hrManagement/storage/hrManagement.storage";
+import { hrManagementStorage } from "../../../shared/hr/hrPublic";
 import { EmploymentHeroCard } from "../components/EmploymentHeroCard";
 import { EmploymentDetailsCard } from "../components/EmploymentDetailsCard";
 import { EmploymentLeaveSection } from "../components/EmploymentLeaveSection";

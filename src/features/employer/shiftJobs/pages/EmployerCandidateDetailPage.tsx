@@ -1,7 +1,7 @@
-// App name: Job Mitra
-// File name: EmployerCandidateDetailPage.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\pages\EmployerCandidateDetailPage.tsx
+// App name: Job Mitra | EmployerCandidateDetailPage.tsx — DomainHero (Wave 5)
 
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
+import { EnterpriseEmpty } from "../../../../shared/components/enterprise/EnterpriseEmpty";
 import { EmployerCandidateIdentityCard } from "../components/EmployerCandidateIdentityCard";
 import { EmployerCandidateMatchScore } from "../components/EmployerCandidateMatchScore";
 import { EmployerCandidateProfileCard } from "../components/EmployerCandidateProfileCard";
@@ -10,42 +10,40 @@ import type { AnswerState } from "../helpers/employerCandidateDetail.helpers";
 import { useEmployerCandidateDetailState } from "../hooks/useEmployerCandidateDetailState";
 
 export function EmployerCandidateDetailPage() {
-  const { app, post, mustHave, goodToHave, displayId, workerWmId, workerRating } =
+  const { app, post, mustHave, goodToHave, displayId, workerMlId, workerRating } =
     useEmployerCandidateDetailState();
 
   if (!app) {
     return (
       <div>
-        <div className="wm-pageHead">
-          <div>
-            <div className="wm-pageTitle">Candidate</div>
-            <div className="wm-pageSub">Application not found.</div>
-          </div>
-        </div>
+        <DomainHero
+          variant="shift"
+          audience="employer"
+          title="Candidate"
+          subtitle="Application not found"
+          description="This shift application is no longer available."
+        />
 
-        <div style={{ marginTop: 12 }} className="wm-ee-card">
-          <div style={{ fontWeight: 1000 }}>This application is not available.</div>
-
-          <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
-            <button className="wm-outlineBtn" type="button" onClick={() => window.history.back()}>
-              Back
-            </button>
-          </div>
-        </div>
+        <EnterpriseEmpty
+          title="This application is not available"
+          subtitle="Return to the previous screen to continue reviewing candidates."
+          domain="shift"
+          primaryLabel="Back"
+          onPrimary={() => window.history.back()}
+        />
       </div>
     );
   }
 
   return (
     <div>
-      <div className="wm-pageHead">
-        <div>
-          <div className="wm-pageTitle">Candidate Detail</div>
-          <div className="wm-pageSub">
-            {post ? `${post.jobName} - ${post.companyName}` : "Shift Job"}
-          </div>
-        </div>
-      </div>
+      <DomainHero
+        variant="shift"
+        audience="employer"
+        title="Candidate Detail"
+        subtitle={post ? `${post.jobName} - ${post.companyName}` : "Shift Job"}
+        description="Review candidate identity, match score, and requirement answers."
+      />
 
       <EmployerCandidateIdentityCard app={app} displayId={displayId} />
 
@@ -61,7 +59,7 @@ export function EmployerCandidateDetailPage() {
       <EmployerCandidateProfileCard
         snapshot={app.profileSnapshot}
         workerRating={workerRating}
-        workerWmId={workerWmId}
+        workerMlId={workerMlId}
         shiftStartAt={post?.startAt}
         applicantStatus={app.status}
       />

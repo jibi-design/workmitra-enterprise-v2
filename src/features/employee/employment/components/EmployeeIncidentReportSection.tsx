@@ -3,8 +3,8 @@
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\employment\components\EmployeeIncidentReportSection.tsx
 
 import { useEffect, useState } from "react";
-import { incidentReportStorage } from "../../../employer/hrManagement/storage/incidentReport.storage";
-import type { IncidentReport } from "../../../employer/hrManagement/types/incidentReport.types";
+import { incidentReportStorage } from "../../../shared/hr/hrPublic";
+import type { IncidentReport } from "../../../shared/hr/hrPublic";
 
 const CONSOLE_BLUE = "var(--wm-er-accent-console, #0369a1)";
 const TEXT = "var(--wm-emp-text, var(--wm-er-text, #1e293b))";

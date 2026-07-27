@@ -6,8 +6,7 @@ import {
   employerShiftStorage,
   type ShiftPost,
 } from "../../shiftJobs/storage/employerShift.storage";
-
-const APPS_KEY = "wm_employee_shift_applications_v1";
+import { countApplicationsForPostIndexed } from "./appsByPostIndex";
 
 let postsRawCache: string | null = null;
 let postsListCache: ShiftPost[] = [];
@@ -52,23 +51,7 @@ export function getShiftPostStatusColor(post: ShiftPost): string {
 }
 
 export function countAppliedAppsForPost(postId: string): number {
-  try {
-    const raw = localStorage.getItem(APPS_KEY);
-    if (!raw) return 0;
-
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return 0;
-
-    return parsed.filter((item) => {
-      if (typeof item !== "object" || item === null) return false;
-
-      const record = item as Record<string, unknown>;
-
-      return record["postId"] === postId && record["status"] === "applied";
-    }).length;
-  } catch {
-    return 0;
-  }
+  return countApplicationsForPostIndexed(postId, "applied");
 }
 
 export function getEmployerShiftPostsSnapshot(): ShiftPost[] {

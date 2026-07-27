@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 
-export type DomainHeroVariant = "shift" | "career" | "planner";
+export type DomainHeroVariant = "shift" | "career" | "planner" | "workforce" | "settings";
 export type DomainHeroAudience = "employer" | "employee";
 
 export type DomainHeroProps = {

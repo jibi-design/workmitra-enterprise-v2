@@ -24,7 +24,7 @@ const BAR_STYLE: CSSProperties = {
   zIndex: 20,
   marginTop: 2,
   padding: "12px 14px 14px",
-  borderRadius: 20,
+  borderRadius: "var(--wm-radius-employee-card)",
   border: "1px solid rgba(226,232,240,0.95)",
   background: "rgba(255,255,255,0.96)",
   boxShadow: "0 12px 28px rgba(15,23,42,0.06)",
@@ -100,7 +100,7 @@ export function ShiftCreateWizardTopBar({ wizardStep, onCancel, onSaveDraft, las
               key={item.step}
               style={{
                 height: 4,
-                borderRadius: 999,
+                borderRadius: "var(--wm-radius-pill)",
                 background: done || active ? "var(--wm-er-accent-shift)" : "rgba(226,232,240,0.95)",
                 opacity: active ? 1 : done ? 0.72 : 0.45,
                 transition: "background 200ms ease, opacity 200ms ease",

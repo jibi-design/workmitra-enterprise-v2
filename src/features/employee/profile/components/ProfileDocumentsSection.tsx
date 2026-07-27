@@ -1,6 +1,7 @@
 // src/features/employee/profile/components/ProfileDocumentsSection.tsx
 
 import { useRef, useState } from "react";
+import { VaultSensitiveUploadDisclaimer } from "../../workVault/components/VaultSensitiveUploadDisclaimer";
 import { SectionHead, IconDocs, IconUpload } from "./ProfilePageIcons";
 
 type Props = { disabled: boolean };
@@ -20,25 +21,55 @@ export function ProfileDocumentsSection({ disabled }: Props) {
   }
 
   return (
-    <section className="wm-ee-card" style={{ marginTop: 12 }}>
-      <SectionHead icon={<IconDocs />} title="Documents" sub="Upload your resume and ID proof" />
+    <section className="wm-profileSectionCard" style={{ marginTop: 12 }}>
+      <SectionHead
+        icon={<IconDocs />}
+        title="Career Documents"
+        sub="Upload your resume and other educational or professional career records"
+      />
+
+      <VaultSensitiveUploadDisclaimer />
 
       <div className="wm-field">
-        <label className="wm-label">Resume (optional)</label>
-        <input ref={resumeInputRef} type="file" accept=".pdf,.doc,.docx" style={{ display: "none" }}
-          onChange={(e) => onResumePicked(e.target.files?.[0] ?? null)} />
-        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginTop: 6 }}>
-          <button className="wm-outlineBtn" type="button" disabled={disabled}
+        <label className="wm-label">Resume / CV (optional)</label>
+        <input
+          ref={resumeInputRef}
+          type="file"
+          accept=".pdf,.doc,.docx"
+          style={{ display: "none" }}
+          onChange={(e) => onResumePicked(e.target.files?.[0] ?? null)}
+        />
+        <div
+          style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginTop: 6 }}
+        >
+          <button
+            className="wm-outlineBtn"
+            type="button"
+            disabled={disabled}
             onClick={() => resumeInputRef.current?.click()}
-            style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12 }}>
-            <IconUpload /> Upload Resume
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12 }}
+          >
+            <IconUpload /> Upload Resume / CV
           </button>
           {resumeFileName && (
             <>
-              <div style={{ fontSize: 12, color: "var(--wm-emp-text)", fontWeight: 600 }}>{resumeFileName}</div>
+              <div style={{ fontSize: 12, color: "var(--wm-emp-text)", fontWeight: 600 }}>
+                {resumeFileName}
+              </div>
               {!disabled && (
-                <button type="button" onClick={clearResume}
-                  style={{ border: 0, background: "transparent", fontSize: 12, fontWeight: 700, color: "var(--wm-error)", cursor: "pointer", padding: 0 }}>
+                <button
+                  type="button"
+                  onClick={clearResume}
+                  style={{
+                    border: 0,
+                    background: "transparent",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "var(--wm-error)",
+                    cursor: "pointer",
+                    padding: 0,
+                  }}
+                >
                   Remove
                 </button>
               )}
@@ -49,8 +80,6 @@ export function ProfileDocumentsSection({ disabled }: Props) {
           )}
         </div>
       </div>
-
-      
     </section>
   );
 }

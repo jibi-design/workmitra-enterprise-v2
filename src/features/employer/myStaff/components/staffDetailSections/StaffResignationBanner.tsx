@@ -67,7 +67,7 @@ export function ResignationBanner({
           <div
             style={{
               padding: "10px 11px",
-              borderRadius: 13,
+              borderRadius: "var(--wm-radius-chip)",
               background: "rgba(217,119,6,0.08)",
               border: "1px solid rgba(217,119,6,0.16)",
             }}
@@ -83,7 +83,7 @@ export function ResignationBanner({
           <div
             style={{
               padding: "10px 11px",
-              borderRadius: 13,
+              borderRadius: "var(--wm-radius-chip)",
               background: "rgba(15,23,42,0.035)",
               border: "1px solid rgba(15,23,42,0.06)",
             }}
@@ -106,7 +106,7 @@ export function ResignationBanner({
             disabled={!canCloseEmployment}
             style={{
               padding: "10px 18px",
-              borderRadius: 10,
+              borderRadius: "var(--wm-radius-10)",
               border: "none",
               background: canCloseEmployment ? "#16a34a" : "rgba(148,163,184,0.45)",
               color: canCloseEmployment ? "#fff" : "#475569",
@@ -123,7 +123,7 @@ export function ResignationBanner({
             onClick={onReject}
             style={{
               padding: "10px 18px",
-              borderRadius: 10,
+              borderRadius: "var(--wm-radius-10)",
               border: "1.5px solid rgba(0,0,0,0.12)",
               background: "transparent",
               color: "var(--wm-er-text)",

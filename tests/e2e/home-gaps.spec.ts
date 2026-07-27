@@ -69,7 +69,7 @@ test.describe("Employer Shift Home — 5 Gaps E2E", () => {
     await expect(page.getByText("Rahul Kumar")).toBeVisible();
 
     // CandidateCard exposes worker id as a detail link button
-    await page.getByRole("button", { name: "WM-E2E-001" }).click();
+    await page.getByRole("button", { name: "ML-E2E2-CND-AAA2" }).click();
 
     await expect(page).toHaveURL(
       new RegExp(`/#/employer/shift/post/${E2E_IDS.postId}/candidate/${E2E_IDS.appApplied}`),

@@ -2,17 +2,17 @@
 
 import { useState } from "react";
 import { CenterModal } from "../../../../shared/components/CenterModal";
-import { VAULT_ACCENT } from "../constants/vaultConstants";
+import { VAULT_ACCENT, vaultAccentMix } from "../constants/vaultConstants";
 import { validateFolderName } from "../helpers/vaultValidation";
 
 /* ------------------------------------------------ */
 /* Icon Options                                     */
 /* ------------------------------------------------ */
 const ICON_OPTIONS: readonly { value: string; label: string }[] = [
-  { value: "id", label: "Identity" },
-  { value: "cert", label: "Certificate" },
   { value: "edu", label: "Education" },
-  { value: "license", label: "License" },
+  { value: "cert", label: "Certificate" },
+  { value: "license", label: "Professional License" },
+  { value: "id", label: "Experience Letter" },
   { value: "other", label: "Other" },
 ] as const;
 
@@ -63,14 +63,22 @@ export function VaultCreateFolderModal({
     <CenterModal open={open} onBackdropClose={handleClose}>
       <div style={{ padding: "20px 20px 16px" }}>
         {/* Header */}
-        <div style={{ fontWeight: 900, fontSize: 16, color: "var(--wm-emp-text)", marginBottom: 16 }}>
+        <div
+          style={{ fontWeight: 900, fontSize: 16, color: "var(--wm-emp-text)", marginBottom: 16 }}
+        >
           {editMode ? "Rename Folder" : "Create Folder"}
         </div>
 
         {/* Folder name input */}
         <div style={{ marginBottom: 12 }}>
           <label
-            style={{ fontSize: 12, fontWeight: 700, color: "var(--wm-emp-muted)", marginBottom: 6, display: "block" }}
+            style={{
+              fontSize: 12,
+              fontWeight: 700,
+              color: "var(--wm-emp-muted)",
+              marginBottom: 6,
+              display: "block",
+            }}
           >
             Folder name
           </label>
@@ -87,7 +95,7 @@ export function VaultCreateFolderModal({
                 handleConfirm();
               }
             }}
-            placeholder="e.g. Work Certificates"
+            placeholder="e.g. Professional Certificates"
             autoFocus
           />
           {error && (
@@ -101,7 +109,13 @@ export function VaultCreateFolderModal({
         {!editMode && (
           <div style={{ marginBottom: 16 }}>
             <label
-              style={{ fontSize: 12, fontWeight: 700, color: "var(--wm-emp-muted)", marginBottom: 6, display: "block" }}
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                color: "var(--wm-emp-muted)",
+                marginBottom: 6,
+                display: "block",
+              }}
             >
               Folder type
             </label>
@@ -116,13 +130,13 @@ export function VaultCreateFolderModal({
                     style={{
                       height: 30,
                       padding: "0 12px",
-                      borderRadius: 999,
+                      borderRadius: "var(--wm-radius-pill)",
                       fontSize: 12,
                       fontWeight: 700,
                       border: isActive
                         ? `1.5px solid ${VAULT_ACCENT}`
                         : "1px solid var(--wm-emp-border, rgba(15, 23, 42, 0.10))",
-                      background: isActive ? `${VAULT_ACCENT}10` : "transparent",
+                      background: isActive ? `${vaultAccentMix(6)}` : "transparent",
                       color: isActive ? VAULT_ACCENT : "var(--wm-emp-text)",
                       cursor: "pointer",
                     }}
@@ -146,7 +160,7 @@ export function VaultCreateFolderModal({
             style={{
               height: 38,
               padding: "0 20px",
-              borderRadius: 10,
+              borderRadius: "var(--wm-radius-10)",
               border: "none",
               background: VAULT_ACCENT,
               color: "#fff",

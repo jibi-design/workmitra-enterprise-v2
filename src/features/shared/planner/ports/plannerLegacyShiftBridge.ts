@@ -1,9 +1,13 @@
 /**
  * Job Mitra | plannerLegacyShiftBridge.ts
- * Hybrid A2 S3 transitional anti-corruption surface.
+ * Hybrid A2 transitional anti-corruption surface.
+ *
+ * P-SEP-3: UI fill metrics must NOT use employerShiftStorage.getPosts().
+ * Prefer plannerFillMetrics.helpers / planner roster projections.
+ * Remaining bridge exports are for apply/confirm/batch until native apps store lands.
  *
  * Planner feature code must import Shift dual-write helpers ONLY from here
- * (or from plannerExecutionPort). Soft-wrap UI pages remain temporarily exempt until S4/S7.
+ * (or from plannerExecutionPort). Soft-wrap UI pages remain temporarily exempt until retired.
  */
 
 export type { ExperienceLabel } from "../../../employer/shiftJobs/storage/employerShift.types";

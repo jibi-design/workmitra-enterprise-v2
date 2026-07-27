@@ -4,7 +4,7 @@
 
 // Phase 1: Work Vault snapshot + availability badge + privacy shield.
 
-import { availabilityStorage } from "../../../employee/shiftJobs/storage/availabilityStorage";
+import { availabilityStorage } from "../../../shared/shift/availability.reader";
 
 import type { WorkerRatingSummary } from "../../../../shared/rating/ratingTypes";
 
@@ -25,7 +25,7 @@ type EmployerCandidateProfileCardProps = {
 
   workerRating: WorkerRatingSummary | null;
 
-  workerWmId?: string;
+  workerMlId?: string;
 
   shiftStartAt?: number;
 
@@ -37,7 +37,7 @@ export function EmployerCandidateProfileCard({
 
   workerRating,
 
-  workerWmId = "",
+  workerMlId = "",
 
   shiftStartAt,
 
@@ -68,8 +68,8 @@ export function EmployerCandidateProfileCard({
   const hasRating = workerRating !== null && workerRating.totalRatings > 0;
 
   const freeBadgeLabel =
-    workerWmId && shiftStartAt !== undefined
-      ? availabilityStorage.getFreeDayBadgeLabel(workerWmId, shiftStartAt)
+    workerMlId && shiftStartAt !== undefined
+      ? availabilityStorage.getFreeDayBadgeLabel(workerMlId, shiftStartAt)
       : null;
 
   return (
@@ -87,7 +87,7 @@ export function EmployerCandidateProfileCard({
 
             padding: "7px 12px",
 
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
 
             background: "rgba(16,185,129,0.10)",
 
@@ -127,7 +127,7 @@ export function EmployerCandidateProfileCard({
 
             padding: "9px 12px",
 
-            borderRadius: 10,
+            borderRadius: "var(--wm-radius-10)",
 
             background: "rgba(16,185,129,0.07)",
 
@@ -218,7 +218,7 @@ export function EmployerCandidateProfileCard({
 
                   padding: "3px 10px",
 
-                  borderRadius: 999,
+                  borderRadius: "var(--wm-radius-pill)",
 
                   background: "rgba(15,118,110,0.10)",
 
@@ -262,7 +262,7 @@ export function EmployerCandidateProfileCard({
 
                   padding: "3px 10px",
 
-                  borderRadius: 999,
+                  borderRadius: "var(--wm-radius-pill)",
 
                   background: "rgba(2,132,199,0.08)",
 

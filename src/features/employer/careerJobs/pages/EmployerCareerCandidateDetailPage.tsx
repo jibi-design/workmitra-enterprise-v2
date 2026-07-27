@@ -35,7 +35,7 @@ export function EmployerCareerCandidateDetailPage() {
 
   if (!data.post || !data.app) {
     return (
-      <div>
+      <div className="wm-er-vCareer wm-stackGrid">
         <CareerCandidateReviewHeader
           title="Application not found"
           subtitle="Return to the post dashboard and select an application again."
@@ -47,7 +47,7 @@ export function EmployerCareerCandidateDetailPage() {
             className="wm-outlineBtn"
             type="button"
             onClick={goBackToDashboard}
-            style={{ marginTop: 12, fontSize: 12 }}
+            style={{ fontSize: 12 }}
           >
             Back to Post Dashboard
           </button>
@@ -59,7 +59,7 @@ export function EmployerCareerCandidateDetailPage() {
   const { post, app } = data;
 
   return (
-    <div>
+    <div className="wm-er-vCareer wm-stackGrid">
       <CareerCandidateReviewHeader
         title="Application review"
         subtitle="Review the submitted application before shortlist or interview decisions."
@@ -67,7 +67,7 @@ export function EmployerCareerCandidateDetailPage() {
 
       <CareerCandidateReviewHero post={post} app={app} />
 
-      <section style={{ marginTop: 12, display: "grid", gap: 10 }}>
+      <section className="wm-stackGrid">
         <CareerCandidateSnapshotCard profile={app.profileSnapshot} />
         <CareerCandidateApplicationDetailsCard app={app} />
         <CareerCandidateScreeningAnswersCard post={post} app={app} />

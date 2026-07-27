@@ -5,7 +5,7 @@
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { notifyCrossRole } from "../../../../features/pulse/pulseEventBridge";
 import { readCareerApps, writeCareerApps } from "../helpers/careerNormalizers";
-import { pushCareerActivity } from "../helpers/careerNotifications";
+import { hasSimilarCareerNote, pushCareerActivity } from "../helpers/careerNotifications";
 import type { InterviewScheduleInput, RoundResult, RoundResultStatus } from "../types/careerTypes";
 import { getCareerPost } from "./careerPostService";
 
@@ -96,7 +96,7 @@ export function scheduleInterview(
     newResult,
   ].sort((a, b) => a.round - b.round);
 
-  writeCareerApps(
+  const writeResult = writeCareerApps(
     apps.map((item) =>
       item.id === appId
         ? {
@@ -109,6 +109,8 @@ export function scheduleInterview(
         : item,
     ),
   );
+
+  if (!writeResult.ok) return false;
 
   pushCareerActivity({
     postId,
@@ -174,7 +176,7 @@ export function recordInterviewResult(
   const isLastRound = roundNumber === post.interviewRounds;
   const shouldAutoReject = result === "failed" && isLastRound;
 
-  writeCareerApps(
+  const writeResult = writeCareerApps(
     apps.map((item) =>
       item.id === appId
         ? {
@@ -192,6 +194,8 @@ export function recordInterviewResult(
         : item,
     ),
   );
+
+  if (!writeResult.ok) return false;
 
   const roundConfig = post.roundConfigs.find((round) => round.round === roundNumber);
   const roundLabel = roundConfig?.label ?? `Round ${roundNumber}`;
@@ -211,26 +215,31 @@ export function recordInterviewResult(
       .filter((round) => round.round < roundNumber)
       .every((round) => round.status === "passed");
 
-    notifyCrossRole({
-      type: "CAREER_INTERVIEW_UPDATE",
-      domain: "career",
-      affectedUserRole: "employee",
-      postId,
-      appId,
-      title: "Interview result",
-      body: `You passed ${roundLabel} for ${post.jobTitle} at ${post.companyName}.${isLastRound ? " All rounds completed!" : " Next round details will follow."}`,
-      route: ROUTE_PATHS.employeeCareerApplications,
-    });
+    const clearedSignature = `[CAREER_INTERVIEW_CLEAR:${postId}:${appId}]`;
+    const isCleared = isLastRound && allPreviousPassed;
 
-    if (isLastRound && allPreviousPassed) {
+    if (isCleared) {
+      if (!hasSimilarCareerNote(clearedSignature)) {
+        notifyCrossRole({
+          type: "CAREER_INTERVIEW_UPDATE",
+          domain: "career",
+          affectedUserRole: "employee",
+          postId,
+          appId,
+          title: "You cleared the interview!",
+          body: `${clearedSignature} Congratulations! You cleared all interviews for ${post.jobTitle} at ${post.companyName}. Your employer will send you an offer soon.`,
+          route: ROUTE_PATHS.employeeCareerApplications,
+        });
+      }
+    } else {
       notifyCrossRole({
         type: "CAREER_INTERVIEW_UPDATE",
         domain: "career",
         affectedUserRole: "employee",
         postId,
         appId,
-        title: "You cleared the interview!",
-        body: `Congratulations! You cleared all interviews for ${post.jobTitle} at ${post.companyName}. Your employer will send you an offer soon.`,
+        title: "Interview result",
+        body: `You passed ${roundLabel} for ${post.jobTitle} at ${post.companyName}. Next round details will follow.`,
         route: ROUTE_PATHS.employeeCareerApplications,
       });
     }

@@ -19,12 +19,38 @@ export const EXIT_LOG_KEY = "wm_career_exit_log_v1";
 export const CHANGE_EVENT = "wm:employment-changed";
 
 /* ── Read / Write ── */
+function pickMlId(rec: Record<string, unknown>, mlKey: string, legacyWmKey: string): string {
+  // Dual-read: prefer *MlId; accept legacy *WmId from older localStorage JSON.
+  const ml = rec[mlKey];
+  if (typeof ml === "string" && ml.trim()) return ml;
+  const legacy = rec[legacyWmKey];
+  return typeof legacy === "string" ? legacy : "";
+}
+
+function normalizeEmploymentRecord(raw: unknown): EmploymentRecord | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const rec = raw as Record<string, unknown> & EmploymentRecord;
+  if (typeof rec.careerPostId !== "string" || !rec.careerPostId.trim()) return null;
+  if (typeof rec.id !== "string" || !rec.id.trim()) return null;
+
+  const employeeMlId = pickMlId(rec as Record<string, unknown>, "employeeMlId", "employeeWmId");
+  const employerMlId = pickMlId(rec as Record<string, unknown>, "employerMlId", "employerWmId");
+
+  // Do not drop records with empty ML ids — demo/E2E may create before uniqueId is set.
+  return {
+    ...(rec as EmploymentRecord),
+    employeeMlId: employeeMlId || (typeof rec.employeeId === "string" ? rec.employeeId : ""),
+    employerMlId: employerMlId || (typeof rec.employerId === "string" ? rec.employerId : ""),
+  };
+}
+
 export function readAll(): EmploymentRecord[] {
   try {
     const raw = localStorage.getItem(EMPLOYMENT_KEY);
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as EmploymentRecord[]) : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map(normalizeEmploymentRecord).filter((r): r is EmploymentRecord => r !== null);
   } catch {
     return [];
   }

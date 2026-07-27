@@ -1,6 +1,6 @@
 /** Admin actions for employer business verification (Phase 0 — local). */
 
-import { employerSettingsStorage } from "../../../employer/company/storage/employerSettings.storage";
+import { employerSettingsStorage } from "../../../../shared/employerProfile/employerSettingsPublic";
 import { computeVerificationLevel } from "../../../employer/company/helpers/employerIdentity.helpers";
 
 const ADMIN_REVIEWER = "admin_demo";

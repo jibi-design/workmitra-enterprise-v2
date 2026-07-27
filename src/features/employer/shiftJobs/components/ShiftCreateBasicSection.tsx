@@ -39,7 +39,7 @@ type Props = {
 
 const CARD_STYLE: CSSProperties = {
   marginTop: 12,
-  borderRadius: 20,
+  borderRadius: "var(--wm-radius-employee-card)",
   border: "1px solid rgba(226,232,240,0.95)",
   background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
   boxShadow: "0 10px 24px rgba(15,23,42,0.045)",

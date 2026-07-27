@@ -1,0 +1,307 @@
+/**
+ * Job Mitra | shift-design-primitives.css
+ * Shared Shift UI primitives for secondary-page adoption (Step 1/4).
+ *
+ * STRICT PRESERVATION:
+ * - Does NOT redefine .wm-shiftEmployee* / .wm-shiftHome* / Framer-bound classes.
+ * - EmployeeShiftHome + EmployerShiftHome keep their dedicated CSS + motion as-is.
+ *
+ * Wave 1 padding contract:
+ * - Default pad = --wm-card-padding (same as .wm-ee-card / .wm-er-card)
+ * - --compact → --wm-card-padding-compact
+ * - --inset → --wm-card-padding-inset
+ * - --flush → 0 (lists / nested shells that set their own pad)
+ */
+
+/* ------------------------------------------------ */
+/* Surface glass — backdrop-blur-md ≈ --wm-blur-md  */
+/* bg-white/80 · border-slate-200/80 · shadow-sm    */
+/* ------------------------------------------------ */
+.wm-shift-surface-glass {
+  box-sizing: border-box;
+  border-radius: var(--wm-radius-employee-card);
+  border: 1px solid rgba(226, 232, 240, 0.8); /* slate-200/80 */
+  background: rgba(255, 255, 255, 0.8); /* bg-white/80 */
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05); /* shadow-sm */
+  /* Default pad matches .wm-ee-card / .wm-er-card contract (Wave 1) */
+  padding: var(--wm-card-padding);
+}
+
+.wm-shift-surface-glass--compact {
+  padding: var(--wm-card-padding-compact);
+}
+
+.wm-shift-surface-glass--inset {
+  padding: var(--wm-card-padding-inset);
+}
+
+.wm-shift-surface-glass--flush {
+  padding: 0;
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .wm-shift-surface-glass {
+    backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
+    -webkit-backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
+  }
+}
+
+.wm-er-vShift .wm-shift-surface-glass {
+  border-radius: var(--wm-radius-employer-card);
+}
+
+/* Soft emerald wash variant (metric / accent panels) */
+.wm-shift-surface-glass--shift {
+  border-color: rgba(167, 243, 208, 0.72);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(236, 253, 245, 0.55), transparent 62%),
+    rgba(255, 255, 255, 0.82);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.05),
+    0 10px 22px rgba(15, 23, 42, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+/* ------------------------------------------------ */
+/* Pressable — hover lift + active press             */
+/* Prefer @media (hover: hover); touch keeps tap.    */
+/* ------------------------------------------------ */
+.wm-shift-pressable {
+  transition:
+    transform var(--wm-motion-base) var(--wm-motion-ease),
+    box-shadow var(--wm-motion-base) var(--wm-motion-ease),
+    border-color var(--wm-motion-base) var(--wm-motion-ease),
+    background var(--wm-motion-base) var(--wm-motion-ease);
+  will-change: transform;
+}
+
+.wm-shift-pressable:active {
+  transform: translateY(0) scale(0.98);
+}
+
+@media (hover: hover) {
+  .wm-shift-pressable:hover {
+    transform: translateY(-2px); /* -translate-y-0.5 */
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08); /* shadow-md-ish */
+  }
+
+  .wm-shift-pressable:hover:active {
+    transform: translateY(0) scale(0.98);
+  }
+}
+
+/* ------------------------------------------------ */
+/* KPI tile — glass depth + hover scale (unified)    */
+/* ------------------------------------------------ */
+.wm-shift-kpi-tile {
+  box-sizing: border-box;
+  min-height: var(--wm-kpi-min-height);
+  padding: var(--wm-kpi-padding);
+  border-radius: var(--wm-radius-employee-card);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--wm-space-4);
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 160ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .wm-shift-kpi-tile {
+    backdrop-filter: blur(12px) var(--wm-glass-saturate);
+    -webkit-backdrop-filter: blur(12px) var(--wm-glass-saturate);
+  }
+}
+
+.wm-er-vShift .wm-shift-kpi-tile {
+  border-radius: var(--wm-radius-employer-card);
+}
+
+.wm-shift-kpi-tile:active {
+  transform: translateY(0) scale(0.99);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+@media (hover: hover) {
+  .wm-shift-kpi-tile:hover {
+    transform: translateY(-1px) scale(1.01);
+    border-color: rgba(167, 243, 208, 0.65);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow:
+      0 8px 18px rgba(15, 23, 42, 0.07),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  }
+
+  .wm-shift-kpi-tile:hover:active {
+    transform: translateY(0) scale(0.99);
+  }
+}
+
+.wm-shift-kpi-tile__label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--wm-emp-muted, var(--wm-er-muted, #64748b));
+  letter-spacing: 0.2px;
+}
+
+.wm-shift-kpi-tile__value {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 900;
+  color: var(--wm-emp-text, var(--wm-er-text, #0f172a));
+  letter-spacing: -0.035em;
+}
+
+.wm-shift-kpi-tile.isShift .wm-shift-kpi-tile__value,
+.wm-shift-kpi-tile.isPositive .wm-shift-kpi-tile__value {
+  color: var(--wm-shift-accent, #16a34a);
+}
+
+.wm-shift-kpi-tile.isSuccess .wm-shift-kpi-tile__value {
+  color: var(--wm-success, #16a34a);
+}
+
+.wm-shift-kpi-tile.isWarning .wm-shift-kpi-tile__value {
+  color: var(--wm-warning, #d97706);
+}
+
+.wm-shift-kpi-tile.isZero .wm-shift-kpi-tile__value {
+  color: var(--wm-emp-text, var(--wm-er-text, #0f172a));
+}
+
+.wm-shift-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--wm-kpi-grid-gap);
+}
+
+.wm-shift-kpi-grid--cols2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* ------------------------------------------------ */
+/* Seg tab — pill active/inactive (no inline colors) */
+/* ------------------------------------------------ */
+.wm-shift-seg-tab {
+  appearance: none;
+  min-height: var(--wm-seg-min-height);
+  padding: 0 var(--wm-seg-padding-x);
+  border-radius: var(--wm-radius-pill);
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: rgba(255, 255, 255, 0.92);
+  color: rgba(15, 23, 42, 0.78);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--wm-space-4);
+  white-space: nowrap;
+  transition:
+    transform var(--wm-motion-fast) var(--wm-motion-ease),
+    border-color var(--wm-motion-base) var(--wm-motion-ease),
+    background var(--wm-motion-base) var(--wm-motion-ease),
+    color var(--wm-motion-base) var(--wm-motion-ease),
+    box-shadow var(--wm-motion-base) var(--wm-motion-ease);
+}
+
+.wm-shift-seg-tab:hover {
+  border-color: rgba(15, 23, 42, 0.16);
+  color: rgba(15, 23, 42, 0.9);
+}
+
+.wm-shift-seg-tab:active {
+  transform: scale(0.975);
+}
+
+.wm-shift-seg-tab.isActive,
+.wm-shift-seg-tab[aria-selected="true"],
+.wm-shift-seg-tab[aria-pressed="true"] {
+  border-color: rgba(22, 163, 74, 0.28);
+  background: rgba(22, 163, 74, 0.12);
+  color: var(--wm-shift-accent, #16a34a);
+  font-weight: 800;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+.wm-shift-seg-tab-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--wm-kpi-grid-gap);
+  align-items: center;
+}
+
+/* ------------------------------------------------ */
+/* Stagger entry — token delays + reduced-motion     */
+/* ------------------------------------------------ */
+:root {
+  --wm-shift-stagger-1: 80ms;
+  --wm-shift-stagger-2: 140ms;
+  --wm-shift-stagger-3: 200ms;
+  --wm-shift-stagger-feed: 90ms;
+}
+
+.wm-shift-activeStripRow {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.wm-shift-stagger--1 {
+  animation-delay: var(--wm-shift-stagger-1);
+}
+
+.wm-shift-stagger--2 {
+  animation-delay: var(--wm-shift-stagger-2);
+}
+
+.wm-shift-stagger--3 {
+  animation-delay: var(--wm-shift-stagger-3);
+}
+
+.wm-shift-stagger--feed {
+  animation-delay: var(--wm-shift-stagger-feed);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wm-shift-pressable,
+  .wm-shift-kpi-tile,
+  .wm-shift-seg-tab,
+  .wm-shift-stagger--1,
+  .wm-shift-stagger--2,
+  .wm-shift-stagger--3,
+  .wm-shift-stagger--feed {
+    transition: none;
+    animation: none;
+    animation-delay: 0ms;
+  }
+
+  .wm-shift-pressable:active,
+  .wm-shift-kpi-tile:active,
+  .wm-shift-seg-tab:active,
+  .wm-shift-kpi-tile:hover:active {
+    transform: none;
+  }
+
+  @media (hover: hover) {
+    .wm-shift-pressable:hover,
+    .wm-shift-kpi-tile:hover {
+      transform: none;
+    }
+  }
+}

@@ -21,7 +21,7 @@ export function EmployerGivenWorkerRatingCard({
     <article
       style={{
         padding: 15,
-        borderRadius: 22,
+        borderRadius: "var(--wm-radius-employee-card)",
         border: "1px solid rgba(22,163,74,0.17)",
         borderLeft: `5px solid ${SHIFT_GREEN}`,
         background:
@@ -62,7 +62,7 @@ export function EmployerGivenWorkerRatingCard({
               display: "inline-flex",
               maxWidth: "100%",
               padding: "5px 8px",
-              borderRadius: 999,
+              borderRadius: "var(--wm-radius-pill)",
               background: "rgba(15,23,42,0.035)",
               border: "1px solid rgba(148,163,184,0.18)",
               fontSize: 10.5,
@@ -74,7 +74,7 @@ export function EmployerGivenWorkerRatingCard({
               whiteSpace: "nowrap",
             }}
           >
-            Worker Code: {record.workerWmId}
+            Worker Code: {record.workerMlId}
           </div>
         </div>
 
@@ -82,7 +82,7 @@ export function EmployerGivenWorkerRatingCard({
           style={{
             minWidth: 48,
             padding: "8px 9px",
-            borderRadius: 16,
+            borderRadius: "var(--wm-radius-chip)",
             background: "rgba(22,163,74,0.09)",
             border: "1px solid rgba(22,163,74,0.17)",
             color: SHIFT_GREEN,
@@ -103,7 +103,7 @@ export function EmployerGivenWorkerRatingCard({
               key={tag}
               style={{
                 padding: "5px 10px",
-                borderRadius: 999,
+                borderRadius: "var(--wm-radius-pill)",
                 background: "rgba(22,163,74,0.08)",
                 border: "1px solid rgba(22,163,74,0.14)",
                 color: SHIFT_GREEN,
@@ -122,7 +122,7 @@ export function EmployerGivenWorkerRatingCard({
           style={{
             marginTop: 11,
             padding: "10px 11px",
-            borderRadius: 15,
+            borderRadius: "var(--wm-radius-chip)",
             background: "rgba(248,250,252,0.96)",
             border: "1px solid rgba(226,232,240,0.9)",
             fontSize: 12,
@@ -158,7 +158,7 @@ export function EmployerGivenWorkerRatingCard({
             style={{
               minHeight: 32,
               padding: "7px 11px",
-              borderRadius: 999,
+              borderRadius: "var(--wm-radius-pill)",
               border: "1px solid rgba(22,163,74,0.16)",
               background: "rgba(22,163,74,0.08)",
               color: SHIFT_GREEN,

@@ -2,6 +2,10 @@
 -- Migration: Pulse Trail Notification Backend Foundation
 -- File: supabase/migrations/202606210001_create_pulse_notification_tables.sql
 --
+-- IDENTITY MISMATCH MIG-005: References supabase auth.users
+-- Must be unified with auth_users.id before production cutover
+-- See architecture-audits/Phase-DB-Migration-Readiness-Audit-001.md
+--
 -- Purpose:
 -- 1. Store notification events as backend source of truth.
 -- 2. Store which authenticated users should receive each event.

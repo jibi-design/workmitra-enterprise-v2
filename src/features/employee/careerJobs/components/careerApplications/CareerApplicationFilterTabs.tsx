@@ -4,8 +4,6 @@
 
 import type { Tab, TabCounts } from "../../types/careerApplicationTypes";
 
-const CAREER_MUTED = "#64748b";
-
 const TAB_CSS = `.wm-career-app-tabs::-webkit-scrollbar{display:none}`;
 
 const TAB_DEFS: { key: Tab; label: string }[] = [
@@ -32,13 +30,13 @@ export function FilterTabs({
       <section
         className="wm-career-app-tabs"
         style={{
-          marginTop: 18,
+          marginTop: 16,
           marginBottom: 16,
           display: "flex",
           gap: 8,
           overflowX: "auto",
           flexWrap: "nowrap",
-          paddingBottom: "4px",
+          paddingBottom: 4,
           scrollbarWidth: "none",
         }}
       >
@@ -46,45 +44,29 @@ export function FilterTabs({
           const isActive = tab === tabDef.key;
           const count = counts[tabDef.key];
           const hasItems = count > 0;
+          const chipClass = isActive
+            ? "wm-career-filter-chip wm-career-filter-chip--active"
+            : hasItems
+              ? "wm-career-filter-chip wm-career-filter-chip--idle"
+              : "wm-career-filter-chip wm-career-filter-chip--empty";
 
           return (
             <button
               key={tabDef.key}
               type="button"
+              className={chipClass}
               onClick={() => onChange(tabDef.key)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                fontSize: "13px",
-                fontWeight: isActive ? 800 : 700,
-                padding: "8px 16px",
-                borderRadius: "999px",
-                border: "none",
-                background: isActive
-                  ? "linear-gradient(135deg, #1d4ed8, #3b82f6)" // Rich blue gradient
-                  : hasItems
-                    ? "#f1f5f9" // Light gray for items
-                    : "transparent",
-                color: isActive ? "#ffffff" : hasItems ? "#0f172a" : CAREER_MUTED,
-                cursor: "pointer",
-                flexShrink: 0,
-                whiteSpace: "nowrap",
-                boxShadow: isActive ? "0 4px 12px rgba(29,78,216,0.3)" : "none",
-                transition: "all 0.2s ease",
-              }}
             >
               {tabDef.label}
 
-              {/* Premium Badge for count */}
               {hasItems && (
                 <span
                   style={{
                     padding: "2px 6px",
-                    borderRadius: "999px",
+                    borderRadius: "var(--wm-radius-pill)",
                     background: isActive ? "rgba(255,255,255,0.25)" : "#e2e8f0",
                     color: isActive ? "#ffffff" : "#475569",
-                    fontSize: "11px",
+                    fontSize: 11,
                     fontWeight: 800,
                   }}
                 >

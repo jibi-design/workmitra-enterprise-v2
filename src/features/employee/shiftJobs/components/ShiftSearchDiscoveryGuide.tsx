@@ -18,7 +18,7 @@ const SHIFT_GREEN_BORDER = "rgba(22, 163, 74, 0.2)";
 const CARD_STYLE: CSSProperties = {
   marginTop: 12,
   padding: 14,
-  borderRadius: 20,
+  borderRadius: "var(--wm-radius-employee-card)",
   border: `1px solid ${SHIFT_GREEN_BORDER}`,
   background: "linear-gradient(180deg, rgba(240,253,244,0.82), rgba(255,255,255,0.98))",
   boxShadow: "0 10px 24px rgba(22, 163, 74, 0.08)",
@@ -68,7 +68,7 @@ export function ShiftSearchDiscoveryGuide({
         <span
           style={{
             padding: "5px 9px",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             background: profileReadyDisplay ? SHIFT_GREEN_SOFT : "rgba(217,119,6,0.08)",
             border: profileReadyDisplay
               ? `1px solid ${SHIFT_GREEN_BORDER}`
@@ -94,7 +94,7 @@ export function ShiftSearchDiscoveryGuide({
           style={{
             marginTop: 12,
             padding: "9px 11px",
-            borderRadius: 14,
+            borderRadius: "var(--wm-radius-chip)",
             background: "rgba(255,251,235,0.72)",
             border: "1px solid rgba(217,119,6,0.18)",
             fontSize: 12,
@@ -131,7 +131,7 @@ function MiniStatus({ label, value, ready }: { label: string; value: string; rea
     <div
       style={{
         padding: "8px 9px",
-        borderRadius: 12,
+        borderRadius: "var(--wm-radius-button)",
         background: "rgba(255,255,255,0.78)",
         border: "1px solid rgba(226,232,240,0.9)",
         minWidth: 0,

@@ -78,7 +78,12 @@ const KPI_DEFS: { label: string; field: keyof KpiCounts; helper: string; icon: R
 export function KpiTiles({ kpi }: { kpi: KpiCounts }) {
   return (
     <section
-      style={{ marginTop: 16, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}
+      style={{
+        marginTop: "var(--wm-stack-gap)",
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr 1fr",
+        gap: "var(--wm-space-10)",
+      }}
     >
       {KPI_DEFS.map((definition) => {
         const count = kpi[definition.field];
@@ -90,7 +95,7 @@ export function KpiTiles({ kpi }: { kpi: KpiCounts }) {
             style={{
               position: "relative",
               padding: "16px 14px",
-              borderRadius: "16px",
+              borderRadius: "var(--wm-radius-chip)",
               background: "#ffffff",
               border: "1px solid",
               borderColor: isZero ? "#e2e8f0" : "rgba(29,78,216,0.15)",
@@ -119,7 +124,7 @@ export function KpiTiles({ kpi }: { kpi: KpiCounts }) {
                 style={{
                   width: 32,
                   height: 32,
-                  borderRadius: "8px",
+                  borderRadius: "var(--wm-radius-8)",
                   background: isZero ? "#f1f5f9" : "rgba(29,78,216,0.08)",
                   color: isZero ? "#94a3b8" : CAREER_BLUE,
                   display: "flex",

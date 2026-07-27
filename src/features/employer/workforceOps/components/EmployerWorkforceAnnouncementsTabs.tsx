@@ -46,7 +46,7 @@ const countBadgeStyle = (isActive: boolean): React.CSSProperties => ({
   minWidth: 18,
   height: 18,
   padding: "0 5px",
-  borderRadius: 9,
+  borderRadius: "var(--wm-radius-8)",
   fontSize: 10,
   fontWeight: 800,
   marginLeft: 4,

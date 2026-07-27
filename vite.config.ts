@@ -83,13 +83,61 @@ export default defineConfig(({ mode }) => ({
   test: {
     globals: true,
     environment: "jsdom",
-    exclude: ["**/node_modules/**", "**/dist/**", "tests/e2e/**"],
+    exclude: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "tests/e2e/**",
+      "tests/load/**",
+      "tests/security/**",
+    ],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "lcov", "json-summary"],
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: ["src/**/*.test.ts", "src/**/__tests__/**", "src/tests/**", "src/**/*.d.ts"],
+      thresholds: {
+        lines: 90,
+        functions: 90,
+        branches: 90,
+        statements: 90,
+      },
+    },
   },
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          "pdf-engine": ["jspdf"],
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("jspdf")) return "pdf-engine";
+            if (
+              /node_modules[/\\](react-dom|react|scheduler)[/\\]/.test(id) ||
+              /node_modules[/\\]react[/\\]index/.test(id)
+            ) {
+              return "react-vendor";
+            }
+            if (id.includes("react-router")) return "router-vendor";
+            if (id.includes("zustand")) return "state-vendor";
+            if (id.includes("html2canvas")) return "html2canvas";
+            return "vendor";
+          }
+          if (id.includes("/features/admin/") || id.includes("\\features\\admin\\")) {
+            return "admin-feature";
+          }
+          if (
+            id.includes("/features/employer/hrManagement/") ||
+            id.includes("\\features\\employer\\hrManagement\\")
+          ) {
+            return "hr-feature";
+          }
+          if (
+            id.includes("/features/employer/workforceOps/") ||
+            id.includes("\\features\\employer\\workforceOps\\") ||
+            id.includes("/features/employee/workforce/") ||
+            id.includes("\\features\\employee\\workforce\\")
+          ) {
+            return "workforce-feature";
+          }
+          return undefined;
         },
       },
     },

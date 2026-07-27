@@ -13,7 +13,7 @@ import {
 
 const PREMIUM_CARD_STYLE: CSSProperties = {
   padding: 20,
-  borderRadius: 24,
+  borderRadius: "var(--wm-radius-employer-card)",
   border: "1px solid rgba(255, 255, 255, 0.9)",
   background: "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,250,252,0.6))",
   boxShadow: "0 12px 32px -4px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255,255,255,1)",
@@ -22,7 +22,7 @@ const PREMIUM_CARD_STYLE: CSSProperties = {
 const PREMIUM_INPUT_STYLE: CSSProperties = {
   width: "100%",
   minHeight: 46,
-  borderRadius: 14,
+  borderRadius: "var(--wm-radius-chip)",
   border: "1px solid rgba(15, 23, 42, 0.08)",
   background: "rgba(255, 255, 255, 0.8)",
   padding: "0 14px",
@@ -68,7 +68,7 @@ export function CareerCreateInterviewSetup({
           key={round.round}
           style={{
             padding: 16,
-            borderRadius: 18,
+            borderRadius: "var(--wm-radius-chip)",
             background: "rgba(255,255,255,0.7)",
             border: "1px solid rgba(0,0,0,0.03)",
             marginBottom: 12,
@@ -120,7 +120,7 @@ export function CareerCreateInterviewSetup({
           onClick={addRound}
           style={{
             padding: "8px 16px",
-            borderRadius: 12,
+            borderRadius: "var(--wm-radius-button)",
             border: "none",
             background: "var(--wm-er-accent-career)",
             color: "#fff",
@@ -136,7 +136,7 @@ export function CareerCreateInterviewSetup({
           onClick={removeLastRound}
           style={{
             padding: "8px 16px",
-            borderRadius: 12,
+            borderRadius: "var(--wm-radius-button)",
             border: "1px solid #e2e8f0",
             background: "#fff",
             fontWeight: 800,

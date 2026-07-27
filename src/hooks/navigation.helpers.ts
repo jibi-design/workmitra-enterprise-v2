@@ -18,7 +18,6 @@ const DOMAIN_HOME_PATHS = new Set<string>([
 
 /** Extra path prefixes that should highlight a tab beyond its base path */
 const EXTRA_ACTIVE_PREFIXES: Record<string, readonly string[]> = {
-  [ROUTE_PATHS.employeeShiftSearch]: ["/employee/shift/projects", "/employee/shift/projects/"],
   [ROUTE_PATHS.employeeShiftApplications]: [
     "/employee/shift/workspaces",
     "/employee/shift/workspace/",
@@ -45,6 +44,15 @@ const EXTRA_ACTIVE_PREFIXES: Record<string, readonly string[]> = {
   [ROUTE_PATHS.employerPlannerCreate]: ["/employer/planner/new", "/employer/planner/create"],
   [ROUTE_PATHS.employerShiftWorkspaces]: ["/employer/shift/workspace/"],
   [ROUTE_PATHS.employerMyStaff]: ["/employer/my-staff/"],
+  [ROUTE_PATHS.employeeShiftOpsHub]: [
+    "/employee/shift-ops",
+    "/employee/shift-ops/invite",
+    "/employee/shift-ops/verify",
+    "/employee/shift-ops/pending",
+    "/employee/shift-ops/accept",
+    "/employee/shift-ops/ready",
+    "/employee/shift-ops/gate",
+  ],
 };
 
 export function resolveNavDomain(pathname: string): NavDomain {
@@ -68,8 +76,14 @@ export function resolveNavDomain(pathname: string): NavDomain {
 export function isNavItemActive(pathname: string, item: NavItem): boolean {
   if (pathname === item.path) return true;
 
+  // Domain home tabs: exact match only (never steal child routes).
   if (item.label === "Home" && DOMAIN_HOME_PATHS.has(item.path)) {
     return pathname === item.path;
+  }
+
+  // Shift Ops hub: exact hub + all /employee/shift-ops/* children (never /employee/shift jobs).
+  if (item.path === ROUTE_PATHS.employeeShiftOpsHub) {
+    return pathname === item.path || pathname.startsWith(`${item.path}/`);
   }
 
   if (pathname.startsWith(`${item.path}/`)) return true;

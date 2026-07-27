@@ -1,49 +1,35 @@
 // App name: Job Mitra
 // File name: useShiftPostApplyState.ts
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\hooks\shiftPostApply\useShiftPostApplyState.ts
+// Live LS subscriptions for post / applications / workspace (P1-2)
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
-import { queuePulseEventForAffectedUser } from "../../../../../features/pulse/pulseEventBridge";
 import { ROUTE_PATHS } from "../../../../../app/router/routePaths";
-import { PulseEvent, PulseSectionId } from "../../../../../features/pulse/pulseRegistry";
-import { usePulseStore } from "../../../../../features/pulse/pulseStore";
 import type { ConfirmData } from "../../../../../shared/components/ConfirmModal";
-import { employeeProfileStorage } from "../../../profile/storage/employeeProfile.storage";
 import {
   getFavoriteShiftIds,
   toggleFavoriteShift,
   trackShiftView,
 } from "../../helpers/shiftSearchHelpers";
-import {
-  APPS_KEY,
-  POSTS_KEY,
-  ensureRequirements,
-  newId,
-  safeParsePosts,
-} from "../../helpers/shiftApplyHelpers";
+import { ensureRequirements, safeParsePosts } from "../../helpers/shiftApplyHelpers";
 import { hasConfirmedOverlap } from "../../helpers/shiftPostDetailHelpers";
 import {
-  WORKSPACES_KEY,
   getEffectiveApplication,
   safeParseAllShiftApplications,
   safeParseShiftWorkspaces,
 } from "../../storage/shiftPostApply.storage";
-import { shiftApplicationsStorage } from "../../storage/shiftApplications.storage";
-import type { ShiftApplicationRecord } from "../../types/shiftPostApply.types";
 import { getShiftApplyCardStatus, getShiftPostSubmitBlockReason } from "./shiftPostApply.selectors";
+import { hasActiveShiftApplicationForPost } from "./shiftPostApply.submit";
 import {
-  createShiftApplicationRecord,
-  hasActiveShiftApplicationForPost,
-  saveShiftApplicationSubmission,
-} from "./shiftPostApply.submit";
-import {
-  getShiftDetailWithdrawMessage,
-  getShiftDetailWithdrawTitle,
-  isShiftDetailWithdrawableStatus,
-  saveWithdrawShiftApplication,
-} from "./shiftPostApply.withdraw";
+  getAppsRawSnapshot,
+  getPostsRawSnapshot,
+  getWorkspacesRawSnapshot,
+  subscribeShiftApps,
+  subscribeShiftPosts,
+  subscribeShiftWorkspacesRaw,
+} from "./shiftPostApply.liveStore";
 import { useShiftPostApplyAnswers } from "./useShiftPostApplyAnswers";
+import { useShiftPostApplyLifecycle } from "./useShiftPostApplyLifecycle";
 
 export function useShiftPostApplyState(postId: string) {
   const nav = useNavigate();
@@ -58,14 +44,21 @@ export function useShiftPostApplyState(postId: string) {
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(() => new Set(getFavoriteShiftIds()));
   const [now] = useState(() => Date.now());
 
+  const postsRaw = useSyncExternalStore(subscribeShiftPosts, getPostsRawSnapshot, () => null);
+  const appsRaw = useSyncExternalStore(subscribeShiftApps, getAppsRawSnapshot, () => null);
+  const workspacesRaw = useSyncExternalStore(
+    subscribeShiftWorkspacesRaw,
+    getWorkspacesRawSnapshot,
+    () => null,
+  );
+
   useEffect(() => {
     if (postId) trackShiftView(postId);
   }, [postId]);
 
   const post = useMemo(
-    () =>
-      safeParsePosts(localStorage.getItem(POSTS_KEY)).find((item) => item.id === postId) ?? null,
-    [postId],
+    () => safeParsePosts(postsRaw).find((item) => item.id === postId) ?? null,
+    [postId, postsRaw],
   );
 
   const requirements = useMemo(
@@ -88,11 +81,12 @@ export function useShiftPostApplyState(postId: string) {
     quickQuestions.length === 0 ||
     quickQuestions.every((question) => quickAnswers[question.id] !== undefined);
 
-  const postApplications = post
-    ? safeParseAllShiftApplications(localStorage.getItem(APPS_KEY)).filter(
-        (application) => application.postId === post.id,
-      )
-    : [];
+  const postApplications = useMemo(() => {
+    if (!post) return [];
+    return safeParseAllShiftApplications(appsRaw).filter(
+      (application) => application.postId === post.id,
+    );
+  }, [appsRaw, post]);
 
   const existingApp = getEffectiveApplication(postApplications);
 
@@ -100,14 +94,14 @@ export function useShiftPostApplyState(postId: string) {
     if (!post) return null;
 
     const workspace =
-      safeParseShiftWorkspaces(localStorage.getItem(WORKSPACES_KEY)).find(
+      safeParseShiftWorkspaces(workspacesRaw).find(
         (item) =>
           item.postId === post.id &&
           (item.status === "active" || item.status === "upcoming" || item.status === "completed"),
       ) ?? null;
 
     return workspace ? workspace.id : null;
-  }, [post]);
+  }, [post, workspacesRaw]);
 
   const isApplied = existingApp?.status === "applied";
   const isShortlisted = existingApp?.status === "shortlisted";
@@ -166,6 +160,21 @@ export function useShiftPostApplyState(postId: string) {
     setTimeout(() => setToast(""), 2500);
   }
 
+  const lifecycle = useShiftPostApplyLifecycle({
+    post,
+    existingApp,
+    activeWorkspaceId,
+    mustAns,
+    goodAns,
+    notes,
+    quickAnswers,
+    quickQuestions,
+    showToast,
+    setWithdrawConfirm,
+    setDoubleBookingPending,
+    setAttendanceConfirmPending,
+  });
+
   function handleToggleSaved() {
     if (!post) return;
 
@@ -174,37 +183,6 @@ export function useShiftPostApplyState(postId: string) {
 
     setFavoriteIds(nextSet);
     showToast(nextSet.has(post.id) ? "Shift saved." : "Shift removed from saved.");
-  }
-
-  function submitApplicationWithList(all: readonly ShiftApplicationRecord[]) {
-    if (!post) return;
-
-    const profile = employeeProfileStorage.get();
-
-    const app = createShiftApplicationRecord({
-      id: newId("app"),
-      postId: post.id,
-      createdAt: Date.now(),
-      profile,
-      mustAns,
-      goodAns,
-      notes,
-      quickAnswers,
-      quickQuestionCount: quickQuestions.length,
-    });
-
-    const writeResult = saveShiftApplicationSubmission({
-      applications: all,
-      application: app,
-    });
-
-    if (!writeResult.ok) {
-      showToast("Unable to save application on this device. Please free storage and try again.");
-      return;
-    }
-
-    showToast("Application submitted!");
-    setTimeout(() => nav(ROUTE_PATHS.employeeShiftApplications), 800);
   }
 
   function submit() {
@@ -225,7 +203,7 @@ export function useShiftPostApplyState(postId: string) {
       return;
     }
 
-    const all = safeParseAllShiftApplications(localStorage.getItem(APPS_KEY));
+    const all = safeParseAllShiftApplications(appsRaw);
 
     if (hasActiveShiftApplicationForPost({ applications: all, postId: post.id })) {
       showToast("This shift is already in your applications.");
@@ -244,150 +222,7 @@ export function useShiftPostApplyState(postId: string) {
       return;
     }
 
-    submitApplicationWithList(all);
-  }
-
-  function requestConfirmAttendance() {
-    if (!existingApp || existingApp.status !== "confirmed") {
-      showToast("Only confirmed shifts can be attendance-confirmed.");
-      return;
-    }
-
-    if (existingApp.attendanceConfirmedAt !== undefined) {
-      showToast("Attendance is already confirmed for this shift.");
-      return;
-    }
-
-    setAttendanceConfirmPending(true);
-
-    setWithdrawConfirm({
-      title: "Confirm shift attendance?",
-      message: "Confirm only if you are available and will attend this shift on time.",
-      tone: "warn",
-      confirmLabel: "I will attend",
-      cancelLabel: "Not now",
-    });
-  }
-
-  function confirmAttendance() {
-    if (!post || !existingApp || existingApp.status !== "confirmed") return;
-
-    const result = shiftApplicationsStorage.confirmAttendance(existingApp.id);
-
-    setWithdrawConfirm(null);
-    setAttendanceConfirmPending(false);
-
-    if (result.ok) {
-      usePulseStore.getState().resolvePulseTrailByTarget({
-        eventId: PulseEvent.SHIFT_CONFIRMATION_REQUIRED,
-        postId: existingApp.postId,
-        appId: existingApp.id,
-        sectionId: PulseSectionId.EMPLOYEE_SHIFT_CONFIRMATION_CARD,
-      });
-
-      showToast("Attendance confirmed.");
-      return;
-    }
-
-    if (result.reason === "already_confirmed") {
-      showToast("Attendance is already confirmed.");
-      return;
-    }
-
-    if (result.reason === "not_confirmed") {
-      showToast("This shift is not confirmed yet.");
-      return;
-    }
-
-    if (result.reason === "not_found") {
-      showToast("Application not found. Please refresh and try again.");
-      return;
-    }
-
-    showToast("Unable to save attendance confirmation. Please try again.");
-  }
-
-  function requestWithdraw() {
-    const status = existingApp?.status;
-
-    if (!isShiftDetailWithdrawableStatus(status)) {
-      showToast("This application cannot be withdrawn from here.");
-      return;
-    }
-
-    setWithdrawConfirm({
-      title: getShiftDetailWithdrawTitle(status),
-      message: getShiftDetailWithdrawMessage(status),
-      tone: "danger",
-      confirmLabel: "Withdraw",
-      cancelLabel: "Keep application",
-    });
-  }
-
-  function confirmWithdraw() {
-    const status = existingApp?.status;
-
-    if (!post || !existingApp || !isShiftDetailWithdrawableStatus(status)) return;
-
-    const all = safeParseAllShiftApplications(localStorage.getItem(APPS_KEY));
-
-    const writeResult = saveWithdrawShiftApplication({
-      applications: all,
-      applicationId: existingApp.id,
-      withdrawnAt: Date.now(),
-    });
-
-    setWithdrawConfirm(null);
-
-    if (!writeResult.ok) {
-      showToast("Unable to save withdrawal on this device. Please free storage and try again.");
-      return;
-    }
-
-    queuePulseEventForAffectedUser({
-      type: "SHIFT_APPLICATION_WITHDRAWN",
-      domain: "shift",
-      affectedUserRole: "employer",
-      postId: post.id,
-      appId: existingApp.id,
-      title: "A worker withdrew their shift application",
-      body: "Check your shift posts for updated applicant status.",
-      route: ROUTE_PATHS.employerShiftHome,
-    });
-
-    showToast("Application withdrawn.");
-    setTimeout(() => nav(ROUTE_PATHS.employeeShiftApplications), 800);
-  }
-
-  function handleCancelConfirm() {
-    setWithdrawConfirm(null);
-    setDoubleBookingPending(false);
-    setAttendanceConfirmPending(false);
-  }
-
-  function handleConfirm() {
-    if (attendanceConfirmPending) {
-      confirmAttendance();
-      return;
-    }
-
-    if (doubleBookingPending) {
-      setWithdrawConfirm(null);
-      setDoubleBookingPending(false);
-      submitApplicationWithList(safeParseAllShiftApplications(localStorage.getItem(APPS_KEY)));
-      return;
-    }
-
-    confirmWithdraw();
-  }
-
-  function openWorkspace() {
-    if (!activeWorkspaceId) return;
-    nav(ROUTE_PATHS.employeeShiftWorkspace.replace(":workspaceId", activeWorkspaceId));
-  }
-
-  function openSearch() {
-    nav(ROUTE_PATHS.employeeShiftSearch);
+    void lifecycle.submitApplicationWithList(all);
   }
 
   return {
@@ -421,11 +256,11 @@ export function useShiftPostApplyState(postId: string) {
     handleNote,
     submit,
     handleToggleSaved,
-    requestWithdraw,
-    requestConfirmAttendance,
-    handleCancelConfirm,
-    handleConfirm,
-    openWorkspace,
-    openSearch,
+    requestWithdraw: lifecycle.requestWithdraw,
+    requestConfirmAttendance: lifecycle.requestConfirmAttendance,
+    handleCancelConfirm: lifecycle.handleCancelConfirm,
+    handleConfirm: () => lifecycle.handleConfirm(attendanceConfirmPending, doubleBookingPending),
+    openWorkspace: lifecycle.openWorkspace,
+    openSearch: lifecycle.openSearch,
   };
 }

@@ -46,8 +46,14 @@
 }
 
 .wm-ee-vPlanner .wm-ee-accentCard::before {
-  background: linear-gradient(180deg, var(--wm-planner-accent), rgba(8, 145, 178, 0.42));
-  box-shadow: 0 0 0 1px rgba(8, 145, 178, 0.1);
+  background: radial-gradient(
+    circle at 35% 35%,
+    rgba(255, 255, 255, 0.85) 0%,
+    var(--wm-planner-accent) 40%,
+    var(--wm-planner-accent-strong) 100%
+  );
+  --wm-led-color-a: color-mix(in srgb, var(--wm-planner-accent) 35%, transparent);
+  --wm-led-color-b: color-mix(in srgb, var(--wm-planner-accent) 50%, transparent);
 }
 
 .wm-ee-vPlanner .wm-ee-headTint {
@@ -273,13 +279,23 @@
 .wm-ee-accentCard::before {
   content: "";
   position: absolute;
-  left: 0;
-  top: 16px;
-  bottom: 16px;
-  width: 4px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, var(--wm-ee-accent), rgba(22, 163, 74, 0.42));
-  box-shadow: 0 0 0 1px rgba(22, 163, 74, 0.08);
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 35%,
+    rgba(255, 255, 255, 0.85) 0%,
+    var(--wm-shift-accent) 40%,
+    var(--wm-shift-accent-strong) 100%
+  );
+  box-shadow: none;
+  animation: wm-led-breathe-normal 3.5s ease-in-out infinite;
+  --wm-led-color-a: color-mix(in srgb, var(--wm-shift-accent) 35%, transparent);
+  --wm-led-color-b: color-mix(in srgb, var(--wm-shift-accent) 50%, transparent);
+  pointer-events: none;
 }
 
 .wm-ee-headTint {

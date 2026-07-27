@@ -6,9 +6,19 @@
  * Frontend: set VITE_AUTH_BACKEND_ENABLED=true OR run `npm run dev:auth`
  * Server:   run `npm run dev:api` (demo users only when NODE_ENV !== production)
  *
+ * SECURITY: When false, RequireRole trusts sessionStorage role only (UX gate — not RBAC).
+ * Production builds must set VITE_AUTH_BACKEND_ENABLED=true before treating client routes as protected.
+ *
  * See `.env.example` for full documentation.
  */
 export const AUTH_BACKEND_ENABLED = import.meta.env.VITE_AUTH_BACKEND_ENABLED === "true";
 
 /** Canonical prefix — doc 16 Option A */
 export const AUTH_API_PREFIX = "/v1/jobmitra/auth";
+
+if (import.meta.env.PROD && !AUTH_BACKEND_ENABLED) {
+  console.warn(
+    "[WorkMitra] VITE_AUTH_BACKEND_ENABLED is false in a production build. " +
+      "Client roleStorage is not a security boundary — enable backend auth for RBAC.",
+  );
+}

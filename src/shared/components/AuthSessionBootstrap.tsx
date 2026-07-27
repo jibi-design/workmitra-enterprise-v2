@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { AUTH_BACKEND_ENABLED } from "../config/authConfig";
 import { useAuthStore } from "../store/authStore";
+import { subscribeAuthSessionEpoch } from "../auth/authSessionSync";
+import { RouteGuardLoading } from "./routes/RouteGuardStatus";
 
 export function AuthSessionBootstrap() {
   const hydrateSession = useAuthStore((s) => s.hydrateSession);
@@ -14,33 +16,19 @@ export function AuthSessionBootstrap() {
     }
   }, [hydrateSession]);
 
+  useEffect(() => {
+    if (!AUTH_BACKEND_ENABLED) return;
+    return subscribeAuthSessionEpoch((epoch) => {
+      const current = useAuthStore.getState().user;
+      const currentId = current?.id ?? null;
+      const currentRole = current?.role ?? null;
+      if (epoch.userId === currentId && epoch.role === currentRole) return;
+      void hydrateSession();
+    });
+  }, [hydrateSession]);
+
   if (AUTH_BACKEND_ENABLED && !sessionChecked) {
-    return (
-      <div
-        style={{
-          position: "fixed",
-          inset: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "#F8FAFC",
-          zIndex: 9998,
-        }}
-        aria-busy="true"
-        aria-label="Loading session"
-      >
-        <div
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: 999,
-            border: "3px solid #1d4ed8",
-            borderTopColor: "transparent",
-            animation: "wm-spin 0.6s linear infinite",
-          }}
-        />
-      </div>
-    );
+    return <RouteGuardLoading overlay label="Loading session" />;
   }
 
   return null;

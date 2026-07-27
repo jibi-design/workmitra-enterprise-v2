@@ -1,5 +1,6 @@
 /** Section 1 — Your account (personal, not the business). */
 
+import { PhoneNumberField } from "../../../../../shared/phone";
 import type { EmployerProfile } from "../../storage/employerSettings.storage";
 import { SettingsTextField } from "../SettingsFormFields";
 import {
@@ -8,7 +9,7 @@ import {
   EXECUTIVE_SECTION_KICKER,
   EXECUTIVE_SECTION_TITLE,
 } from "../../helpers/employerProfileCard.styles";
-import { fieldGroupStyle } from "../../helpers/settingsStyles";
+import { fieldGroupStyle, fieldLabelStyle } from "../../helpers/settingsStyles";
 
 type Props = {
   readonly data: EmployerProfile;
@@ -45,14 +46,16 @@ export function YourAccountSection({ data, editMode, onFieldChange }: Props) {
           placeholder="Enter your email"
           type="email"
         />
-        <SettingsTextField
-          label="Phone"
-          value={data.phone}
-          disabled={!editMode}
-          onChange={(v) => onFieldChange("phone", v)}
-          placeholder="Enter phone number"
-          type="tel"
-        />
+        <div style={fieldGroupStyle}>
+          <label style={fieldLabelStyle}>Phone</label>
+          <PhoneNumberField
+            value={data.phone}
+            disabled={!editMode}
+            onChange={(v) => onFieldChange("phone", v)}
+            placeholder="Mobile number"
+            testId="employer-account-phone"
+          />
+        </div>
       </div>
 
       <div
@@ -60,7 +63,7 @@ export function YourAccountSection({ data, editMode, onFieldChange }: Props) {
           ...fieldGroupStyle,
           marginTop: 4,
           padding: "12px 14px",
-          borderRadius: 14,
+          borderRadius: "var(--wm-radius-chip)",
           background: "rgba(3,105,161,0.06)",
           border: "1px solid rgba(3,105,161,0.12)",
         }}

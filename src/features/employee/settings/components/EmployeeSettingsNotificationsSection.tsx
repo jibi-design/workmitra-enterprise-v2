@@ -9,11 +9,16 @@ import type { EmployeeSettings } from "../storage/employeeSettings.storage";
 
 type Props = {
   settings: EmployeeSettings;
-  onSave: (settings: EmployeeSettings) => void;
+  /** Quiet-hours time fields — debounced persist (P1-1). */
+  onSaveDebounced: (settings: EmployeeSettings) => void;
   onToggle: <K extends keyof EmployeeSettings>(key: K) => void;
 };
 
-export function EmployeeSettingsNotificationsSection({ settings, onSave, onToggle }: Props) {
+export function EmployeeSettingsNotificationsSection({
+  settings,
+  onSaveDebounced,
+  onToggle,
+}: Props) {
   const pulseEnabled = usePulseNavStore((s) => s.enabled);
   const setPulseEnabled = usePulseNavStore((s) => s.setEnabled);
   const clearAllPulses = usePulseStore((s) => s.clearAll);
@@ -42,14 +47,14 @@ export function EmployeeSettingsNotificationsSection({ settings, onSave, onToggl
   }
 
   return (
-    <section className="wm-ee-card" style={{ marginTop: 12 }}>
+    <section className="wm-settingsGroup">
       <div className="wm-ee-cardTitle" style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <svg
           width="16"
           height="16"
           viewBox="0 0 24 24"
           aria-hidden="true"
-          style={{ color: "#f59e0b", flexShrink: 0 }}
+          style={{ color: "var(--wm-amber-400)", flexShrink: 0 }}
         >
           <path
             fill="currentColor"
@@ -68,7 +73,7 @@ export function EmployeeSettingsNotificationsSection({ settings, onSave, onToggl
           marginTop: 8,
           marginBottom: 4,
           padding: "10px 12px",
-          borderRadius: 10,
+          borderRadius: "var(--wm-radius-10)",
           background: pulseEnabled ? "rgba(99,102,241,0.05)" : "rgba(100,116,139,0.04)",
           border: pulseEnabled ? "1px solid rgba(99,102,241,0.16)" : "1px solid rgba(0,0,0,0.07)",
           transition: "background 0.2s ease, border-color 0.2s ease",
@@ -88,7 +93,14 @@ export function EmployeeSettingsNotificationsSection({ settings, onSave, onToggl
           >
             Glowing LED indicators that guide you step-by-step through workflows.
             {!pulseEnabled && (
-              <span style={{ display: "block", marginTop: 3, color: "#ef4444", fontWeight: 600 }}>
+              <span
+                style={{
+                  display: "block",
+                  marginTop: 3,
+                  color: "var(--wm-error)",
+                  fontWeight: 600,
+                }}
+              >
                 Navigation lights are OFF — no pulses will fire.
               </span>
             )}
@@ -180,7 +192,7 @@ export function EmployeeSettingsNotificationsSection({ settings, onSave, onToggl
               type="time"
               value={settings.quietFrom}
               onChange={(e) => {
-                onSave({ ...settings, quietFrom: e.target.value });
+                onSaveDebounced({ ...settings, quietFrom: e.target.value });
                 triggerPop("quietFrom");
               }}
               onAnimationEnd={clearPop}
@@ -195,7 +207,7 @@ export function EmployeeSettingsNotificationsSection({ settings, onSave, onToggl
               type="time"
               value={settings.quietTo}
               onChange={(e) => {
-                onSave({ ...settings, quietTo: e.target.value });
+                onSaveDebounced({ ...settings, quietTo: e.target.value });
                 triggerPop("quietTo");
               }}
               onAnimationEnd={clearPop}
@@ -216,9 +228,9 @@ function toggleTrackStyle(enabled: boolean): React.CSSProperties {
   return {
     width: 44,
     height: 24,
-    borderRadius: 999,
+    borderRadius: "var(--wm-radius-pill)",
     border: "1px solid rgba(0,0,0,0.12)",
-    background: enabled ? "#6366f1" : "rgba(0,0,0,0.10)",
+    background: enabled ? "var(--wm-indigo-500)" : "rgba(0,0,0,0.10)",
     position: "relative",
     cursor: "pointer",
     transition: "background 0.2s ease",
@@ -231,7 +243,7 @@ function toggleThumbStyle(enabled: boolean): React.CSSProperties {
   return {
     width: 18,
     height: 18,
-    borderRadius: 999,
+    borderRadius: "var(--wm-radius-pill)",
     background: "#fff",
     boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
     position: "absolute",

@@ -100,7 +100,7 @@ test.describe("Planner Route Contract — Hybrid A2 S1", () => {
     await page.goto(`/#/employer/planner/roster/e2e-plan-stub`, {
       waitUntil: "domcontentloaded",
     });
-    await expect(page.getByTestId("planner-employer-roster-detail-stub-back")).toBeVisible();
+    await expect(page.getByTestId("planner-employer-roster-detail-back")).toBeVisible();
 
     await context.close();
   });

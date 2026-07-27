@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { VaultDocument } from "../types/vaultTypes";
-import { VAULT_ACCENT } from "../constants/vaultConstants";
+import { VAULT_ACCENT, vaultAccentMix } from "../constants/vaultConstants";
 
 /* ------------------------------------------------ */
 /* Icons                                            */
@@ -10,7 +10,10 @@ import { VAULT_ACCENT } from "../constants/vaultConstants";
 function IconPdf() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Zm0 2 4 4h-4V4ZM6 20V4h6v6h6v10H6Z" />
+      <path
+        fill="currentColor"
+        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Zm0 2 4 4h-4V4ZM6 20V4h6v6h6v10H6Z"
+      />
     </svg>
   );
 }
@@ -18,7 +21,10 @@ function IconPdf() {
 function IconImage() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="currentColor" d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2ZM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5Z" />
+      <path
+        fill="currentColor"
+        d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2ZM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5Z"
+      />
     </svg>
   );
 }
@@ -38,9 +44,7 @@ type VaultDocumentCardProps = {
 export function VaultDocumentCard({ doc, onView, onDelete }: VaultDocumentCardProps) {
   const [now] = useState(() => Date.now());
 
-  const isExpired = doc.expiryDate
-    ? new Date(doc.expiryDate + "T00:00:00").getTime() < now
-    : false;
+  const isExpired = doc.expiryDate ? new Date(doc.expiryDate + "T00:00:00").getTime() < now : false;
 
   const uploadDate = new Date(doc.uploadedAt).toLocaleDateString(undefined, {
     year: "numeric",
@@ -65,7 +69,7 @@ export function VaultDocumentCard({ doc, onView, onDelete }: VaultDocumentCardPr
         justifyContent: "space-between",
         gap: 12,
         padding: "12px 14px",
-        borderRadius: 12,
+        borderRadius: "var(--wm-radius-button)",
         border: "1px solid var(--wm-emp-border, rgba(15, 23, 42, 0.08))",
         background: "#fff",
         cursor: "pointer",
@@ -78,15 +82,13 @@ export function VaultDocumentCard({ doc, onView, onDelete }: VaultDocumentCardPr
           style={{
             width: 44,
             height: 44,
-            borderRadius: 10,
+            borderRadius: "var(--wm-radius-10)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             overflow: "hidden",
             flexShrink: 0,
-            background: doc.fileType === "pdf"
-              ? "rgba(220, 38, 38, 0.08)"
-              : `${VAULT_ACCENT}10`,
+            background: doc.fileType === "pdf" ? "rgba(220, 38, 38, 0.08)" : `${vaultAccentMix(6)}`,
           }}
         >
           {doc.thumbnailBase64 && doc.fileType === "image" ? (
@@ -96,9 +98,13 @@ export function VaultDocumentCard({ doc, onView, onDelete }: VaultDocumentCardPr
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           ) : doc.fileType === "pdf" ? (
-            <span style={{ color: "#dc2626" }}><IconPdf /></span>
+            <span style={{ color: "#dc2626" }}>
+              <IconPdf />
+            </span>
           ) : (
-            <span style={{ color: VAULT_ACCENT }}><IconImage /></span>
+            <span style={{ color: VAULT_ACCENT }}>
+              <IconImage />
+            </span>
           )}
         </div>
 
@@ -116,11 +122,24 @@ export function VaultDocumentCard({ doc, onView, onDelete }: VaultDocumentCardPr
           >
             {doc.name}
           </div>
-          <div style={{ display: "flex", gap: 8, marginTop: 3, flexWrap: "wrap", alignItems: "center" }}>
-            <span style={{ fontSize: 11, color: "var(--wm-emp-muted)" }}>
-              {uploadDate}
-            </span>
-            <span style={{ fontSize: 11, color: "var(--wm-emp-muted)", textTransform: "uppercase", fontWeight: 800 }}>
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              marginTop: 3,
+              flexWrap: "wrap",
+              alignItems: "center",
+            }}
+          >
+            <span style={{ fontSize: 11, color: "var(--wm-emp-muted)" }}>{uploadDate}</span>
+            <span
+              style={{
+                fontSize: 11,
+                color: "var(--wm-emp-muted)",
+                textTransform: "uppercase",
+                fontWeight: 800,
+              }}
+            >
               {doc.fileType}
             </span>
             {doc.expiryDate && (
@@ -129,7 +148,7 @@ export function VaultDocumentCard({ doc, onView, onDelete }: VaultDocumentCardPr
                   fontSize: 10,
                   fontWeight: 800,
                   padding: "1px 6px",
-                  borderRadius: 999,
+                  borderRadius: "var(--wm-radius-pill)",
                   background: isExpired ? "rgba(220, 38, 38, 0.08)" : "rgba(22, 163, 74, 0.08)",
                   color: isExpired ? "#dc2626" : "#15803d",
                   border: isExpired
@@ -155,7 +174,7 @@ export function VaultDocumentCard({ doc, onView, onDelete }: VaultDocumentCardPr
         style={{
           width: 30,
           height: 30,
-          borderRadius: 8,
+          borderRadius: "var(--wm-radius-8)",
           border: "none",
           background: "rgba(220, 38, 38, 0.08)",
           color: "#dc2626",

@@ -37,7 +37,7 @@ export function EmployerEmploymentFeedbackSubmittedCard({
       style={{
         marginTop: 12,
         padding: "10px 11px",
-        borderRadius: 15,
+        borderRadius: "var(--wm-radius-chip)",
         background: "rgba(255,255,255,0.78)",
         border: "1px solid rgba(148,163,184,0.14)",
       }}
@@ -51,7 +51,7 @@ export function EmployerEmploymentFeedbackSubmittedCard({
               key={tag}
               style={{
                 padding: "5px 9px",
-                borderRadius: 999,
+                borderRadius: "var(--wm-radius-pill)",
                 background: "rgba(79,70,229,0.08)",
                 border: "1px solid rgba(79,70,229,0.12)",
                 color: CAREER,
@@ -96,7 +96,7 @@ export function EmployerEmploymentFeedbackSubmittedCard({
         style={{
           marginTop: 10,
           padding: "8px 10px",
-          borderRadius: 11,
+          borderRadius: "var(--wm-radius-10)",
           background: canEdit ? "rgba(79,70,229,0.055)" : "rgba(22,163,74,0.06)",
           border: canEdit ? "1px solid rgba(79,70,229,0.12)" : "1px solid rgba(22,163,74,0.14)",
           color: canEdit ? MUTED : "#15803d",

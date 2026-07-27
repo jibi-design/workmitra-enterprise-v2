@@ -3,24 +3,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { validateId, isValidId } from "../validators/idValidator";
 import { generateRawId } from "../generators/uniqueIdGenerator";
-import { ID_CHARSET, ID_PREFIX } from "../constants/idConstants";
-
-function legacyCheckChar(block1: string, nameBlock: string, block3Partial: string): string {
-  const raw = block1 + nameBlock + block3Partial;
-  let sum = 0;
-  for (let i = 0; i < raw.length; i++) {
-    const ch = raw[i] === "I" ? "J" : raw[i] === "O" ? "P" : raw[i];
-    const charIndex = ID_CHARSET.indexOf(ch);
-    const safeIndex = charIndex >= 0 ? charIndex : 0;
-    sum += safeIndex * (i + 1);
-  }
-  return ID_CHARSET[sum % ID_CHARSET.length];
-}
-
-function buildLegacyWmId(block1: string, nameBlock: string, block3Partial: string): string {
-  const check = legacyCheckChar(block1, nameBlock, block3Partial);
-  return `WM-${block1}-${nameBlock}-${block3Partial}${check}`;
-}
+import { ID_PREFIX } from "../constants/idConstants";
 
 beforeEach(() => {
   vi.stubGlobal("crypto", {
@@ -78,11 +61,6 @@ describe("validateId — valid IDs", () => {
       expect(validateId(id).valid).toBe(true);
     }
   });
-
-  it("validates legacy WM IDs with check digit", () => {
-    const legacyId = buildLegacyWmId("ABCD", "RAH", "EFG");
-    expect(validateId(legacyId)).toEqual({ valid: true });
-  });
 });
 
 describe("validateId — invalid IDs", () => {
@@ -112,6 +90,22 @@ describe("validateId — invalid IDs", () => {
     }
   });
 
+  it("rejects legacy WM prefix", () => {
+    const result = validateId("WM-ABCD-RAH-EFGH");
+    expect(result.valid).toBe(false);
+    if (!result.valid) {
+      expect(result.reason).toContain(ID_PREFIX);
+    }
+  });
+
+  it("rejects legacy JM prefix", () => {
+    const result = validateId("JM-ABCD-RAH-EFGH");
+    expect(result.valid).toBe(false);
+    if (!result.valid) {
+      expect(result.reason).toContain(ID_PREFIX);
+    }
+  });
+
   it("rejects missing separators", () => {
     const result = validateId("MLABCDRAHEFGH123");
     expect(result.valid).toBe(false);
@@ -125,20 +119,13 @@ describe("validateId — invalid IDs", () => {
     }
   });
 
-  it("rejects legacy checksum mismatch (tampered WM ID)", () => {
-    const id = buildLegacyWmId("ABCD", "RAH", "EFG");
-    const parts = id.split("-");
-    const block3 = parts[3];
-    const lastChar = block3[3];
-    const tamperedChar = lastChar === "A" ? "B" : "A";
-    parts[3] = block3.slice(0, 3) + tamperedChar;
-    const tampered = parts.join("-");
+  it("rejects I/O in outer blocks (ML charset only)", () => {
+    expect(validateId("ML-ABCI-RAH-EFGH").valid).toBe(false);
+    expect(validateId("ML-ABCD-RAH-EFGI").valid).toBe(false);
+  });
 
-    const result = validateId(tampered);
-    expect(result.valid).toBe(false);
-    if (!result.valid) {
-      expect(result.reason).toContain("Check digit");
-    }
+  it("allows I/O in name block from real-name derivation", () => {
+    expect(validateId("ML-ABCD-OLI-EFGH").valid).toBe(true);
   });
 
   it("does not enforce check digit on ML IDs", () => {
@@ -159,13 +146,6 @@ describe("validateId — invalid IDs", () => {
   });
 });
 
-describe("validateId — backward compatibility", () => {
-  it("accepts legacy IDs where I was mapped to J in name block", () => {
-    const newId = generateRawId("Jibin");
-    expect(validateId(newId).valid).toBe(true);
-  });
-});
-
 describe("isValidId", () => {
   it("returns true for valid ML IDs", () => {
     const id = generateRawId("Rahul");
@@ -178,9 +158,7 @@ describe("isValidId", () => {
     expect(isValidId("ML-0000-RAH-1111")).toBe(false);
   });
 
-  it("returns false for tampered legacy WM IDs", () => {
-    const id = buildLegacyWmId("ABCD", "RAH", "EFG");
-    const tampered = id.slice(0, -1) + (id.endsWith("A") ? "B" : "A");
-    expect(isValidId(tampered)).toBe(false);
+  it("returns false for legacy WM IDs", () => {
+    expect(isValidId("WM-ABCD-RAH-EFGH")).toBe(false);
   });
 });

@@ -81,7 +81,7 @@ export function getLockMessage(task: CareerEmploymentFeedbackTask, editsRemainin
 
 export const WARNING_STYLE = {
   padding: "10px 12px",
-  borderRadius: 12,
+  borderRadius: "var(--wm-radius-button)",
   background: "rgba(245,158,11,0.08)",
   border: "1px solid rgba(245,158,11,0.18)",
   color: "#92400e",
@@ -93,7 +93,7 @@ export const WARNING_STYLE = {
 export const PROOF_BOX_STYLE = {
   marginTop: 12,
   padding: "10px 11px",
-  borderRadius: 13,
+  borderRadius: "var(--wm-radius-chip)",
   background: "rgba(15,23,42,0.035)",
   border: "1px solid rgba(148,163,184,0.14)",
   display: "grid",
@@ -103,7 +103,7 @@ export const PROOF_BOX_STYLE = {
 export const PRIMARY_BUTTON_STYLE = {
   minHeight: 38,
   padding: "0 14px",
-  borderRadius: 12,
+  borderRadius: "var(--wm-radius-button)",
   border: "none",
   background: CAREER,
   color: "#fff",
@@ -115,7 +115,7 @@ export const PRIMARY_BUTTON_STYLE = {
 export const SECONDARY_BUTTON_STYLE = {
   minHeight: 38,
   padding: "0 14px",
-  borderRadius: 12,
+  borderRadius: "var(--wm-radius-button)",
   border: "1px solid rgba(148,163,184,0.22)",
   background: "transparent",
   color: MUTED,

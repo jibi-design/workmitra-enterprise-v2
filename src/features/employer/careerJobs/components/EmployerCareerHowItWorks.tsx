@@ -10,15 +10,11 @@ const CAREER_MUTED = "var(--wm-er-muted, #475569)";
 export function EmployerCareerHowItWorks() {
   return (
     <section
+      className="wm-er-card wm-career-card"
       style={{
-        padding: 18,
-        borderRadius: 24,
-        border: "1px solid rgba(255, 255, 255, 0.9)",
-        background: "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,250,252,0.6))",
-        boxShadow: "0 12px 32px -4px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255,255,255,1)",
-        backdropFilter: "blur(24px)",
+        padding: "var(--wm-card-padding)",
         display: "grid",
-        gap: 14,
+        gap: "var(--wm-space-14)",
       }}
     >
       <div>
@@ -29,7 +25,7 @@ export function EmployerCareerHowItWorks() {
         </div>
         <div
           style={{
-            marginTop: 4,
+            marginTop: "var(--wm-space-4)",
             fontSize: 12.5,
             fontWeight: 500,
             color: CAREER_MUTED,
@@ -40,7 +36,7 @@ export function EmployerCareerHowItWorks() {
         </div>
       </div>
 
-      <div style={{ display: "grid", gap: 10 }}>
+      <div style={{ display: "grid", gap: "var(--wm-space-10)" }}>
         {CAREER_HOME_HOW_IT_WORKS.map((step) => (
           <div
             key={step.n}
@@ -48,9 +44,9 @@ export function EmployerCareerHowItWorks() {
               display: "grid",
               gridTemplateColumns: "30px 1fr",
               alignItems: "center",
-              gap: 12,
-              padding: "12px",
-              borderRadius: 16,
+              gap: "var(--wm-space-12)",
+              padding: "var(--wm-card-padding-compact)",
+              borderRadius: "var(--wm-radius-chip)",
               background: "rgba(255,255,255,0.7)",
               border: "1px solid rgba(255,255,255,0.9)",
               boxShadow: "0 2px 8px rgba(0,0,0,0.02), inset 0 1px 1px rgba(255,255,255,0.8)",
@@ -60,7 +56,7 @@ export function EmployerCareerHowItWorks() {
               style={{
                 width: 30,
                 height: 30,
-                borderRadius: 10,
+                borderRadius: "var(--wm-radius-10)",
                 flexShrink: 0,
                 background: "linear-gradient(135deg, #eff6ff, #dbeafe)",
                 color: CAREER_BLUE,

@@ -36,7 +36,7 @@ function cap(s: string): string {
 const ICON_WRAP: CSSProperties = {
   width: 42,
   height: 42,
-  borderRadius: 14,
+  borderRadius: "var(--wm-radius-chip)",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -49,7 +49,7 @@ const SUMMARY_CARD: CSSProperties = {
   marginTop: 16,
   background: "linear-gradient(180deg, rgba(240,253,244,0.78), rgba(255,255,255,0.98))",
   border: "1px solid rgba(22,163,74,0.18)",
-  borderRadius: 16,
+  borderRadius: "var(--wm-radius-chip)",
   padding: 14,
 };
 
@@ -61,7 +61,7 @@ const DETAIL_GRID: CSSProperties = {
 };
 
 const DETAIL_BOX: CSSProperties = {
-  borderRadius: 12,
+  borderRadius: "var(--wm-radius-button)",
   border: "1px solid rgba(226,232,240,0.95)",
   background: "#fff",
   padding: "10px 12px",
@@ -86,7 +86,7 @@ const DETAIL_VALUE: CSSProperties = {
 const WARNING_BOX: CSSProperties = {
   marginTop: 14,
   padding: "12px 14px",
-  borderRadius: 14,
+  borderRadius: "var(--wm-radius-chip)",
   background: "rgba(217,119,6,0.07)",
   border: "1px solid rgba(217,119,6,0.2)",
 };
@@ -94,7 +94,7 @@ const WARNING_BOX: CSSProperties = {
 const DUPLICATE_BOX: CSSProperties = {
   marginTop: 14,
   padding: "12px 14px",
-  borderRadius: 14,
+  borderRadius: "var(--wm-radius-chip)",
   background: "rgba(220,38,38,0.06)",
   border: "1px solid rgba(220,38,38,0.22)",
 };
@@ -108,7 +108,7 @@ const BTN_ROW: CSSProperties = {
 
 const BTN_BASE: CSSProperties = {
   padding: "12px 0",
-  borderRadius: 12,
+  borderRadius: "var(--wm-radius-button)",
   fontSize: 13,
   fontWeight: 800,
   cursor: "pointer",
@@ -230,7 +230,7 @@ export function ShiftCreateConfirmModal({
                   key={item.id}
                   style={{
                     padding: 10,
-                    borderRadius: 10,
+                    borderRadius: "var(--wm-radius-10)",
                     background: "#fff",
                     border: "1px solid rgba(220,38,38,0.14)",
                   }}

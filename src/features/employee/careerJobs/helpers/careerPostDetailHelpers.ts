@@ -6,7 +6,7 @@ export const NOTICE_OPTIONS = ["Immediate", "15 days", "30 days", "60 days"] as 
 export const LABEL_STYLE: CSSProperties = {
   fontSize: 12,
   fontWeight: 700,
-  color: "var(--wm-emp-text, #111827)",
+  color: "var(--wm-career-text, #111827)",
   marginBottom: 4,
   display: "block",
 };
@@ -16,10 +16,10 @@ export const INPUT_STYLE: CSSProperties = {
   fontSize: 14,
   fontWeight: 600,
   padding: "10px 12px",
-  borderRadius: 10,
-  border: "1.5px solid var(--wm-emp-border, rgba(15,23,42,0.10))",
-  background: "var(--wm-emp-bg, #fff)",
-  color: "var(--wm-emp-text, #111827)",
+  borderRadius: "var(--wm-radius-10)",
+  border: "1.5px solid var(--wm-career-border, rgba(15,23,42,0.10))",
+  background: "var(--wm-career-bg, #fff)",
+  color: "var(--wm-career-text, #111827)",
   boxSizing: "border-box",
   fontFamily: "inherit",
 };

@@ -1,7 +1,10 @@
 // src/features/employer/workVault/components/EmployerVaultAchievementsView.tsx
 
-import type { VaultAchievement } from "../../../employee/workVault/types/vaultProfileTypes";
-import { VAULT_ACCENT } from "../../../employee/workVault/constants/vaultConstants";
+import {
+  VAULT_ACCENT,
+  vaultAccentMix,
+  type VaultAchievement,
+} from "../../../shared/workVault/vaultPublic";
 
 type Props = {
   achievements: VaultAchievement[];
@@ -15,9 +18,9 @@ export function EmployerVaultAchievementsView({ achievements }: Props) {
           key={a.id}
           style={{
             padding: "10px 12px",
-            borderRadius: 10,
-            border: `1px solid ${a.earned ? `${VAULT_ACCENT}18` : "var(--wm-er-divider, rgba(15, 23, 42, 0.08))"}`,
-            background: a.earned ? `${VAULT_ACCENT}04` : "var(--wm-er-bg, #fff)",
+            borderRadius: "var(--wm-radius-10)",
+            border: `1px solid ${a.earned ? `${vaultAccentMix(10)}` : "var(--wm-er-divider, rgba(15, 23, 42, 0.08))"}`,
+            background: a.earned ? `${vaultAccentMix(2)}` : "var(--wm-er-bg, #fff)",
             opacity: a.earned ? 1 : 0.5,
             textAlign: "center",
           }}
@@ -41,8 +44,8 @@ export function EmployerVaultAchievementsView({ achievements }: Props) {
                 fontWeight: 900,
                 marginTop: 4,
                 padding: "1px 8px",
-                borderRadius: 999,
-                background: `${VAULT_ACCENT}08`,
+                borderRadius: "var(--wm-radius-pill)",
+                background: `${vaultAccentMix(4)}`,
                 color: VAULT_ACCENT,
                 display: "inline-block",
               }}

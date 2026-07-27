@@ -2,7 +2,7 @@
 // File name: reviewCenter.types.ts
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\shared\reviewCenter\types\reviewCenter.types.ts
 
-export type ReviewDomain = "shift" | "career";
+export type ReviewDomain = "shift" | "career" | "planner";
 
 export type ReviewRole = "employee" | "employer";
 

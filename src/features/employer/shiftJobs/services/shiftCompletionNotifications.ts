@@ -5,7 +5,7 @@
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { handleIncomingNotification } from "../../../pulse/pulseEventBridge";
 import { employerNotificationsStorage } from "../../../employer/notifications/storage/employerNotifications.storage";
-import { employeeNotificationsStorage } from "../../../employee/notifications/storage/employeeNotifications.storage";
+import { employeeNotificationPort } from "../../../../shared/notifications/employeeNotificationPort";
 
 function buildShiftRatePromptSignature(workspaceId: string): string {
   return `[SHIFT_PLEASE_RATE:${workspaceId}]`;
@@ -13,9 +13,7 @@ function buildShiftRatePromptSignature(workspaceId: string): string {
 
 function shiftRatePromptAlreadySent(role: "employee" | "employer", signature: string): boolean {
   const notifications =
-    role === "employee"
-      ? employeeNotificationsStorage.getAll()
-      : employerNotificationsStorage.getAll();
+    role === "employee" ? employeeNotificationPort.getAll() : employerNotificationsStorage.getAll();
 
   return notifications.some((note) => (note.body ?? "").includes(signature));
 }

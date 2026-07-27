@@ -7,12 +7,21 @@ import {
   type ShiftApplicationWriteResult,
 } from "../../storage/shiftPostApply.storage";
 import type { ShiftApplicationRecord } from "../../types/shiftPostApply.types";
-import type { ShiftDetailWithdrawableStatus } from "./shiftPostApply.types";
+import type {
+  ShiftDetailConfirmedCancellableStatus,
+  ShiftDetailWithdrawableStatus,
+} from "./shiftPostApply.types";
 
 export function isShiftDetailWithdrawableStatus(
   status: ShiftApplicationRecord["status"] | undefined,
 ): status is ShiftDetailWithdrawableStatus {
   return status === "applied" || status === "shortlisted" || status === "waiting";
+}
+
+export function isShiftDetailConfirmedCancellableStatus(
+  status: ShiftApplicationRecord["status"] | undefined,
+): status is ShiftDetailConfirmedCancellableStatus {
+  return status === "confirmed";
 }
 
 export function getShiftDetailWithdrawTitle(status: ShiftDetailWithdrawableStatus): string {
@@ -37,6 +46,14 @@ export function getShiftDetailWithdrawMessage(status: ShiftDetailWithdrawableSta
   }
 
   return "Employer will no longer review this application after withdrawal.";
+}
+
+export function getShiftDetailCancelConfirmedTitle(): string {
+  return "Cancel confirmed shift?";
+}
+
+export function getShiftDetailCancelConfirmedMessage(): string {
+  return "This releases your confirmed slot. The employer will be notified to find a replacement. Use only if you cannot attend.";
 }
 
 export function withdrawShiftApplicationFromList({

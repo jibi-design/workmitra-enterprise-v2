@@ -30,7 +30,7 @@ export function EmployerShiftPostNextStepText({ post, appliedCount, needsAnalysi
       style={{
         marginTop: 8,
         padding: "6px 10px",
-        borderRadius: 8,
+        borderRadius: "var(--wm-radius-8)",
         background: "rgba(15,118,110,0.05)",
         border: "1px solid rgba(15,118,110,0.12)",
       }}

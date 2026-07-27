@@ -32,6 +32,7 @@ export type CareerApplicationStageLite =
   | "interview"
   | "offered"
   | "offer_accepted"
+  | "offer_declined"
   | "hired"
   | "rejected"
   | "withdrawn";

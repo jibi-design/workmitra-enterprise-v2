@@ -37,7 +37,7 @@ export function safeParseAllShiftApplications(raw: string | null): ShiftApplicat
 }
 
 export type ShiftApplicationWriteResult =
-  { readonly ok: true } | { readonly ok: false; readonly reason: "storage_error" };
+  { readonly ok: true } | { readonly ok: false; readonly reason: "storage_error" | "conflict" };
 
 export function safeWriteAllShiftApplications(
   list: ShiftApplicationRecord[],

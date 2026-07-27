@@ -1,8 +1,6 @@
-// App name: Job Mitra
-// File name: AlreadyAppliedSection.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\components\shiftPostDetails\AlreadyAppliedSection.tsx
+// App name: Job Mitra | AlreadyAppliedSection.tsx — glass + pressable (post-details polish)
 
-import { CARD_STYLE } from "./shiftPostDetail.styles";
+import { SECTION_PAD } from "./shiftPostDetail.styles";
 
 export type ActiveShiftApplicationStatus = "applied" | "shortlisted" | "waiting";
 
@@ -16,11 +14,12 @@ export function AlreadyAppliedSection({
   const copy = getAlreadyAppliedSectionCopy(status);
 
   return (
-    <div
-      className="wm-ee-card"
+    <section
+      className="wm-shift-surface-glass wm-animateIn"
+      data-testid="shift-post-already-applied"
       style={{
-        ...CARD_STYLE,
-        marginBottom: 24,
+        ...SECTION_PAD,
+        animationDelay: "120ms",
         border: "1px solid rgba(217,119,6,0.18)",
         background: "linear-gradient(180deg, rgba(255,251,235,0.82), rgba(255,255,255,0.98))",
       }}
@@ -51,15 +50,12 @@ export function AlreadyAppliedSection({
         </div>
 
         <span
+          className="wm-shift-pill"
           style={{
-            padding: "5px 9px",
-            borderRadius: 999,
+            fontSize: 10,
             background: copy.badgeBackground,
             border: copy.badgeBorder,
             color: copy.badgeColor,
-            fontSize: 10,
-            fontWeight: 950,
-            whiteSpace: "nowrap",
           }}
         >
           {copy.badge}
@@ -68,23 +64,18 @@ export function AlreadyAppliedSection({
 
       <button
         type="button"
+        className="wm-outlineBtn wm-shift-pressable"
         onClick={onWithdraw}
         style={{
           width: "100%",
           marginTop: 14,
-          padding: "11px 12px",
-          borderRadius: 14,
-          border: "1px solid rgba(217,119,6,0.22)",
-          background: "#fff",
           color: "#b45309",
-          fontSize: 13,
-          fontWeight: 950,
-          cursor: "pointer",
+          borderColor: "rgba(217,119,6,0.22)",
         }}
       >
         {copy.actionLabel}
       </button>
-    </div>
+    </section>
   );
 }
 

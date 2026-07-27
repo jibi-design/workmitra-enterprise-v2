@@ -26,15 +26,11 @@ export function buildShareText(): string {
   const uniqueId = profile.uniqueId || "";
   const shifts = countCompletedShifts();
 
-  const lines: string[] = [
-    "🔵 Job Mitra Profile",
-    "━━━━━━━━━━━━━━━━",
-    `👤 ${name}`,
-  ];
+  const lines: string[] = ["🔵 Job Mitra Profile", "━━━━━━━━━━━━━━━━", `👤 ${name}`];
 
   if (uniqueId) lines.push(`🆔 ${uniqueId}`);
   if (shifts > 0) lines.push(`✅ ${shifts} shift${shifts !== 1 ? "s" : ""} completed`);
-  lines.push("", "Verify me on Job Mitra — search my JM ID.");
+  lines.push("", "Verify me on Job Mitra — search my Mitra Labs ID (ML).");
 
   return lines.join("\n");
 }

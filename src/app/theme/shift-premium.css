@@ -1,0 +1,323 @@
+/* Shift domain premium polish — accent stays --wm-shift-accent / --wm-green-600 */
+
+.wm-shift-card {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: var(--wm-radius-employee-card);
+  border: 1px solid rgba(22, 163, 74, 0.12);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.08);
+  backdrop-filter: blur(12px) var(--wm-glass-saturate);
+  -webkit-backdrop-filter: blur(12px) var(--wm-glass-saturate);
+  padding: var(--wm-card-padding);
+  transition:
+    transform var(--wm-motion-base) var(--wm-motion-spring),
+    box-shadow var(--wm-motion-base) var(--wm-motion-spring);
+}
+
+.wm-shift-card--compact {
+  padding: var(--wm-card-padding-compact);
+}
+
+.wm-shift-card--flush {
+  padding: 0;
+}
+
+@media (hover: hover) {
+  .wm-shift-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 32px rgba(22, 163, 74, 0.12);
+  }
+}
+
+.wm-shift-card:active {
+  transform: scale(0.98);
+}
+
+.wm-shift-card--employer {
+  border-radius: var(--wm-radius-employer-card);
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(22, 163, 74, 0.14);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(16px) var(--wm-glass-saturate);
+  -webkit-backdrop-filter: blur(16px) var(--wm-glass-saturate);
+}
+
+.wm-shift-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--wm-shift-accent);
+  background: rgba(22, 163, 74, 0.1);
+  border: 1px solid var(--wm-shift-accent-border);
+}
+
+.wm-shift-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.wm-shift-pill--pay {
+  background: var(--wm-shift-accent-soft);
+  color: var(--wm-shift-accent);
+  border: 1px solid var(--wm-shift-accent-border);
+}
+
+.wm-shift-pill--outline {
+  background: transparent;
+  color: var(--wm-shift-accent);
+  border: 1px solid rgba(22, 163, 74, 0.28);
+  font-weight: 600;
+}
+
+.wm-shift-pill--applied {
+  background: transparent;
+  color: var(--wm-shift-accent);
+  border: 1px solid rgba(22, 163, 74, 0.35);
+}
+
+.wm-shift-pill--confirmed {
+  background: var(--wm-shift-accent);
+  color: #fff;
+  border: 1px solid var(--wm-shift-accent-strong);
+}
+
+.wm-shift-pill--completed {
+  background: rgba(100, 116, 139, 0.12);
+  color: #475569;
+  border: 1px solid rgba(100, 116, 139, 0.28);
+}
+
+.wm-shift-pill--cancelled {
+  background: rgba(100, 116, 139, 0.12);
+  color: #64748b;
+  border: 1px solid rgba(220, 38, 38, 0.22);
+}
+
+.wm-shift-tap {
+  min-height: 44px;
+  min-width: 44px;
+  box-sizing: border-box;
+}
+
+.wm-shift-cta {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, var(--wm-green-500, #22c55e), var(--wm-shift-accent));
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+  transition: transform var(--wm-motion-fast) var(--wm-motion-spring);
+}
+
+.wm-shift-cta:active {
+  transform: scale(0.97);
+}
+
+.wm-shift-cta--ghost {
+  background: var(--wm-shift-accent-soft);
+  color: var(--wm-shift-accent);
+  border: 1px solid var(--wm-shift-accent-border);
+  box-shadow: none;
+}
+
+.wm-shift-cta--primary {
+  width: 100%;
+  min-height: 52px;
+}
+
+.wm-shift-sticky-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  margin-top: 16px;
+  padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(
+    180deg,
+    rgba(248, 250, 252, 0) 0%,
+    rgba(240, 253, 244, 0.88) 28%,
+    rgba(255, 255, 255, 0.96) 100%
+  );
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.wm-shift-empty {
+  text-align: center;
+  padding: 28px 20px;
+  border-radius: var(--wm-radius-employee-card);
+  border: 1px solid rgba(22, 163, 74, 0.12);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(22, 163, 74, 0.08), transparent 42%),
+    rgba(255, 255, 255, 0.94);
+  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.06);
+}
+
+.wm-shift-empty__icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--wm-shift-accent);
+  background: var(--wm-shift-accent-soft);
+  border: 1px solid var(--wm-shift-accent-border);
+}
+
+.wm-shift-empty__title {
+  margin-top: 14px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--wm-emp-text, #0f172a);
+}
+
+.wm-shift-empty__subtitle {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--wm-emp-muted, #64748b);
+}
+
+.wm-shift-empty__cta {
+  margin-top: 16px;
+}
+
+.wm-shift-workspace-hero {
+  padding: 20px 18px;
+  border-radius: var(--wm-radius-employee-card);
+  border: 1px solid rgba(22, 163, 74, 0.12);
+  background:
+    linear-gradient(180deg, rgba(22, 163, 74, 0.1), rgba(255, 255, 255, 0.92) 62%),
+    rgba(255, 255, 255, 0.92);
+  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.08);
+}
+
+.wm-shift-earnings-hero {
+  padding: 20px 18px;
+  border-radius: var(--wm-radius-employee-card);
+  border: 1px solid rgba(22, 163, 74, 0.14);
+  background: linear-gradient(135deg, rgba(22, 163, 74, 0.14), rgba(255, 255, 255, 0.94) 55%);
+  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.08);
+}
+
+.wm-shift-earnings-hero__total {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--wm-shift-accent-strong, #15803d);
+  letter-spacing: -0.02em;
+}
+
+.wm-shift-filter-chip {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.wm-shift-filter-chip--active {
+  background: linear-gradient(135deg, var(--wm-shift-accent), var(--wm-green-500, #22c55e));
+  color: #fff;
+  box-shadow: none;
+}
+
+.wm-shift-filter-chip--idle {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.wm-shift-input:focus {
+  border-color: var(--wm-shift-accent) !important;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15) !important;
+}
+
+.wm-shift-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--wm-shift-accent);
+  background: var(--wm-shift-accent-soft);
+  border: 1px solid var(--wm-shift-accent-border);
+}
+
+/* Phase 3 calling — must live in employee-shell (shift-premium), not planner-only */
+@keyframes wm-call-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+}
+
+@keyframes wm-callRingSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.wm-call-pulseDot {
+  animation: wm-call-pulse 1.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wm-shift-card,
+  .wm-shift-cta {
+    transition: none;
+  }
+
+  .wm-shift-card:hover,
+  .wm-shift-card:active,
+  .wm-shift-cta:active {
+    transform: none;
+  }
+
+  .wm-call-pulseDot {
+    animation: none;
+  }
+}

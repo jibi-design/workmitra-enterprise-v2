@@ -5,7 +5,7 @@
 import { useMemo, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
-import { VAULT_ACCENT } from "../constants/vaultConstants";
+import { VAULT_ACCENT, vaultAccentMix } from "../constants/vaultConstants";
 import { VAULT_FEATURE_FLAGS } from "../constants/vaultFeatureFlags";
 import type { VaultSectionData } from "../services/vaultDataAggregator";
 import { statusLabel, statusColor, statusBg, noticePeriodLabel } from "../helpers/vaultHomeHelpers";
@@ -30,7 +30,9 @@ import {
   ReviewsSection,
   AchievementsSection,
   ActivitySection,
+  EducationSection,
 } from "./VaultProfileSections";
+import { PlannerGrowthSection } from "./profileSections/PlannerGrowthSection";
 
 type Props = {
   data: VaultSectionData;
@@ -80,7 +82,7 @@ export function VaultProfileTab({ data: d, readOnlyEmployerView = false }: Props
   const latestFeedback = approvedFeedback.tasks[0] ?? null;
 
   return (
-    <div style={{ marginTop: 12, display: "grid", gap: 12 }}>
+    <div className="wm-vault-profile" style={{ marginTop: 12, display: "grid", gap: 14 }}>
       {VAULT_FEATURE_FLAGS.identity ? (
         <>
           <VaultSectionHead number={1} title="Identity & Verification" />
@@ -114,12 +116,12 @@ export function VaultProfileTab({ data: d, readOnlyEmployerView = false }: Props
               <Chip
                 label={d.professionalSummary.expectedRoleType}
                 color={VAULT_ACCENT}
-                bg={`${VAULT_ACCENT}08`}
+                bg={`${vaultAccentMix(4)}`}
               />
               <Chip
                 label={noticePeriodLabel(d.professionalSummary.noticePeriod)}
                 color={VAULT_ACCENT}
-                bg={`${VAULT_ACCENT}08`}
+                bg={`${vaultAccentMix(4)}`}
               />
             </div>
 
@@ -153,9 +155,27 @@ export function VaultProfileTab({ data: d, readOnlyEmployerView = false }: Props
         <VaultSectionLock title="Work Stats" />
       )}
 
+      {VAULT_FEATURE_FLAGS.plannerGrowth ? (
+        <>
+          <VaultSectionHead number={5} title="Planner Growth & Epochs" auto />
+          <PlannerGrowthSection data={d.plannerGrowth} />
+        </>
+      ) : (
+        <VaultSectionLock title="Planner Growth & Epochs" />
+      )}
+
+      {VAULT_FEATURE_FLAGS.education ? (
+        <>
+          <VaultSectionHead number={6} title="Education & Certifications" />
+          <EducationSection data={d.education} />
+        </>
+      ) : (
+        <VaultSectionLock title="Education & Certifications" />
+      )}
+
       {approvedTags.length > 0 && (
         <>
-          <VaultSectionHead number={5} title="Approved Work Feedback Summary" auto />
+          <VaultSectionHead number={7} title="Approved Work Feedback Summary" auto />
           <WorkFeedbackSummaryCard
             tags={approvedTags}
             companyName={latestFeedback?.companyName}
@@ -168,7 +188,7 @@ export function VaultProfileTab({ data: d, readOnlyEmployerView = false }: Props
 
       {VAULT_FEATURE_FLAGS.skillsAssessment ? (
         <>
-          <VaultSectionHead number={6} title="Skills Assessment" />
+          <VaultSectionHead number={8} title="Skills Assessment" />
           <SkillsSection data={d.skills} />
         </>
       ) : (
@@ -177,19 +197,19 @@ export function VaultProfileTab({ data: d, readOnlyEmployerView = false }: Props
 
       {VAULT_FEATURE_FLAGS.performanceRecord ? (
         <>
-          <VaultSectionHead number={7} title="Performance Record" auto />
+          <VaultSectionHead number={9} title="Performance Record" auto />
           <VaultPerformanceCard data={d.performance} showTips={!readOnlyEmployerView} />
         </>
       ) : (
         <VaultSectionLock title="Performance Record" />
       )}
 
-      <VaultSectionHead number={8} title="Trust Level & Points" auto />
+      <VaultSectionHead number={10} title="Trust Level & Points" auto />
       <WorkerLevelCard />
 
       {VAULT_FEATURE_FLAGS.references ? (
         <>
-          <VaultSectionHead number={9} title="Work Reviews" auto />
+          <VaultSectionHead number={11} title="Work Reviews" auto />
           <ReviewsSection data={d.references} />
         </>
       ) : (
@@ -198,7 +218,7 @@ export function VaultProfileTab({ data: d, readOnlyEmployerView = false }: Props
 
       {VAULT_FEATURE_FLAGS.activity ? (
         <>
-          <VaultSectionHead number={10} title="Achievements & Growth Milestones" auto />
+          <VaultSectionHead number={12} title="Achievements & Growth Milestones" auto />
           <AchievementsSection data={d.achievements} />
         </>
       ) : (
@@ -207,7 +227,7 @@ export function VaultProfileTab({ data: d, readOnlyEmployerView = false }: Props
 
       {VAULT_FEATURE_FLAGS.activity ? (
         <>
-          <VaultSectionHead number={11} title="Activity & Engagement" />
+          <VaultSectionHead number={13} title="Activity & Engagement" />
           <ActivitySection data={d.activity} />
         </>
       ) : (
@@ -219,21 +239,11 @@ export function VaultProfileTab({ data: d, readOnlyEmployerView = false }: Props
       {!readOnlyEmployerView && (
         <button
           type="button"
+          className="wm-vault-edit-cta"
           onClick={() => nav(ROUTE_PATHS.employeeProfile)}
-          style={{
-            width: "100%",
-            padding: "12px",
-            borderRadius: 12,
-            border: `1.5px solid ${VAULT_ACCENT}`,
-            background: "transparent",
-            cursor: "pointer",
-            textAlign: "center",
-          }}
         >
-          <div style={{ fontSize: 14, fontWeight: 700, color: VAULT_ACCENT }}>Edit Profile</div>
-          <div style={{ fontSize: 11, color: "var(--wm-emp-muted)", marginTop: 2 }}>
-            Update summary and skills
-          </div>
+          <div className="wm-vault-edit-cta__title">Edit Profile</div>
+          <div className="wm-vault-edit-cta__sub">Update summary and skills</div>
         </button>
       )}
     </div>

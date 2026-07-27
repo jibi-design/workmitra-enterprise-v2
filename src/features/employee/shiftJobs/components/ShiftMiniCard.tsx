@@ -38,7 +38,7 @@ const OPEN_TEXT_STYLE: CSSProperties = {
   alignItems: "center",
   justifyContent: "center",
   padding: "0 10px",
-  borderRadius: 999,
+  borderRadius: "var(--wm-radius-pill)",
   border: "1px solid rgba(22,163,74,0.18)",
   background: "rgba(22,163,74,0.07)",
   fontSize: 11,

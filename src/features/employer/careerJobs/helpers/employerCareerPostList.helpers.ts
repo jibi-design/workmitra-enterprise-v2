@@ -25,28 +25,40 @@ export function getCareerPostStatusLabel(status: CareerPostStatus): string {
 export function getCareerPostStatusStyle(status: CareerPostStatus): React.CSSProperties {
   if (status === "active") {
     return {
-      color: "#1e3a8a",
-      background: "rgba(29,78,216,0.1)",
+      color: "#15803d",
+      background: "rgba(22,163,74,0.12)",
+      border: "1px solid rgba(22,163,74,0.22)",
     };
   }
 
   if (status === "filled") {
     return {
-      color: "#3730a3",
-      background: "rgba(29,78,216,0.08)",
+      color: "#1e40af",
+      background: "rgba(29,78,216,0.1)",
+      border: "1px solid rgba(29,78,216,0.18)",
     };
   }
 
   if (status === "paused") {
     return {
       color: "#b45309",
-      background: "rgba(217,119,6,0.08)",
+      background: "rgba(245,158,11,0.12)",
+      border: "1px solid rgba(245,158,11,0.28)",
+    };
+  }
+
+  if (status === "closed") {
+    return {
+      color: "#b91c1c",
+      background: "rgba(220,38,38,0.1)",
+      border: "1px solid rgba(220,38,38,0.22)",
     };
   }
 
   return {
     color: "rgba(15,23,42,0.62)",
     background: "rgba(15,23,42,0.055)",
+    border: "1px solid rgba(15,23,42,0.08)",
   };
 }
 

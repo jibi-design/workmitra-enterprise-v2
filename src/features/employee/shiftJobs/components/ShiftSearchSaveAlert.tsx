@@ -39,7 +39,7 @@ export function ShiftSearchSaveAlert(props: Props) {
         marginTop: 10,
         width: "100%",
         padding: "10px 16px",
-        borderRadius: 10,
+        borderRadius: "var(--wm-radius-10)",
         border: "1px solid rgba(22,163,74,0.3)",
         background: "rgba(22,163,74,0.06)",
         color: "#16a34a",

@@ -1,6 +1,10 @@
 /** Job Mitra | VaultVerifyEmployerTab.tsx | C:\projects\WorkMitra_Enterprise_v2\src\features\employee\workVault\components\VaultVerifyEmployerTab.tsx */
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { EnterpriseEmpty } from "../../../../shared/components/enterprise/EnterpriseEmpty";
+import { EnterpriseSkeleton } from "../../../../shared/components/enterprise/EnterpriseSkeleton";
+import { StatusBadge } from "../../../../shared/components/enterprise/StatusBadge";
+import { TrustStrip } from "../../../../shared/components/enterprise/TrustStrip";
 import {
   getEmployerPublicProfile,
   getEmployerReviews,
@@ -9,119 +13,170 @@ import {
 } from "../../../../shared/employerProfile/employerPublicProfileService";
 import { ProfileCard, StatsCard, TagsCard, ReviewsCard } from "./VaultEmployerProfileCards";
 
+const ML_ID_HINT = "Letters and numbers, e.g. ML-ER-…";
+
+function normalizeMlId(raw: string): string {
+  return raw.trim().toUpperCase().replace(/\s+/g, "");
+}
+
+function isPlausibleMlId(value: string): boolean {
+  return value.length >= 4 && /^[A-Z0-9][A-Z0-9\-_.]*$/i.test(value);
+}
+
 export function VaultVerifyEmployerTab() {
   const [jmInput, setJmInput] = useState("");
   const [profile, setProfile] = useState<EmployerPublicProfile | null>(null);
   const [reviews, setReviews] = useState<EmployerReview[]>([]);
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   const handleSearch = useCallback(() => {
-    const trimmed = jmInput.trim();
+    const trimmed = normalizeMlId(jmInput);
     if (!trimmed) {
       setError("Please enter a Mitra Labs ID");
+      setSearched(false);
+      setProfile(null);
+      setReviews([]);
+      return;
+    }
+
+    if (!isPlausibleMlId(trimmed)) {
+      setError("ID format looks incomplete. Use the employer Mitra Labs ID exactly.");
+      setSearched(false);
+      setProfile(null);
+      setReviews([]);
       return;
     }
 
     setError("");
-    const result = getEmployerPublicProfile(trimmed);
-    setProfile(result);
-    setReviews(result ? getEmployerReviews(trimmed) : []);
-    setSearched(true);
+    setLoading(true);
+    setSearched(false);
+    setProfile(null);
+    setReviews([]);
+    setJmInput(trimmed);
+
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      const result = getEmployerPublicProfile(trimmed);
+      setProfile(result);
+      setReviews(result ? getEmployerReviews(trimmed) : []);
+      setSearched(true);
+      setLoading(false);
+    }, 220);
   }, [jmInput]);
 
   const handleClear = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
     setJmInput("");
     setProfile(null);
     setReviews([]);
     setSearched(false);
     setError("");
+    setLoading(false);
   }, []);
 
+  const inputLooksReady = isPlausibleMlId(normalizeMlId(jmInput));
+
   return (
-    <div style={{ marginTop: 12 }}>
-      <div className="wm-ee-card">
-        <div style={{ fontWeight: 700, fontSize: 14, color: "var(--wm-emp-text, #111827)" }}>
-          Verify employer
-        </div>
-        <div
-          style={{
-            fontSize: 12,
-            color: "var(--wm-emp-muted, #6b7280)",
-            marginTop: 4,
-            lineHeight: 1.5,
-          }}
-        >
-          Enter an employer Mitra Labs ID to check their rating and track record before applying.
-        </div>
+    <div className="wm-vault-verify" data-testid="vault-verify-employer-tab">
+      <TrustStrip
+        kind="info"
+        tone="neutral"
+        title="Verify before you apply"
+        message="Look up an employer Mitra Labs ID to review trust level, ratings, and hiring activity."
+        badgeLabel="Trust check"
+      />
 
-        <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-          <input
-            className="wm-input"
-            value={jmInput}
-            onChange={(e) => setJmInput(e.target.value.toUpperCase())}
-            placeholder="Enter Mitra Labs ID"
-            maxLength={20}
-            style={{ flex: 1, fontFamily: "monospace", letterSpacing: 0.5, fontSize: 13 }}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+      <div className="wm-vault-verify-search wm-ent-cmd-panel" data-testid="vault-verify-search">
+        <div className="wm-ent-cmd-header">
+          <div className="wm-ent-cmd-title">Smart employer lookup</div>
+          <StatusBadge
+            label={inputLooksReady ? "Ready" : "Enter ID"}
+            tone={inputLooksReady ? "active" : "neutral"}
           />
-          <button
-            className="wm-primarybtn"
-            type="button"
-            onClick={handleSearch}
-            style={{ background: "var(--wm-er-accent-hr, #7c3aed)", flexShrink: 0 }}
-          >
-            Search
-          </button>
         </div>
 
-        {error && (
-          <div style={{ marginTop: 6, fontSize: 12, color: "var(--wm-error, #ef4444)" }}>
-            {error}
+        <div className="wm-ent-cmd-search">
+          <label className="wm-ent-cmd-search-label" htmlFor="vault-verify-ml-id">
+            Mitra Labs ID
+          </label>
+          <div className="wm-vault-verify-search__row">
+            <input
+              id="vault-verify-ml-id"
+              className="wm-ent-cmd-input wm-vault-verify-input"
+              value={jmInput}
+              onChange={(e) => {
+                setJmInput(e.target.value.toUpperCase());
+                if (error) setError("");
+              }}
+              placeholder="ML-…"
+              maxLength={24}
+              autoComplete="off"
+              spellCheck={false}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleSearch();
+                }
+              }}
+            />
+            <button
+              className="wm-vault-verify-search-btn"
+              type="button"
+              onClick={handleSearch}
+              disabled={loading}
+            >
+              {loading ? "Searching…" : "Search"}
+            </button>
           </div>
-        )}
+          <div className="wm-vault-verify-hint">{ML_ID_HINT}</div>
+          {error ? (
+            <div className="wm-vault-verify-error" role="alert">
+              {error}
+            </div>
+          ) : null}
+        </div>
       </div>
 
-      {searched && !profile && (
-        <div
-          className="wm-ee-card"
-          style={{ marginTop: 12, textAlign: "center", padding: "24px 16px" }}
-        >
-          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-emp-text, #111827)" }}>
-            No employer found
-          </div>
-          <div style={{ fontSize: 12, color: "var(--wm-emp-muted, #6b7280)", marginTop: 4 }}>
-            Check the Mitra Labs ID and try again.
-          </div>
-          <button
-            className="wm-outlineBtn"
-            type="button"
-            onClick={handleClear}
-            style={{ marginTop: 12, fontSize: 12 }}
-          >
-            Clear Search
-          </button>
+      {loading ? (
+        <div className="wm-vault-verify-loading">
+          <EnterpriseSkeleton count={2} domain="career" testId="vault-verify-skeleton" />
         </div>
-      )}
+      ) : null}
 
-      {profile && (
-        <>
+      {!loading && searched && !profile ? (
+        <div className="wm-vault-verify-empty">
+          <EnterpriseEmpty
+            title="No employer found"
+            subtitle="Check the Mitra Labs ID and try again. Ask the employer for the ID on their company profile."
+            primaryLabel="Clear search"
+            onPrimary={handleClear}
+            domain="career"
+          />
+        </div>
+      ) : null}
+
+      {!loading && profile ? (
+        <div className="wm-vault-verify-results wm-vault-verify-results--in">
           <ProfileCard profile={profile} />
           <StatsCard profile={profile} />
           <TagsCard profile={profile} />
-          {reviews.length > 0 && <ReviewsCard reviews={reviews} />}
-          <div style={{ marginTop: 12, display: "flex", justifyContent: "center" }}>
-            <button
-              className="wm-outlineBtn"
-              type="button"
-              onClick={handleClear}
-              style={{ fontSize: 12 }}
-            >
+          {reviews.length > 0 ? <ReviewsCard reviews={reviews} /> : null}
+          <div className="wm-vault-verify-results__footer">
+            <button className="wm-vault-verify-clear-btn" type="button" onClick={handleClear}>
               Search Another
             </button>
           </div>
-        </>
-      )}
+        </div>
+      ) : null}
     </div>
   );
 }

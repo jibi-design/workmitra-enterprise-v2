@@ -36,7 +36,10 @@ export function EmployerShiftPostCard({
   const statusColor = getShiftPostStatusColor(post);
 
   return (
-    <div className="wm-er-card" style={{ padding: 0, overflow: "hidden" }}>
+    <div
+      className="wm-shift-card wm-shift-card--employer"
+      style={{ padding: 0, overflow: "hidden" }}
+    >
       <EmployerShiftPostCardBody
         post={post}
         appliedCount={appliedCount}

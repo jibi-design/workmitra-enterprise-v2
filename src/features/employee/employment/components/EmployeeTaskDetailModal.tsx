@@ -5,9 +5,9 @@
 // Employee can toggle checklist items — cannot edit task details.
 
 import { CenterModal } from "../../../../shared/components/CenterModal";
-import type { TaskEntry } from "../../../employer/hrManagement/types/taskAssignment.types";
-import { TASK_STATUS_CONFIG } from "../../../employer/hrManagement/helpers/taskConstants";
-import { taskAssignmentStorage } from "../../../employer/hrManagement/storage/taskAssignment.storage";
+import type { TaskEntry } from "../../../shared/hr/hrPublic";
+import { TASK_STATUS_CONFIG } from "../../../shared/hr/hrPublic";
+import { taskAssignmentStorage } from "../../../shared/hr/hrPublic";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -52,8 +52,24 @@ export function EmployeeTaskDetailModal({ task, open, onClose }: Props) {
     <CenterModal open={open} onBackdropClose={onClose} ariaLabel="Task Details" maxWidth={480}>
       <div style={{ padding: 20 }}>
         {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 14 }}>
-          <div style={{ fontWeight: 900, fontSize: 16, color: "var(--wm-emp-text, var(--wm-er-text))", lineHeight: 1.4, flex: 1 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 8,
+            marginBottom: 14,
+          }}
+        >
+          <div
+            style={{
+              fontWeight: 900,
+              fontSize: 16,
+              color: "var(--wm-emp-text, var(--wm-er-text))",
+              lineHeight: 1.4,
+              flex: 1,
+            }}
+          >
             {task.title}
           </div>
           <span
@@ -85,10 +101,15 @@ export function EmployeeTaskDetailModal({ task, open, onClose }: Props) {
           }}
         >
           <span style={{ color: overdue ? "#dc2626" : undefined, fontWeight: overdue ? 700 : 400 }}>
-            📅 {overdue ? "Overdue · " : "Due "}{formatDate(task.dueDate)}
+            📅 {overdue ? "Overdue · " : "Due "}
+            {formatDate(task.dueDate)}
           </span>
           {task.location && <span>📍 {task.location}</span>}
-          {totalCount > 0 && <span>✅ {doneCount}/{totalCount} done</span>}
+          {totalCount > 0 && (
+            <span>
+              ✅ {doneCount}/{totalCount} done
+            </span>
+          )}
         </div>
 
         {/* Overdue Warning */}
@@ -112,7 +133,16 @@ export function EmployeeTaskDetailModal({ task, open, onClose }: Props) {
         {/* Description */}
         {task.description && (
           <div style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: 11, fontWeight: 800, color: "var(--wm-emp-muted, var(--wm-er-muted))", marginBottom: 4, textTransform: "uppercase", letterSpacing: 0.5 }}>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 800,
+                color: "var(--wm-emp-muted, var(--wm-er-muted))",
+                marginBottom: 4,
+                textTransform: "uppercase",
+                letterSpacing: 0.5,
+              }}
+            >
               Instructions
             </div>
             <div
@@ -134,7 +164,16 @@ export function EmployeeTaskDetailModal({ task, open, onClose }: Props) {
         {/* Checklist */}
         {totalCount > 0 && (
           <div>
-            <div style={{ fontSize: 11, fontWeight: 800, color: "var(--wm-emp-muted, var(--wm-er-muted))", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
+            <div
+              style={{
+                fontSize: 11,
+                fontWeight: 800,
+                color: "var(--wm-emp-muted, var(--wm-er-muted))",
+                marginBottom: 8,
+                textTransform: "uppercase",
+                letterSpacing: 0.5,
+              }}
+            >
               Checklist ({doneCount}/{totalCount})
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -176,7 +215,13 @@ export function EmployeeTaskDetailModal({ task, open, onClose }: Props) {
                     >
                       {checked && (
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                          <path d="M20 6L9 17l-5-5" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                          <path
+                            d="M20 6L9 17l-5-5"
+                            stroke="#fff"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
                         </svg>
                       )}
                     </span>

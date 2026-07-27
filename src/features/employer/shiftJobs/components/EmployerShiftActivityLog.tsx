@@ -21,7 +21,7 @@ export function EmployerShiftActivityLog({
       style={{
         marginTop: 10,
         marginBottom: 24,
-        borderRadius: 14,
+        borderRadius: "var(--wm-radius-chip)",
         border: "1px solid var(--wm-er-border)",
         overflow: "hidden",
       }}
@@ -62,7 +62,7 @@ export function EmployerShiftActivityLog({
                   key={entry.id}
                   style={{
                     padding: "10px 12px",
-                    borderRadius: 10,
+                    borderRadius: "var(--wm-radius-10)",
                     background: "var(--wm-er-bg)",
                     border: "1px solid var(--wm-er-border)",
                   }}

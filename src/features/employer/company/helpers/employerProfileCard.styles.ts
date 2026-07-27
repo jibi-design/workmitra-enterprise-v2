@@ -2,26 +2,27 @@
 
 export const EXECUTIVE_CARD_SHELL = {
   marginTop: 12,
-  padding: 18,
-  borderRadius: 24,
-  background:
-    "linear-gradient(145deg, rgba(255,255,255,0.94) 0%, rgba(250,245,255,0.9) 52%, rgba(255,255,255,0.88) 100%)",
-  border: "1px solid rgba(255,255,255,0.4)",
-  boxShadow: "0 10px 40px rgba(0,0,0,0.06)",
+  padding: 16,
+  borderRadius: "var(--wm-radius-employee-card)",
+  background: "rgba(255,255,255,0.74)",
+  border: "1px solid rgba(148,163,184,0.16)",
+  boxShadow: "0 4px 16px rgba(15,23,42,0.06)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
 } as const;
 
 export const EXECUTIVE_SECTION_KICKER = {
   fontSize: 11,
-  fontWeight: 900,
-  color: "#7c3aed",
-  letterSpacing: 0.8,
+  fontWeight: 800,
+  color: "var(--wm-emp-muted, #64748b)",
+  letterSpacing: 0.6,
   textTransform: "uppercase",
 } as const;
 
 export const EXECUTIVE_SECTION_TITLE = {
   marginTop: 4,
   fontSize: 17,
-  fontWeight: 950,
+  fontWeight: 800,
   color: "#0f172a",
   lineHeight: 1.25,
 } as const;

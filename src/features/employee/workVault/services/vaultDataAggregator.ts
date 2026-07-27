@@ -33,6 +33,8 @@ import {
   aggregatePlannerReferences,
   aggregatePlannerAttendanceRate,
   aggregatePlannerReliabilityScore,
+  aggregatePlannerRatings,
+  aggregatePlannerTimeline,
 } from "./vaultPlannerAggregator";
 
 import { vaultProfileService } from "./vaultProfileService";
@@ -49,6 +51,8 @@ import type {
   VaultProfessionalSummary,
   VaultEducation,
   EmploymentStatus,
+  VaultPlannerGrowthData,
+  VaultDomainRatingSummary,
 } from "../types/vaultProfileTypes";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -78,6 +82,9 @@ export type VaultSectionData = {
 
   /** Section 4: Work Stats */
   workStats: VaultWorkStats;
+
+  /** Section 4b: Planner Growth timeline (Hybrid A2 — separate from overallRating) */
+  plannerGrowth: VaultPlannerGrowthData;
 
   /** Section 5: Education */
   education: VaultEducation;
@@ -118,6 +125,13 @@ function computeBreakdown(allRatings: number[]) {
     else if (r === 1) b.star1++;
   }
   return b;
+}
+
+function toDomainSummary(ratings: number[]): VaultDomainRatingSummary {
+  return {
+    average: computeOverallRating(ratings),
+    count: ratings.length,
+  };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -178,6 +192,7 @@ export function getVaultSectionData(): VaultSectionData {
   const careerRatings = aggregateCareerRatings();
   const shiftRatings = aggregateShiftRatings();
   const wfRatings = aggregateWorkforceRatings();
+  const plannerRatings = aggregatePlannerRatings();
   // Planner ratings intentionally excluded from overallRating (Hybrid A2 board rule).
 
   const allRatings = [...careerRatings.ratings, ...shiftRatings.ratings, ...wfRatings.ratings];
@@ -189,6 +204,7 @@ export function getVaultSectionData(): VaultSectionData {
   const shiftReliability = aggregateReliabilityScore();
   const plannerAttendance = aggregatePlannerAttendanceRate();
   const plannerReliability = aggregatePlannerReliabilityScore();
+  const plannerTimeline = aggregatePlannerTimeline();
 
   const performance: VaultPerformanceRecord = {
     overallRating: computeOverallRating(allRatings),
@@ -196,6 +212,22 @@ export function getVaultSectionData(): VaultSectionData {
     ratingBreakdown: computeBreakdown(allRatings),
     attendanceRate: shiftAttendance ?? plannerAttendance,
     reliabilityScore: shiftReliability ?? plannerReliability,
+    domainRatings: {
+      career: toDomainSummary(careerRatings.ratings),
+      shift: toDomainSummary(shiftRatings.ratings),
+      planner: toDomainSummary(plannerRatings.ratings),
+    },
+  };
+
+  const plannerGrowth: VaultPlannerGrowthData = {
+    epochs: plannerTimeline,
+    totalEpochs: plannerStats.totalPlannerEpochs,
+    finalizedEpochs: plannerStats.totalPlannerEpochsFinalized,
+    totalPlans: plannerStats.totalPlannerPlans,
+    availabilityScore: plannerAttendance,
+    reliabilityScore: plannerReliability,
+    plannerRatingAverage: performance.domainRatings.planner.average,
+    plannerRatingCount: performance.domainRatings.planner.count,
   };
 
   // ── Section 8: References ──
@@ -234,6 +266,7 @@ export function getVaultSectionData(): VaultSectionData {
     },
     workExperience,
     workStats,
+    plannerGrowth,
     education: manual.education,
     skills,
     performance,

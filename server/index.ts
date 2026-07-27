@@ -3,6 +3,11 @@ import { assertSafeAuthEnvironment, isProduction, isDbAuthEnabled } from "./modu
 import { handleAuthRoutes } from "./modules/auth/auth.routes.js";
 import { handleEmployeeRoutes } from "./modules/employee/employee.routes.js";
 import { handleEmployerRoutes } from "./modules/employer/employer.routes.js";
+import { handleAvailabilityRoutes } from "./modules/shift/availability.routes.js";
+import { handleFavoritesRoutes } from "./modules/shift/favorites.routes.js";
+import { handleCallingRoutes } from "./routes/calling.routes.js";
+import { enforceCsrf, isMutatingMethod } from "./middleware/csrf.js";
+import { applyApiRateLimit, applyChaosInjection } from "./middleware/rateLimitChaos.js";
 
 const PORT = Number(process.env.PORT ?? 3001);
 
@@ -54,8 +59,9 @@ const server = createServer(async (req, res) => {
     res.setHeader("Vary", "Origin");
   }
   res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-CSRF-Token");
+  res.setHeader("Access-Control-Expose-Headers", "X-CSRF-Token");
 
   if (req.method === "OPTIONS") {
     res.statusCode = 204;
@@ -66,7 +72,53 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
   const method = req.method ?? "GET";
 
+  if (url.pathname === "/v1/jobmitra/health" && method === "GET") {
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify({ ok: true, service: "workmitra-api", ts: Date.now() }));
+    return;
+  }
+
+  const isContractMockPath =
+    url.pathname.startsWith("/v1/jobmitra/employee/shift/availability") ||
+    url.pathname.startsWith("/v1/jobmitra/employer/shift/availability-pool") ||
+    url.pathname.startsWith("/v1/jobmitra/employer/shift/favorites");
+
+  if (!isContractMockPath || method !== "GET") {
+    // Always rate-limit mutating + contract mock GETs used by flood probes.
+  }
+
+  const rate = applyApiRateLimit(req, res);
+  if (rate.blocked) {
+    res.statusCode = 429;
+    res.setHeader("Content-Type", "application/json");
+    res.end(
+      JSON.stringify({
+        error: {
+          code: "RATE_LIMITED",
+          message: "Too Many Requests",
+          retryAfterSec: rate.retryAfterSec,
+        },
+      }),
+    );
+    return;
+  }
+
+  const chaos = await applyChaosInjection(req, res);
+  if (chaos === "handled") return;
+
+  const isLogin = method === "POST" && url.pathname === "/v1/jobmitra/auth/login";
+  const skipCsrf = isLogin || isContractMockPath;
+  if (isMutatingMethod(method) && !skipCsrf) {
+    if (!enforceCsrf(req, res)) return;
+  }
+
+  // Contract mocks (availability/favorites) — PII-scrubbed; used by k6 + security probes.
+  if (await handleAvailabilityRoutes(req, res, url, method)) return;
+  if (await handleFavoritesRoutes(req, res, url, method)) return;
+
   if (await handleAuthRoutes(req, res, url.pathname, method)) return;
+  if (await handleCallingRoutes(req, res, url, method)) return;
   if (await handleEmployeeRoutes(req, res, url, method)) return;
   if (await handleEmployerRoutes(req, res, url, method)) return;
 
@@ -78,12 +130,18 @@ const server = createServer(async (req, res) => {
 server.listen(PORT, () => {
   console.log(`[Job Mitra API] listening on http://localhost:${PORT}`);
   console.log(
-    `[Job Mitra API] auth:     POST /v1/jobmitra/auth/login | GET /v1/jobmitra/auth/me | POST /v1/jobmitra/auth/logout`,
+    `[Job Mitra API] auth:     POST /v1/jobmitra/auth/login | GET /v1/jobmitra/auth/me | POST /v1/jobmitra/auth/logout | POST /v1/jobmitra/auth/supabase-bridge`,
   );
   console.log(
     `[Job Mitra API] employee: /v1/jobmitra/employee/career/* (requireAuth + requireEmployeeRole)`,
   );
   console.log(
-    `[Job Mitra API] employer: /v1/jobmitra/employer/career/* (requireAuth + requireEmployerRole)`,
+    `[Job Mitra API] employer: /v1/jobmitra/employer/career|shift|vault|hr|workforce/* (requireAuth + requireEmployerRole)`,
+  );
+  console.log(
+    `[Job Mitra API] calling:  POST /v1/jobmitra/call/{initiate|answer|end|fallback} (alias /api/call/*)`,
+  );
+  console.log(
+    `[Job Mitra API] calling job: npm run job:call-fallback (no-answer → Twilio or mark failed)`,
   );
 });

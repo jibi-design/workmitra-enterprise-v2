@@ -7,8 +7,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ConfirmModal } from "../../../../shared/components/ConfirmModal";
 import { FullscreenDocViewer } from "../../../../shared/components/FullscreenDocViewer";
 import { NoticeModal, type NoticeData } from "../../../../shared/components/NoticeModal";
-import { DEFAULT_FOLDER_SUGGESTIONS } from "../constants/vaultConstants";
-import { validateDocumentLimit } from "../helpers/vaultValidation";
+import { isSystemFolderName } from "../constants/vaultConstants";
+import {
+  validateDocumentLimit,
+  validateVaultStorageQuota,
+  estimateDataUrlBytes,
+} from "../helpers/vaultValidation";
 import { EmployeeVaultFolderActions } from "../components/folderPage/EmployeeVaultFolderActions";
 import { EmployeeVaultFolderDocuments } from "../components/folderPage/EmployeeVaultFolderDocuments";
 import { EmployeeVaultFolderHeader } from "../components/folderPage/EmployeeVaultFolderHeader";
@@ -20,13 +24,10 @@ import {
   deleteDocument,
   getDocumentCount,
   getDocumentsByFolder,
+  getVaultStorageUsedBytes,
 } from "../services/vaultDocumentService";
 import { getFolderById, renameFolder, setFolderVisibility } from "../services/vaultFolderService";
 import type { VaultDocument, VaultFileType } from "../types/vaultTypes";
-
-const SYSTEM_FOLDER_NAMES = new Set(
-  DEFAULT_FOLDER_SUGGESTIONS.map((suggestion) => suggestion.name),
-);
 
 export function EmployeeVaultFolderPage() {
   const { folderId } = useParams<{ folderId: string }>();
@@ -42,7 +43,7 @@ export function EmployeeVaultFolderPage() {
   const [notice, setNotice] = useState<NoticeData | null>(null);
 
   const isSystemFolder = useMemo(
-    () => (folder ? SYSTEM_FOLDER_NAMES.has(folder.name) : false),
+    () => (folder ? isSystemFolderName(folder.name) : false),
     [folder],
   );
 
@@ -80,14 +81,32 @@ export function EmployeeVaultFolderPage() {
       return;
     }
 
-    addDocument(
-      folderId,
-      data.name,
-      data.fileType,
-      data.base64Data,
-      data.thumbnailBase64,
-      data.expiryDate,
-    );
+    const incomingBytes =
+      estimateDataUrlBytes(data.base64Data) + estimateDataUrlBytes(data.thumbnailBase64);
+    const quotaCheck = validateVaultStorageQuota(incomingBytes, getVaultStorageUsedBytes());
+
+    if (!quotaCheck.valid) {
+      setNotice({ title: "Storage Full", message: quotaCheck.reason, tone: "warn" });
+      setShowUploadModal(false);
+      return;
+    }
+
+    try {
+      addDocument(
+        folderId,
+        data.name,
+        data.fileType,
+        data.base64Data,
+        data.thumbnailBase64,
+        data.expiryDate,
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Could not save this document.";
+      setNotice({ title: "Upload Failed", message, tone: "warn" });
+      setShowUploadModal(false);
+      return;
+    }
+
     refreshDocs();
     setShowUploadModal(false);
     setNotice({
@@ -133,7 +152,7 @@ export function EmployeeVaultFolderPage() {
   }
 
   return (
-    <div>
+    <div className="wm-stackGrid">
       <EmployeeVaultFolderHeader
         folder={folder}
         documentCount={docs.length}

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { IconCalendar, IconBriefcase } from "./employeeHomeIcons";
 import { DESIGN_TOKENS } from "../../../../app/theme/designTokens";
-import { plannerPublicIndex } from "../../../employer/planner/storage/plannerPublicIndex.storage";
+import { plannerPublicIndex } from "../../../shared/planner/plannerPublic";
 // AUDIT: Corrected path to go up 3 levels to reach src/features/pulse
 import { PulseNode } from "../../../pulse/PulseNode";
 

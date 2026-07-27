@@ -20,7 +20,7 @@ type Props = {
 
 const CARD_STYLE: CSSProperties = {
   marginTop: 12,
-  borderRadius: 20,
+  borderRadius: "var(--wm-radius-employee-card)",
   border: "1px solid rgba(226,232,240,0.95)",
   background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
   boxShadow: "0 10px 24px rgba(15,23,42,0.045)",
@@ -35,7 +35,7 @@ const GRID_STYLE: CSSProperties = {
 const INFO_BOX_STYLE: CSSProperties = {
   marginTop: 10,
   padding: "10px 12px",
-  borderRadius: 14,
+  borderRadius: "var(--wm-radius-chip)",
   background: "rgba(22,163,74,0.06)",
   border: "1px solid rgba(22,163,74,0.16)",
   fontSize: 11,

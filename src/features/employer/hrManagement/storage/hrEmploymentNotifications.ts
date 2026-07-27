@@ -1,10 +1,10 @@
 // src/features/employer/hrManagement/storage/hrEmploymentNotifications.ts
 
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
-import { employeeNotificationsStorage } from "../../../employee/notifications/storage/employeeNotifications.storage";
+import { employeeNotificationPort } from "../../../../shared/notifications/employeeNotificationPort";
 
 function notifyEmployee(title: string, body: string): void {
-  employeeNotificationsStorage.pushEmployment(title, body, ROUTE_PATHS.employeeCareerHome);
+  employeeNotificationPort.pushEmployment(title, body, ROUTE_PATHS.employeeCareerHome);
 }
 
 export function notifyEmployeeProbationConfirmed(

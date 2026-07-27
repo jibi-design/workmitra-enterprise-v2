@@ -6,38 +6,17 @@ type Props = {
   auto?: boolean;
 };
 
+/** Quiet section label — L-V1 luxury (no SECTION N shout). */
 export function VaultSectionHead({ number, title, auto }: Props) {
+  const index = String(number).padStart(2, "0");
+
   return (
-    <div
-      style={{
-        fontSize: 10,
-        fontWeight: 900,
-        color: "var(--wm-emp-muted)",
-        letterSpacing: 0.5,
-        marginBottom: 6,
-        display: "flex",
-        alignItems: "center",
-        gap: 6,
-      }}
-    >
-      <span>
-        SECTION {number} — {title.toUpperCase()}
+    <div className="wm-vault-section-label">
+      <span className="wm-vault-section-label__index" aria-hidden="true">
+        {index}
       </span>
-      {auto && (
-        <span
-          style={{
-            fontSize: 9,
-            fontWeight: 800,
-            padding: "1px 6px",
-            borderRadius: 999,
-            background: "rgba(22, 163, 74, 0.08)",
-            color: "#15803d",
-            border: "1px solid rgba(22, 163, 74, 0.18)",
-          }}
-        >
-          AUTO
-        </span>
-      )}
+      <span className="wm-vault-section-label__title">{title}</span>
+      {auto ? <span className="wm-vault-section-label__auto">Auto</span> : null}
     </div>
   );
 }

@@ -11,21 +11,17 @@ import type {
   AttendanceDayStatus,
   AttendanceMonthlySummary,
 } from "../types/attendanceLog.types";
+import { hrEmployerScopedKey } from "./hrStorageKeys";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────────────────────────────────────
-
-const STORAGE_KEY = "wm_attendance_log_v1";
 const CHANGED_EVENT = "wm:attendance-log-changed";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Internal Helpers
-// ─────────────────────────────────────────────────────────────────────────────
+function storageKey(): string {
+  return hrEmployerScopedKey("attendance_log_v1");
+}
 
 function read(): AttendanceDayEntry[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey());
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
     return Array.isArray(parsed) ? (parsed as AttendanceDayEntry[]) : [];
@@ -35,7 +31,7 @@ function read(): AttendanceDayEntry[] {
 }
 
 function write(entries: AttendanceDayEntry[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  localStorage.setItem(storageKey(), JSON.stringify(entries));
   window.dispatchEvent(new Event(CHANGED_EVENT));
 }
 
@@ -79,7 +75,6 @@ function toDateKey(date: Date): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const attendanceLogStorage = {
-
   // ── Read ──
 
   /** Get all entries for a specific HR candidate */
@@ -99,9 +94,7 @@ export const attendanceLogStorage = {
 
   /** Get a single day entry */
   getDayEntry(hrCandidateId: string, dateKey: string): AttendanceDayEntry | null {
-    return read().find(
-      (e) => e.hrCandidateId === hrCandidateId && e.dateKey === dateKey,
-    ) ?? null;
+    return read().find((e) => e.hrCandidateId === hrCandidateId && e.dateKey === dateKey) ?? null;
   },
 
   /** Calculate monthly summary (simple counts only — NO averages, NO percentages) */
@@ -153,9 +146,7 @@ export const attendanceLogStorage = {
   ): Omit<AttendanceMonthlySummary, "year" | "month"> {
     const entries = read().filter(
       (e) =>
-        e.hrCandidateId === hrCandidateId &&
-        e.dateKey >= startDateKey &&
-        e.dateKey <= endDateKey,
+        e.hrCandidateId === hrCandidateId && e.dateKey >= startDateKey && e.dateKey <= endDateKey,
     );
 
     let daysPresent = 0;

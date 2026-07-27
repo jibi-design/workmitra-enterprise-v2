@@ -1,8 +1,8 @@
-/** Job Mitra | navigation.runtime.ts — domain nav resolved with Phase 2 feature flag */
+/** Job Mitra | navigation.runtime.ts — domain nav resolved with feature flags */
 
-import { Users } from "lucide-react";
+import { Radio, Users } from "lucide-react";
 import { ROUTE_PATHS } from "../app/router/routePaths";
-import { showPhase2Features } from "../shared/config/featureFlags";
+import { showPhase2Features, showShiftOpsFeatures } from "../shared/config/featureFlags";
 import { NAVIGATION_CONFIG, type DomainConfig, type NavDomain } from "./navigation.config";
 
 export function resolveDomainNavConfig(domain: NavDomain): DomainConfig {
@@ -13,7 +13,7 @@ export function resolveDomainNavConfig(domain: NavDomain): DomainConfig {
   const base = NAVIGATION_CONFIG[domain];
 
   if (showPhase2Features && domain === "employeeDefault") {
-    return {
+    const withWorkforce: DomainConfig = {
       ...base,
       items: [
         ...base.items.slice(0, 3),
@@ -26,10 +26,23 @@ export function resolveDomainNavConfig(domain: NavDomain): DomainConfig {
         base.items[3]!,
       ],
     };
+    if (!showShiftOpsFeatures) return withWorkforce;
+    return {
+      ...withWorkforce,
+      items: [
+        ...withWorkforce.items,
+        {
+          label: "Shift Ops",
+          path: ROUTE_PATHS.employeeShiftOpsHub,
+          icon: Radio,
+          domain: "employeeDefault",
+        },
+      ],
+    };
   }
 
   if (showPhase2Features && domain === "employerDefault") {
-    return {
+    const withWorkforce: DomainConfig = {
       ...base,
       items: [
         ...base.items,
@@ -38,6 +51,79 @@ export function resolveDomainNavConfig(domain: NavDomain): DomainConfig {
           path: ROUTE_PATHS.employerWorkforceHome,
           icon: Users,
           domain: "employerDefault",
+        },
+      ],
+    };
+    if (!showShiftOpsFeatures) return withWorkforce;
+    return {
+      ...withWorkforce,
+      items: [
+        ...withWorkforce.items,
+        {
+          label: "Shift Ops",
+          path: ROUTE_PATHS.employerShiftOpsApprovals,
+          icon: Radio,
+          domain: "employerDefault",
+        },
+      ],
+    };
+  }
+
+  if (showShiftOpsFeatures && domain === "employeeDefault") {
+    return {
+      ...base,
+      items: [
+        ...base.items,
+        {
+          label: "Shift Ops",
+          path: ROUTE_PATHS.employeeShiftOpsHub,
+          icon: Radio,
+          domain: "employeeDefault",
+        },
+      ],
+    };
+  }
+
+  if (showShiftOpsFeatures && domain === "employerDefault") {
+    return {
+      ...base,
+      items: [
+        ...base.items,
+        {
+          label: "Shift Ops",
+          path: ROUTE_PATHS.employerShiftOpsApprovals,
+          icon: Radio,
+          domain: "employerDefault",
+        },
+      ],
+    };
+  }
+
+  if (showShiftOpsFeatures && domain === "shift") {
+    return {
+      ...base,
+      items: [
+        ...base.items,
+        {
+          label: "Shift Ops",
+          path: ROUTE_PATHS.employeeShiftOpsHub,
+          icon: Radio,
+          domain: "shift",
+        },
+      ],
+    };
+  }
+
+  if (showShiftOpsFeatures && domain === "employerShift") {
+    return {
+      ...base,
+      items: [
+        ...base.items,
+        {
+          label: "Shift Ops",
+          path: ROUTE_PATHS.employerShiftOpsApprovals,
+          icon: Radio,
+          domain: "employerShift",
         },
       ],
     };

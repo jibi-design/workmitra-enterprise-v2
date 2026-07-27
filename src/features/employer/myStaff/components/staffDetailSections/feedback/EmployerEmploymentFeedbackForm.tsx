@@ -63,7 +63,7 @@ export function EmployerEmploymentFeedbackForm({
               style={{
                 minHeight: 34,
                 padding: "0 11px",
-                borderRadius: 999,
+                borderRadius: "var(--wm-radius-pill)",
                 border: selected
                   ? "1px solid rgba(79,70,229,0.34)"
                   : "1px solid rgba(148,163,184,0.18)",
@@ -105,7 +105,7 @@ export function EmployerEmploymentFeedbackForm({
           style={{
             width: "100%",
             padding: "10px 11px",
-            borderRadius: 13,
+            borderRadius: "var(--wm-radius-chip)",
             border: "1px solid rgba(148,163,184,0.24)",
             background: "rgba(255,255,255,0.84)",
             color: TEXT,
@@ -187,7 +187,7 @@ function ConfirmCheckbox({
         gap: 8,
         alignItems: "flex-start",
         padding: "8px 10px",
-        borderRadius: 11,
+        borderRadius: "var(--wm-radius-10)",
         background: "rgba(15,23,42,0.035)",
         border: "1px solid rgba(148,163,184,0.14)",
         cursor: "pointer",

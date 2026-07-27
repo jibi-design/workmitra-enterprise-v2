@@ -58,7 +58,7 @@ export function EmployerMyStaffPage() {
   const isSearching = Boolean(searchQuery.trim() || filterCategory);
 
   return (
-    <div>
+    <div className="wm-er-vCareer wm-stackGrid">
       <NoticeModal notice={notice} onClose={() => setNotice(null)} />
 
       <MyStaffHeader staffCount={staffList.length} onAdd={() => setShowAddModal(true)} />
@@ -92,8 +92,6 @@ export function EmployerMyStaffPage() {
           });
         }}
       />
-
-      <div style={{ height: 32 }} />
     </div>
   );
 }

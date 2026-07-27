@@ -22,7 +22,7 @@ const inlineEditBtnStyle: React.CSSProperties = {
   cursor: "pointer",
   color: AMBER,
   padding: 4,
-  borderRadius: 6,
+  borderRadius: "var(--wm-radius-8)",
   display: "inline-flex",
   alignItems: "center",
 };
@@ -87,7 +87,14 @@ export function EmployerWorkforceStaffRatingSection({
       </div>
 
       {ratingOpen && (
-        <div style={{ marginTop: 12, padding: 12, borderRadius: 10, background: AMBER_BG }}>
+        <div
+          style={{
+            marginTop: 12,
+            padding: 12,
+            borderRadius: "var(--wm-radius-10)",
+            background: AMBER_BG,
+          }}
+        >
           <div
             style={{ fontSize: 12, fontWeight: 700, color: "var(--wm-er-text)", marginBottom: 8 }}
           >
@@ -103,7 +110,7 @@ export function EmployerWorkforceStaffRatingSection({
                 style={{
                   width: 40,
                   height: 40,
-                  borderRadius: 10,
+                  borderRadius: "var(--wm-radius-10)",
                   border:
                     ratingVal === value ? `2px solid ${AMBER}` : "1px solid var(--wm-er-border)",
                   background: ratingVal === value ? AMBER : "#fff",

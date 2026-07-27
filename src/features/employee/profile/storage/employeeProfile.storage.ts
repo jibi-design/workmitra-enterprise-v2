@@ -1,10 +1,8 @@
-// src/features/employee/profile/storage/employeeProfile.storage.ts
+/** Employee profile storage — PII sealed at rest. */
 
 import { generateAndRegisterId } from "../../../../shared/identity/registry/idRegistry";
+import { piiSecureStorage } from "../../../../shared/security/piiSecureStorage";
 
-/* ------------------------------------------------ */
-/* Types                                            */
-/* ------------------------------------------------ */
 export type ExperienceLevel = "fresher" | "1-3" | "3-7" | "7+";
 
 export type Availability = {
@@ -19,26 +17,21 @@ export type EmployeeProfile = {
   uniqueId?: string;
   fullName: string;
   city: string;
-
   photoDataUrl?: string;
-
   skills: string[];
   experience: ExperienceLevel;
   languages: string[];
-
   preferShiftJobs: boolean;
   preferCareerJobs: boolean;
-
   availability: Availability;
-
   phoneMasked?: string;
   emailMasked?: string;
+  /** One-time contact verification — when true, hide OTP in Shift Ops / profile. */
+  phoneVerified?: boolean;
+  emailVerified?: boolean;
   createdAt?: number;
 };
 
-/* ------------------------------------------------ */
-/* Constants                                        */
-/* ------------------------------------------------ */
 const KEY = "wm_employee_profile_v1";
 
 const DEFAULT_PROFILE: EmployeeProfile = {
@@ -60,9 +53,6 @@ const DEFAULT_PROFILE: EmployeeProfile = {
   emailMasked: "••••@••••",
 };
 
-/* ------------------------------------------------ */
-/* Helpers                                          */
-/* ------------------------------------------------ */
 function safeParse(raw: string | null): EmployeeProfile {
   if (!raw) return { ...DEFAULT_PROFILE };
   try {
@@ -87,15 +77,17 @@ function safeParse(raw: string | null): EmployeeProfile {
 }
 
 function write(profile: EmployeeProfile): void {
-  localStorage.setItem(KEY, JSON.stringify(profile));
+  piiSecureStorage.setJson(KEY, profile);
 }
 
-/* ------------------------------------------------ */
-/* Public API                                       */
-/* ------------------------------------------------ */
+/** Read sealed profile without generating uniqueId (avoids nested writes). */
+function readRaw(): EmployeeProfile {
+  return safeParse(piiSecureStorage.getItem(KEY));
+}
+
 export const employeeProfileStorage = {
   get(): EmployeeProfile {
-    const profile = safeParse(localStorage.getItem(KEY));
+    const profile = readRaw();
 
     if (!profile.uniqueId?.trim() && profile.fullName.trim()) {
       const result = generateAndRegisterId(profile.fullName, "employee");
@@ -113,24 +105,26 @@ export const employeeProfileStorage = {
     return profile;
   },
 
-  set(profile: EmployeeProfile): void {
-    const existing = this.get();
-
-    let uniqueId = existing.uniqueId;
+  /** Single sealed write; does not call get() (P1-2 — no uniqueId double-write). */
+  set(profile: EmployeeProfile): EmployeeProfile {
+    const existing = readRaw();
+    let uniqueId = profile.uniqueId?.trim() || existing.uniqueId?.trim() || undefined;
 
     if (!uniqueId && profile.fullName.trim()) {
       const result = generateAndRegisterId(profile.fullName, "employee");
-      if (result.success) {
-        uniqueId = result.id;
-      }
+      if (result.success) uniqueId = result.id;
     }
 
-    const createdAt = existing.createdAt ?? Date.now();
-
-    write({ ...profile, uniqueId, createdAt });
+    const next: EmployeeProfile = {
+      ...profile,
+      uniqueId,
+      createdAt: existing.createdAt ?? profile.createdAt ?? Date.now(),
+    };
+    write(next);
+    return next;
   },
 
   clear(): void {
-    localStorage.removeItem(KEY);
+    piiSecureStorage.removeItem(KEY);
   },
 };

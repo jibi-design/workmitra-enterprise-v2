@@ -81,7 +81,7 @@ export function CompanyWorkingDaysCard({ config }: Props) {
                 gap: 8,
                 padding: "10px 12px",
                 border: isSelected ? `2px solid ${PURPLE}` : `1.5px solid ${BORDER_COLOR}`,
-                borderRadius: 8,
+                borderRadius: "var(--wm-radius-8)",
                 background: isSelected ? "var(--wm-er-accent-hr-light)" : "#fff",
                 cursor: "pointer",
                 fontSize: 13,
@@ -131,7 +131,7 @@ export function CompanyWorkingDaysCard({ config }: Props) {
                   style={{
                     padding: "7px 14px",
                     border: isActive ? "2px solid #15803d" : `1.5px solid ${BORDER_COLOR}`,
-                    borderRadius: 8,
+                    borderRadius: "var(--wm-radius-8)",
                     background: isActive ? "#dcfce7" : "#fff",
                     cursor: "pointer",
                     fontSize: 12,
@@ -152,7 +152,7 @@ export function CompanyWorkingDaysCard({ config }: Props) {
           style={{
             marginTop: 10,
             padding: "8px 12px",
-            borderRadius: 6,
+            borderRadius: "var(--wm-radius-8)",
             background: "#f0f9ff",
             border: "1px solid #bae6fd",
             fontSize: 12,

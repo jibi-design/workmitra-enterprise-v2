@@ -143,7 +143,7 @@ function ModalFrame({ title, subtitle, onClose, children }: ModalFrameProps) {
           width: "100%",
           maxWidth: 520,
           margin: 0,
-          borderRadius: 22,
+          borderRadius: "var(--wm-radius-employee-card)",
           boxShadow: "0 24px 60px rgba(15,23,42,0.22)",
         }}
         onClick={(event) => event.stopPropagation()}
@@ -192,7 +192,7 @@ export function UpdateCard({ u }: { u: ShiftWorkspaceUpdate }) {
       style={{
         border: style.border,
         background: style.bg,
-        borderRadius: 16,
+        borderRadius: "var(--wm-radius-chip)",
         padding: 12,
       }}
     >
@@ -240,7 +240,7 @@ export function RatingBanner({ hasRating, onRate }: RatingBannerProps) {
         style={{
           marginTop: 10,
           padding: "9px 12px",
-          borderRadius: 12,
+          borderRadius: "var(--wm-radius-button)",
           background: "rgba(22,163,74,0.06)",
           border: "1px solid rgba(22,163,74,0.15)",
           fontSize: 12,
@@ -258,7 +258,7 @@ export function RatingBanner({ hasRating, onRate }: RatingBannerProps) {
       style={{
         marginTop: 10,
         padding: "12px 14px",
-        borderRadius: 14,
+        borderRadius: "var(--wm-radius-chip)",
         background: "rgba(217,119,6,0.06)",
         border: "1px solid rgba(217,119,6,0.18)",
       }}
@@ -276,7 +276,7 @@ export function RatingBanner({ hasRating, onRate }: RatingBannerProps) {
           marginTop: 9,
           height: 36,
           padding: "0 16px",
-          borderRadius: 10,
+          borderRadius: "var(--wm-radius-10)",
           border: "none",
           background: "var(--wm-er-accent-shift, #16a34a)",
           color: "#fff",

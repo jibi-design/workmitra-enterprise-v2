@@ -11,22 +11,21 @@ import type {
   LeaveStatus,
 } from "../types/leaveManagement.types";
 import { DEFAULT_LEAVE_ALLOCATION } from "../types/leaveManagement.types";
+import { hrEmployerScopedKey } from "./hrStorageKeys";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────────────────────────────────────
-
-const REQUESTS_KEY = "wm_hr_leave_requests_v1";
-const ALLOCATIONS_KEY = "wm_hr_leave_allocations_v1";
 const CHANGED_EVENT = "wm:hr-leave-changed";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Internal Helpers
-// ─────────────────────────────────────────────────────────────────────────────
+function requestsKey(): string {
+  return hrEmployerScopedKey("leave_requests_v1");
+}
+
+function allocationsKey(): string {
+  return hrEmployerScopedKey("leave_allocations_v1");
+}
 
 function readRequests(): LeaveRequest[] {
   try {
-    const raw = localStorage.getItem(REQUESTS_KEY);
+    const raw = localStorage.getItem(requestsKey());
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
     return Array.isArray(parsed) ? (parsed as LeaveRequest[]) : [];
@@ -36,13 +35,13 @@ function readRequests(): LeaveRequest[] {
 }
 
 function writeRequests(records: LeaveRequest[]): void {
-  localStorage.setItem(REQUESTS_KEY, JSON.stringify(records));
+  localStorage.setItem(requestsKey(), JSON.stringify(records));
   window.dispatchEvent(new Event(CHANGED_EVENT));
 }
 
 function readAllocations(): LeaveAllocation[] {
   try {
-    const raw = localStorage.getItem(ALLOCATIONS_KEY);
+    const raw = localStorage.getItem(allocationsKey());
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
     return Array.isArray(parsed) ? (parsed as LeaveAllocation[]) : [];
@@ -52,7 +51,7 @@ function readAllocations(): LeaveAllocation[] {
 }
 
 function writeAllocations(records: LeaveAllocation[]): void {
-  localStorage.setItem(ALLOCATIONS_KEY, JSON.stringify(records));
+  localStorage.setItem(allocationsKey(), JSON.stringify(records));
   window.dispatchEvent(new Event(CHANGED_EVENT));
 }
 
@@ -102,7 +101,7 @@ export const leaveManagementStorage = {
     return readRequests().find((r) => r.id === id) ?? null;
   },
 
-  /** Apply for leave (employee action) */
+  /** Apply for leave (employee action). Auth on: prefer hrService.createLeaveRequest. */
   applyLeave(data: {
     hrCandidateId: string;
     employeeUniqueId: string;

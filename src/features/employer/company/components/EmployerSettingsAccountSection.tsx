@@ -67,8 +67,11 @@ export function EmployerSettingsAccountSection({
 
       <div style={{ ...rowStyle, ...rowDividerStyle, marginBottom: 0 }}>
         <div>
-          <div style={rowLabelStyle}>Log out of all other devices</div>
-          <div style={rowDescStyle}>Revoke access from every other signed-in device.</div>
+          <div style={rowLabelStyle}>Log out</div>
+          <div style={rowDescStyle}>
+            Sign out on this device and clear local vault/PII caches. Multi-device revoke comes with
+            server sessions.
+          </div>
         </div>
         <button
           type="button"
@@ -76,7 +79,7 @@ export function EmployerSettingsAccountSection({
           onClick={onLogoutAllDevices}
           style={{ fontSize: 12, padding: "6px 12px", flexShrink: 0 }}
         >
-          Log out all
+          Log out
         </button>
       </div>
     </div>

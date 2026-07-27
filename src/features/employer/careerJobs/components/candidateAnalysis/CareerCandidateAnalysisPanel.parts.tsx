@@ -37,7 +37,7 @@ export function AnalysisHeader({ onClose }: { onClose: () => void }) {
           flexShrink: 0,
           width: 32,
           height: 32,
-          borderRadius: 16,
+          borderRadius: "var(--wm-radius-chip)",
           border: "none",
           background: "rgba(15, 23, 42, 0.04)",
           color: CAREER_ANALYSIS_MUTED,
@@ -87,7 +87,7 @@ export function ManualReviewWarning() {
       style={{
         marginTop: 16,
         padding: "12px 14px",
-        borderRadius: 16,
+        borderRadius: "var(--wm-radius-chip)",
         background: "rgba(254,242,242,0.8)",
         border: "1px solid rgba(220,38,38,0.2)",
         color: "#dc2626",

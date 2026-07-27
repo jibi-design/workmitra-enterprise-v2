@@ -35,7 +35,7 @@ const BottomNav: React.FC = () => {
             aria-current={item.isActive ? "page" : undefined}
           >
             <div className={styles.iconBox}>
-              <Icon size={20} strokeWidth={item.isActive ? 2.5 : 2} className={styles.icon} />
+              <Icon size={22} strokeWidth={item.isActive ? 2.5 : 2} className={styles.icon} />
               {item.hasUnreadBadge && !item.isActive && (
                 <span className={styles.unreadDot} aria-label="Pending direct invites" />
               )}

@@ -15,8 +15,17 @@ export const VAULT_STORAGE_KEYS = {
   employerSessionId: "wm_employer_vault_session_id_v1",
 } as const;
 
-/** Domain accent color for Work Vault. */
-export const VAULT_ACCENT = "#7c3aed" as const;
+/**
+ * Domain accent — CSS token (theme / dark-mode overridable).
+ * For soft washes use vaultAccentMix(); do not append hex alpha to this string.
+ */
+export const VAULT_ACCENT = "var(--wm-vault-accent)" as const;
+
+/** Soft wash of vault accent into transparent (percent 0–100). */
+export function vaultAccentMix(percent: number): string {
+  const p = Math.max(0, Math.min(100, Math.round(percent)));
+  return `color-mix(in srgb, var(--wm-vault-accent) ${p}%, transparent)`;
+}
 
 /** OTP validity duration in milliseconds (5 minutes). */
 export const OTP_VALIDITY_MS = 5 * 60 * 1000;
@@ -33,8 +42,17 @@ export const MAX_DOCUMENTS_PER_FOLDER = 20;
 /** Maximum folders per employee. */
 export const MAX_FOLDERS = 15;
 
-/** Maximum document file size in bytes (1 MB for Phase-0). */
-export const MAX_DOCUMENT_SIZE_BYTES = 1_000_000;
+/** Maximum document file size in bytes (Global Docs D3). */
+export const MAX_DOCUMENT_SIZE_BYTES = 2 * 1024 * 1024;
+
+/** Maximum cumulative vault storage per user in bytes (Global Docs D3). */
+export const MAX_VAULT_STORAGE_BYTES = 10 * 1024 * 1024;
+
+/** Human-readable max file size for UI copy. */
+export const MAX_DOCUMENT_SIZE_MB = MAX_DOCUMENT_SIZE_BYTES / (1024 * 1024);
+
+/** Human-readable total vault cap for UI copy. */
+export const MAX_VAULT_STORAGE_MB = MAX_VAULT_STORAGE_BYTES / (1024 * 1024);
 
 /** Allowed document file types. */
 export const ALLOWED_FILE_TYPES = [
@@ -44,11 +62,47 @@ export const ALLOWED_FILE_TYPES = [
   "application/pdf",
 ] as const;
 
-/** Default folder suggestions for new vaults. */
+/**
+ * Default folders for new vaults — region-neutral international career terminology (Global Docs D1).
+ * Icon keys stay stable for UI; names may change without changing icons.
+ */
 export const DEFAULT_FOLDER_SUGGESTIONS: readonly { name: string; icon: string }[] = [
-  { name: "Identity Documents", icon: "id" },
-  { name: "Work Certificates", icon: "cert" },
-  { name: "Education", icon: "edu" },
-  { name: "Skills & Licenses", icon: "license" },
-  { name: "Other Documents", icon: "other" },
+  { name: "Educational Records", icon: "edu" },
+  { name: "Professional Certificates", icon: "cert" },
+  { name: "Skills & Professional Licenses", icon: "license" },
+  { name: "Work Experience Letters", icon: "id" },
+  { name: "Other Career Documents", icon: "other" },
 ] as const;
+
+/** Legacy default folder names — still treated as system folders for existing local vaults. */
+export const LEGACY_SYSTEM_FOLDER_NAMES: readonly string[] = [
+  "Identity Documents",
+  "Work Certificates",
+  "Education",
+  "Skills & Licenses",
+  "Other Documents",
+] as const;
+
+/** True if folder name is a current or legacy system default (non-deletable). */
+export function isSystemFolderName(name: string): boolean {
+  const trimmed = name.trim();
+  if (DEFAULT_FOLDER_SUGGESTIONS.some((s) => s.name === trimmed)) return true;
+  return LEGACY_SYSTEM_FOLDER_NAMES.includes(trimmed);
+}
+
+/** Region-neutral education level labels (enum keys unchanged for storage). */
+export const EDUCATION_LEVEL_LABELS = {
+  none: "Not specified",
+  high_school: "Secondary School Certificate / High School Diploma",
+  diploma: "Diploma / Vocational Certification",
+  degree: "Bachelor's Degree",
+  masters: "Master's Degree",
+  phd: "Doctoral Degree",
+} as const;
+
+/**
+ * Exact sensitive-upload disclaimer body (after the bold "Notice:" label).
+ * Shown on all document upload surfaces — Global Docs D2.
+ */
+export const VAULT_SENSITIVE_UPLOAD_NOTICE =
+  "Please do not upload sensitive government-issued photo identity documents (passports, national IDs, driver's licenses) or financial statements. Upload only relevant educational and professional career records.";

@@ -1,0 +1,149 @@
+/** Job Mitra | pulseRegistry.eventTypes.ts | src/features/pulse/pulseRegistry.eventTypes.ts */
+
+import { PulseEvent } from "./pulseEvents";
+import { PulseSectionId } from "./pulseSectionIds";
+
+export type PulseAffectedUserRole = "employee" | "employer" | "admin";
+
+export type PulseEventDomain = "shift" | "career" | "workforce" | "employment" | "admin" | "system";
+
+export type PulseEventSeverity = "info" | "success" | "warning" | "urgent";
+
+export const PULSE_BACKEND_EVENT_TYPES = [
+  "SHIFT_APPLICATION_SUBMITTED",
+  "SHIFT_EMPLOYEE_SHORTLISTED",
+  "SHIFT_EMPLOYEE_WAITLISTED",
+  "SHIFT_CONFIRMATION_REQUIRED",
+  "SHIFT_EMPLOYEE_SELECTED",
+
+  "CAREER_APPLICATION_SUBMITTED",
+  "CAREER_NEW_APPLICATION",
+  "CAREER_EMPLOYEE_SHORTLISTED",
+  "CAREER_INTERVIEW_SCHEDULED",
+  "CAREER_INTERVIEW_INVITE",
+  "CAREER_OFFER_RECEIVED",
+  "CAREER_OFFER_EXTENDED",
+  "CAREER_OFFER_ACCEPTED",
+  "CAREER_OFFER_REJECTED",
+
+  "NEW_RATING",
+  "REVIEW_RECEIVED",
+  "GROUP_UPDATE",
+  "GENERAL_BROADCAST",
+  "PROFILE_VIEW",
+  "CAREER_JOB_BOOKMARKED",
+  "CAREER_RESUME_DOWNLOADED",
+  "CAREER_POST_EXPIRING",
+  "CAREER_PROFILE_VIEWED",
+
+  "SYSTEM_ALERT",
+
+  "SHIFT_WORKER_CONFIRMED",
+  "SHIFT_WORKER_CANCELLED",
+  "SHIFT_POST_COMPLETED",
+  "SHIFT_PLAN_CANCELLED_CONFIRMED_WORKER",
+  "PLAN_CANCELLED",
+  "CAREER_INTERVIEW_ACCEPTED",
+  "CAREER_INTERVIEW_DECLINED",
+
+  "SHIFT_POSTS_NEARBY",
+  "SHIFT_APPLICATION_REJECTED",
+  "SHIFT_ASSIGNMENT_REPLACED",
+  "SHIFT_BACKUP_SLOT_OPEN",
+  "SHIFT_APPLICATION_WITHDRAWN",
+  "CAREER_APPLICATION_REJECTED",
+  "CAREER_INTERVIEW_UPDATE",
+  "CAREER_HIRED",
+
+  "EMPLOYMENT_JOINED",
+  "EMPLOYMENT_RESIGNATION_SUBMITTED",
+  "EMPLOYMENT_RESIGNATION_WITHDRAWN",
+  "EMPLOYMENT_RESIGNATION_CONFIRMED",
+  "EMPLOYMENT_TERMINATED",
+  "EMPLOYMENT_FORCE_COMPLETED",
+  "EMPLOYMENT_PLEASE_RATE",
+] as const;
+
+export type PulseBackendEventType = (typeof PULSE_BACKEND_EVENT_TYPES)[number];
+
+export const PULSE_ENABLED_EVENT_TYPES = [
+  "SHIFT_APPLICATION_SUBMITTED",
+  "SHIFT_EMPLOYEE_SHORTLISTED",
+  "SHIFT_EMPLOYEE_WAITLISTED",
+  "SHIFT_CONFIRMATION_REQUIRED",
+  "SHIFT_EMPLOYEE_SELECTED",
+
+  "CAREER_APPLICATION_SUBMITTED",
+  "CAREER_NEW_APPLICATION",
+  "CAREER_EMPLOYEE_SHORTLISTED",
+  "CAREER_INTERVIEW_SCHEDULED",
+  "CAREER_INTERVIEW_INVITE",
+  "CAREER_OFFER_RECEIVED",
+  "CAREER_OFFER_EXTENDED",
+  "CAREER_OFFER_ACCEPTED",
+  "CAREER_OFFER_REJECTED",
+
+  "SYSTEM_ALERT",
+
+  "SHIFT_WORKER_CONFIRMED",
+  "SHIFT_WORKER_CANCELLED",
+  "SHIFT_POST_COMPLETED",
+  "SHIFT_PLAN_CANCELLED_CONFIRMED_WORKER",
+  "PLAN_CANCELLED",
+  "CAREER_INTERVIEW_ACCEPTED",
+  "CAREER_INTERVIEW_DECLINED",
+
+  "REVIEW_RECEIVED",
+
+  "EMPLOYMENT_JOINED",
+  "EMPLOYMENT_RESIGNATION_SUBMITTED",
+  "EMPLOYMENT_RESIGNATION_WITHDRAWN",
+  "EMPLOYMENT_RESIGNATION_CONFIRMED",
+  "EMPLOYMENT_TERMINATED",
+  "EMPLOYMENT_FORCE_COMPLETED",
+] as const;
+
+export type PulseEnabledEventType = (typeof PULSE_ENABLED_EVENT_TYPES)[number];
+
+export const INFORMATION_ONLY_EVENT_TYPES = [
+  "NEW_RATING",
+  "GROUP_UPDATE",
+  "GENERAL_BROADCAST",
+  "PROFILE_VIEW",
+  "CAREER_JOB_BOOKMARKED",
+  "CAREER_RESUME_DOWNLOADED",
+  "CAREER_POST_EXPIRING",
+  "CAREER_PROFILE_VIEWED",
+
+  "SHIFT_POSTS_NEARBY",
+  "SHIFT_APPLICATION_REJECTED",
+  "SHIFT_ASSIGNMENT_REPLACED",
+  "SHIFT_BACKUP_SLOT_OPEN",
+  "SHIFT_APPLICATION_WITHDRAWN",
+  "CAREER_APPLICATION_REJECTED",
+  "CAREER_INTERVIEW_UPDATE",
+  "CAREER_HIRED",
+] as const;
+
+export type InformationOnlyEventType = (typeof INFORMATION_ONLY_EVENT_TYPES)[number];
+
+export function isPulseEnabledEventType(
+  value: PulseBackendEventType,
+): value is PulseEnabledEventType {
+  return PULSE_ENABLED_EVENT_TYPES.includes(value as PulseEnabledEventType);
+}
+
+export function isInformationOnlyEventType(
+  value: PulseBackendEventType,
+): value is InformationOnlyEventType {
+  return INFORMATION_ONLY_EVENT_TYPES.includes(value as InformationOnlyEventType);
+}
+
+export type PulseRouteDefinition = {
+  readonly eventId: PulseEvent;
+  readonly affectedUserRole: PulseAffectedUserRole;
+  readonly domain: PulseEventDomain;
+  readonly chain: readonly string[];
+  readonly severity: PulseEventSeverity;
+  readonly targetSectionId?: (typeof PulseSectionId)[keyof typeof PulseSectionId];
+};

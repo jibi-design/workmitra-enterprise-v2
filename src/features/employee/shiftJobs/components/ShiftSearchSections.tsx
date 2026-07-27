@@ -93,7 +93,7 @@ function SearchSectionShell({
     <div
       style={{
         ...shiftSearchSectionWrapStyle,
-        borderRadius: 22,
+        borderRadius: "var(--wm-radius-employee-card)",
         border: "1px solid rgba(22,163,74,0.16)",
         background: "linear-gradient(180deg, rgba(240,253,244,0.72), rgba(255,255,255,0.98))",
         boxShadow: "0 12px 28px rgba(15,23,42,0.055)",
@@ -155,7 +155,7 @@ function SearchSectionShell({
               minWidth: 82,
               height: 34,
               padding: "0 12px",
-              borderRadius: 999,
+              borderRadius: "var(--wm-radius-pill)",
               border: "1px solid rgba(22,163,74,0.2)",
               background: expanded
                 ? "linear-gradient(180deg, rgba(22,163,74,0.14), rgba(240,253,244,0.9))"

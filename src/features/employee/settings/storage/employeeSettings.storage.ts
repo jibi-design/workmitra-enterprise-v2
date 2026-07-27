@@ -21,6 +21,8 @@ export type EmployeeSettings = {
   globalMute: boolean;
 };
 const KEY = "wm_employee_settings_v1";
+const DEBOUNCE_MS = 350;
+
 const DEFAULTS: EmployeeSettings = {
   language: "en",
   defaultHomeTab: "home",
@@ -36,6 +38,10 @@ const DEFAULTS: EmployeeSettings = {
   hapticFeedback: true,
   globalMute: false,
 };
+
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+let pendingDebounced: EmployeeSettings | null = null;
+
 function safeParse(raw: string | null): EmployeeSettings {
   if (!raw) return { ...DEFAULTS };
   try {
@@ -45,18 +51,58 @@ function safeParse(raw: string | null): EmployeeSettings {
     return { ...DEFAULTS };
   }
 }
-function write(s: EmployeeSettings) {
+
+function writeNow(s: EmployeeSettings) {
   localStorage.setItem(KEY, JSON.stringify(s));
   window.dispatchEvent(new Event("wm:app-settings-changed"));
 }
+
+function flushDebounced() {
+  debounceTimer = null;
+  if (!pendingDebounced) return;
+  const next = pendingDebounced;
+  pendingDebounced = null;
+  writeNow(next);
+}
+
 export const employeeSettingsStorage = {
   get(): EmployeeSettings {
     return safeParse(localStorage.getItem(KEY));
   },
+
+  /** Immediate persist + event (toggles, selects). */
   set(next: EmployeeSettings) {
-    write(next);
+    if (debounceTimer != null) {
+      clearTimeout(debounceTimer);
+      debounceTimer = null;
+      pendingDebounced = null;
+    }
+    writeNow(next);
   },
+
+  /**
+   * Coalesce quiet-hours time keystrokes into one write + one global event (P1-1).
+   */
+  setDebounced(next: EmployeeSettings) {
+    pendingDebounced = next;
+    if (debounceTimer != null) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(flushDebounced, DEBOUNCE_MS);
+  },
+
+  /** Force any pending debounced write (logout / unmount). */
+  flush() {
+    if (debounceTimer != null) {
+      clearTimeout(debounceTimer);
+      flushDebounced();
+    }
+  },
+
   clear() {
+    if (debounceTimer != null) {
+      clearTimeout(debounceTimer);
+      debounceTimer = null;
+      pendingDebounced = null;
+    }
     localStorage.removeItem(KEY);
   },
 };

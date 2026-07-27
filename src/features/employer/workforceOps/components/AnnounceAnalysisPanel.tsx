@@ -129,7 +129,7 @@ export function AnnounceAnalysisPanel({
               flex: "1 1 0",
               minWidth: 60,
               padding: "8px 10px",
-              borderRadius: 8,
+              borderRadius: "var(--wm-radius-8)",
               background: "var(--wm-er-bg)",
               textAlign: "center",
             }}
@@ -206,7 +206,7 @@ export function AnnounceAnalysisPanel({
           <div
             style={{
               height: 4,
-              borderRadius: 2,
+              borderRadius: "var(--wm-radius-8)",
               background: "var(--wm-er-border)",
               marginBottom: 10,
             }}
@@ -216,7 +216,7 @@ export function AnnounceAnalysisPanel({
                 height: "100%",
                 width: `${Math.min((group.selectedCount / Math.max(group.vacancy, 1)) * 100, 100)}%`,
                 background: group.selectedCount >= group.vacancy ? "var(--wm-success)" : AMBER,
-                borderRadius: 2,
+                borderRadius: "var(--wm-radius-8)",
                 transition: "width 0.3s ease",
               }}
             />
@@ -259,7 +259,7 @@ export function AnnounceAnalysisPanel({
         <div
           style={{
             padding: 10,
-            borderRadius: 8,
+            borderRadius: "var(--wm-radius-8)",
             background: AMBER_BG,
             fontSize: 12,
             color: AMBER,

@@ -48,7 +48,7 @@ export function Toggle({ label, sub, value, onChange }: ToggleProps) {
         style={{
           width: 44,
           height: 24,
-          borderRadius: 999,
+          borderRadius: "var(--wm-radius-pill)",
           border: "none",
           cursor: "pointer",
           flexShrink: 0,

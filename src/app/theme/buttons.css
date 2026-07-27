@@ -83,13 +83,63 @@
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  will-change: transform;
   transition:
-    transform var(--wm-motion-fast) var(--wm-motion-spring),
+    transform var(--wm-motion-base) var(--wm-motion-ease),
     border-color var(--wm-motion-base) var(--wm-motion-spring),
     box-shadow var(--wm-motion-base) var(--wm-motion-spring),
     background var(--wm-motion-base) var(--wm-motion-spring),
     color var(--wm-motion-base) var(--wm-motion-spring),
     opacity var(--wm-motion-base) var(--wm-motion-spring);
+}
+
+/* Pressable motion baked into enterprise buttons (Wave 1) */
+.wm-primarybtn:active:not([disabled]):not([aria-disabled="true"]),
+.wm-outlineBtn:active:not([disabled]):not([aria-disabled="true"]),
+.wm-ghostBtn:active:not([disabled]):not([aria-disabled="true"]),
+.wm-dangerBtn:active:not([disabled]):not([aria-disabled="true"]) {
+  transform: translateY(0) scale(0.98);
+}
+
+@media (hover: hover) {
+  .wm-primarybtn:hover:not([disabled]):not([aria-disabled="true"]),
+  .wm-outlineBtn:hover:not([disabled]):not([aria-disabled="true"]),
+  .wm-ghostBtn:hover:not([disabled]):not([aria-disabled="true"]),
+  .wm-dangerBtn:hover:not([disabled]):not([aria-disabled="true"]) {
+    transform: translateY(-2px);
+  }
+
+  .wm-primarybtn:hover:active:not([disabled]):not([aria-disabled="true"]),
+  .wm-outlineBtn:hover:active:not([disabled]):not([aria-disabled="true"]),
+  .wm-ghostBtn:hover:active:not([disabled]):not([aria-disabled="true"]),
+  .wm-dangerBtn:hover:active:not([disabled]):not([aria-disabled="true"]) {
+    transform: translateY(0) scale(0.98);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wm-primarybtn,
+  .wm-outlineBtn,
+  .wm-ghostBtn,
+  .wm-dangerBtn {
+    transition: none !important;
+  }
+
+  .wm-primarybtn:active,
+  .wm-outlineBtn:active,
+  .wm-ghostBtn:active,
+  .wm-dangerBtn:active {
+    transform: none !important;
+  }
+
+  @media (hover: hover) {
+    .wm-primarybtn:hover,
+    .wm-outlineBtn:hover,
+    .wm-ghostBtn:hover,
+    .wm-dangerBtn:hover {
+      transform: none !important;
+    }
+  }
 }
 
 /* ------------------------------------------------ */
@@ -102,19 +152,13 @@
     radial-gradient(circle at 25% 0%, rgba(255, 255, 255, 0.18), transparent 42%),
     linear-gradient(135deg, var(--wm-brand-600), var(--wm-brand-700));
   color: #fff;
-  box-shadow:
-    0 16px 32px rgba(29, 78, 216, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 .wm-primarybtn:hover {
   background:
     radial-gradient(circle at 25% 0%, rgba(255, 255, 255, 0.2), transparent 42%),
     linear-gradient(135deg, var(--wm-brand-700), var(--wm-blue-800));
-}
-
-.wm-primarybtn:active {
-  transform: scale(0.96);
 }
 
 .wm-primarybtn[disabled],
@@ -129,7 +173,6 @@
 /* Outline button                                   */
 /* ------------------------------------------------ */
 .wm-outlineBtn {
-  min-height: 40px;
   border: 1px solid rgba(148, 163, 184, 0.28);
   background:
     radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.96), transparent 60%),
@@ -145,10 +188,6 @@
 .wm-outlineBtn:hover {
   border-color: rgba(100, 116, 139, 0.32);
   background: rgba(255, 255, 255, 0.98);
-}
-
-.wm-outlineBtn:active {
-  transform: scale(0.96);
 }
 
 .wm-outlineBtn[disabled],
@@ -170,10 +209,6 @@
   box-shadow: none;
 }
 
-.wm-ghostBtn:active {
-  transform: scale(0.96);
-}
-
 .wm-dangerBtn {
   border: 1px solid rgba(220, 38, 38, 0.16);
   background:
@@ -182,10 +217,6 @@
   color: #fff;
   padding: 0 14px;
   box-shadow: var(--wm-shadow-danger);
-}
-
-.wm-dangerBtn:active {
-  transform: scale(0.96);
 }
 
 /* ------------------------------------------------ */
@@ -197,9 +228,7 @@
   background:
     radial-gradient(circle at 25% 0%, rgba(255, 255, 255, 0.2), transparent 42%),
     linear-gradient(135deg, #16a34a, #12823b);
-  box-shadow:
-    0 18px 34px rgba(22, 163, 74, 0.24),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 .wm-ee-vShift .wm-primarybtn:hover,
@@ -262,9 +291,7 @@
   background:
     radial-gradient(circle at 25% 0%, rgba(255, 255, 255, 0.2), transparent 42%),
     linear-gradient(135deg, var(--wm-planner-accent), var(--wm-planner-accent-strong));
-  box-shadow:
-    0 18px 34px rgba(8, 145, 178, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
 }
 
 .wm-ee-vPlanner .wm-primarybtn:hover {

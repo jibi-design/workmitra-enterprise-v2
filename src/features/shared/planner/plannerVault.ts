@@ -22,6 +22,7 @@ export {
   recordPlannerEpochInVault,
   syncPlannerVaultRatings,
   recordPlannerOffboardInVault,
+  recordPlannerPlanCompletedInVault,
 } from "../../employee/workVault/services/plannerVaultHistory.service";
 
 export {

@@ -56,7 +56,8 @@ export function CareerResultModal({
       ? `Are you sure ${safeCandidateName} passed ${roundLabel}? This action will advance the candidate in the pipeline and cannot be easily undone.`
       : `Are you sure ${safeCandidateName} did not pass ${roundLabel}? This may end the candidate's progress in the interview pipeline.`;
 
-  const confirmColor = result === "passed" ? "#16a34a" : "var(--wm-error, #dc2626)";
+  const confirmColor =
+    result === "passed" ? "var(--wm-career-success, #16a34a)" : "var(--wm-error, #dc2626)";
 
   return (
     <>

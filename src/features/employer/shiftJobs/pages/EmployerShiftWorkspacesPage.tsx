@@ -1,6 +1,4 @@
-﻿// App name: Job Mitra
-// File name: EmployerShiftWorkspacesPage.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\pages\EmployerShiftWorkspacesPage.tsx
+﻿// App name: Job Mitra | EmployerShiftWorkspacesPage.tsx — Step 3 primitives
 
 import { EmployerShiftWorkspacesFilters } from "../components/EmployerShiftWorkspacesFilters";
 import { EmployerShiftWorkspacesHeader } from "../components/EmployerShiftWorkspacesHeader";
@@ -12,26 +10,36 @@ export function EmployerShiftWorkspacesPage() {
   const state = useEmployerShiftWorkspacesState();
 
   return (
-    <div className="wm-er-vShift">
+    <div
+      className="wm-er-vShift wm-stackGrid"
+      data-testid="employer-shift-workspaces-page"
+      style={{ gap: "var(--wm-stack-gap)" }}
+    >
       <EmployerShiftWorkspacesHeader mode={state.mode} onBack={state.openHome} />
 
-      <EmployerShiftWorkspacesFilters
-        query={state.query}
-        filter={state.filter}
-        counts={state.counts}
-        onQueryChange={state.setQuery}
-        onFilterChange={state.setFilter}
-      />
+      <div className="wm-animateIn" style={{ animationDelay: "60ms" }}>
+        <EmployerShiftWorkspacesFilters
+          query={state.query}
+          filter={state.filter}
+          counts={state.counts}
+          onQueryChange={state.setQuery}
+          onFilterChange={state.setFilter}
+        />
+      </div>
 
-      <EmployerShiftWorkspacesInfoCard mode={state.mode} />
+      <div className="wm-animateIn" style={{ animationDelay: "90ms" }}>
+        <EmployerShiftWorkspacesInfoCard mode={state.mode} />
+      </div>
 
-      <EmployerShiftWorkspacesList
-        mode={state.mode}
-        allCount={state.allCount}
-        workspaces={state.filteredWorkspaces}
-        onOpenWorkspace={state.openWorkspace}
-        onOpenPost={state.openPost}
-      />
+      <div className="wm-animateIn" style={{ animationDelay: "120ms" }}>
+        <EmployerShiftWorkspacesList
+          mode={state.mode}
+          allCount={state.allCount}
+          workspaces={state.filteredWorkspaces}
+          onOpenWorkspace={state.openWorkspace}
+          onOpenPost={state.openPost}
+        />
+      </div>
     </div>
   );
 }

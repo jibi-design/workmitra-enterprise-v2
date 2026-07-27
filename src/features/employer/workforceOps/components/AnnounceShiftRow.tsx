@@ -27,7 +27,7 @@ const shiftRowStyle: React.CSSProperties = {
 const timeInputStyle: React.CSSProperties = {
   fontSize: 13,
   padding: "6px 8px",
-  borderRadius: 6,
+  borderRadius: "var(--wm-radius-8)",
   border: "1px solid var(--wm-er-border)",
   background: "#fff",
   color: "var(--wm-er-text)",
@@ -39,7 +39,7 @@ const toggleWrapStyle: React.CSSProperties = {
   alignItems: "center",
   justifyContent: "space-between",
   padding: "8px 10px",
-  borderRadius: 8,
+  borderRadius: "var(--wm-radius-8)",
   background: "var(--wm-er-bg)",
   marginTop: 4,
 };
@@ -47,7 +47,7 @@ const toggleWrapStyle: React.CSSProperties = {
 const toggleTrackStyle = (on: boolean): React.CSSProperties => ({
   width: 36,
   height: 20,
-  borderRadius: 10,
+  borderRadius: "var(--wm-radius-10)",
   background: on ? AMBER : "var(--wm-er-border)",
   position: "relative",
   cursor: "pointer",
@@ -58,7 +58,7 @@ const toggleTrackStyle = (on: boolean): React.CSSProperties => ({
 const toggleKnobStyle = (on: boolean): React.CSSProperties => ({
   width: 16,
   height: 16,
-  borderRadius: 8,
+  borderRadius: "var(--wm-radius-8)",
   background: "#fff",
   position: "absolute",
   top: 2,
@@ -81,7 +81,7 @@ export function AnnounceShiftRow({ shift, index, onUpdate, onRemove, onEnableBre
                 fontWeight: 800,
                 color: AMBER,
                 padding: "1px 6px",
-                borderRadius: 999,
+                borderRadius: "var(--wm-radius-pill)",
                 background: AMBER_BG,
               }}
             >

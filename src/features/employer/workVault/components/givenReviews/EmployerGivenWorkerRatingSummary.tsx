@@ -22,7 +22,7 @@ export function EmployerGivenWorkerRatingSummary({
     <section
       style={{
         padding: 14,
-        borderRadius: 22,
+        borderRadius: "var(--wm-radius-employee-card)",
         border: "1px solid rgba(22,163,74,0.15)",
         background:
           "linear-gradient(135deg, rgba(22,163,74,0.09), rgba(255,255,255,0.98) 54%, rgba(240,253,244,0.7))",
@@ -66,7 +66,7 @@ export function EmployerGivenWorkerRatingSummary({
           style={{
             marginTop: 10,
             padding: "10px 11px",
-            borderRadius: 16,
+            borderRadius: "var(--wm-radius-chip)",
             background: "rgba(255,255,255,0.78)",
             border: "1px solid rgba(226,232,240,0.9)",
           }}
@@ -89,7 +89,7 @@ export function EmployerGivenWorkerRatingSummary({
                 key={tag}
                 style={{
                   padding: "5px 10px",
-                  borderRadius: 999,
+                  borderRadius: "var(--wm-radius-pill)",
                   background: "rgba(22,163,74,0.08)",
                   border: "1px solid rgba(22,163,74,0.14)",
                   color: SHIFT_GREEN,
@@ -112,7 +112,7 @@ function SummaryTile({ label, value }: { label: string; value: string }) {
     <div
       style={{
         padding: "9px 8px",
-        borderRadius: 15,
+        borderRadius: "var(--wm-radius-chip)",
         background: "rgba(255,255,255,0.92)",
         border: "1px solid rgba(226,232,240,0.92)",
         minWidth: 0,

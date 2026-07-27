@@ -3,7 +3,12 @@
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\workVault\components\uploadModal\VaultUploadForm.tsx
 
 import type { RefObject } from "react";
-import { VAULT_ACCENT } from "../../constants/vaultConstants";
+import {
+  MAX_DOCUMENT_SIZE_MB,
+  MAX_VAULT_STORAGE_MB,
+  VAULT_ACCENT,
+} from "../../constants/vaultConstants";
+import { VaultSensitiveUploadDisclaimer } from "../VaultSensitiveUploadDisclaimer";
 
 type Props = {
   name: string;
@@ -36,9 +41,11 @@ export function VaultUploadForm({
 }: Props) {
   return (
     <div style={{ padding: "20px 20px 16px" }}>
-      <div style={{ fontWeight: 900, fontSize: 16, color: "var(--wm-emp-text)", marginBottom: 16 }}>
+      <div style={{ fontWeight: 900, fontSize: 16, color: "var(--wm-emp-text)", marginBottom: 12 }}>
         Upload Document
       </div>
+
+      <VaultSensitiveUploadDisclaimer compact />
 
       <div style={{ marginBottom: 12 }}>
         <label
@@ -57,7 +64,7 @@ export function VaultUploadForm({
           className="wm-input"
           value={name}
           onChange={(event) => onNameChange(event.target.value)}
-          placeholder="e.g. Driving License"
+          placeholder="e.g. Bachelor's Degree Certificate"
           autoFocus
         />
       </div>
@@ -90,7 +97,7 @@ export function VaultUploadForm({
             style={{
               height: 36,
               padding: "0 14px",
-              borderRadius: 10,
+              borderRadius: "var(--wm-radius-10)",
               border: `1.5px solid ${VAULT_ACCENT}`,
               background: "transparent",
               color: VAULT_ACCENT,
@@ -108,7 +115,8 @@ export function VaultUploadForm({
         </div>
 
         <div style={{ fontSize: 11, color: "var(--wm-emp-muted)", marginTop: 4 }}>
-          JPEG, PNG, WebP, or PDF. Max 1 MB.
+          JPEG, PNG, WebP, or PDF. Max {MAX_DOCUMENT_SIZE_MB} MB per file. Vault total{" "}
+          {MAX_VAULT_STORAGE_MB} MB.
         </div>
       </div>
 
@@ -133,7 +141,7 @@ export function VaultUploadForm({
         />
 
         <div style={{ fontSize: 11, color: "var(--wm-emp-muted)", marginTop: 4 }}>
-          For licenses, passports, or certificates with a validity period.
+          For professional licenses or certificates with a validity period.
         </div>
       </div>
 
@@ -155,7 +163,7 @@ export function VaultUploadForm({
           style={{
             height: 38,
             padding: "0 20px",
-            borderRadius: 10,
+            borderRadius: "var(--wm-radius-10)",
             border: "none",
             background: uploading ? "var(--wm-emp-muted)" : VAULT_ACCENT,
             color: "#fff",

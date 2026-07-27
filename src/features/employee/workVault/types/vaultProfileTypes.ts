@@ -72,6 +72,52 @@ export type VaultPerformanceRecord = {
   ratingBreakdown: { star5: number; star4: number; star3: number; star2: number; star1: number };
   attendanceRate: number | null;
   reliabilityScore: number | null;
+  /**
+   * Domain-separated averages for UI only.
+   * Planner must NEVER be folded into overallRating (Hybrid A2).
+   */
+  domainRatings: {
+    career: VaultDomainRatingSummary;
+    shift: VaultDomainRatingSummary;
+    planner: VaultDomainRatingSummary;
+  };
+};
+
+export type VaultDomainRatingSummary = {
+  average: number | null;
+  count: number;
+};
+
+/** Slim planner epoch row for Profile timeline (Hybrid A2 / Vault V1). */
+export type VaultPlannerTimelineEntry = {
+  id: string;
+  planId: string;
+  planName: string;
+  companyName: string;
+  epochIndex: number;
+  epochStart: number;
+  epochEnd: number;
+  daysScheduled: number;
+  daysCompleted: number;
+  attendanceRate: number;
+  reliabilityScore: number;
+  vaultFinalized: boolean;
+  rating: number | null;
+  completedAt: number;
+};
+
+export type VaultPlannerGrowthData = {
+  epochs: VaultPlannerTimelineEntry[];
+  totalEpochs: number;
+  finalizedEpochs: number;
+  totalPlans: number;
+  /** Schedule fulfillment / availability proxy (0–100). */
+  availabilityScore: number | null;
+  /** Planner reliability average (0–100). */
+  reliabilityScore: number | null;
+  /** Planner-only star average — never mixed into overallRating. */
+  plannerRatingAverage: number | null;
+  plannerRatingCount: number;
 };
 
 export type VaultReference = {
@@ -87,7 +133,7 @@ export type VaultReference = {
   editedAt?: number | null;
 };
 
-export type AchievementGroup = "shift" | "career" | "reputation" | "profile";
+export type AchievementGroup = "shift" | "career" | "planner" | "reputation" | "profile";
 
 export type AchievementDisplayState = "latest_earned" | "next_goal" | "locked";
 

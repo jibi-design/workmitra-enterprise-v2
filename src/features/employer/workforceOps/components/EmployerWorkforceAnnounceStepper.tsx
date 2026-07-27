@@ -15,7 +15,7 @@ type Props = {
 
 const progressBarBg: CSSProperties = {
   height: 4,
-  borderRadius: 2,
+  borderRadius: "var(--wm-radius-8)",
   background: "var(--wm-er-border)",
   overflow: "hidden",
 };
@@ -37,7 +37,7 @@ export function EmployerWorkforceAnnounceStepper({ step, progress, onStepClick }
             height: "100%",
             width: `${progress}%`,
             background: AMBER,
-            borderRadius: 2,
+            borderRadius: "var(--wm-radius-8)",
             transition: "width 0.3s ease",
           }}
         />
@@ -53,7 +53,7 @@ export function EmployerWorkforceAnnounceStepper({ step, progress, onStepClick }
             style={{
               width: 28,
               height: 28,
-              borderRadius: 999,
+              borderRadius: "var(--wm-radius-pill)",
               border: "none",
               background:
                 item === step ? AMBER : item < step ? "rgba(180,83,9,0.15)" : "var(--wm-er-border)",

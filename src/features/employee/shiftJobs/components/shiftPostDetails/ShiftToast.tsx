@@ -13,7 +13,7 @@ export function ShiftToast({ message }: { readonly message: string }) {
         left: "50%",
         transform: "translateX(-50%)",
         padding: "10px 20px",
-        borderRadius: 12,
+        borderRadius: "var(--wm-radius-button)",
         background: "var(--wm-er-accent-shift, #16a34a)",
         color: "#fff",
         fontSize: 13,

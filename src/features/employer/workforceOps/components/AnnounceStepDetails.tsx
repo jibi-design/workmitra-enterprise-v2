@@ -52,7 +52,7 @@ const toggleRowStyle: React.CSSProperties = {
 const toggleBtnStyle = (active: boolean): React.CSSProperties => ({
   width: 44,
   height: 24,
-  borderRadius: 12,
+  borderRadius: "var(--wm-radius-button)",
   border: "none",
   background: active ? AMBER : "var(--wm-er-border)",
   cursor: "pointer",
@@ -64,7 +64,7 @@ const toggleBtnStyle = (active: boolean): React.CSSProperties => ({
 const toggleKnobStyle = (active: boolean): React.CSSProperties => ({
   width: 20,
   height: 20,
-  borderRadius: 10,
+  borderRadius: "var(--wm-radius-10)",
   background: "#fff",
   position: "absolute",
   top: 2,
@@ -211,7 +211,13 @@ export function AnnounceStepDetails({
 
       {/* Errors */}
       {errors.length > 0 && (
-        <div style={{ padding: 10, borderRadius: 8, background: "rgba(220,38,38,0.06)" }}>
+        <div
+          style={{
+            padding: 10,
+            borderRadius: "var(--wm-radius-8)",
+            background: "rgba(220,38,38,0.06)",
+          }}
+        >
           {errors.map((e, i) => (
             <div key={i} style={{ fontSize: 12, color: "var(--wm-error)" }}>
               {e}

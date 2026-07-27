@@ -1,6 +1,6 @@
 // src/features/employer/workVault/components/EmployerVaultReferencesView.tsx
 
-import type { VaultReference } from "../../../employee/workVault/types/vaultProfileTypes";
+import type { VaultReference } from "../../../shared/workVault/vaultPublic";
 
 type Props = {
   refs: VaultReference[];
@@ -18,8 +18,7 @@ export function EmployerVaultReferencesView({ refs }: Props) {
   return (
     <div style={{ display: "grid", gap: 6 }}>
       {refs.map((ref, i) => {
-        const barColor =
-          ref.rating >= 4 ? "#16a34a" : ref.rating >= 2 ? "#f59e0b" : "#94a3b8";
+        const barColor = ref.rating >= 4 ? "#16a34a" : ref.rating >= 2 ? "#f59e0b" : "#94a3b8";
         const pct = Math.round((ref.rating / 5) * 100);
 
         return (
@@ -27,7 +26,7 @@ export function EmployerVaultReferencesView({ refs }: Props) {
             key={`${ref.companyName}-${ref.source}-${i}`}
             style={{
               padding: "10px 14px",
-              borderRadius: 10,
+              borderRadius: "var(--wm-radius-10)",
               border: "1px solid var(--wm-er-divider, rgba(15, 23, 42, 0.08))",
               background: "var(--wm-er-bg, #fff)",
             }}
@@ -63,7 +62,7 @@ export function EmployerVaultReferencesView({ refs }: Props) {
                       fontSize: 9,
                       fontWeight: 900,
                       padding: "1px 6px",
-                      borderRadius: 999,
+                      borderRadius: "var(--wm-radius-pill)",
                       background: "rgba(22, 163, 74, 0.08)",
                       color: "#15803d",
                       border: "1px solid rgba(22, 163, 74, 0.18)",
@@ -79,7 +78,7 @@ export function EmployerVaultReferencesView({ refs }: Props) {
               style={{
                 marginTop: 6,
                 height: 4,
-                borderRadius: 999,
+                borderRadius: "var(--wm-radius-pill)",
                 background: "rgba(15, 23, 42, 0.06)",
                 overflow: "hidden",
               }}
@@ -88,7 +87,7 @@ export function EmployerVaultReferencesView({ refs }: Props) {
                 style={{
                   width: `${pct}%`,
                   height: "100%",
-                  borderRadius: 999,
+                  borderRadius: "var(--wm-radius-pill)",
                   background: barColor,
                   transition: "width 0.3s ease",
                 }}

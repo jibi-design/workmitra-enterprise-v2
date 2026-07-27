@@ -8,6 +8,9 @@ import {
   MAX_FOLDERS,
   MAX_DOCUMENTS_PER_FOLDER,
   MAX_DOCUMENT_SIZE_BYTES,
+  MAX_DOCUMENT_SIZE_MB,
+  MAX_VAULT_STORAGE_BYTES,
+  MAX_VAULT_STORAGE_MB,
   ALLOWED_FILE_TYPES,
   OTP_CODE_LENGTH,
 } from "../constants/vaultConstants";
@@ -63,15 +66,47 @@ export function validateDocumentLimit(currentCount: number): ValidationResult {
 }
 
 /**
- * Validates a file before upload.
+ * Estimates binary byte size from a data-URL or raw base64 payload.
+ */
+export function estimateDataUrlBytes(dataUrl: string): number {
+  if (!dataUrl) return 0;
+  const comma = dataUrl.indexOf(",");
+  const b64 = comma >= 0 ? dataUrl.slice(comma + 1) : dataUrl;
+  if (!b64) return 0;
+  const padding = b64.endsWith("==") ? 2 : b64.endsWith("=") ? 1 : 0;
+  return Math.max(0, Math.floor((b64.length * 3) / 4) - padding);
+}
+
+/**
+ * Validates a file before upload (per-file size + format).
  */
 export function validateFile(file: File): ValidationResult {
   if (file.size > MAX_DOCUMENT_SIZE_BYTES) {
-    const maxMB = MAX_DOCUMENT_SIZE_BYTES / 1_000_000;
-    return { valid: false, reason: `File size must be under ${maxMB} MB.` };
+    return { valid: false, reason: `File size must be under ${MAX_DOCUMENT_SIZE_MB} MB.` };
   }
   if (!ALLOWED_FILE_TYPES.includes(file.type as (typeof ALLOWED_FILE_TYPES)[number])) {
     return { valid: false, reason: "Only JPEG, PNG, WebP, and PDF files are allowed." };
+  }
+  return { valid: true };
+}
+
+/**
+ * Validates that adding `incomingBytes` stays within the per-user vault storage cap.
+ */
+export function validateVaultStorageQuota(
+  incomingBytes: number,
+  currentUsedBytes: number,
+): ValidationResult {
+  if (incomingBytes < 0 || currentUsedBytes < 0) {
+    return { valid: false, reason: "Invalid storage size." };
+  }
+  if (currentUsedBytes + incomingBytes > MAX_VAULT_STORAGE_BYTES) {
+    const remaining = Math.max(0, MAX_VAULT_STORAGE_BYTES - currentUsedBytes);
+    const remainingMb = (remaining / (1024 * 1024)).toFixed(2);
+    return {
+      valid: false,
+      reason: `Vault storage limit is ${MAX_VAULT_STORAGE_MB} MB total. About ${remainingMb} MB remaining.`,
+    };
   }
   return { valid: true };
 }

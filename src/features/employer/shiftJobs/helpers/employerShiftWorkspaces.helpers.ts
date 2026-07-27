@@ -149,6 +149,8 @@ function toWorkspaceLite(value: unknown): EmployerWorkspaceLite | null {
     endAt,
     status: normalizeWorkspaceStatus(value.status),
     lastActivityAt,
+    workerMlId: readString(value, "workerMlId"),
+    workerName: readString(value, "workerName"),
   };
 }
 

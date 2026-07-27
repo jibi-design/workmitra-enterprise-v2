@@ -4,7 +4,10 @@
  * Hybrid A2 S8 — resolve day/pay from plan slots when dual-write ShiftPost is absent.
  */
 
-import { demandPlannerStorage } from "../../../employer/planner/storage/demandPlannerStorage";
+import {
+  demandPlannerStorage,
+  type DemandPlan,
+} from "../../../employer/planner/storage/demandPlannerStorage";
 import {
   getEmployerShiftPosts,
   readEmployeeApplications,
@@ -77,9 +80,11 @@ export function listPlannerRosterAssignments(options?: {
   planId?: string;
   workerMlId?: string;
   confirmedOnly?: boolean;
+  /** Optional preloaded plans — avoids a second getAll (P1-8) */
+  plans?: DemandPlan[];
 }): PlannerRosterAssignment[] {
   const confirmedOnly = options?.confirmedOnly !== false;
-  const plans = demandPlannerStorage.getAll();
+  const plans = options?.plans ?? demandPlannerStorage.getAll();
   const planFilter = options?.planId?.trim();
   const workerFilter = options?.workerMlId?.trim().toUpperCase();
 
@@ -158,8 +163,9 @@ export function listActivePlannerPlansForRoster(): Array<{
   confirmedDayCount: number;
   status: string;
 }> {
-  const plans = demandPlannerStorage.getAll().filter((p) => p.status === "active");
-  const assignments = listPlannerRosterAssignments({ confirmedOnly: true });
+  const allPlans = demandPlannerStorage.getAll();
+  const plans = allPlans.filter((p) => p.status === "active");
+  const assignments = listPlannerRosterAssignments({ confirmedOnly: true, plans: allPlans });
 
   return plans.map((plan) => {
     const forPlan = assignments.filter((a) => a.planId === plan.id);

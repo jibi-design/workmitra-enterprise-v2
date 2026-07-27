@@ -4,7 +4,11 @@
 
 import { RosterMonthlyGrid } from "../RosterMonthlyGrid";
 import { RosterWeeklyGrid } from "../RosterWeeklyGrid";
-import type { RosterAssignment, RosterViewMode } from "../../types/rosterPlanner.types";
+import type {
+  RosterAssignment,
+  RosterConflict,
+  RosterViewMode,
+} from "../../types/rosterPlanner.types";
 
 type Props = {
   view: RosterViewMode;
@@ -12,6 +16,7 @@ type Props = {
   monthCalDates: string[];
   currentMonth: number;
   assignments: RosterAssignment[];
+  conflicts?: RosterConflict[];
   onAddClick: (date: string) => void;
   onAssignmentClick: (assignment: RosterAssignment) => void;
   onDayClick: (date: string) => void;
@@ -23,6 +28,7 @@ export function RosterPlannerGridPanel({
   monthCalDates,
   currentMonth,
   assignments,
+  conflicts,
   onAddClick,
   onAssignmentClick,
   onDayClick,
@@ -40,6 +46,7 @@ export function RosterPlannerGridPanel({
         <RosterWeeklyGrid
           weekDates={weekDates}
           assignments={assignments}
+          conflicts={conflicts}
           onAddClick={onAddClick}
           onAssignmentClick={onAssignmentClick}
         />

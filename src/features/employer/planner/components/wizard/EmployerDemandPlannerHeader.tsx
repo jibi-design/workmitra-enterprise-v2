@@ -1,4 +1,6 @@
-// Job Mitra | EmployerDemandPlannerHeader.tsx
+// Job Mitra | EmployerDemandPlannerHeader.tsx — DomainHero (Wave 5)
+
+import { DomainHero } from "../../../../../shared/components/layout/DomainHero";
 
 type EmployerDemandPlannerHeaderProps = {
   showCancel: boolean;
@@ -16,47 +18,37 @@ export function EmployerDemandPlannerHeader({
   isPublishing = false,
 }: EmployerDemandPlannerHeaderProps) {
   return (
-    <div className="wm-pageHead">
-      <div>
-        <div className="wm-pageTitle">Gig Projects</div>
-        <div className="wm-pageSub">Agency-mode multi-day demand planning</div>
-        {draftSavedAt ? (
-          <div
-            style={{
-              marginTop: 4,
-              fontSize: 11,
-              color: "var(--wm-planner-accent-strong)",
-              fontWeight: 700,
-            }}
-          >
-            Draft saved
-          </div>
-        ) : null}
-      </div>
-
-      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-        {onSaveDraft && (
-          <button
-            type="button"
-            className="wm-planner-btnGhost"
-            style={{ fontSize: 12, minHeight: 38, padding: "8px 12px" }}
-            onClick={onSaveDraft}
-            disabled={isPublishing}
-          >
-            Save Draft
-          </button>
-        )}
-        {showCancel && (
-          <button
-            className="wm-outlineBtn"
-            type="button"
-            onClick={onCancel}
-            style={{ fontSize: 12 }}
-          >
-            Cancel
-          </button>
-        )}
-      </div>
-    </div>
+    <DomainHero
+      variant="planner"
+      audience="employer"
+      title="Gig Projects"
+      subtitle="Agency-mode multi-day demand planning"
+      description={draftSavedAt ? "Draft saved" : "Plan multi-day gig demand for agency staffing."}
+      trailing={
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          {onSaveDraft ? (
+            <button
+              type="button"
+              className="wm-planner-btnGhost"
+              style={{ fontSize: 12, minHeight: 38, padding: "8px 12px" }}
+              onClick={onSaveDraft}
+              disabled={isPublishing}
+            >
+              Save Draft
+            </button>
+          ) : null}
+          {showCancel ? (
+            <button
+              className="wm-outlineBtn"
+              type="button"
+              onClick={onCancel}
+              style={{ fontSize: 12 }}
+            >
+              Cancel
+            </button>
+          ) : null}
+        </div>
+      }
+    />
   );
 }

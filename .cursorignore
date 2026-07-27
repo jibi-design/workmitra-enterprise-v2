@@ -1,14 +1,16 @@
-# ==============================================================================
-# JOB MITRA | CURSOR IGNORE FILE
-# Purpose: prevent Cursor AI from indexing/accessing heavy, generated, or secret files.
+﻿# ==============================================================================
+# JOB MITRA | .cursorignore
+# Purpose: max Cursor performance + security — skip heavy/generated/secret files.
 # ==============================================================================
 
-# Android & iOS generated/system directories
-android/
-ios/
-.gradle/
+# Dependencies
+node_modules/
+.pnpm-store/
+.pnp/
+.pnp.*
 
-# Build outputs & distributions
+# Framework / build outputs (Vite + any Next leftovers)
+.next/
 dist/
 dev-dist/
 build/
@@ -19,9 +21,11 @@ coverage/
 temp/
 _dev_backups/
 
-# Environment / secrets
+# Environment / secrets (never index)
 .env
 .env.*
+.env.local
+.env*.local
 *.jks
 *.keystore
 *.p12
@@ -31,22 +35,24 @@ _dev_backups/
 credentials.json
 service-account.json
 
-# Heavy dependency folders
-node_modules/
-.pnpm-store/
-.pnp/
-.pnp.*
-
-# Temporary and system log files
+# Logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-.DS_Store
-Thumbs.db
 
-# Large generated archives/media
+# Test / report artifacts (heavy)
+playwright-report/
+test-results/
+blob-report/
+
+# Mobile generated
+android/
+ios/
+.gradle/
+
+# Archives / media
 *.zip
 *.7z
 *.rar
@@ -56,5 +62,9 @@ Thumbs.db
 *.mov
 *.avi
 
-# Generated local reports
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Local generated dumps
 employee_tree.txt

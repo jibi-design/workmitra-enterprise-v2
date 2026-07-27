@@ -7,11 +7,14 @@ import type {
   HRCandidateStatus,
   StatusChangeEntry,
 } from "../types/hrManagement.types";
+import { hrEmployerScopedKey } from "./hrStorageKeys";
 
 /* ------------------------------------------------ */
 /* Constants                                        */
 /* ------------------------------------------------ */
-const STORAGE_KEY = "wm_hr_management_v1";
+function storageKey(): string {
+  return hrEmployerScopedKey("management_v1");
+}
 export const HR_CHANGED_EVENT = "wm:hr-management-changed";
 export const DEFAULT_PROBATION_DAYS = 90;
 
@@ -20,7 +23,7 @@ export const DEFAULT_PROBATION_DAYS = 90;
 /* ------------------------------------------------ */
 export function readAll(): HRCandidateRecord[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey());
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
     return Array.isArray(parsed) ? (parsed as HRCandidateRecord[]) : [];
@@ -30,7 +33,7 @@ export function readAll(): HRCandidateRecord[] {
 }
 
 export function writeAll(records: HRCandidateRecord[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  localStorage.setItem(storageKey(), JSON.stringify(records));
   window.dispatchEvent(new Event(HR_CHANGED_EVENT));
 }
 
@@ -77,11 +80,13 @@ export function hrGetById(id: string): HRCandidateRecord | null {
   return readAll().find((r) => r.id === id) ?? null;
 }
 
-export function hrFindByApplication(careerPostId: string, applicationId: string): HRCandidateRecord | null {
+export function hrFindByApplication(
+  careerPostId: string,
+  applicationId: string,
+): HRCandidateRecord | null {
   return (
-    readAll().find(
-      (r) => r.careerPostId === careerPostId && r.applicationId === applicationId,
-    ) ?? null
+    readAll().find((r) => r.careerPostId === careerPostId && r.applicationId === applicationId) ??
+    null
   );
 }
 

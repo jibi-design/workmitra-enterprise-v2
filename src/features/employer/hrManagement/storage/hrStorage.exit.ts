@@ -134,6 +134,7 @@ export function hrMarkExperienceLetterSent(id: string): boolean {
 /* ------------------------------------------------ */
 /* Complete Exit                                    */
 /* ------------------------------------------------ */
-export function hrCompleteExit(id: string): boolean {
-  return hrCompleteExitSaga(id).ok;
+export async function hrCompleteExit(id: string): Promise<boolean> {
+  const result = await hrCompleteExitSaga(id);
+  return result.ok;
 }

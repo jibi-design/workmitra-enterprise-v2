@@ -22,7 +22,7 @@ export function ShiftDirectInviteAcceptCard({
       style={{
         marginBottom: 14,
         padding: "14px 16px",
-        borderRadius: 12,
+        borderRadius: "var(--wm-radius-button)",
         border: "1px solid rgba(16,185,129,0.28)",
         background: "rgba(236,253,245,0.65)",
       }}
@@ -40,7 +40,7 @@ export function ShiftDirectInviteAcceptCard({
           style={{
             flex: 1,
             padding: "10px 12px",
-            borderRadius: 10,
+            borderRadius: "var(--wm-radius-10)",
             border: "1px solid rgba(148,163,184,0.35)",
             background: "rgba(248,250,252,0.95)",
             color: "#475569",
@@ -58,7 +58,7 @@ export function ShiftDirectInviteAcceptCard({
           style={{
             flex: 1,
             padding: "10px 12px",
-            borderRadius: 10,
+            borderRadius: "var(--wm-radius-10)",
             border: "none",
             background: "#059669",
             color: "#fff",

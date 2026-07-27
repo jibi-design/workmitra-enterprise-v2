@@ -4,20 +4,22 @@
 
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { queuePulseEventForAffectedUser } from "../../../pulse/pulseEventBridge";
-import { pushCareerActivity } from "../../../employer/careerJobs/helpers/careerNotifications";
-import {
-  readCareerApps,
-  writeCareerApps,
-} from "../../../employer/careerJobs/helpers/careerNormalizers";
-import type {
-  CareerApplication,
-  RoundResult,
-} from "../../../employer/careerJobs/types/careerTypes";
-import { getCareerPost } from "../../../employer/careerJobs/services/careerPostService";
+import { pushCareerActivity } from "../../../career/services/careerEmployerPublic";
+import { readCareerApps, writeCareerApps } from "../../../career/helpers/careerStoragePublic";
+import type { CareerApplication, RoundResult } from "../../../career/types/careerDomainTypes";
+import { getCurrentActorId, identityBridge } from "../../../../app/identity/identity.adapter";
+import { getCareerPost } from "../../../career/services/careerEmployerPublic";
 import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
 
 function getCurrentEmployeeId(): string {
-  return employeeProfileStorage.get().uniqueId ?? "employee_demo";
+  const profile = employeeProfileStorage.get();
+  const legacyId = profile.uniqueId?.trim() || "employee_demo";
+  const actor = getCurrentActorId("employee");
+  const realLegacy = profile.uniqueId?.trim();
+  if (actor.source === "auth" && actor.authUserId && realLegacy) {
+    identityBridge.upsert("employee", realLegacy, actor.authUserId);
+  }
+  return legacyId;
 }
 
 function findPendingScheduledRound(app: CareerApplication): RoundResult | null {
@@ -138,8 +140,8 @@ export function declineInterview(jobId: string): boolean {
 
   const updatedApp: CareerApplication = {
     ...withRsvp,
-    stage: "withdrawn",
-    withdrawnAt: now,
+    // Keep interview stage so employer can reschedule; RSVP declined is on the round.
+    stage: "interview",
     updatedAt: now,
   };
 

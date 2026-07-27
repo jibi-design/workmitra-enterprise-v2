@@ -7,7 +7,7 @@
 
 import type { EmploymentStatus as SharedEmploymentStatus } from "../../../../shared/employment/employmentTypes";
 import type { EmploymentStatus as LegacyEmploymentStatus } from "../../employment/storage/employmentLifecycle.storage";
-import type { StaffStatus } from "../../../employer/myStaff/storage/myStaff.storage";
+import type { StaffStatus } from "../../../career/storage/myStaffPublic";
 
 export function mapSharedEmploymentStatusToLifecycleStatus(
   status: SharedEmploymentStatus,

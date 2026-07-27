@@ -65,7 +65,7 @@ export function SettingsPanel({ settings, backupCount, onToggle }: SettingsPanel
             fontSize: 14,
             fontWeight: 700,
             padding: "5px 8px",
-            borderRadius: 8,
+            borderRadius: "var(--wm-radius-8)",
             border: "1.5px solid var(--wm-er-border)",
             background: "var(--wm-er-bg)",
             color: "var(--wm-er-text)",
@@ -106,7 +106,7 @@ function ManualBackupReviewCard() {
         style={{
           marginTop: 8,
           padding: "8px 10px",
-          borderRadius: 12,
+          borderRadius: "var(--wm-radius-button)",
           background: "rgba(255,251,235,0.82)",
           border: "1px solid rgba(217,119,6,0.16)",
           color: "#92400e",

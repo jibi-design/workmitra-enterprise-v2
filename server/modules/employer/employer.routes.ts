@@ -2,7 +2,10 @@ import { randomUUID } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { requireAuth, requireEmployerRole } from "../../middleware/index.js";
 import { handleEmployerCareerRoutes } from "./career/career.routes.js";
+import { handleEmployerShiftRoutes } from "./shift/shift.routes.js";
 import { handleEmployerVaultRoutes } from "./vault/vault.routes.js";
+import { handleEmployerHrRoutes } from "./hr/hr.routes.js";
+import { handleEmployerWorkforceRoutes } from "./workforce/workforce.routes.js";
 import { sendNotFound } from "../../utils/http.js";
 
 const EMPLOYER_PREFIX = "/v1/jobmitra/employer";
@@ -17,8 +20,7 @@ const EMPLOYER_PREFIX = "/v1/jobmitra/employer";
  * An Employee or Admin session hitting any /employer/* endpoint will receive 403.
  * Role is never read from the request body or query string.
  *
- * Sub-domain route handlers (career, shift, workspace) are mounted below.
- * Add new sub-domains here as separate route handlers.
+ * Sub-domain route handlers (career, shift, vault, hr, workforce) are mounted below.
  */
 export async function handleEmployerRoutes(
   req: IncomingMessage,
@@ -40,15 +42,21 @@ export async function handleEmployerRoutes(
         res,
         requestId,
         async (authedReq) => {
-          // Career sub-domain
           const handledCareer = await handleEmployerCareerRoutes(authedReq, res, url, method);
           if (handledCareer) return;
 
-          // Work Vault sub-domain
+          const handledShift = await handleEmployerShiftRoutes(authedReq, res, url, method);
+          if (handledShift) return;
+
           const handledVault = await handleEmployerVaultRoutes(authedReq, res, url, method);
           if (handledVault) return;
 
-          // Future sub-domains: shift, workspace, analytics
+          const handledHr = await handleEmployerHrRoutes(authedReq, res, url, method);
+          if (handledHr) return;
+
+          const handledWorkforce = await handleEmployerWorkforceRoutes(authedReq, res, url, method);
+          if (handledWorkforce) return;
+
           sendNotFound(res, requestId, "Employer");
         },
         url,

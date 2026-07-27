@@ -1,10 +1,13 @@
 // App: Job Mitra / WorkMitra_Enterprise_v2
-// File: RosterDayCell.tsx
-// Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\hrManagement\components\rosterWeekly\RosterDayCell.tsx
+// File: RosterDayCell.tsx — Wave 3 P2-1 scoped site-group cap
 
+import { useState } from "react";
 import { isToday } from "../../helpers/rosterPlannerUtils";
 import type { RosterAssignment } from "../../types/rosterPlanner.types";
 import { RosterSiteGroupCard, type RosterSiteGroup } from "./RosterSiteGroupCard";
+
+/** Cap DOM nodes per day under dense multi-site weeks (P2-1). */
+const SITE_SHOW_LIMIT = 4;
 
 type Props = {
   dateKey: string;
@@ -29,6 +32,9 @@ export function RosterDayCell({
 }: Props) {
   const today = isToday(dateKey);
   const hasConflict = Boolean(dayConflicts && dayConflicts.size > 0);
+  const [showAllSites, setShowAllSites] = useState(false);
+  const visibleGroups = showAllSites ? siteGroups : siteGroups.slice(0, SITE_SHOW_LIMIT);
+  const hiddenSiteCount = Math.max(0, siteGroups.length - SITE_SHOW_LIMIT);
 
   return (
     <div
@@ -63,7 +69,7 @@ export function RosterDayCell({
         </div>
       )}
 
-      {siteGroups.map((group) => {
+      {visibleGroups.map((group) => {
         const expandKey = `${dateKey}::${group.site}`;
 
         return (
@@ -78,6 +84,18 @@ export function RosterDayCell({
           />
         );
       })}
+
+      {hiddenSiteCount > 0 && !showAllSites ? (
+        <button
+          type="button"
+          className="wm-outlineBtn wm-press-card"
+          aria-label={`Show ${hiddenSiteCount} more sites`}
+          onClick={() => setShowAllSites(true)}
+          style={{ minHeight: 32, fontSize: 10, fontWeight: 800 }}
+        >
+          +{hiddenSiteCount} more sites
+        </button>
+      ) : null}
 
       {siteGroups.length === 0 ? (
         <button

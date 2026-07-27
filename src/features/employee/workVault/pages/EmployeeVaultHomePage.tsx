@@ -8,7 +8,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { VAULT_ACCENT } from "../constants/vaultConstants";
 import type { VaultFolder } from "../types/vaultTypes";
 import { validateFolderLimit } from "../helpers/vaultValidation";
 import {
@@ -93,7 +92,14 @@ function EmployeeVaultHomeContent({ initialTab }: { initialTab: TabId }) {
       setShowCreateModal(false);
       return;
     }
-    createFolder(name, icon);
+    try {
+      createFolder(name, icon);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Could not save this folder.";
+      setNotice({ title: "Save Failed", message, tone: "warn" });
+      setShowCreateModal(false);
+      return;
+    }
     refreshFolders();
     setShowCreateModal(false);
     setNotice({
@@ -152,46 +158,28 @@ function EmployeeVaultHomeContent({ initialTab }: { initialTab: TabId }) {
   const deletingFolder = folders.find((f) => f.id === deletingFolderId);
 
   return (
-    <div>
-      {/* Header */}
-      <div className="wm-vault-page-hero">
-        <div
-          className="wm-vault-page-hero__title"
-          style={{ display: "flex", alignItems: "center", gap: 8 }}
-        >
+    <div className="wm-vault-home wm-stackGrid">
+      {/* Header — L-V1 slate luxury hero */}
+      <header className="wm-vault-page-hero">
+        <div className="wm-vault-page-hero__eyebrow">Labor identity</div>
+        <div className="wm-vault-page-hero__title">
           <IconShield /> Work Vault
         </div>
-        <div className="wm-vault-page-hero__sub">Your documents, secured</div>
-      </div>
+        <div className="wm-vault-page-hero__sub">Your verified work record & secured documents</div>
+      </header>
 
-      {/* Tab bar */}
-      <div
-        style={{
-          display: "flex",
-          marginTop: "var(--wm-stack-gap)",
-          borderBottom: "1px solid var(--wm-emp-border, rgba(15,23,42,0.08))",
-        }}
-      >
+      {/* Tab bar — pill shell */}
+      <div className="wm-vault-tabs" role="tablist" aria-label="Work Vault sections">
         {TAB_ORDER.map((tab) => (
           <button
             key={tab}
             type="button"
+            role="tab"
+            aria-selected={activeTab === tab}
             onClick={() => setActiveTab(tab)}
-            className="wm-typeHelper wm-vault-tap"
-            style={{
-              flex: 1,
-              minHeight: 44,
-              padding: "10px 0",
-              border: "none",
-              borderBottom:
-                activeTab === tab ? `2px solid ${VAULT_ACCENT}` : "2px solid transparent",
-              background: "transparent",
-              fontWeight: activeTab === tab ? 700 : 400,
-              color: activeTab === tab ? VAULT_ACCENT : "var(--wm-emp-muted)",
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-              whiteSpace: "nowrap",
-            }}
+            className={`wm-typeHelper wm-vault-tap wm-vault-tab${
+              activeTab === tab ? " wm-vault-tab--active" : ""
+            }`}
           >
             {TAB_LABELS[tab]}
           </button>
@@ -228,25 +216,7 @@ function EmployeeVaultHomeContent({ initialTab }: { initialTab: TabId }) {
       )}
       {activeTab === "verify" && <VaultVerifyEmployerTab />}
 
-      <div style={{ height: 96 }} />
-
-      {activeTab === "documents" ? (
-        <button
-          type="button"
-          className="wm-vault-fab"
-          aria-label="Add folder"
-          onClick={() => setShowCreateModal(true)}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path
-              d="M12 5v14M5 12h14"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        </button>
-      ) : null}
+      <div style={{ height: 88 }} />
 
       {/* Modals */}
       <VaultCreateFolderModal

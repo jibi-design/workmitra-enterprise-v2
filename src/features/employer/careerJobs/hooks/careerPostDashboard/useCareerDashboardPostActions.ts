@@ -15,7 +15,7 @@ import {
 
 type UseCareerDashboardPostActionsArgs = {
   postId: string;
-  openConfirm: (data: ConfirmData, fn: () => void) => void;
+  openConfirm: (data: ConfirmData, fn: () => void | Promise<void>) => void;
   setNotice: (notice: NoticeData | null) => void;
 };
 
@@ -38,8 +38,8 @@ export function useCareerDashboardPostActions({
         tone: "warn",
         confirmLabel: "Pause",
       },
-      () => {
-        const ok = pauseCareerPost(postId);
+      async () => {
+        const ok = await pauseCareerPost(postId);
 
         setNotice(
           ok
@@ -57,8 +57,8 @@ export function useCareerDashboardPostActions({
     );
   }
 
-  function handleResume() {
-    const ok = resumeCareerPost(postId);
+  async function handleResume() {
+    const ok = await resumeCareerPost(postId);
 
     setNotice(
       ok
@@ -84,8 +84,8 @@ export function useCareerDashboardPostActions({
         confirmLabel: "Create Copy",
         cancelLabel: "Cancel",
       },
-      () => {
-        const newId = cloneCareerPost(postId);
+      async () => {
+        const newId = await cloneCareerPost(postId);
 
         if (newId) {
           nav(ROUTE_PATHS.employerCareerPostDashboard.replace(":postId", newId));
@@ -109,8 +109,8 @@ export function useCareerDashboardPostActions({
         tone: "danger",
         confirmLabel: "Close Post",
       },
-      () => {
-        const ok = closeCareerPost(postId);
+      async () => {
+        const ok = await closeCareerPost(postId);
 
         setNotice(
           ok

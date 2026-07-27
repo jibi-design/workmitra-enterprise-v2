@@ -132,6 +132,7 @@ export function RosterPlannerPage() {
         monthCalDates={monthCalDates}
         currentMonth={monthYear.month}
         assignments={assignments}
+        conflicts={conflicts}
         onAddClick={handleAddClick}
         onAssignmentClick={handleAssignmentClick}
         onDayClick={handleDayClick}

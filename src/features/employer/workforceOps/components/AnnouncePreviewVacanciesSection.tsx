@@ -79,7 +79,7 @@ export function AnnouncePreviewVacanciesSection({
         style={{
           marginTop: 8,
           padding: "8px 10px",
-          borderRadius: 8,
+          borderRadius: "var(--wm-radius-8)",
           background: AMBER_BG,
           display: "flex",
           justifyContent: "space-between",

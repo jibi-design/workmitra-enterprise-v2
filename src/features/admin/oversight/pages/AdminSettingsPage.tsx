@@ -10,6 +10,7 @@ import { AdminSettingsDataCard } from "../components/adminSettings/AdminSettings
 import { AdminSettingsHeader } from "../components/adminSettings/AdminSettingsHeader";
 import { AdminSettingsSectionHeader } from "../components/adminSettings/AdminSettingsSharedUi";
 import { pushAdminAuditEntry } from "../helpers/adminDataHelpers";
+import { buildSanitizedLocalStorageExport } from "../../../../shared/security/piiExportSanitize";
 
 const SHIFT_KEYS = [
   "wm_employer_shift_posts_v1",
@@ -31,33 +32,20 @@ const WORKFORCE_KEYS: string[] = [];
 
 function exportAllData(): void {
   try {
-    const data: Record<string, unknown> = {};
-
-    for (let index = 0; index < localStorage.length; index++) {
-      const key = localStorage.key(index);
-
-      if (!key) continue;
-
-      try {
-        data[key] = JSON.parse(localStorage.getItem(key) ?? "null");
-      } catch {
-        data[key] = localStorage.getItem(key);
-      }
-    }
-
+    const data = buildSanitizedLocalStorageExport();
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
 
     anchor.href = url;
-    anchor.download = `job-mitra-export-${Date.now()}.json`;
+    anchor.download = `job-mitra-export-sanitized-${Date.now()}.json`;
     anchor.click();
 
     URL.revokeObjectURL(url);
     pushAdminAuditEntry(
       "data_exported",
       "Data exported",
-      `Full localStorage export. ${localStorage.length} keys.`,
+      `Sanitized localStorage export (PII redacted/hashed). ${localStorage.length} keys scanned.`,
     );
   } catch {
     // Phase-0 local export failure is intentionally non-blocking.
@@ -87,6 +75,10 @@ function importData(
         let count = 0;
 
         for (const [key, value] of Object.entries(data)) {
+          if (key === "_meta" || key === "wm_pii_device_key_v1") continue;
+          if (value && typeof value === "object" && !Array.isArray(value) && "sealed" in value) {
+            continue; // never restore export stubs as real PII
+          }
           try {
             localStorage.setItem(key, typeof value === "string" ? value : JSON.stringify(value));
             count++;
@@ -243,6 +235,8 @@ export function AdminSettingsPage() {
             "Reset All Data?",
             "This will clear ALL localStorage data across all domains. Profiles, posts, applications — everything. Cannot be undone.",
             () => {
+              // DANGER MIG-010: nuclear clear — remove before production cutover
+              if (!window.confirm("WARNING: This will clear ALL local data. Continue?")) return;
               localStorage.clear();
               window.location.reload();
             },

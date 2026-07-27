@@ -1,0 +1,127 @@
+/* Pulse Navigation Engine — GPU breathe, arrival lock, a11y static glow */
+
+.wm-led {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  pointer-events: none;
+  will-change: opacity, transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.wm-led__core {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: inherit;
+  box-shadow: inherit;
+  will-change: opacity, transform;
+  transform: translateZ(0) scale(1);
+}
+
+.wm-led-normal .wm-led__core {
+  animation: wm-led-breathe-gpu 3.5s ease-in-out infinite;
+}
+
+.wm-led-warning .wm-led__core {
+  animation: wm-led-breathe-gpu 2.5s ease-in-out infinite;
+}
+
+.wm-led-urgent .wm-led__core {
+  animation: wm-led-breathe-gpu 1.2s ease-in-out infinite;
+}
+
+.wm-led-guide .wm-led__core {
+  animation: wm-led-breathe-gpu 3.5s ease-in-out infinite;
+}
+
+/* Pillar 2 — Destination arrival: solid success, hold, auto-dim to 0 */
+.wm-led-arrival .wm-led__core {
+  animation: wm-led-arrival-lock 2.5s ease-out forwards;
+}
+
+.wm-breathe {
+  will-change: opacity, transform;
+  transform: translateZ(0);
+  animation: wm-led-breathe-gpu 3.5s ease-in-out infinite;
+}
+
+.wm-breathe-arrival {
+  will-change: opacity, transform;
+  transform: translateZ(0);
+  animation: wm-led-arrival-lock 2.5s ease-out forwards;
+}
+
+/* Secondary / capped — static highlight, no breathe */
+.wm-led-static .wm-led__core,
+.wm-breathe-static {
+  animation: none !important;
+  opacity: 1;
+  transform: translateZ(0) scale(1);
+}
+
+@keyframes wm-led-breathe-gpu {
+  0%,
+  100% {
+    opacity: 0.62;
+    transform: translateZ(0) scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: translateZ(0) scale(1);
+  }
+}
+
+@keyframes wm-led-arrival-lock {
+  0% {
+    opacity: 1;
+    transform: translateZ(0) scale(1.05);
+  }
+  12% {
+    opacity: 1;
+    transform: translateZ(0) scale(1);
+  }
+  72% {
+    opacity: 1;
+    transform: translateZ(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateZ(0) scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wm-led-normal .wm-led__core,
+  .wm-led-warning .wm-led__core,
+  .wm-led-urgent .wm-led__core,
+  .wm-led-guide .wm-led__core,
+  .wm-led-arrival .wm-led__core,
+  .wm-led-static .wm-led__core,
+  .wm-breathe,
+  .wm-breathe-arrival,
+  .wm-breathe-static {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: translateZ(0) scale(1) !important;
+  }
+
+  /* Gentle static border glow — replaces breathing when motion is reduced */
+  .wm-led-normal,
+  .wm-led-warning,
+  .wm-led-urgent,
+  .wm-led-guide,
+  .wm-led-arrival,
+  .wm-led-static,
+  .wm-breathe,
+  .wm-breathe-arrival,
+  .wm-breathe-static {
+    filter: none;
+    box-shadow:
+      0 0 0 2px var(--wm-led-color-a, rgba(34, 197, 94, 0.35)),
+      0 0 10px 3px var(--wm-led-color-b, rgba(34, 197, 94, 0.45)) !important;
+  }
+}

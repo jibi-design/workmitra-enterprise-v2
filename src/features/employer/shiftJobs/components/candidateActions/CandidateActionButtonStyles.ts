@@ -3,9 +3,10 @@
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\components\candidateActions\CandidateActionButtonStyles.ts
 
 export const OUTLINE_BUTTON_STYLE = {
-  fontSize: 12,
-  height: 32,
-  padding: "0 12px",
+  fontSize: 13,
+  minHeight: 44,
+  height: 44,
+  padding: "0 14px",
 } as const;
 
 export const DANGER_OUTLINE_BUTTON_STYLE = {
@@ -14,6 +15,8 @@ export const DANGER_OUTLINE_BUTTON_STYLE = {
 } as const;
 
 export const PRIMARY_BUTTON_STYLE = {
-  fontSize: 12,
-  padding: "6px 12px",
+  fontSize: 13,
+  minHeight: 44,
+  height: 44,
+  padding: "0 14px",
 } as const;

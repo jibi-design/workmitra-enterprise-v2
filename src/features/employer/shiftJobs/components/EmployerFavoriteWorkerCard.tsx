@@ -17,13 +17,13 @@ type EmployerFavoriteWorkerCardProps = {
   editNotesId: string | null;
   notesValue: string;
   onOpenInvite: (target: InviteTarget) => void;
-  onStartEditNotes: (workerWmId: string, currentNotes?: string) => void;
+  onStartEditNotes: (workerMlId: string, currentNotes?: string) => void;
   onNotesChange: (value: string) => void;
   onSaveNotes: () => void;
   onCancelEditNotes: () => void;
-  onRequestRemove: (workerWmId: string) => void;
+  onRequestRemove: (workerMlId: string) => void;
   onCancelRemove: () => void;
-  onConfirmRemove: (workerWmId: string) => void;
+  onConfirmRemove: (workerMlId: string) => void;
 };
 
 export function EmployerFavoriteWorkerCard({
@@ -40,8 +40,8 @@ export function EmployerFavoriteWorkerCard({
   onCancelRemove,
   onConfirmRemove,
 }: EmployerFavoriteWorkerCardProps) {
-  const isEditingNotes = editNotesId === favorite.workerWmId;
-  const isRemoving = removingId === favorite.workerWmId;
+  const isEditingNotes = editNotesId === favorite.workerMlId;
+  const isRemoving = removingId === favorite.workerMlId;
 
   return (
     <div className="wm-er-card">
@@ -49,10 +49,10 @@ export function EmployerFavoriteWorkerCard({
 
       <FavoriteWorkerMetaRow favorite={favorite} />
 
-      <FavoriteWorkerAvailabilityBadge workerWmId={favorite.workerWmId} />
+      <FavoriteWorkerAvailabilityBadge workerMlId={favorite.workerMlId} />
 
       <FavoriteWorkerInviteButton
-        target={{ workerWmId: favorite.workerWmId, workerName: favorite.workerName }}
+        target={{ workerMlId: favorite.workerMlId, workerName: favorite.workerName }}
         onOpenInvite={onOpenInvite}
       />
 

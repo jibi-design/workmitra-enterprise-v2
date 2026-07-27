@@ -31,7 +31,7 @@ export function VacancyProgress({
       style={{
         marginTop: 12,
         padding: "15px 16px",
-        borderRadius: 20,
+        borderRadius: "var(--wm-radius-employee-card)",
         background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
         border: "1px solid rgba(226,232,240,0.95)",
         boxShadow: "0 10px 24px rgba(15,23,42,0.045)",
@@ -59,7 +59,7 @@ export function VacancyProgress({
         <div
           style={{
             padding: "6px 10px",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             background: "rgba(22,163,74,0.08)",
             border: "1px solid rgba(22,163,74,0.16)",
             fontSize: 12,
@@ -76,7 +76,7 @@ export function VacancyProgress({
         style={{
           marginTop: 12,
           height: 9,
-          borderRadius: 999,
+          borderRadius: "var(--wm-radius-pill)",
           background: "rgba(226,232,240,0.95)",
           overflow: "hidden",
         }}
@@ -86,7 +86,7 @@ export function VacancyProgress({
             height: "100%",
             width: `${progressPct}%`,
             background: progressColor,
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             transition: "width 0.4s",
           }}
         />
@@ -112,7 +112,7 @@ export function VacancyProgress({
         style={{
           marginTop: 10,
           padding: "9px 11px",
-          borderRadius: 14,
+          borderRadius: "var(--wm-radius-chip)",
           background: "rgba(22,163,74,0.06)",
           border: "1px solid rgba(22,163,74,0.14)",
           color: "var(--wm-er-muted)",
@@ -135,7 +135,7 @@ export function VacancyProgress({
           <div
             style={{
               height: 5,
-              borderRadius: 999,
+              borderRadius: "var(--wm-radius-pill)",
               background: "rgba(226,232,240,0.95)",
               overflow: "hidden",
             }}
@@ -145,7 +145,7 @@ export function VacancyProgress({
                 height: "100%",
                 width: `${backupPct}%`,
                 background: backupPct >= 100 ? "#16a34a" : "#d97706",
-                borderRadius: 999,
+                borderRadius: "var(--wm-radius-pill)",
                 transition: "width 0.4s",
               }}
             />
@@ -161,7 +161,7 @@ function ProgressMeta({ label, value }: { label: string; value: number | string 
     <div
       style={{
         padding: "9px 8px",
-        borderRadius: 14,
+        borderRadius: "var(--wm-radius-chip)",
         background: "rgba(248,250,252,0.96)",
         border: "1px solid rgba(226,232,240,0.9)",
         textAlign: "center",

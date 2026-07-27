@@ -5,21 +5,17 @@
 
 import type { CompanyNotice, NoticeTarget } from "../types/companyNotice.types";
 import { hrManagementStorage } from "./hrManagement.storage";
+import { hrEmployerScopedKey } from "./hrStorageKeys";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────────────────────────────────────
-
-const STORAGE_KEY = "wm_company_notices_v1";
 const CHANGED_EVENT = "wm:company-notices-changed";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Internal Helpers
-// ─────────────────────────────────────────────────────────────────────────────
+function storageKey(): string {
+  return hrEmployerScopedKey("company_notices_v1");
+}
 
 function read(): CompanyNotice[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey());
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
     return Array.isArray(parsed) ? (parsed as CompanyNotice[]) : [];
@@ -29,7 +25,7 @@ function read(): CompanyNotice[] {
 }
 
 function write(notices: CompanyNotice[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(notices));
+  localStorage.setItem(storageKey(), JSON.stringify(notices));
   window.dispatchEvent(new Event(CHANGED_EVENT));
 }
 
@@ -42,7 +38,6 @@ function genId(): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const companyNoticeStorage = {
-
   /** Get all notices (newest first) */
   getAll(): CompanyNotice[] {
     return read().sort((a, b) => b.createdAt - a.createdAt);
@@ -104,7 +99,7 @@ export const companyNoticeStorage = {
       targetValue: data.targetValue,
       recipientCount: recipients.length,
       recipientIds: recipients.map((r) => r.id),
-       readReceipts: [],
+      readReceipts: [],
       createdAt: Date.now(),
     };
 
@@ -122,7 +117,7 @@ export const companyNoticeStorage = {
     return true;
   },
 
- /** Mark a notice as read by an employee (localStorage simulate) */
+  /** Mark a notice as read by an employee (localStorage simulate) */
   markAsRead(noticeId: string, hrCandidateId: string, employeeName: string): boolean {
     const all = read();
     const idx = all.findIndex((n) => n.id === noticeId);

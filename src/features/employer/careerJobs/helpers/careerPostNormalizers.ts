@@ -2,6 +2,8 @@
 // File name: careerPostNormalizers.ts
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\careerJobs\helpers\careerPostNormalizers.ts
 
+import { getCurrentActorId, identityBridge } from "../../../../app/identity/identity.adapter";
+import { employerSettingsStorage } from "../../company/storage/employerSettings.storage";
 import type { CareerJobPost, InterviewRoundConfig } from "../types/careerTypes";
 import { getNumber, getString, getStringArray, isRecord } from "./careerStorageUtils";
 import {
@@ -77,9 +79,15 @@ export function normalizeCareerPost(raw: unknown): CareerJobPost | null {
     .map(normalizeRoundConfig)
     .filter((item): item is InterviewRoundConfig => item !== null);
 
+  const actor = getCurrentActorId("employer");
+  const legacyEmployerId = employerSettingsStorage.get().uniqueId?.trim();
+  if (actor.source === "auth" && actor.authUserId && legacyEmployerId) {
+    identityBridge.upsert("employer", legacyEmployerId, actor.authUserId);
+  }
+
   return {
     id: idVal,
-    employerId: getString(raw, "employerId") ?? "employer_demo",
+    employerId: getString(raw, "employerId") ?? legacyEmployerId ?? "employer_demo",
     companyName: getString(raw, "companyName") ?? "Company",
     jobTitle: getString(raw, "jobTitle") ?? "Untitled Position",
     department: getString(raw, "department") ?? "",

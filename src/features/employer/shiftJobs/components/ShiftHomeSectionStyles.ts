@@ -7,7 +7,7 @@ import type { CSSProperties } from "react";
 export const shiftHomeActionIconWrap: CSSProperties = {
   width: 46,
   height: 46,
-  borderRadius: 16,
+  borderRadius: "var(--wm-radius-chip)",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -30,7 +30,7 @@ export const shiftHomeSectionTitle: CSSProperties = {
 export const shiftHomeRecentPostButton: CSSProperties = {
   width: "100%",
   padding: "14px 14px",
-  borderRadius: 16,
+  borderRadius: "var(--wm-radius-chip)",
   border: "1px solid rgba(226,232,240,0.95)",
   background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.96))",
   cursor: "pointer",
@@ -41,7 +41,7 @@ export const shiftHomeRecentPostButton: CSSProperties = {
 export const shiftHomeAnalyzedPostButton: CSSProperties = {
   width: "100%",
   padding: "12px 14px",
-  borderRadius: 14,
+  borderRadius: "var(--wm-radius-chip)",
   border: "1px solid rgba(226,232,240,0.95)",
   background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.96))",
   cursor: "pointer",
@@ -61,7 +61,7 @@ export const shiftHomeActionButtonBase: CSSProperties = {
   alignItems: "center",
   gap: 7,
   padding: "15px 8px",
-  borderRadius: 18,
+  borderRadius: "var(--wm-radius-chip)",
   border: "1px solid rgba(226,232,240,0.95)",
   background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.96))",
   cursor: "pointer",

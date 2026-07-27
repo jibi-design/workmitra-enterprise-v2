@@ -25,7 +25,9 @@ export function buildEmployerWorkerReviewRecords(
   workspaces: ShiftWorkspace[],
 ): EmployerWorkerReviewRecord[] {
   return reviews
-    .filter((review) => review.domain === "shift")
+    .filter(
+      (review): review is WorkerToEmployerRating & { domain: "shift" } => review.domain === "shift",
+    )
     .map((review) => {
       const workspace = workspaces.find((item) => item.postId === review.jobId);
 
@@ -33,8 +35,8 @@ export function buildEmployerWorkerReviewRecords(
         id: review.id,
         source: review,
         domain: review.domain,
-        workerWmId: getSafeWorkerCode(review.workerWmId),
-        employerWmId: review.employerWmId,
+        workerMlId: getSafeWorkerCode(review.workerMlId),
+        employerMlId: review.employerMlId,
         jobId: review.jobId,
         workspaceId: workspace?.id,
         title: workspace ? getSafeWorkspaceTitle(workspace) : `Shift ${review.jobId.slice(0, 8)}`,
@@ -95,7 +97,9 @@ export function buildEmployerGivenWorkerRatingRecords(
   workspaces: ShiftWorkspace[],
 ): EmployerGivenWorkerRatingRecord[] {
   return ratings
-    .filter((rating) => rating.domain === "shift")
+    .filter(
+      (rating): rating is EmployerToWorkerRating & { domain: "shift" } => rating.domain === "shift",
+    )
     .map((rating) => {
       const workspace = workspaces.find((item) => item.postId === rating.jobId);
 
@@ -103,8 +107,8 @@ export function buildEmployerGivenWorkerRatingRecords(
         id: rating.id,
         source: rating,
         domain: rating.domain,
-        employerWmId: rating.employerWmId,
-        workerWmId: getSafeWorkerCode(rating.workerWmId),
+        employerMlId: rating.employerMlId,
+        workerMlId: getSafeWorkerCode(rating.workerMlId),
         jobId: rating.jobId,
         workspaceId: workspace?.id,
         title: workspace ? getSafeWorkspaceTitle(workspace) : `Shift ${rating.jobId.slice(0, 8)}`,

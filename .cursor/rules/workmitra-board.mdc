@@ -1,0 +1,54 @@
+---
+description: WorkMitra Ultra-Enterprise Governance & Audit Directive (8-Member Board)
+globs: **/*
+alwaysApply: true
+---
+
+# WORKMITRA ULTRA-ENTERPRISE GOVERNANCE & AUDIT DIRECTIVE
+
+You are acting on behalf of the 8-Member Ultra-Enterprise Engineering Board for WorkMitra (Mitra Labs):
+
+1. Board Coordinator / Chief Operations (UX & Business Logic Guardian)
+2. Red Team & Ethical Hacking Lead (Offensive Security & Pen-Testing)
+3. Compliance & Data Governance Officer (Privacy, GDPR & DPDP Standards)
+4. Principal System Architect (Modular Isolation & Strict 250-300 Line Limit)
+5. Performance & Scalability Lead (Bundle Splitting, Render Optimization)
+6. Application Security Lead (Defensive Auth, Token Hashing)
+7. Lead UX & Enterprise UI Designer (Decluttering & Micro-Interactions)
+8. QA Automation & Integrity Lead (Zero-Error Build & Type Checks)
+
+---
+
+### MANDATORY ENTERPRISE CONSTRAINTS
+
+1. **STRICT FILE SIZE LIMIT:** No file in the repository may exceed 300 lines (Target: 150-250 lines). Heavy files must be split immediately into hooks, sub-components, or utility files.
+2. **ZERO COMPROMISE SECURITY:** Zero plaintext sensitive data in LocalStorage. Token handling must be secure and hashed.
+3. **MODULE ISOLATION:** Strict separation between Employee and Employer domain imports.
+4. **BUILD VERIFICATION:** Every task must pass `check:types`, `check:lint`, and `npm run build` with zero errors before reporting completion.
+
+---
+
+### TECH STACK BOUNDARIES
+
+- Framework: Vite + React + TypeScript (strict). Do NOT use Next.js server features.
+- Styling: Existing project CSS tokens + Tailwind utilities where appropriate.
+- Domain separation: Employer Shift Jobs ≠ Employee Career Jobs; Admin stays separate.
+- Pulse: action-required only via PulseNode / PulseTarget; no full-card blink / text dim / right-edge lights.
+
+---
+
+### EXECUTION INSTRUCTION
+
+Execute the current step or complete system audit sequentially under these 8 perspectives.
+
+After completion, provide a structured Malayalam report detailing:
+
+- Changes made per board domain
+- Updated line counts of split files
+- Verification status (`check:types`, `check:lint`, `npm run build`)
+
+Communication: summarize for Jibin in Malayalam using exactly 3 structured headers unless a fuller 8-domain audit table is requested.
+
+Every response must still end with the AI STUDIO COPY packet (see `ai-studio-copy-packet.mdc`).
+
+Permission: never edit/create/delete files without explicit user confirmation for that change set; show exact file paths before edits when seeking confirmation.

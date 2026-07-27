@@ -53,6 +53,7 @@ export function EmployerCareerPostDashboardModals({
         open={state.rejectTarget !== null}
         candidateName={state.rejectTarget?.candidateName ?? ""}
         currentStage={state.rejectTarget?.currentStage ?? "applied"}
+        mode={state.rejectTarget?.mode ?? "single"}
         onClose={() => state.setRejectTarget(null)}
         onSubmit={state.handleRejectSubmit}
       />

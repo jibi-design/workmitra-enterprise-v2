@@ -45,6 +45,13 @@ export const EC = {
   vaultUpload: "vault/folder/:folderId/upload",
   vaultOtp: "vault/otp",
   vaultAccessLog: "vault/access-log",
+  shiftOpsHub: "shift-ops",
+  shiftOpsInvite: "shift-ops/invite",
+  shiftOpsVerify: "shift-ops/verify",
+  shiftOpsPending: "shift-ops/pending",
+  shiftOpsAccept: "shift-ops/accept",
+  shiftOpsReady: "shift-ops/ready",
+  shiftOpsGate: "shift-ops/gate",
 } as const;
 
 export const ER = {
@@ -104,6 +111,7 @@ export const ER = {
   consoleAvailability: "console/availability",
   consoleRoster: "console/roster",
   consoleIncidents: "console/incidents",
+  shiftOpsApprovals: "shift-ops/approvals",
 } as const;
 
 export const AC = {

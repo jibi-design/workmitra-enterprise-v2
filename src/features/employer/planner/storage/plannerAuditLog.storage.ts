@@ -16,6 +16,8 @@ export type PlannerAuditAction =
   | "cancelled"
   | "batch_approved"
   | "batch_rejected"
+  | "batch_shortlisted"
+  | "capacity_soft_override"
   | "native_confirmed"
   | "crew_broadcast"
   | "plan_completed"
@@ -54,6 +56,8 @@ const ACTIONS = new Set<PlannerAuditAction>([
   "cancelled",
   "batch_approved",
   "batch_rejected",
+  "batch_shortlisted",
+  "capacity_soft_override",
   "native_confirmed",
   "crew_broadcast",
   "plan_completed",

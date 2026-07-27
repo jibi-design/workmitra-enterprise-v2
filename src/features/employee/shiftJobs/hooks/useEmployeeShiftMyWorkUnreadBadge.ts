@@ -2,14 +2,14 @@
 // My Work tab unread badge when direct invites are pending.
 
 import { useCallback, useSyncExternalStore } from "react";
-import { shiftDirectInviteStorage } from "../../../employer/shiftJobs/storage/shiftDirectInvite.storage";
+import { shiftDirectInviteStorage } from "../../../shared/shift/shiftEmployerPublic";
 import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
 import { countEmployeePendingDirectInvites } from "../helpers/shiftDirectInvite.helpers";
 
 function readPendingCount(): number {
-  const workerWmId = employeeProfileStorage.get().uniqueId?.trim().toUpperCase() ?? "";
-  if (!workerWmId) return 0;
-  return countEmployeePendingDirectInvites(workerWmId);
+  const workerMlId = employeeProfileStorage.get().uniqueId?.trim().toUpperCase() ?? "";
+  if (!workerMlId) return 0;
+  return countEmployeePendingDirectInvites(workerMlId);
 }
 
 export function useEmployeeShiftMyWorkUnreadBadge(): boolean {

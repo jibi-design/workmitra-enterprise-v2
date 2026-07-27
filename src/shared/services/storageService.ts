@@ -1,12 +1,11 @@
-/** Job Mitra | storageService.ts | src/shared/services/storageService.ts */
+/** Job Mitra | storageService.ts — typed non-PII browser prefs only */
 
 /**
- * ARCHITECTURE NOTE:
- * Typed storage wrapper. Prevents magic strings and manual JSON parsing
- * in individual components.
+ * Typed storage for non-sensitive preferences.
+ * Auth tokens and profile PII must use piiSecureStorage / cookie sessions — never this API.
  */
 
-type StorageKey = "wm_auth_token" | "wm_user_role" | "wm_theme_preference" | "wm_last_sync";
+type StorageKey = "wm_user_role" | "wm_theme_preference" | "wm_last_sync";
 
 export const storageService = {
   set(key: StorageKey, value: unknown): void {
@@ -22,7 +21,6 @@ export const storageService = {
     try {
       const value = localStorage.getItem(key);
       if (!value) return null;
-      // Try parsing as JSON, if it fails, return the raw string
       try {
         return JSON.parse(value) as T;
       } catch {
@@ -38,7 +36,14 @@ export const storageService = {
     localStorage.removeItem(key);
   },
 
-  clear(): void {
-    localStorage.clear();
+  /** Scrub legacy bearer token key if present (never writable via this service). */
+  scrubLegacyAuthToken(): void {
+    try {
+      localStorage.removeItem("wm_auth_token");
+    } catch {
+      /* ignore */
+    }
   },
 };
+
+storageService.scrubLegacyAuthToken();

@@ -1,24 +1,16 @@
-// App name: Job Mitra
-// File name: MyShiftApplicationsKpiTiles.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\components\MyShiftApplicationsKpiTiles.tsx
+// App name: Job Mitra | MyShiftApplicationsKpiTiles.tsx — wm-shift-kpi-tile (Wave A)
 
 import type { KpiCounts } from "../../shiftJobs/helpers/shiftApplicationHelpers";
-
-const MUTED = "#94a3b8";
 
 type MyShiftApplicationsKpiTilesProps = {
   kpi: KpiCounts;
   domain?: "shift" | "planner";
 };
 
-const PLANNER_TEAL = "#0891b2";
-const SHIFT_GREEN = "#16a34a";
-
 export function MyShiftApplicationsKpiTiles({
   kpi,
   domain = "shift",
 }: MyShiftApplicationsKpiTilesProps) {
-  const accent = domain === "planner" ? PLANNER_TEAL : SHIFT_GREEN;
   const kpiDefs = [
     { label: "Applied", field: "applied" as const },
     { label: "Shortlisted", field: "shortlisted" as const },
@@ -27,41 +19,30 @@ export function MyShiftApplicationsKpiTiles({
 
   return (
     <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr 1fr",
-        gap: 10,
-        marginBottom: 14,
-      }}
+      className="wm-shift-kpi-grid wm-animateIn"
+      data-testid="shift-applications-kpi-grid"
+      style={{ animationDelay: "60ms" }}
     >
       {kpiDefs.map((definition) => {
         const count = kpi[definition.field];
         const isZero = count === 0;
-        const color = isZero ? MUTED : accent;
+        const toneClass =
+          domain === "planner"
+            ? ""
+            : isZero
+              ? "isZero"
+              : definition.field === "confirmed"
+                ? "isSuccess"
+                : "isShift isPositive";
 
         return (
           <div
             key={definition.label}
-            style={{
-              minHeight: 78,
-              borderRadius: 18,
-              padding: "12px 10px",
-              textAlign: "center",
-              border: isZero ? "1px solid rgba(226,232,240,0.95)" : `1px solid ${accent}26`,
-              background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
-              boxShadow: "0 10px 24px rgba(15,23,42,0.045)",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-            }}
+            className={["wm-shift-kpi-tile", toneClass].filter(Boolean).join(" ")}
+            data-testid={`shift-applications-kpi-${definition.field}`}
           >
-            <div style={{ fontSize: 11, fontWeight: 900, color, letterSpacing: 0.2 }}>
-              {definition.label}
-            </div>
-
-            <div style={{ fontSize: 22, lineHeight: 1, fontWeight: 950, color, marginTop: 7 }}>
-              {count}
-            </div>
+            <div className="wm-shift-kpi-tile__label">{definition.label}</div>
+            <div className="wm-shift-kpi-tile__value">{count}</div>
           </div>
         );
       })}

@@ -13,7 +13,7 @@ import {
   myStaffStorage,
   restoreStaffRecords,
   type StaffExitReason,
-} from "../../../employer/myStaff/storage/myStaff.storage";
+} from "../../../career/storage/myStaffPublic";
 import type {
   EmployeeResignReason,
   EmployerTerminateReason,

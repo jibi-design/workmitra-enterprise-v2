@@ -1,5 +1,4 @@
-// App name: Job Mitra
-// File name: MyShiftApplicationsPage.tsx
+// App name: Job Mitra | MyShiftApplicationsPage.tsx — Wave A primitives
 
 import { ConfirmModal } from "../../../../shared/components/ConfirmModal";
 import { MyShiftApplicationsHeader } from "../components/MyShiftApplicationsHeader";
@@ -28,22 +27,28 @@ export function MyShiftApplicationsPage() {
   } = useMyShiftApplicationsState("shift");
 
   return (
-    <div className="wm-ee-vShift">
+    <div
+      className="wm-ee-vShift wm-stackGrid"
+      data-testid="shift-applications-page"
+      style={{ gap: "var(--wm-stack-gap)" }}
+    >
       <MyShiftApplicationsHeader onFindShifts={openFindShifts} />
 
       <MyShiftApplicationsKpiTiles kpi={kpi} />
 
       <MyShiftApplicationsTabs tab={tab} counts={counts} onChange={setTab} />
 
-      <MyShiftApplicationsList
-        domain="shift"
-        applications={filteredApplications}
-        postMap={postMap}
-        onFindShifts={openFindShifts}
-        onOpenApplication={openApplication}
-        onWithdrawApplication={requestWithdrawApplication}
-        onConfirmAttendanceApplication={requestConfirmAttendanceApplication}
-      />
+      <div className="wm-animateIn" style={{ animationDelay: "120ms" }}>
+        <MyShiftApplicationsList
+          domain="shift"
+          applications={filteredApplications}
+          postMap={postMap}
+          onFindShifts={openFindShifts}
+          onOpenApplication={openApplication}
+          onWithdrawApplication={requestWithdrawApplication}
+          onConfirmAttendanceApplication={requestConfirmAttendanceApplication}
+        />
+      </div>
 
       <ShiftToast message={toast} />
 
@@ -52,8 +57,6 @@ export function MyShiftApplicationsPage() {
         onCancel={handleCancelWithdraw}
         onConfirm={handleConfirmWithdraw}
       />
-
-      <div style={{ height: 32 }} />
     </div>
   );
 }

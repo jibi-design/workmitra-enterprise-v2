@@ -52,7 +52,7 @@ export function AcceptResignationStepOne({
             lineHeight: 1.5,
             marginBottom: 12,
             padding: "9px 11px",
-            borderRadius: 12,
+            borderRadius: "var(--wm-radius-button)",
             background: "rgba(29,78,216,0.055)",
             border: "1px solid rgba(29,78,216,0.12)",
             fontWeight: 760,
@@ -77,7 +77,7 @@ export function AcceptResignationStepOne({
           style={{
             width: "100%",
             padding: "10px 12px",
-            borderRadius: 10,
+            borderRadius: "var(--wm-radius-10)",
             border: "1.5px solid rgba(0,0,0,0.12)",
             fontSize: 14,
             fontWeight: 700,

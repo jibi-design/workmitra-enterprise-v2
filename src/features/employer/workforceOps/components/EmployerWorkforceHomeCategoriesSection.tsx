@@ -153,7 +153,7 @@ export function EmployerWorkforceHomeCategoriesSection({
           style={{
             marginTop: 10,
             padding: 12,
-            borderRadius: 10,
+            borderRadius: "var(--wm-radius-10)",
             border: "1px solid var(--wm-error)",
             background: "rgba(220,38,38,0.04)",
           }}

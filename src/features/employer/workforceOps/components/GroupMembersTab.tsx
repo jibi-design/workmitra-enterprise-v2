@@ -208,7 +208,7 @@ export function GroupMembersTab({ group, members }: Props) {
                   onClick={() => setUrgentCatId(catId)}
                   style={{
                     padding: "4px 10px",
-                    borderRadius: 999,
+                    borderRadius: "var(--wm-radius-pill)",
                     border: "none",
                     background: urgentCatId === catId ? AMBER : AMBER_BG,
                     color: urgentCatId === catId ? "#fff" : AMBER,

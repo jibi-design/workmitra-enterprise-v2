@@ -1,16 +1,23 @@
+// WARNING DEC-012 / MIG-008: Client-side OTP path (plaintext)
+// Server OTP path (Argon2 hashed) exists at server/modules/vault/
+// This client path MUST BE REMOVED before production cutover
+// See architecture-audits/Phase-DB-Migration-Readiness-Audit-001.md
 // src/features/employer/workVault/components/EmployerVaultOtpInput.tsx
 
 import { useRef, useState } from "react";
-import { VAULT_ACCENT } from "../../../employee/workVault/constants/vaultConstants";
-import { OTP_CODE_LENGTH } from "../../../employee/workVault/constants/vaultConstants";
-import { validateOtpFormat } from "../../../employee/workVault/helpers/vaultValidation";
+import {
+  OTP_CODE_LENGTH,
+  validateOtpFormat,
+  VAULT_ACCENT,
+  vaultAccentMix,
+} from "../../../shared/workVault/vaultPublic";
 
 /* ------------------------------------------------ */
 /* Props                                            */
 /* ------------------------------------------------ */
 type EmployerVaultOtpInputProps = {
   employeeName: string;
-  onSubmit: (code: string) => void;
+  onSubmit: (code: string) => void | Promise<void>;
   onCancel: () => void;
   error: string;
 };
@@ -64,7 +71,7 @@ export function EmployerVaultOtpInput({
     const code = digits.join("");
     const check = validateOtpFormat(code);
     if (!check.valid) return;
-    onSubmit(code);
+    void Promise.resolve(onSubmit(code));
   }
 
   const isFilled = digits.every((d) => d !== "");
@@ -75,7 +82,8 @@ export function EmployerVaultOtpInput({
         Enter Access Code
       </div>
       <div style={{ fontSize: 12, color: "var(--wm-er-muted)", marginBottom: 20, lineHeight: 1.5 }}>
-        Ask <strong>{employeeName}</strong> to share their 6-digit access code from the Job Mitra app.
+        Ask <strong>{employeeName}</strong> to share their 6-digit access code from the Job Mitra
+        app.
       </div>
 
       <div
@@ -103,9 +111,11 @@ export function EmployerVaultOtpInput({
             style={{
               width: 44,
               height: 52,
-              borderRadius: 12,
-              border: digit ? `2px solid ${VAULT_ACCENT}` : "2px solid var(--wm-er-divider, rgba(15, 23, 42, 0.12))",
-              background: digit ? `${VAULT_ACCENT}06` : "#fff",
+              borderRadius: "var(--wm-radius-button)",
+              border: digit
+                ? `2px solid ${VAULT_ACCENT}`
+                : "2px solid var(--wm-er-divider, rgba(15, 23, 42, 0.12))",
+              background: digit ? `${vaultAccentMix(3)}` : "#fff",
               fontSize: 24,
               fontWeight: 900,
               textAlign: "center",
@@ -128,19 +138,14 @@ export function EmployerVaultOtpInput({
         </button>
         <button
           type="button"
+          className="wm-vault-cta"
           onClick={handleSubmit}
           disabled={!isFilled}
           style={{
-            height: 40,
-            padding: "0 24px",
-            borderRadius: 10,
-            border: "none",
-            background: isFilled ? VAULT_ACCENT : "var(--wm-er-muted)",
-            color: "#fff",
-            fontWeight: 900,
-            fontSize: 13,
-            cursor: isFilled ? "pointer" : "not-allowed",
+            minHeight: 52,
             opacity: isFilled ? 1 : 0.5,
+            cursor: isFilled ? "pointer" : "not-allowed",
+            background: isFilled ? undefined : "var(--wm-er-muted)",
           }}
         >
           Verify

@@ -21,7 +21,7 @@ export function ShiftTimelinePaymentPanel({ paymentStage }: ShiftTimelinePayment
   return (
     <section
       style={{
-        borderRadius: 18,
+        borderRadius: "var(--wm-radius-chip)",
         border: "1px solid rgba(217, 119, 6, 0.16)",
         background: "linear-gradient(180deg, rgba(255, 251, 235, 0.76), rgba(255, 255, 255, 0.96))",
         padding: 12,
@@ -96,7 +96,7 @@ function PaymentStepBadge({
   return (
     <div
       style={{
-        borderRadius: 12,
+        borderRadius: "var(--wm-radius-button)",
         border,
         background,
         color,

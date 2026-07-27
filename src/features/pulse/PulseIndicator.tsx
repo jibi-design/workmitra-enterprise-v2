@@ -2,10 +2,17 @@
 
 import type { CSSProperties } from "react";
 
+import { getEdgeTone, getLedModeClassName } from "./pulseEdgeTones";
 import { PULSE_REGISTRY, type NotificationId } from "./pulseRegistry";
+import type { PulseChainSeverity } from "./pulseTypes";
 import { usePulseStore } from "./pulseStore";
 
-type PulseIndicatorSeverity = "info" | "success" | "warning" | "urgent";
+type PulseIndicatorSeverity = PulseChainSeverity;
+
+type PulseLedStyle = CSSProperties & {
+  readonly "--wm-led-color-a"?: string;
+  readonly "--wm-led-color-b"?: string;
+};
 
 interface PulseIndicatorProps {
   readonly notificationId: NotificationId;
@@ -14,32 +21,11 @@ interface PulseIndicatorProps {
   readonly style?: CSSProperties;
 }
 
-function getPulseEdgeLightStyle(
-  severity: PulseIndicatorSeverity,
-  style?: CSSProperties,
-): CSSProperties {
-  const isWarningTone = severity === "urgent" || severity === "warning";
-
-  return {
-    position: "absolute",
-    insetBlock: 0,
-    left: 0,
-    width: 8,
-    borderTopLeftRadius: "inherit",
-    borderBottomLeftRadius: "inherit",
-    background: isWarningTone ? "#f59e0b" : "#10b981",
-    boxShadow: isWarningTone ? "0 0 18px rgba(245,158,11,0.9)" : "0 0 18px rgba(16,185,129,0.9)",
-    zIndex: 9999,
-    pointerEvents: "none",
-    ...style,
-  };
-}
-
 /**
- * Shows the global Pulse Navigation edge light for notification-level cards.
+ * Shows the global Pulse Navigation LED for notification-level cards.
  *
- * This component intentionally renders only a full-height left edge light.
- * It does not render LED balls, dim siblings, or blink the full card.
+ * Renders only a 10px glass LED dot (left-edge chrome).
+ * Does not dim siblings or blink the full card.
  */
 export function PulseIndicator({
   notificationId,
@@ -50,6 +36,8 @@ export function PulseIndicator({
   const isPulseActiveInStore = usePulseStore((state) => {
     return state.isPulseActive(notificationId);
   });
+  const isResolving = usePulseStore((state) => state.resolvingNodeId === notificationId);
+  const hasViewportBreathingPulse = usePulseStore((state) => state.chain.length > 0);
 
   const config = PULSE_REGISTRY[notificationId];
 
@@ -63,17 +51,49 @@ export function PulseIndicator({
     return null;
   }
 
-  const isCurrentlyLit = active === true || isPulseActiveInStore;
+  const isCurrentlyLit = active === true || isPulseActiveInStore || isResolving;
 
   if (!isCurrentlyLit) {
     return null;
   }
 
+  const mode = isResolving
+    ? "arrival"
+    : isPulseActiveInStore || (active === true && !hasViewportBreathingPulse)
+      ? "breathe"
+      : active === true && hasViewportBreathingPulse
+        ? "static"
+        : "breathe";
+
+  const toneSeverity: PulseChainSeverity = isResolving ? "success" : severity;
+  const tone = getEdgeTone(String(notificationId), toneSeverity);
+
+  const ledStyle: PulseLedStyle = {
+    position: "absolute",
+    left: 12,
+    top: "50%",
+    transform: "translateY(-50%) translateZ(0)",
+    width: 10,
+    height: 10,
+    borderRadius: "50%",
+    background: tone.background,
+    boxShadow: tone.shadow,
+    zIndex: 9999,
+    pointerEvents: "none",
+    willChange: "opacity, transform",
+    "--wm-led-color-a": tone.ledColorA,
+    "--wm-led-color-b": tone.ledColorB,
+    ...style,
+  };
+
   return (
     <span
       aria-hidden="true"
-      className="motion-safe:animate-pulse motion-reduce:animate-none"
-      style={getPulseEdgeLightStyle(severity, style)}
-    />
+      className={getLedModeClassName(toneSeverity, mode)}
+      data-pulse-visual-mode={mode}
+      style={ledStyle}
+    >
+      <span className="wm-led__core" />
+    </span>
   );
 }

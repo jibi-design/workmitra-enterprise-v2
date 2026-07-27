@@ -1,10 +1,8 @@
-// App: Job Mitra / WorkMitra_Enterprise_v2
-// File: EmployerWorkforceAnnounceDashHeader.tsx
-// Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\workforceOps\components\EmployerWorkforceAnnounceDashHeader.tsx
+// App name: Job Mitra | EmployerWorkforceAnnounceDashHeader.tsx — DomainHero (Wave 5)
 
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
 import type { WorkforceAnnouncement } from "../../../../shared/domains/workforce/types/workforceTypes";
 import { IconBack } from "../../../../shared/domains/workforce/ui/workforceIcons";
-import { AMBER, statusBadgeStyle } from "../../../../shared/domains/workforce/ui/workforceStyles";
 
 type Props = {
   announcement: WorkforceAnnouncement;
@@ -14,41 +12,22 @@ type Props = {
 
 export function EmployerWorkforceAnnounceDashHeader({ announcement, statusColor, onBack }: Props) {
   return (
-    <div className="wm-pageHead" style={{ gap: 12 }}>
-      <button
-        type="button"
-        onClick={onBack}
-        style={{
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          color: AMBER,
-          padding: 4,
-          borderRadius: 6,
-          display: "inline-flex",
-          alignItems: "center",
-        }}
-      >
-        <IconBack />
-      </button>
-
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          className="wm-pageTitle"
-          style={{
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {announcement.title}
-        </div>
-        <div className="wm-pageSub">Announcement Dashboard</div>
-      </div>
-
-      <span style={{ ...statusBadgeStyle, color: statusColor, fontSize: 13 }}>
-        {announcement.status.charAt(0).toUpperCase() + announcement.status.slice(1)}
-      </span>
-    </div>
+    <DomainHero
+      variant="workforce"
+      audience="employer"
+      icon={
+        <button type="button" className="wm-domainHeroIconBtn" onClick={onBack} aria-label="Back">
+          <IconBack />
+        </button>
+      }
+      title={announcement.title}
+      subtitle="Announcement Dashboard"
+      description="Track responses, confirmations, and completion for this announcement."
+      trailing={
+        <span className="wm-domainHeroBadge" style={{ color: statusColor }}>
+          {announcement.status.charAt(0).toUpperCase() + announcement.status.slice(1)}
+        </span>
+      }
+    />
   );
 }

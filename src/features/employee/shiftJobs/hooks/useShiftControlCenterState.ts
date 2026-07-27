@@ -34,7 +34,7 @@ export function useShiftControlCenterState() {
   const [howOpen, setHowOpen] = useState(() => counts.totalApps === 0);
 
   const myBroadcast = useSyncExternalStore(
-    availabilityStorage.subscribe,
+    (cb) => availabilityStorage.subscribe(cb),
     getBroadcastSnapshot,
     getBroadcastSnapshot,
   );
@@ -42,15 +42,15 @@ export function useShiftControlCenterState() {
   const selectedDates = myBroadcast?.selectedDates ?? [];
 
   const workspaces = useSyncExternalStore(
-    shiftWorkspacesStorage.subscribe,
-    shiftWorkspacesStorage.getAll,
-    shiftWorkspacesStorage.getAll,
+    (cb) => shiftWorkspacesStorage.subscribe(cb),
+    () => shiftWorkspacesStorage.getAll(),
+    () => shiftWorkspacesStorage.getAll(),
   );
 
   const reviewRequests = useSyncExternalStore(
-    reviewCenterStorage.subscribe,
-    reviewCenterStorage.getAll,
-    reviewCenterStorage.getAll,
+    (cb) => reviewCenterStorage.subscribe(cb),
+    () => reviewCenterStorage.getAll(),
+    () => reviewCenterStorage.getAll(),
   );
 
   const shiftReviewPendingCount = useMemo(() => {
@@ -88,10 +88,6 @@ export function useShiftControlCenterState() {
     nav(ROUTE_PATHS.employeeShiftApplications);
   }, [nav]);
 
-  const openEarnings = useCallback(() => {
-    nav(ROUTE_PATHS.employeeShiftEarnings);
-  }, [nav]);
-
   const openWorkspaces = useCallback(() => {
     nav(ROUTE_PATHS.employeeShiftWorkspaces);
   }, [nav]);
@@ -115,7 +111,7 @@ export function useShiftControlCenterState() {
     const profile = employeeProfileStorage.get();
 
     availabilityStorage.toggleMyDate(iso, {
-      workerWmId: profile.uniqueId || `anon_${Date.now()}`,
+      workerMlId: profile.uniqueId || `anon_${Date.now()}`,
       workerName: profile.fullName.trim() || "Worker",
       city: profile.city.trim() || undefined,
     });
@@ -130,7 +126,6 @@ export function useShiftControlCenterState() {
     shiftReviewPendingCount,
     openSearch,
     openApplications,
-    openEarnings,
     openWorkspaces,
     openReviewCenter,
     openPost,

@@ -32,6 +32,9 @@ export const VAULT_FEATURE_FLAGS = {
   /** Section 9: Achievements & Milestones */
   achievements: true,
 
+  /** Section: Planner Growth & Epochs (Vault Ultra V1) */
+  plannerGrowth: true,
+
   /** Section 10: Documents (existing vault folders) */
   documents: true,
 

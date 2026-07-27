@@ -2,7 +2,10 @@
 // File name: careerSearchApplicationHelpers.ts
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\careerJobs\helpers\careerSearchApplicationHelpers.ts
 
-import { CAREER_APPS_KEY, safeRead } from "../../../employer/careerJobs/helpers/careerStorageUtils";
+import { getCurrentActorId, identityBridge } from "../../../../app/identity/identity.adapter";
+import { hydrateCareerApplicationsFromServer } from "../../../career/services/careerDbTruth.service";
+import { isCareerApiSyncEnabled } from "../../../career/services/careerGateApi.service";
+import { CAREER_APPS_KEY, safeRead } from "../../../career/helpers/careerStoragePublic";
 import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
 import { cleanText, clampNumber, isRec, num, str } from "./careerSearchSanitizers";
 import type { CareerApplicationStageLite, CareerSearchApplicationState } from "./careerSearchTypes";
@@ -18,6 +21,7 @@ function clampCareerApplicationStageLite(x: unknown): CareerApplicationStageLite
     x === "interview" ||
     x === "offered" ||
     x === "offer_accepted" ||
+    x === "offer_declined" ||
     x === "hired" ||
     x === "rejected" ||
     x === "withdrawn"
@@ -40,7 +44,14 @@ function isSearchBlockingCareerStage(stage: CareerApplicationStageLite): boolean
 }
 
 function getCurrentEmployeeId(): string {
-  return employeeProfileStorage.get().uniqueId ?? "employee_demo";
+  const profile = employeeProfileStorage.get();
+  const legacyId = profile.uniqueId?.trim() || "employee_demo";
+  const actor = getCurrentActorId("employee");
+  const realLegacy = profile.uniqueId?.trim();
+  if (actor.source === "auth" && actor.authUserId && realLegacy) {
+    identityBridge.upsert("employee", realLegacy, actor.authUserId);
+  }
+  return legacyId;
 }
 
 export function getBlockedCareerPostIds(): Set<string> {
@@ -48,7 +59,31 @@ export function getBlockedCareerPostIds(): Set<string> {
   return new Set(Object.keys(map));
 }
 
+/**
+ * Phase 12 read pattern:
+ * - Auth on: kick off DB hydrate (DB→LS merge, DB wins); sync readers use LS cache.
+ * - Auth off: LS only (demo/E2E).
+ * Use loadMyCareerApplicationStatusMap() when the caller can await DB-first.
+ */
 export function getMyCareerApplicationStatusMap(): Record<string, CareerSearchApplicationState> {
+  if (isCareerApiSyncEnabled()) {
+    void hydrateCareerApplicationsFromServer();
+  }
+
+  return buildStatusMapFromLsCache();
+}
+
+/** DB-first then LS cache merge (authoritative when auth on). */
+export async function loadMyCareerApplicationStatusMap(): Promise<
+  Record<string, CareerSearchApplicationState>
+> {
+  if (isCareerApiSyncEnabled()) {
+    await hydrateCareerApplicationsFromServer();
+  }
+  return buildStatusMapFromLsCache();
+}
+
+function buildStatusMapFromLsCache(): Record<string, CareerSearchApplicationState> {
   try {
     const currentEmployeeId = getCurrentEmployeeId();
     const raw = safeRead(CAREER_APPS_KEY);

@@ -1,173 +1,43 @@
-// src/features/employer/myStaff/storage/myStaff.storage.ts
-//
-// Employer's staff management storage.
-// Stores all active/exited staff across Career Jobs hires + manual additions.
-// Supports custom departments, department assignment, Unique ID search, and exit processing.
+// src/features/employer/myStaff/storage/myStaff.storage.ts — facade
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────────────────────────────────────
+export type {
+  StaffStatus,
+  StaffExitReason,
+  StaffEmploymentType,
+  StaffDepartmentHistoryEntry,
+  StaffRecord,
+  StaffDepartment,
+  StaffCategory,
+} from "./myStaff.types";
 
-export type StaffStatus =
-  "joining_pending" | "active" | "probation" | "resignation_pending" | "notice_period" | "exited";
-
-export type StaffExitReason =
-  "resigned" | "terminated" | "layoff" | "contract_end" | "mutual_agreement";
-
-export type StaffEmploymentType = "full_time" | "part_time" | "contract";
-
-export type StaffDepartmentHistoryEntry = {
-  id: string;
-  fromDepartmentId?: string;
-  fromDepartmentName?: string;
-  toDepartmentId: string;
-  toDepartmentName: string;
-  movedAt: number;
-  note?: string;
-};
-
-export type StaffRecord = {
-  id: string;
-
-  /** Employee identity */
-  employeeUniqueId: string;
-  employeeName: string;
-
-  /** Job details */
-  jobTitle: string;
-  category: string;
-  employmentType: StaffEmploymentType;
-
-  /** Department details — custom employer-created department system */
-  departmentId?: string;
-  departmentName?: string;
-  departmentHistory?: StaffDepartmentHistoryEntry[];
-
-  /** Dates — employer-controlled */
-  joinedAt: number;
-  exitedAt?: number;
-
-  /** Status */
-  status: StaffStatus;
-
-  /** Exit details */
-  exitReason?: StaffExitReason;
-
-  /** Ratings */
-  employerRating?: number;
-  employerComment?: string;
-
-  /** How added */
-  addMethod: "via_app" | "manually_added";
-
-  /** Link to career post (if hired via app) */
-  careerPostId?: string;
-
-  /** Employee confirmed (for manually added staff) */
-  employeeConfirmed: boolean;
-
-  /** Timestamps */
-  createdAt: number;
-  updatedAt: number;
-};
-
-export type StaffDepartment = {
-  id: string;
-  name: string;
-  createdAt: number;
-  updatedAt: number;
-};
-
-export type StaffCategory = {
-  id: string;
-  name: string;
-  createdAt: number;
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────────────────────────────────────
-
-const STAFF_KEY = "wm_employer_staff_v1";
-const CATEGORIES_KEY = "wm_employer_staff_categories_v1";
-const DEPARTMENTS_KEY = "wm_employer_staff_departments_v1";
-const CHANGED_EVENT = "wm:employer-staff-changed";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Internal Helpers
-// ─────────────────────────────────────────────────────────────────────────────
-
-function readStaff(): StaffRecord[] {
-  try {
-    const raw = localStorage.getItem(STAFF_KEY);
-    if (!raw) return [];
-    const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as StaffRecord[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeStaff(records: StaffRecord[]): void {
-  localStorage.setItem(STAFF_KEY, JSON.stringify(records));
-  window.dispatchEvent(new Event(CHANGED_EVENT));
-}
+import type {
+  StaffCategory,
+  StaffDepartment,
+  StaffDepartmentHistoryEntry,
+  StaffExitReason,
+  StaffRecord,
+} from "./myStaff.types";
+import {
+  CATEGORIES_KEY,
+  CHANGED_EVENT,
+  DEPARTMENTS_KEY,
+  STAFF_KEY,
+  genId,
+  normalizeName,
+  readCategories,
+  readDepartments,
+  readStaff,
+  sortByNewest,
+  writeCategories,
+  writeDepartments,
+  writeStaff,
+} from "./myStaff.storage.internal";
 
 export function restoreStaffRecords(records: StaffRecord[]): void {
   writeStaff(records);
 }
 
-function readCategories(): StaffCategory[] {
-  try {
-    const raw = localStorage.getItem(CATEGORIES_KEY);
-    if (!raw) return [];
-    const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as StaffCategory[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeCategories(categories: StaffCategory[]): void {
-  localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
-  window.dispatchEvent(new Event(CHANGED_EVENT));
-}
-
-function readDepartments(): StaffDepartment[] {
-  try {
-    const raw = localStorage.getItem(DEPARTMENTS_KEY);
-    if (!raw) return [];
-    const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as StaffDepartment[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeDepartments(departments: StaffDepartment[]): void {
-  localStorage.setItem(DEPARTMENTS_KEY, JSON.stringify(departments));
-  window.dispatchEvent(new Event(CHANGED_EVENT));
-}
-
-function genId(prefix: string): string {
-  return prefix + "_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
-}
-
-function normalizeName(value: string): string {
-  return value.trim().replace(/\s+/g, " ");
-}
-
-function sortByNewest<T extends { createdAt: number }>(items: T[]): T[] {
-  return [...items].sort((a, b) => b.createdAt - a.createdAt);
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Public API
-// ─────────────────────────────────────────────────────────────────────────────
-
 export const myStaffStorage = {
-  // ── Staff CRUD ──
-
   getAll(): StaffRecord[] {
     return sortByNewest(readStaff());
   },
@@ -252,8 +122,6 @@ export const myStaffStorage = {
       employerComment: comment,
     });
   },
-
-  // ── Departments ──
 
   getDepartments(): StaffDepartment[] {
     return readDepartments().sort((a, b) => a.name.localeCompare(b.name));
@@ -362,8 +230,6 @@ export const myStaffStorage = {
     return true;
   },
 
-  // ── Legacy Categories ──
-
   getCategories(): StaffCategory[] {
     return readCategories().sort((a, b) => a.name.localeCompare(b.name));
   },
@@ -389,8 +255,6 @@ export const myStaffStorage = {
     writeCategories(filtered);
     return true;
   },
-
-  // ── Subscription ──
 
   subscribe(cb: () => void): () => void {
     const handleStorage = (event: StorageEvent) => {

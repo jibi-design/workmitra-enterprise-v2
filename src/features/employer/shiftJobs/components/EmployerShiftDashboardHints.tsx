@@ -31,7 +31,7 @@ type HintConfig = {
 const CARD_STYLE: CSSProperties = {
   marginTop: 10,
   padding: "11px 12px",
-  borderRadius: 16,
+  borderRadius: "var(--wm-radius-chip)",
   fontSize: 11,
   fontWeight: 800,
   lineHeight: 1.45,
@@ -40,7 +40,7 @@ const CARD_STYLE: CSSProperties = {
 const ACTION_STYLE: CSSProperties = {
   marginTop: 9,
   border: "none",
-  borderRadius: 999,
+  borderRadius: "var(--wm-radius-pill)",
   padding: "8px 10px",
   fontSize: 11,
   fontWeight: 950,

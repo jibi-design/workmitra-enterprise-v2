@@ -24,7 +24,7 @@ export function EmployerShiftAutomationPanel({
     <div
       style={{
         marginTop: 16,
-        borderRadius: 14,
+        borderRadius: "var(--wm-radius-chip)",
         border: "1px solid var(--wm-er-border)",
         overflow: "hidden",
       }}

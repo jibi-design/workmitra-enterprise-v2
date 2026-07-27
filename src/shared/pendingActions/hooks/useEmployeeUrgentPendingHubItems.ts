@@ -18,7 +18,7 @@ import {
 import type {
   CareerApplication,
   RoundResult,
-} from "../../../features/employer/careerJobs/types/careerTypes";
+} from "../../../features/career/types/careerDomainTypes";
 import { employeeProfileStorage } from "../../../features/employee/profile/storage/employeeProfile.storage";
 import { shiftApplicationsStorage } from "../../../features/employee/shiftJobs/storage/shiftApplications.storage";
 import { isPlannerApplication } from "../../../features/employee/planner/helpers/plannerDomainFilters";
@@ -102,21 +102,25 @@ export function useEmployeeUrgentPendingHubItems(navigate: NavigateFunction): Pe
 
   const handleAcceptOffer = useCallback(
     (jobId: string) => {
-      const result = acceptCareerOffer(jobId);
-      clearPendingActionDismissed(`career-offer-response-${jobId}`);
-      if (result.ok) {
+      void (async () => {
+        const result = await acceptCareerOffer(jobId);
+        clearPendingActionDismissed(`career-offer-response-${jobId}`);
+        if (result.ok) {
+          navigate(ROUTE_PATHS.employeeCareerApplications);
+          return;
+        }
         navigate(ROUTE_PATHS.employeeCareerApplications);
-        return;
-      }
-      navigate(ROUTE_PATHS.employeeCareerApplications);
+      })();
     },
     [navigate],
   );
 
   const handleDeclineOffer = useCallback((jobId: string) => {
-    if (declineCareerOffer(jobId)) {
-      clearPendingActionDismissed(`career-offer-response-${jobId}`);
-    }
+    void (async () => {
+      if (await declineCareerOffer(jobId)) {
+        clearPendingActionDismissed(`career-offer-response-${jobId}`);
+      }
+    })();
   }, []);
 
   const handleConfirmAttendance = useCallback((applicationId: string) => {

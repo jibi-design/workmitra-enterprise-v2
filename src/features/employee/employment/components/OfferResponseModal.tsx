@@ -3,7 +3,7 @@
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\employment\components\OfferResponseModal.tsx
 
 import { useState } from "react";
-import type { HRCandidateRecord } from "../../../employer/hrManagement/types/hrManagement.types";
+import type { HRCandidateRecord } from "../../../shared/hr/hrPublic";
 import { OfferResponseAcceptStep } from "./offerResponse/OfferResponseAcceptStep";
 import { OfferResponseRejectStep } from "./offerResponse/OfferResponseRejectStep";
 import { OfferResponseViewStep } from "./offerResponse/OfferResponseViewStep";

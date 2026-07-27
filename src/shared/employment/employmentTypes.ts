@@ -84,12 +84,12 @@ export type EmploymentRecord = {
   /** Employee info */
   employeeId: string;
   employeeName: string;
-  employeeWmId: string;
+  employeeMlId: string;
 
   /** Employer info */
   employerId: string;
   companyName: string;
-  employerWmId: string;
+  employerMlId: string;
 
   /** Job details (snapshot from offer) */
   jobTitle: string;

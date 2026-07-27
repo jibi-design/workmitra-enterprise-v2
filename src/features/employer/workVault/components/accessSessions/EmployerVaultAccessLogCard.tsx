@@ -2,7 +2,7 @@
 // File name: EmployerVaultAccessLogCard.tsx
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\workVault\components\accessSessions\EmployerVaultAccessLogCard.tsx
 
-import type { VaultAccessEntry } from "../../../../employee/workVault/types/vaultTypes";
+import type { VaultAccessEntry } from "../../../../shared/workVault/vaultPublic";
 
 type EmployerVaultAccessLogCardProps = {
   entry: VaultAccessEntry;
@@ -15,7 +15,7 @@ export function EmployerVaultAccessLogCard({ entry }: EmployerVaultAccessLogCard
     <article
       style={{
         padding: 13,
-        borderRadius: 18,
+        borderRadius: "var(--wm-radius-chip)",
         border: "1px solid rgba(226,232,240,0.9)",
         background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
       }}
@@ -54,7 +54,7 @@ export function EmployerVaultAccessLogCard({ entry }: EmployerVaultAccessLogCard
         <span
           style={{
             padding: "5px 8px",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             background: getStatusBg(entry.status),
             border: "1px solid rgba(226,232,240,0.9)",
             color: getStatusColor(entry.status),

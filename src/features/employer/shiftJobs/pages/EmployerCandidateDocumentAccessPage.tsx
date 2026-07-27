@@ -1,30 +1,14 @@
-// App name: Job Mitra
-// File name: EmployerCandidateDocumentAccessPage.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\pages\EmployerCandidateDocumentAccessPage.tsx
+// App name: Job Mitra | EmployerCandidateDocumentAccessPage.tsx — DomainHero (Wave 2)
 
-import type { CSSProperties } from "react";
 import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
-import { VaultProfileTab } from "../../../employee/workVault/components/VaultProfileTab";
-import type { VaultSectionData } from "../../../employee/workVault/services/vaultDataAggregator";
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
+import { EnterpriseEmpty } from "../../../../shared/components/enterprise";
+import { VaultProfileTab } from "../../../shared/workVault/vaultPublic";
+import type { VaultSectionData } from "../../../shared/workVault/vaultPublic";
 import { getAppsSnapshot, getPostsSnapshot } from "../helpers/dashboardHelpers";
 import type { EmployeeShiftApplication } from "../../shiftJobs/storage/employerShift.storage";
-
-const PAGE_STYLE: CSSProperties = {
-  minHeight: "100%",
-  paddingBottom: 24,
-};
-
-const HERO_STYLE: CSSProperties = {
-  marginTop: 2,
-  padding: "16px 16px",
-  borderRadius: 22,
-  border: "1px solid rgba(124,58,237,0.14)",
-  background:
-    "linear-gradient(135deg, rgba(124,58,237,0.1), rgba(255,255,255,0.98) 48%, rgba(240,253,244,0.86))",
-  boxShadow: "0 18px 40px rgba(15,23,42,0.07)",
-};
 
 export function EmployerCandidateDocumentAccessPage() {
   const nav = useNavigate();
@@ -38,22 +22,32 @@ export function EmployerCandidateDocumentAccessPage() {
     return getAppsSnapshot().find((item) => item.id === appId && item.postId === postId) ?? null;
   }, [appId, postId]);
 
+  const backToDashboard = () =>
+    nav(ROUTE_PATHS.employerShiftPostDashboard.replace(":postId", postId));
+
   if (!post || !application) {
     return (
-      <div style={PAGE_STYLE}>
-        <section style={HERO_STYLE}>
-          <div className="wm-pageTitle">Worker profile</div>
-          <div className="wm-pageSub">Candidate record not found.</div>
-        </section>
-
-        <button
-          className="wm-outlineBtn"
-          type="button"
-          style={{ marginTop: 12 }}
-          onClick={() => nav(ROUTE_PATHS.employerShiftPostDashboard.replace(":postId", postId))}
-        >
-          Back to post dashboard
-        </button>
+      <div
+        className="wm-er-vShift wm-stackGrid"
+        data-testid="employer-candidate-doc-missing"
+        style={{ paddingBottom: 24, gap: "var(--wm-stack-gap)" }}
+      >
+        <DomainHero
+          variant="shift"
+          audience="employer"
+          icon={<ProfileHeroIcon />}
+          title="Worker profile"
+          subtitle="Candidate record not found"
+          description="This application may have been removed or the link is outdated."
+        />
+        <EnterpriseEmpty
+          domain="shift"
+          title="Candidate not available"
+          subtitle="Return to the post dashboard to continue reviewing applicants."
+          primaryLabel="Back to post dashboard"
+          onPrimary={backToDashboard}
+          testId="employer-candidate-doc-empty"
+        />
       </div>
     );
   }
@@ -63,30 +57,43 @@ export function EmployerCandidateDocumentAccessPage() {
   const vaultData = buildCandidateSafeVaultData(application);
 
   return (
-    <div style={PAGE_STYLE}>
-      <section style={HERO_STYLE}>
-        <div className="wm-pageTitle">Worker profile</div>
-        <div className="wm-pageSub">
-          {workerName} · {post.jobName}
-        </div>
-
-        <div style={{ marginTop: 10, fontSize: 12, color: "var(--wm-er-muted)", lineHeight: 1.55 }}>
-          Safe profile view for Shift Job selection. This page uses the candidate application
-          snapshot only. Private documents and full Work Vault files are not shown here.
-        </div>
-      </section>
+    <div
+      className="wm-er-vShift wm-stackGrid"
+      data-testid="employer-candidate-doc-page"
+      style={{ paddingBottom: 24, gap: "var(--wm-stack-gap)" }}
+    >
+      <DomainHero
+        variant="shift"
+        audience="employer"
+        icon={<ProfileHeroIcon />}
+        title="Worker profile"
+        subtitle={`${workerName} · ${post.jobName}`}
+        description="Safe profile view for Shift selection. Uses the application snapshot only — private documents and full Work Vault files are not shown."
+        trailing={<span className="wm-domainHeroBadge">Safe view</span>}
+      />
 
       <VaultProfileTab data={vaultData} readOnlyEmployerView />
 
       <button
         className="wm-outlineBtn"
         type="button"
-        style={{ width: "100%", marginTop: 14 }}
-        onClick={() => nav(ROUTE_PATHS.employerShiftPostDashboard.replace(":postId", postId))}
+        style={{ width: "100%" }}
+        onClick={backToDashboard}
       >
         Back to candidate list
       </button>
     </div>
+  );
+}
+
+function ProfileHeroIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z"
+      />
+    </svg>
   );
 }
 
@@ -119,8 +126,19 @@ function buildCandidateSafeVaultData(application: EmployeeShiftApplication): Vau
       totalCareerPositions: 0,
       verifiedPositions: 0,
       totalShiftsCompleted: 0,
+      totalPlannerEpochs: 0,
       totalWorkforceCompanies: 0,
       totalCompaniesWorked: 0,
+    },
+    plannerGrowth: {
+      epochs: [],
+      totalEpochs: 0,
+      finalizedEpochs: 0,
+      totalPlans: 0,
+      availabilityScore: null,
+      reliabilityScore: null,
+      plannerRatingAverage: null,
+      plannerRatingCount: 0,
     },
     education: {
       level: "none",
@@ -144,6 +162,11 @@ function buildCandidateSafeVaultData(application: EmployeeShiftApplication): Vau
       },
       attendanceRate: null,
       reliabilityScore: null,
+      domainRatings: {
+        career: { average: null, count: 0 },
+        shift: { average: null, count: 0 },
+        planner: { average: null, count: 0 },
+      },
     },
     references: [],
     achievements: [],

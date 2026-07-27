@@ -35,14 +35,14 @@ const hintStyle: React.CSSProperties = {
 
 const lookupCardStyle: React.CSSProperties = {
   padding: 12,
-  borderRadius: 10,
+  borderRadius: "var(--wm-radius-10)",
   background: "rgba(22, 163, 74, 0.06)",
   border: "1px solid rgba(22, 163, 74, 0.2)",
 };
 
 const notFoundCardStyle: React.CSSProperties = {
   padding: 12,
-  borderRadius: 10,
+  borderRadius: "var(--wm-radius-10)",
   background: "rgba(220, 38, 38, 0.04)",
   border: "1px solid rgba(220, 38, 38, 0.15)",
 };
@@ -123,7 +123,7 @@ export function WorkforceAddStaffLookupSection({
                     key={`${skill}-${index}`}
                     style={{
                       padding: "2px 8px",
-                      borderRadius: 999,
+                      borderRadius: "var(--wm-radius-pill)",
                       background: "rgba(22,163,74,0.1)",
                       color: "var(--wm-success)",
                       fontSize: 10,

@@ -4,15 +4,13 @@
 
 import { useEffect, useState } from "react";
 import {
+  endEmployerLocalSession,
   getAccessLogSorted,
   getActiveSession,
   getSessionRemainingMs,
-  revokeSession,
-} from "../../../../employee/workVault/services/vaultAccessService";
-import type {
-  VaultAccessEntry,
-  VaultSession,
-} from "../../../../employee/workVault/types/vaultTypes";
+  type VaultAccessEntry,
+  type VaultSession,
+} from "../../../../shared/workVault/vaultPublic";
 import { EmployerVaultAccessLogCard } from "./EmployerVaultAccessLogCard";
 import { EmployerVaultActiveSessionCard } from "./EmployerVaultActiveSessionCard";
 
@@ -36,7 +34,7 @@ export function EmployerVaultAccessSessions() {
   function handleEndSession() {
     if (!activeSession) return;
 
-    revokeSession(activeSession.id);
+    endEmployerLocalSession(activeSession.id);
     setActiveSession(getActiveSession());
     setAccessLog(getAccessLogSorted());
     setRefreshTick(Date.now());
@@ -47,7 +45,7 @@ export function EmployerVaultAccessSessions() {
       <div
         style={{
           padding: 14,
-          borderRadius: 22,
+          borderRadius: "var(--wm-radius-employee-card)",
           border: "1px solid rgba(124,58,237,0.15)",
           background:
             "linear-gradient(135deg, rgba(124,58,237,0.09), rgba(255,255,255,0.98) 54%, rgba(245,243,255,0.68))",
@@ -75,7 +73,7 @@ export function EmployerVaultAccessSessions() {
           style={{
             marginTop: 10,
             padding: "9px 10px",
-            borderRadius: 15,
+            borderRadius: "var(--wm-radius-chip)",
             background: "rgba(255,255,255,0.78)",
             border: "1px solid rgba(226,232,240,0.9)",
             color: "var(--wm-er-muted)",
@@ -100,7 +98,7 @@ export function EmployerVaultAccessSessions() {
           <div
             style={{
               padding: "22px 16px",
-              borderRadius: 20,
+              borderRadius: "var(--wm-radius-employee-card)",
               textAlign: "center",
               background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
               border: "1px solid rgba(226,232,240,0.9)",

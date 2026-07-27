@@ -8,6 +8,7 @@ import {
   type DemandPlan,
   type DemandPlanStatus,
   type ExperienceLabel,
+  type PlanRoleGroup,
   type PublishStatus,
   type WorkingDay,
 } from "./demandPlanner.schema";
@@ -51,6 +52,28 @@ function asPublishStatus(value: unknown): PublishStatus | undefined {
     return value;
   }
   return undefined;
+}
+
+function asRoleGroups(value: unknown): PlanRoleGroup[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const groups: PlanRoleGroup[] = [];
+  for (const item of value) {
+    const rec = asRecord(item);
+    if (!rec) continue;
+    const id = asString(rec.id).trim();
+    const label = asString(rec.label).trim();
+    if (!id || !label) continue;
+    const workerMlIds = Array.isArray(rec.workerMlIds)
+      ? rec.workerMlIds.filter((w): w is string => typeof w === "string" && Boolean(w.trim()))
+      : [];
+    groups.push({
+      id,
+      label,
+      color: asString(rec.color) || undefined,
+      workerMlIds,
+    });
+  }
+  return groups;
 }
 
 function migrateDaySlot(raw: unknown, planId: string): DaySlot | null {
@@ -117,6 +140,8 @@ export function migrateDemandPlanToV2(raw: unknown): DemandPlan | null {
     legalEntityMlId: asString(rec.legalEntityMlId),
     siteId: asString(rec.siteId) || undefined,
     siteManagerId: asString(rec.siteManagerId) || undefined,
+    waitingBuffer: Math.max(0, Math.floor(asNumber(rec.waitingBuffer, 0))),
+    roleGroups: asRoleGroups(rec.roleGroups),
     epochDays,
     milestoneCursor: Math.max(0, Math.floor(asNumber(rec.milestoneCursor, 0))),
     offboardedAt: asOptionalNumber(rec.offboardedAt),

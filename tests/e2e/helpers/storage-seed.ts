@@ -25,7 +25,7 @@ type SeedOptions = {
   withPendingReview?: boolean;
   /** Seed global availability pool (Phase 1 — does not surface on employer home) */
   availabilityBroadcasts?: Array<{
-    workerWmId: string;
+    workerMlId: string;
     workerName: string;
     selectedDates: string[];
   }>;
@@ -91,7 +91,7 @@ export async function seedEmployerShiftDemo(
               goodToHaveAnswers: {},
               notes: {},
               profileSnapshot: {
-                uniqueId: "WM-E2E-001",
+                uniqueId: "ML-E2E2-CND-AAA2",
                 fullName: "Rahul Kumar",
                 city: "Kochi",
                 experience: "fresher_ok",
@@ -107,7 +107,7 @@ export async function seedEmployerShiftDemo(
               goodToHaveAnswers: {},
               notes: {},
               profileSnapshot: {
-                uniqueId: "WM-E2E-003",
+                uniqueId: "ML-E2E2-CND-AAA4",
                 fullName: "Arjun Nair",
                 city: "Ernakulam",
                 experience: "helper",
@@ -123,7 +123,7 @@ export async function seedEmployerShiftDemo(
               goodToHaveAnswers: {},
               notes: {},
               profileSnapshot: {
-                uniqueId: "WM-E2E-002",
+                uniqueId: "ML-E2E2-CND-AAA3",
                 fullName: "Sanjay Pillai",
                 city: "Kochi",
                 experience: "experienced",
@@ -138,7 +138,7 @@ export async function seedEmployerShiftDemo(
 
       if (opts.availabilityBroadcasts?.length) {
         const pool = opts.availabilityBroadcasts.map((entry) => ({
-          workerWmId: entry.workerWmId,
+          workerMlId: entry.workerMlId,
           workerName: entry.workerName,
           selectedDates: entry.selectedDates,
           broadcastAt: seedNow,
@@ -153,7 +153,7 @@ export async function seedEmployerShiftDemo(
             id: ids.workspaceId,
             postId: ids.postId,
             appId: ids.appShortlisted,
-            workerWmId: "WM-E2E-002",
+            workerMlId: "ML-E2E2-CND-AAA3",
             workerName: "Sanjay Pillai",
             companyName: "E2E Demo Corp",
             jobName: "Warehouse Helper",
@@ -197,7 +197,7 @@ export async function injectPendingReviewWorkspace(page: Page): Promise<void> {
           id: ids.workspaceId,
           postId: ids.postId,
           appId: ids.appShortlisted,
-          workerWmId: "WM-E2E-002",
+          workerMlId: "ML-E2E2-CND-AAA3",
           workerName: "Sanjay Pillai",
           companyName: "E2E Demo Corp",
           jobName: "Warehouse Helper",

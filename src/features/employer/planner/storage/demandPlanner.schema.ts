@@ -12,6 +12,14 @@ export const DEFAULT_PLANNER_EPOCH_DAYS = 30;
 
 export type WorkingDay = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
+/** Employer-defined role crew buckets on a DemandPlan (Kitchen, Security, …). */
+export type PlanRoleGroup = {
+  id: string;
+  label: string;
+  color?: string;
+  workerMlIds: string[];
+};
+
 export type DaySlot = {
   date: string;
   workers: number;
@@ -65,6 +73,10 @@ export type DemandPlan = {
   siteId?: string;
   /** Site supervisor — telemetry only; never public reputation subject. */
   siteManagerId?: string;
+  /** Extra backup workers beyond per-day slot.workers (soft capacity only). */
+  waitingBuffer?: number;
+  /** Optional role groups for crew assignment / targeted broadcast. */
+  roleGroups?: PlanRoleGroup[];
   /** Milestone epoch length in days (default 30). */
   epochDays: number;
   /** Next epoch index to commit (0-based). */
@@ -89,6 +101,8 @@ export type DemandPlanCreateInput = Omit<
   milestoneCursor?: number;
   siteId?: string;
   siteManagerId?: string;
+  waitingBuffer?: number;
+  roleGroups?: PlanRoleGroup[];
 };
 
 export function buildPlannerSlotId(planId: string, date: string): string {

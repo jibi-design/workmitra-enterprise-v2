@@ -70,7 +70,7 @@ function TimelineStepRow({
 
       <div
         style={{
-          borderRadius: 16,
+          borderRadius: "var(--wm-radius-chip)",
           border: `1px solid ${visual.border}`,
           background: visual.background,
           padding: "10px 12px",

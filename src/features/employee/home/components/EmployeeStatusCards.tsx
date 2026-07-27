@@ -5,5 +5,4 @@
 export { CurrentEmploymentCard } from "./CurrentEmploymentCard";
 export { WorkforceCard } from "./WorkforceCard";
 export { WorkVaultCard } from "./EmployeeWorkVaultCard";
-export { InsightsCard } from "./EmployeeInsightsCard";
 export { SimpleModal } from "./SimpleModal";

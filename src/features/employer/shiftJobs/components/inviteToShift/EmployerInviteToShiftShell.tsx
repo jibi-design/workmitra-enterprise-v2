@@ -31,7 +31,7 @@ export function EmployerInviteToShiftShell({ onClose, children }: Props) {
           width: "100%",
           maxWidth: 420,
           background: "var(--wm-er-card, #fff)",
-          borderRadius: 16,
+          borderRadius: "var(--wm-radius-chip)",
           padding: 20,
           boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
         }}

@@ -17,7 +17,7 @@ export function EmployeeCareerSearchNotice({ notice }: EmployeeCareerSearchNotic
         left: "50%",
         transform: "translateX(-50%)",
         padding: "10px 20px",
-        borderRadius: 10,
+        borderRadius: "var(--wm-radius-10)",
         background: "var(--wm-er-accent-career)",
         color: "#fff",
         fontSize: 13,

@@ -3,12 +3,12 @@
 // Cached snapshot + subscribe for career workspace data.
 // Used by EmployeeCareerWorkspacePage with useSyncExternalStore.
 
-import type { CareerWorkspace } from "../../../employer/careerJobs/types/careerTypes";
+import type { CareerWorkspace } from "../../../career/types/careerDomainTypes";
 import {
   CAREER_WORKSPACES_KEY,
   CAREER_WORKSPACES_CHANGED,
   safeParse,
-} from "../../../employer/careerJobs/helpers/careerStorageUtils";
+} from "../../../career/helpers/careerStoragePublic";
 
 /* ── Stable-reference cache ────────────────────── */
 

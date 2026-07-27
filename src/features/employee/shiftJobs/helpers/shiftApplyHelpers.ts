@@ -108,6 +108,7 @@ export function safeParseApps(raw: string | null): ShiftApplicationDemo[] {
 export function safeWriteApps(list: ShiftApplicationDemo[]): void {
   try {
     localStorage.setItem(APPS_KEY, JSON.stringify(list));
+    window.dispatchEvent(new Event("wm:employee-shift-applications-changed"));
   } catch {
     // Local-first safe fallback.
   }

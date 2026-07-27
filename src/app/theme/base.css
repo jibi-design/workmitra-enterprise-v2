@@ -462,10 +462,10 @@ select:disabled {
   }
 
   .wm-pageTitle {
-    font-size: 17px;
+    font-size: var(--wm-type-hero-size-mobile);
   }
 
   .wm-pageSub {
-    font-size: 11px;
+    font-size: var(--wm-type-helper-size-mobile);
   }
 }

@@ -1,120 +1,23 @@
 // src/features/employer/shiftJobs/components/ShiftCreateQuickQuestionsSection.tsx
 //
 // Quick Questions section for shift post creation.
-// Employer adds up to 3 Yes/No questions workers must answer when applying.
-// Category-based suggestions shown as tap-to-add chips.
-// Workers see and answer these on the apply page.
 
 import { useState } from "react";
-import { SectionHead } from "./ShiftCreateIcons";
+import {
+  AddedQuestionsList,
+  CustomQuestionInput,
+  QuickQuestionsSectionShell,
+  SuggestionChips,
+} from "./ShiftCreateQuickQuestionsSection.parts";
+import type { QuickQuestion } from "./ShiftCreateQuickQuestionsSection.helpers";
+import {
+  MAX_QUICK_QUESTIONS,
+  capitalizeFirstLetter,
+  genQuickQuestionId,
+  getSuggestions,
+} from "./ShiftCreateQuickQuestionsSection.helpers";
 
-export type QuickQuestion = { id: string; text: string };
-
-const CATEGORY_SUGGESTIONS: Record<string, string[]> = {
-  Construction: [
-    "Do you have your own safety equipment?",
-    "Are you comfortable working at heights?",
-    "Do you have relevant trade experience?",
-  ],
-  "Kitchen / Restaurant": [
-    "Do you have food handling experience?",
-    "Are you available for split shifts?",
-    "Do you have a food hygiene certificate?",
-  ],
-  Catering: [
-    "Do you have catering or hospitality experience?",
-    "Can you work on weekends?",
-    "Do you have a food hygiene certificate?",
-  ],
-  Driving: [
-    "Do you hold a valid driving license?",
-    "Do you own your own vehicle?",
-    "Are you familiar with the local area?",
-  ],
-  Delivery: [
-    "Do you hold a valid driving license?",
-    "Do you own a vehicle suitable for deliveries?",
-    "Can you lift packages up to 20kg?",
-  ],
-  Cleaning: [
-    "Do you have professional cleaning experience?",
-    "Are you comfortable using cleaning chemicals?",
-    "Do you have your own equipment?",
-  ],
-  Events: [
-    "Have you worked at events before?",
-    "Are you comfortable in crowded environments?",
-    "Can you work late evenings or weekends?",
-  ],
-  Warehouse: [
-    "Can you lift heavy loads (25kg+)?",
-    "Do you have warehouse or logistics experience?",
-    "Are you available for early morning shifts?",
-  ],
-  Retail: [
-    "Do you have retail or customer service experience?",
-    "Are you comfortable with cash handling?",
-    "Can you commit to all scheduled dates?",
-  ],
-  Security: [
-    "Do you hold a valid security license?",
-    "Have you worked in security before?",
-    "Are you comfortable working night shifts?",
-  ],
-  Office: [
-    "Are you proficient in MS Office?",
-    "Do you have customer service experience?",
-    "Do you have data entry experience?",
-  ],
-  Agency: [
-    "Are you registered with any other agencies?",
-    "Do you have relevant experience?",
-    "Are you available at short notice?",
-  ],
-};
-
-const DEFAULT_SUGGESTIONS = [
-  "Are you available on all listed dates?",
-  "Do you have relevant experience for this role?",
-  "Can you commit to the full shift duration?",
-];
-
-function capitalizeFirstLetter(value: string): string {
-  const leadingSpace = value.match(/^\s*/)?.[0] ?? "";
-  const rest = value.slice(leadingSpace.length);
-
-  if (!rest) return value;
-
-  return `${leadingSpace}${rest.charAt(0).toUpperCase()}${rest.slice(1)}`;
-}
-
-function getSuggestions(category: string): string[] {
-  const exact = CATEGORY_SUGGESTIONS[category];
-  if (exact) return exact;
-
-  const lower = category.toLowerCase();
-
-  for (const [key, val] of Object.entries(CATEGORY_SUGGESTIONS)) {
-    if (lower.includes(key.toLowerCase()) || key.toLowerCase().includes(lower)) return val;
-  }
-
-  return DEFAULT_SUGGESTIONS;
-}
-
-function genId(): string {
-  return `qq_${Math.random().toString(36).slice(2)}_${Date.now().toString(36)}`;
-}
-
-function IconQuestion() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        fill="currentColor"
-        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2Zm1 17h-2v-2h2v2Zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25Z"
-      />
-    </svg>
-  );
-}
+export type { QuickQuestion };
 
 type Props = {
   category: string;
@@ -127,15 +30,14 @@ export function ShiftCreateQuickQuestionsSection({ category, questions, onChange
 
   const suggestions = getSuggestions(category);
   const addedTexts = new Set(questions.map((q) => q.text));
-  const MAX = 3;
-  const atLimit = questions.length >= MAX;
+  const atLimit = questions.length >= MAX_QUICK_QUESTIONS;
 
   function addQuestion(text: string) {
     const normalizedText = capitalizeFirstLetter(text.trim());
 
     if (atLimit || addedTexts.has(normalizedText) || !normalizedText) return;
 
-    onChange([...questions, { id: genId(), text: normalizedText }]);
+    onChange([...questions, { id: genQuickQuestionId(), text: normalizedText }]);
   }
 
   function removeQuestion(id: string) {
@@ -151,188 +53,25 @@ export function ShiftCreateQuickQuestionsSection({ category, questions, onChange
     setCustomText("");
   }
 
-  function handleCustomKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleAddCustom();
-    }
-  }
-
   return (
-    <section
-      className="wm-er-card"
-      style={{
-        marginTop: 12,
-        borderRadius: 20,
-        border: "1px solid rgba(226,232,240,0.95)",
-        background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
-        boxShadow: "0 10px 24px rgba(15,23,42,0.045)",
-      }}
-    >
-      <SectionHead
-        icon={<IconQuestion />}
-        title="Quick Questions"
-        sub={`Optional Yes/No questions workers must answer when applying. Max ${MAX} questions.`}
+    <QuickQuestionsSectionShell>
+      <SuggestionChips
+        category={category}
+        suggestions={suggestions}
+        addedTexts={addedTexts}
+        atLimit={atLimit}
+        onAdd={addQuestion}
       />
 
-      <div style={{ marginBottom: 10 }}>
-        <div
-          style={{
-            fontSize: 11,
-            fontWeight: 800,
-            color: "var(--wm-er-muted)",
-            marginBottom: 7,
-            textTransform: "uppercase",
-            letterSpacing: 0.4,
-          }}
-        >
-          Suggested for {category || "this category"}
-        </div>
+      <AddedQuestionsList questions={questions} onRemove={removeQuestion} />
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-          {suggestions.map((suggestion) => {
-            const already = addedTexts.has(suggestion);
-
-            return (
-              <button
-                key={suggestion}
-                type="button"
-                disabled={atLimit && !already}
-                onClick={() => (already ? undefined : addQuestion(suggestion))}
-                style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  padding: "6px 11px",
-                  borderRadius: 999,
-                  cursor: already || atLimit ? "default" : "pointer",
-                  border: already
-                    ? "1.5px solid var(--wm-er-accent-shift)"
-                    : "1.5px solid var(--wm-er-border)",
-                  background: already ? "rgba(22,163,74,0.08)" : "var(--wm-er-surface)",
-                  color: already
-                    ? "var(--wm-er-accent-shift)"
-                    : atLimit
-                      ? "var(--wm-er-muted)"
-                      : "var(--wm-er-text)",
-                  opacity: atLimit && !already ? 0.45 : 1,
-                }}
-                aria-pressed={already}
-              >
-                {already ? "Added: " : "+ "}
-                {suggestion}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {questions.length > 0 && (
-        <div style={{ marginBottom: 10, display: "grid", gap: 6 }}>
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 800,
-              color: "var(--wm-er-muted)",
-              textTransform: "uppercase",
-              letterSpacing: 0.4,
-            }}
-          >
-            Added ({questions.length}/{MAX})
-          </div>
-
-          {questions.map((question, index) => (
-            <div
-              key={question.id}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 8,
-                padding: "9px 12px",
-                borderRadius: 12,
-                background: "rgba(248,250,252,0.95)",
-                border: "1px solid rgba(226,232,240,0.95)",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: "var(--wm-er-text)",
-                  flex: 1,
-                  lineHeight: 1.4,
-                }}
-              >
-                Q{index + 1}. {question.text}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => removeQuestion(question.id)}
-                style={{
-                  fontSize: 11,
-                  fontWeight: 800,
-                  padding: "5px 9px",
-                  borderRadius: 8,
-                  border: "none",
-                  cursor: "pointer",
-                  background: "rgba(220,38,38,0.08)",
-                  color: "var(--wm-error, #dc2626)",
-                }}
-                aria-label="Remove question"
-              >
-                Remove
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {!atLimit && (
-        <div className="wm-field" style={{ marginTop: 4 }}>
-          <div className="wm-label">Add custom question</div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <input
-              className="wm-input"
-              value={customText}
-              onChange={(e) => setCustomText(capitalizeFirstLetter(e.target.value))}
-              onKeyDown={handleCustomKeyDown}
-              placeholder="Type a Yes/No question..."
-              maxLength={120}
-              style={{ flex: 1 }}
-            />
-
-            <button
-              type="button"
-              onClick={handleAddCustom}
-              disabled={
-                !customText.trim() || addedTexts.has(capitalizeFirstLetter(customText.trim()))
-              }
-              style={{
-                fontSize: 12,
-                fontWeight: 800,
-                padding: "0 14px",
-                borderRadius: 10,
-                border: "none",
-                background: "var(--wm-er-accent-shift, #16a34a)",
-                color: "#fff",
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-                opacity: !customText.trim() ? 0.5 : 1,
-                height: 42,
-              }}
-            >
-              Add
-            </button>
-          </div>
-        </div>
-      )}
-
-      {atLimit && (
-        <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginTop: 6, lineHeight: 1.45 }}>
-          Maximum {MAX} questions reached. Remove one to add another.
-        </div>
-      )}
-    </section>
+      <CustomQuestionInput
+        customText={customText}
+        atLimit={atLimit}
+        addedTexts={addedTexts}
+        onChange={setCustomText}
+        onAdd={handleAddCustom}
+      />
+    </QuickQuestionsSectionShell>
   );
 }

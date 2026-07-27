@@ -4,8 +4,8 @@
 // Shows task title, status, due date, checklist count.
 // Tap opens detail modal. Employee cannot edit task details.
 
-import type { TaskEntry } from "../../../employer/hrManagement/types/taskAssignment.types";
-import { TASK_STATUS_CONFIG } from "../../../employer/hrManagement/helpers/taskConstants";
+import type { TaskEntry } from "../../../shared/hr/hrPublic";
+import { TASK_STATUS_CONFIG } from "../../../shared/hr/hrPublic";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -58,7 +58,14 @@ export function EmployeeTaskCard({ task, onOpen }: Props) {
       }}
     >
       {/* Row 1: Title + Status Badge */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          gap: 8,
+        }}
+      >
         <div
           style={{
             fontSize: 13,
@@ -101,7 +108,8 @@ export function EmployeeTaskCard({ task, onOpen }: Props) {
         }}
       >
         <span style={{ color: overdue ? "#dc2626" : undefined, fontWeight: overdue ? 700 : 400 }}>
-          📅 {overdue ? "Overdue · " : "Due "}{formatDate(task.dueDate)}
+          📅 {overdue ? "Overdue · " : "Due "}
+          {formatDate(task.dueDate)}
         </span>
         {task.location && <span>📍 {task.location}</span>}
         {totalCount > 0 && (

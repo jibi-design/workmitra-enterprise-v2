@@ -28,7 +28,7 @@ export function ContactVerificationPanel({ profile, onVerified, onNotice }: Prop
         style={{
           marginTop: 14,
           padding: 14,
-          borderRadius: 14,
+          borderRadius: "var(--wm-radius-chip)",
           background: "rgba(22,163,74,0.08)",
           border: "1px solid rgba(22,163,74,0.2)",
         }}
@@ -46,7 +46,7 @@ export function ContactVerificationPanel({ profile, onVerified, onNotice }: Prop
       style={{
         marginTop: 14,
         padding: 14,
-        borderRadius: 14,
+        borderRadius: "var(--wm-radius-chip)",
         background: "rgba(255,255,255,0.8)",
         border: "1px solid rgba(226,232,240,0.9)",
       }}
@@ -70,10 +70,10 @@ export function ContactVerificationPanel({ profile, onVerified, onNotice }: Prop
         <button
           type="button"
           disabled={!target || sending}
-          onClick={() => {
+          onClick={async () => {
             if (!target) return;
             setSending(true);
-            const result = requestContactOtp(target);
+            const result = await requestContactOtp(target);
             setSending(false);
             if (!result.success) {
               onNotice({ title: "Could not send", message: result.reason, tone: "warn" });
@@ -115,7 +115,7 @@ export function ContactVerificationPanel({ profile, onVerified, onNotice }: Prop
           style={{
             flex: 1,
             height: 40,
-            borderRadius: 10,
+            borderRadius: "var(--wm-radius-10)",
             border: "1px solid #d1d5db",
             padding: "0 12px",
             fontSize: 14,
@@ -126,10 +126,10 @@ export function ContactVerificationPanel({ profile, onVerified, onNotice }: Prop
         <button
           type="button"
           disabled={!target || otpCode.length < 6 || verifying}
-          onClick={() => {
+          onClick={async () => {
             if (!target) return;
             setVerifying(true);
-            const result = verifyContactOtp(target, otpCode);
+            const result = await verifyContactOtp(target, otpCode);
             setVerifying(false);
             if (!result.success) {
               onNotice({ title: "Verification failed", message: result.reason, tone: "warn" });
@@ -154,7 +154,7 @@ export function ContactVerificationPanel({ profile, onVerified, onNotice }: Prop
 
 const actionBtnStyle: CSSProperties = {
   height: 38,
-  borderRadius: 10,
+  borderRadius: "var(--wm-radius-10)",
   border: "1px solid rgba(148,163,184,0.35)",
   background: "rgba(124,58,237,0.08)",
   color: "#7c3aed",

@@ -27,7 +27,7 @@ export function EmployerCareerKpiTiles({ kpi }: EmployerCareerKpiTilesProps) {
     <section
       style={{
         padding: 15,
-        borderRadius: 26,
+        borderRadius: "var(--wm-radius-employer-card)",
         border: "1px solid rgba(29,78,216,0.14)",
         background:
           "radial-gradient(circle at 92% 4%, rgba(29,78,216,0.08), transparent 34%), linear-gradient(135deg, rgba(255,255,255,1), rgba(248,250,252,0.99))",
@@ -103,7 +103,7 @@ function ExecutivePanel({
       style={{
         minWidth: 0,
         padding: "13px 11px",
-        borderRadius: 21,
+        borderRadius: "var(--wm-radius-employee-card)",
         border: strong ? "1px solid rgba(29,78,216,0.18)" : "1px solid rgba(29,78,216,0.12)",
         background: strong
           ? "linear-gradient(145deg, rgba(239,246,255,0.96), rgba(255,255,255,0.94))"
@@ -145,7 +145,7 @@ function SmallMetric({ label, value, helper }: { label: string; value: number; h
       style={{
         minWidth: 0,
         padding: "9px 8px",
-        borderRadius: 17,
+        borderRadius: "var(--wm-radius-chip)",
         border: "1px solid rgba(29,78,216,0.09)",
         background: "rgba(255,255,255,0.72)",
       }}

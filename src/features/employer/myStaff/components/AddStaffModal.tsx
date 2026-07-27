@@ -5,7 +5,7 @@
 import { useState } from "react";
 import { myStaffStorage } from "../storage/myStaff.storage";
 import type { StaffEmploymentType } from "../storage/myStaff.storage";
-import { employmentLifecycleStorage } from "../../../employee/employment/storage/employmentLifecycle.storage";
+import { employmentLifecycleStorage } from "../../../../shared/employment/employmentLifecycle.storage";
 import { CenterModal } from "../../../../shared/components/CenterModal";
 import { lookupUniqueId } from "../helpers/addStaffHelpers";
 import type { IdRegistryEntry } from "../helpers/addStaffHelpers";
@@ -118,8 +118,8 @@ export function AddStaffModal({ open, categories, onClose, onAdded }: Props) {
 
     if (staffId) {
       try {
-        const profileRaw = localStorage.getItem("wm_employer_profile_v1");
-        const profile = profileRaw ? JSON.parse(profileRaw) as { companyName?: string } : null;
+        const profileRaw = localStorage.getItem("wm_employer_profile_v1"); // MIG-004 canonical
+        const profile = profileRaw ? (JSON.parse(profileRaw) as { companyName?: string }) : null;
         const companyName = profile?.companyName || "Unknown Company";
 
         employmentLifecycleStorage.createEmployment({
@@ -133,16 +133,17 @@ export function AddStaffModal({ open, categories, onClose, onAdded }: Props) {
           verified: false,
           hireMethod: "manually_added",
         });
-      } catch { /* non-critical */ }
+      } catch {
+        /* non-critical */
+      }
     }
 
     try {
-      const { hrManagementStorage } = await import(
-        "../../../employer/hrManagement/storage/hrManagement.storage"
-      );
+      const { hrManagementStorage } =
+        await import("../../../employer/hrManagement/storage/hrManagement.storage");
 
       const profRaw = localStorage.getItem("wm_employer_profile_v1");
-      const prof = profRaw ? JSON.parse(profRaw) as { companyName?: string } : null;
+      const prof = profRaw ? (JSON.parse(profRaw) as { companyName?: string }) : null;
 
       hrManagementStorage.createDirectHRRecord({
         careerPostId: "manual_" + staffId,
@@ -153,7 +154,9 @@ export function AddStaffModal({ open, categories, onClose, onAdded }: Props) {
         department: finalCategory || "General",
         location: prof?.companyName || "",
       });
-    } catch { /* non-critical */ }
+    } catch {
+      /* non-critical */
+    }
 
     const addedName = lookupResult.name;
     const addedTitle = jobTitle.trim();
@@ -168,10 +171,14 @@ export function AddStaffModal({ open, categories, onClose, onAdded }: Props) {
   return (
     <CenterModal open={open} onBackdropClose={handleClose} ariaLabel="Add Staff">
       <div style={{ padding: 20 }}>
-        <div style={{ fontSize: 15, fontWeight: 1000, color: "var(--wm-er-text)", marginBottom: 4 }}>
+        <div
+          style={{ fontSize: 15, fontWeight: 1000, color: "var(--wm-er-text)", marginBottom: 4 }}
+        >
           Add Staff
         </div>
-        <div style={{ fontSize: 11, fontWeight: 800, color: "var(--wm-er-muted)", marginBottom: 14 }}>
+        <div
+          style={{ fontSize: 11, fontWeight: 800, color: "var(--wm-er-muted)", marginBottom: 14 }}
+        >
           Step {step} of 2
         </div>
 
@@ -182,7 +189,9 @@ export function AddStaffModal({ open, categories, onClose, onAdded }: Props) {
             lookupResult={lookupResult}
             lookupError={lookupError}
             onLookup={handleLookup}
-            onNext={() => { if (lookupResult) setStep(2); }}
+            onNext={() => {
+              if (lookupResult) setStep(2);
+            }}
             onCancel={handleClose}
           />
         )}

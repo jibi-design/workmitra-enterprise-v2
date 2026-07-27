@@ -1,10 +1,7 @@
 // App name: Job Mitra
 // Blind local radar metrics + favorite overlap (read-only home card).
 
-import {
-  availabilityStorage,
-  getRolling7Days,
-} from "../../../employee/shiftJobs/storage/availabilityStorage";
+import { availabilityStorage, getRolling7Days } from "../../../shared/shift/availability.reader";
 import { employerSettingsStorage } from "../../company/storage/employerSettings.storage";
 import { favoritesStorage } from "../storage/favoritesStorage";
 
@@ -15,7 +12,7 @@ export type LocalWorkersRadarMetrics = {
 
 const ALL_AVAILABILITY_KEY = "wm_all_availability_broadcasts_v1";
 const FAVORITES_KEY = "wm_employer_shift_favorites_v1";
-const EMPLOYER_PROFILE_KEY = "wm:employer-profile";
+const EMPLOYER_PROFILE_KEY = "wm_employer_profile_v1";
 
 const EMPTY_METRICS: LocalWorkersRadarMetrics = {
   totalAvailableCount: 0,
@@ -30,7 +27,7 @@ function computeLocalWorkersRadarMetrics(): LocalWorkersRadarMetrics {
   const cityKey = city.toLowerCase();
   const rolling = new Set(getRolling7Days().map((day) => day.iso));
   const favoriteIds = new Set(
-    favoritesStorage.getAll().map((item) => item.workerWmId.trim().toUpperCase()),
+    favoritesStorage.getAll().map((item) => item.workerMlId.trim().toUpperCase()),
   );
 
   const seenTotal = new Set<string>();
@@ -43,7 +40,7 @@ function computeLocalWorkersRadarMetrics(): LocalWorkersRadarMetrics {
 
     if (!broadcast.selectedDates.some((iso) => rolling.has(iso))) continue;
 
-    const workerKey = broadcast.workerWmId.trim().toUpperCase();
+    const workerKey = broadcast.workerMlId.trim().toUpperCase();
     if (!seenTotal.has(workerKey)) {
       seenTotal.add(workerKey);
     }

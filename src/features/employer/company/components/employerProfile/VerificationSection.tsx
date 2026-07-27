@@ -55,7 +55,7 @@ export function VerificationSection({
         style={{
           marginTop: 14,
           padding: 14,
-          borderRadius: 16,
+          borderRadius: "var(--wm-radius-chip)",
           background: "rgba(255,255,255,0.75)",
           border: "1px solid rgba(226,232,240,0.8)",
         }}
@@ -89,7 +89,7 @@ export function VerificationSection({
                 alignItems: "center",
                 gap: 10,
                 padding: "8px 10px",
-                borderRadius: 12,
+                borderRadius: "var(--wm-radius-button)",
                 background: active ? "rgba(124,58,237,0.06)" : "rgba(248,250,252,0.9)",
                 border: `1px solid ${active ? "rgba(124,58,237,0.15)" : "rgba(226,232,240,0.8)"}`,
               }}
@@ -98,7 +98,7 @@ export function VerificationSection({
                 style={{
                   width: 22,
                   height: 22,
-                  borderRadius: 999,
+                  borderRadius: "var(--wm-radius-pill)",
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",

@@ -4,7 +4,7 @@
  * Hybrid A2 P2.4 — understaff escalation PulseTargetCard.
  */
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { PulseTargetCard } from "../../../pulse/PulseTarget";
@@ -15,12 +15,18 @@ import {
   listUnderstaffPlanIds,
 } from "../../../shared/planner/services/plannerEscalationTriggers.service";
 import { listActivePlannerPlansForRoster } from "../../../shared/planner/services/plannerRoster.helpers";
+import { PlannerRoleGroupManager } from "../components/PlannerRoleGroupManager";
 
 export function EmployerPlannerRosterPage() {
   const plans = useMemo(() => {
     runPlannerMilestoneEngine();
     return listActivePlannerPlansForRoster();
   }, []);
+
+  const [selectedPlanId, setSelectedPlanId] = useState(plans[0]?.planId ?? "");
+  const activePlanId = plans.some((p) => p.planId === selectedPlanId)
+    ? selectedPlanId
+    : (plans[0]?.planId ?? "");
 
   const understaffPlanIds = listUnderstaffPlanIds();
   const understaffPulseId =
@@ -104,6 +110,29 @@ export function EmployerPlannerRosterPage() {
           </Link>
         </div>
       </section>
+
+      {activePlanId ? (
+        <>
+          <label
+            style={{ display: "grid", gap: 4, marginBottom: 10, fontSize: 12, fontWeight: 700 }}
+          >
+            Role groups for plan
+            <select
+              className="wm-input"
+              data-testid="planner-roster-role-plan-select"
+              value={activePlanId}
+              onChange={(e) => setSelectedPlanId(e.target.value)}
+            >
+              {plans.map((p) => (
+                <option key={p.planId} value={p.planId}>
+                  {p.planName}
+                </option>
+              ))}
+            </select>
+          </label>
+          <PlannerRoleGroupManager planId={activePlanId} />
+        </>
+      ) : null}
 
       {plans.length === 0 ? (
         <section

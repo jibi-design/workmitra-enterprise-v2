@@ -16,7 +16,7 @@ const inputStyle: CSSProperties = {
   fontWeight: 600,
   color: "#1e293b",
   border: `1.5px solid ${BORDER_COLOR}`,
-  borderRadius: 8,
+  borderRadius: "var(--wm-radius-8)",
   outline: "none",
   background: "#fff",
   boxSizing: "border-box",
@@ -49,7 +49,7 @@ const sectionHint: CSSProperties = {
 
 const purpleBtnStyle: CSSProperties = {
   padding: "10px 20px",
-  borderRadius: 8,
+  borderRadius: "var(--wm-radius-8)",
   fontSize: 13,
   fontWeight: 700,
   border: "none",

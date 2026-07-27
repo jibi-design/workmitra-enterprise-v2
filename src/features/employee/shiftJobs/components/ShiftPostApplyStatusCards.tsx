@@ -1,6 +1,4 @@
-// App name: Job Mitra
-// File name: ShiftPostApplyStatusCards.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\components\ShiftPostApplyStatusCards.tsx
+// App name: Job Mitra | ShiftPostApplyStatusCards.tsx — glass + pressable (post-details polish)
 
 type ShiftPostApplyStatusCardsProps = {
   isShortlisted: boolean;
@@ -25,29 +23,29 @@ export function ShiftPostApplyStatusCards({
 
   return (
     <>
-      {isShortlisted && (
+      {isShortlisted ? (
         <StatusCard
           title="You are shortlisted"
           helper="Employer marked you as a strong candidate. Keep your availability open and watch for confirmation."
           tone="warning"
         />
-      )}
+      ) : null}
 
-      {isWaiting && (
+      {isWaiting ? (
         <StatusCard
           title="You are on the backup list"
           helper="You may be confirmed if a selected worker drops out. Stay ready, but do not stop applying to other suitable shifts."
           tone="warning"
           footer="Tip: keep this shift in mind, but continue applying so you do not lose other opportunities."
         />
-      )}
+      ) : null}
 
-      {isConfirmed && (
+      {isConfirmed ? (
         <StatusCard
-          title={attendanceConfirmed ? "Attendance confirmed" : "Confirm your attendance"}
+          title={attendanceConfirmed ? "Intent confirmed" : "Confirm you will attend"}
           helper={
             attendanceConfirmed
-              ? "You have confirmed that you will attend this shift. Keep checking the workspace and arrive on time."
+              ? "You confirmed you plan to attend. Keep checking the workspace and arrive on time."
               : "You are selected for this shift. Confirm only if you are available and will attend on time."
           }
           tone={attendanceConfirmed ? "success" : "info"}
@@ -55,15 +53,23 @@ export function ShiftPostApplyStatusCards({
           onAction={attendanceConfirmed ? undefined : onConfirmAttendance}
           footer={
             attendanceConfirmed
-              ? "Your confirmation is saved locally on this device for now."
-              : "This is not a payment or attendance punch-in. It only confirms your intention to attend."
+              ? "This is attendance intent only — not QR punch-in, timers, or payroll (those are planned for v2.1)."
+              : "This is not QR check-in, a timer, or payment. It only confirms your intention to attend."
           }
         />
-      )}
+      ) : null}
 
-      {hasWorkspace && (
-        <div className="wm-ee-card" style={{ marginTop: 12 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#16a34a" }}>Workspace is ready</div>
+      {hasWorkspace ? (
+        <section
+          className="wm-shift-surface-glass wm-shift-surface-glass--shift wm-animateIn"
+          data-testid="shift-post-workspace-ready"
+          style={{ padding: 16, animationDelay: "140ms" }}
+        >
+          <div
+            style={{ fontSize: 14, fontWeight: 800, color: "var(--wm-er-accent-shift, #16a34a)" }}
+          >
+            Workspace is ready
+          </div>
 
           <div style={{ marginTop: 6, fontSize: 12, color: "var(--wm-er-muted, #64748b)" }}>
             This shift is active now. Open your workspace to continue.
@@ -71,24 +77,14 @@ export function ShiftPostApplyStatusCards({
 
           <button
             type="button"
+            className="wm-primarybtn wm-shift-pressable"
             onClick={onOpenWorkspace}
-            style={{
-              marginTop: 12,
-              width: "100%",
-              padding: 14,
-              borderRadius: 12,
-              border: "none",
-              background: "#16a34a",
-              color: "#fff",
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
+            style={{ marginTop: 12, width: "100%" }}
           >
             Open Workspace
           </button>
-        </div>
-      )}
+        </section>
+      ) : null}
     </>
   );
 }
@@ -111,12 +107,13 @@ function StatusCard({
   const toneStyle = getToneStyle(tone);
 
   return (
-    <div
-      className="wm-ee-card"
+    <section
+      className="wm-shift-surface-glass wm-animateIn"
       style={{
-        marginTop: 12,
+        padding: 16,
         border: toneStyle.border,
         background: toneStyle.background,
+        animationDelay: "130ms",
       }}
     >
       <div style={{ fontSize: 14, fontWeight: 800, color: toneStyle.color }}>{title}</div>
@@ -132,15 +129,14 @@ function StatusCard({
         {helper}
       </div>
 
-      {footer && (
+      {footer ? (
         <div
+          className="wm-shift-surface-glass"
           style={{
             marginTop: 10,
             padding: "9px 10px",
-            borderRadius: 12,
-            background: "rgba(255,255,255,0.72)",
-            border: toneStyle.footerBorder,
             color: toneStyle.footerColor,
+            border: toneStyle.footerBorder,
             fontSize: 11,
             fontWeight: 800,
             lineHeight: 1.45,
@@ -148,30 +144,19 @@ function StatusCard({
         >
           {footer}
         </div>
-      )}
+      ) : null}
 
-      {actionLabel && onAction && (
+      {actionLabel && onAction ? (
         <button
           type="button"
+          className="wm-primarybtn wm-shift-pressable"
           onClick={onAction}
-          style={{
-            marginTop: 12,
-            width: "100%",
-            padding: 13,
-            borderRadius: 13,
-            border: "none",
-            background: toneStyle.color,
-            color: "#fff",
-            fontSize: 13,
-            fontWeight: 900,
-            cursor: "pointer",
-            boxShadow: "0 10px 22px rgba(15,23,42,0.1)",
-          }}
+          style={{ marginTop: 12, width: "100%" }}
         >
           {actionLabel}
         </button>
-      )}
-    </div>
+      ) : null}
+    </section>
   );
 }
 

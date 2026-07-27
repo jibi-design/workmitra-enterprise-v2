@@ -2,11 +2,6 @@
 
 import { Component, type ErrorInfo, type ReactNode } from "react";
 
-/**
- * ARCHITECTURE NOTE:
- * Graceful fallback UI for unexpected runtime exceptions.
- */
-
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
@@ -22,7 +17,6 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   public static getDerivedStateFromError(): State {
-    // AUDIT: Removed unused 'error' parameter to satisfy ESLint TS6133
     return { hasError: true };
   }
 
@@ -35,35 +29,23 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         this.props.fallback || (
           <div
-            style={{
-              padding: 40,
-              textAlign: "center",
-              fontFamily: "system-ui, sans-serif",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              minHeight: "50vh",
-            }}
+            className="wm-route-guard-denied"
+            role="alert"
+            style={{ fontFamily: "var(--wm-font-sans, system-ui, sans-serif)" }}
           >
-            <h2 style={{ color: "#0F172A", margin: "0 0 12px 0" }}>Something went wrong.</h2>
-            <p style={{ color: "#64748B", fontSize: 14, maxWidth: 300, margin: "0 0 24px 0" }}>
+            <h2 className="wm-route-guard-denied__title">Something went wrong.</h2>
+            <p className="wm-route-guard-denied__body">
               The application encountered an unexpected error. Please try refreshing.
             </p>
-            <button
-              onClick={() => window.location.reload()}
-              style={{
-                padding: "10px 20px",
-                background: "#0F172A",
-                color: "white",
-                border: "none",
-                borderRadius: 8,
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
-            >
-              Refresh App
-            </button>
+            <div className="wm-route-guard-denied__actions">
+              <button
+                type="button"
+                className="wm-primarybtn"
+                onClick={() => window.location.reload()}
+              >
+                Refresh App
+              </button>
+            </div>
           </div>
         )
       );

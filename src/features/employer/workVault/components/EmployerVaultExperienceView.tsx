@@ -1,6 +1,6 @@
 // src/features/employer/workVault/components/EmployerVaultExperienceView.tsx
 
-import type { VaultWorkExperienceEntry } from "../../../employee/workVault/types/vaultProfileTypes";
+import type { VaultWorkExperienceEntry } from "../../../shared/workVault/vaultPublic";
 
 const STATUS_COLORS: Record<string, string> = {
   hired: "#16a34a",
@@ -41,7 +41,7 @@ export function EmployerVaultExperienceView({ entries }: Props) {
             key={entry.jobId}
             style={{
               padding: "12px 14px",
-              borderRadius: 12,
+              borderRadius: "var(--wm-radius-button)",
               border: "1px solid var(--wm-er-divider, rgba(15, 23, 42, 0.08))",
               background: "var(--wm-er-bg, #fff)",
             }}
@@ -71,7 +71,7 @@ export function EmployerVaultExperienceView({ entries }: Props) {
                   fontSize: 9,
                   fontWeight: 900,
                   padding: "1px 8px",
-                  borderRadius: 999,
+                  borderRadius: "var(--wm-radius-pill)",
                   background: `${STATUS_COLORS[entry.status] ?? "#6b7280"}10`,
                   color: STATUS_COLORS[entry.status] ?? "#6b7280",
                   textTransform: "capitalize",

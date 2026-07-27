@@ -1,9 +1,11 @@
-﻿// App name: Job Mitra
-// File name: EmployerShiftWorkspacePage.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\pages\EmployerShiftWorkspacePage.tsx
+﻿// App name: Job Mitra | EmployerShiftWorkspacePage.tsx — stackGrid (Wave 3)
 
 import { ConfirmModal } from "../../../../shared/components/ConfirmModal";
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
+import { EnterpriseEmpty } from "../../../../shared/components/enterprise";
 import { EmployerRateWorkerModal } from "../../../../shared/components/rating/EmployerRateWorkerModal";
+import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { useNavigate } from "react-router-dom";
 import { BroadcastModal, ReplyModal } from "../components/ShiftWorkspaceComponents";
 import { EmployerShiftWorkspaceControls } from "../components/EmployerShiftWorkspaceControls";
 import { EmployerShiftWorkspaceHeader } from "../components/EmployerShiftWorkspaceHeader";
@@ -12,28 +14,40 @@ import { useEmployerShiftWorkspaceState } from "../hooks/useEmployerShiftWorkspa
 
 export function EmployerShiftWorkspacePage() {
   const state = useEmployerShiftWorkspaceState();
+  const nav = useNavigate();
 
   if (!state.workspace) {
     return (
-      <div>
-        <div className="wm-pageHead">
-          <div>
-            <div className="wm-pageTitle">Workspace</div>
-            <div className="wm-pageSub">Not found.</div>
-          </div>
-        </div>
-
-        <div style={{ marginTop: 12 }} className="wm-er-card">
-          <div style={{ fontWeight: 700, color: "var(--wm-er-text)" }}>
-            This workspace is not available.
-          </div>
-        </div>
+      <div
+        className="wm-er-vShift wm-stackGrid"
+        data-testid="employer-shift-workspace-missing"
+        style={{ gap: "var(--wm-stack-gap)" }}
+      >
+        <DomainHero
+          variant="shift"
+          audience="employer"
+          title="Workspace"
+          subtitle="Not found"
+          description="This work group may have been closed or the link is outdated."
+        />
+        <EnterpriseEmpty
+          domain="shift"
+          title="This workspace is not available"
+          subtitle="Open your workspaces list to continue managing confirmed shifts."
+          primaryLabel="My Workspaces"
+          onPrimary={() => nav(ROUTE_PATHS.employerShiftWorkspaces)}
+          testId="employer-shift-workspace-empty"
+        />
       </div>
     );
   }
 
   return (
-    <div>
+    <div
+      className="wm-er-vShift wm-stackGrid"
+      data-testid="employer-shift-workspace-page"
+      style={{ gap: "var(--wm-stack-gap)", paddingBottom: 32 }}
+    >
       <ConfirmModal
         confirm={state.confirmData}
         onConfirm={state.handleConfirmModalConfirm}
@@ -42,14 +56,13 @@ export function EmployerShiftWorkspacePage() {
 
       <EmployerShiftWorkspaceHeader workspace={state.workspace} />
 
-      {state.actionError && (
+      {state.actionError ? (
         <div
+          className="wm-shift-surface-glass wm-shift-surface-glass--inset"
+          role="alert"
           style={{
-            marginTop: 12,
-            padding: "10px 12px",
-            borderRadius: 10,
-            background: "rgba(220,38,38,0.06)",
             border: "1px solid rgba(220,38,38,0.2)",
+            background: "rgba(220,38,38,0.06)",
             fontSize: 12,
             fontWeight: 600,
             color: "#b91c1c",
@@ -57,7 +70,7 @@ export function EmployerShiftWorkspacePage() {
         >
           {state.actionError}
         </div>
-      )}
+      ) : null}
 
       <EmployerShiftWorkspaceControls
         workspace={state.workspace}
@@ -73,18 +86,16 @@ export function EmployerShiftWorkspacePage() {
 
       <EmployerShiftWorkspaceUpdates workspace={state.workspace} />
 
-      <div style={{ height: 32 }} />
-
-      {state.broadcastOpen && (
+      {state.broadcastOpen ? (
         <BroadcastModal
           draft={state.broadcastDraft}
           onDraftChange={state.setBroadcastDraft}
           onSend={state.pushBroadcast}
           onClose={() => state.setBroadcastOpen(false)}
         />
-      )}
+      ) : null}
 
-      {state.replyOpen && (
+      {state.replyOpen ? (
         <ReplyModal
           draft={state.replyDraft}
           onDraftChange={state.setReplyDraft}
@@ -92,21 +103,21 @@ export function EmployerShiftWorkspacePage() {
           onClose={() => state.setReplyOpen(false)}
           readOnly={state.readOnly}
         />
-      )}
+      ) : null}
 
-      {state.ratingOpen && state.workerWmId && (
+      {state.ratingOpen && state.workerMlId ? (
         <EmployerRateWorkerModal
           isOpen={state.ratingOpen}
           jobId={state.workspace.postId}
           jobTitle={state.workspace.jobName}
-          employerWmId={state.employerWmId}
-          workerWmId={state.workerWmId}
+          employerMlId={state.employerMlId}
+          workerMlId={state.workerMlId}
           workerName={state.workerName}
           domain="shift"
           onSubmitted={state.handleRatingSubmitted}
           onClose={() => state.setRatingOpen(false)}
         />
-      )}
+      ) : null}
     </div>
   );
 }

@@ -120,7 +120,7 @@ export function EmployerCareerRecentPostButton({
           style={{
             width: 25,
             height: 25,
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             border:
               post.status === "active"
                 ? "1px solid rgba(29,78,216,0.28)"
@@ -194,12 +194,12 @@ function MiniStat({ label, value }: { label: string; value: number }) {
 export function EmployerCareerEmptyPosts() {
   return (
     <section style={EMPTY_SECTION_STYLE}>
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 13 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: "var(--wm-space-12)" }}>
         <div
           style={{
             width: 48,
             height: 48,
-            borderRadius: 19,
+            borderRadius: "var(--wm-radius-chip)",
             background: "rgba(29,78,216,0.08)",
             color: CAREER_BLUE,
             border: "1px solid rgba(29,78,216,0.12)",
@@ -228,7 +228,7 @@ export function EmployerCareerEmptyPosts() {
         style={{
           marginTop: 12,
           padding: "10px 11px",
-          borderRadius: 16,
+          borderRadius: "var(--wm-radius-chip)",
           background: "rgba(29,78,216,0.055)",
           color: CAREER_BLUE_DEEP,
           fontSize: 11.5,

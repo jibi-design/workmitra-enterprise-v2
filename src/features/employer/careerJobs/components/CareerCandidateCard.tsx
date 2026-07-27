@@ -116,7 +116,7 @@ export function CareerCandidateCard({
                     color: CAREER_BLUE,
                     background: "rgba(37,99,235,0.08)",
                     padding: "4px 10px",
-                    borderRadius: 8,
+                    borderRadius: "var(--wm-radius-8)",
                     border: "1px solid rgba(37,99,235,0.1)",
                   }}
                 >

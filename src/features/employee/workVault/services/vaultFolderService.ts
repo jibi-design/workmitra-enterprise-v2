@@ -13,10 +13,13 @@ export function getAllFolders(): VaultFolder[] {
 }
 
 /**
- * Writes all folders to storage.
+ * Writes all folders to storage. Throws when browser storage write fails.
  */
 function saveFolders(folders: VaultFolder[]): void {
-  writeStorage(VAULT_STORAGE_KEYS.folders, folders);
+  const result = writeStorage(VAULT_STORAGE_KEYS.folders, folders);
+  if (!result.ok) {
+    throw new Error("Browser storage is full or unavailable. Folder changes were not saved.");
+  }
 }
 
 /**

@@ -3,11 +3,11 @@
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\shared\employerProfile\AntiFraudNotice.tsx
 
 type Props = {
-  jmId?: string;
+  mlId?: string;
 };
 
-export function AntiFraudNotice({ jmId = "" }: Props) {
-  if (!jmId) return null;
+export function AntiFraudNotice({ mlId = "" }: Props) {
+  if (!mlId) return null;
 
   return (
     <div
@@ -30,7 +30,7 @@ export function AntiFraudNotice({ jmId = "" }: Props) {
       </svg>
 
       <div style={{ fontSize: 12, color: "var(--wm-er-muted)", lineHeight: 1.5 }}>
-        Your Job Mitra ID{" "}
+        Your Mitra Labs ID{" "}
         <span
           style={{
             fontFamily: "monospace",
@@ -39,7 +39,7 @@ export function AntiFraudNotice({ jmId = "" }: Props) {
             letterSpacing: 0.3,
           }}
         >
-          {jmId}
+          {mlId}
         </span>{" "}
         will be visible to all applicants.
       </div>

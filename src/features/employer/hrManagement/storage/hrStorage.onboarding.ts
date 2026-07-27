@@ -11,7 +11,7 @@ import {
   hrUpdate,
   DEFAULT_PROBATION_DAYS,
 } from "./hrStorage.core";
-import { employmentLifecycleStorage } from "../../../../features/employee/employment/storage/employmentLifecycle.storage";
+import { employmentLifecycleStorage } from "../../../../shared/employment/employmentLifecycle.storage";
 
 /* ------------------------------------------------ */
 /* Helper: Create employee-side employment record   */
@@ -22,9 +22,7 @@ function createEmployeeSideRecord(recordId: string): void {
 
   // Avoid duplicate — check if record already exists for this HR candidate
   const existing = employmentLifecycleStorage.getAll();
-  const alreadyExists = existing.some(
-    (e) => e.careerPostId === recordId && e.status !== "exited",
-  );
+  const alreadyExists = existing.some((e) => e.careerPostId === recordId && e.status !== "exited");
   if (alreadyExists) return;
 
   const now = Date.now();
@@ -32,7 +30,7 @@ function createEmployeeSideRecord(recordId: string): void {
 
   employmentLifecycleStorage.createEmployment({
     careerPostId: recordId,
-   companyName: rec.jobTitle ? rec.jobTitle : "Company",
+    companyName: rec.jobTitle ? rec.jobTitle : "Company",
     jobTitle: rec.jobTitle || rec.employeeName || "Employee",
     department: rec.department || "",
     location: rec.location || "",
@@ -96,7 +94,13 @@ export function hrToggleOnboardingItem(
       employmentPhase: "probation",
       probationDurationDays: probationDays,
       probationEndDate: probationEnd,
-      statusHistory: pushStatusChange(rec, "onboarding", "active (probation)", "system", "Onboarding completed — probation started"),
+      statusHistory: pushStatusChange(
+        rec,
+        "onboarding",
+        "active (probation)",
+        "system",
+        "Onboarding completed — probation started",
+      ),
     });
 
     if (success) {

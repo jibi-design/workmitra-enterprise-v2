@@ -61,4 +61,16 @@ export function recordPlannerOffboardInVault(input: {
   return result.ok ? result.entry : null;
 }
 
+/** Plan-closure vault path (Mark Completed) — not cancel/offboard. */
+export function recordPlannerPlanCompletedInVault(input: {
+  planId: string;
+  employeeMlId: string;
+}): VaultPlannerHistoryEntry | null {
+  return recordPlannerOffboardInVault({
+    planId: input.planId,
+    employeeMlId: input.employeeMlId,
+    exitType: "plan_completed",
+  });
+}
+
 export type { VaultPlannerExitType, VaultPlannerHistoryEntry };

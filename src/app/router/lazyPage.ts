@@ -15,7 +15,7 @@ function isDynamicImportError(error: unknown): boolean {
   );
 }
 
-async function loadWithChunkRetry<T extends ComponentType<unknown>>(
+async function loadWithChunkRetry<T extends ComponentType>(
   loader: () => Promise<{ default: T }>,
 ): Promise<{ default: T }> {
   try {
@@ -36,7 +36,7 @@ async function loadWithChunkRetry<T extends ComponentType<unknown>>(
   }
 }
 
-export function lazyPage<T extends ComponentType<unknown>>(
+export function lazyPage<T extends ComponentType>(
   loader: () => Promise<{ default: T }>,
 ): LazyExoticComponent<T> {
   return lazy(() => loadWithChunkRetry(loader));

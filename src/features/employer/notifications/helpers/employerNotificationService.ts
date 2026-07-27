@@ -25,12 +25,12 @@ function takeSnapshot(): Snapshot {
   return {
     hrRecords: localStorage.getItem("wm_hr_management_v1"),
     attendance: localStorage.getItem("wm_attendance_log_v1"),
-    tasks: localStorage.getItem("wm_task_assignments_v1"),
+    tasks: localStorage.getItem("wm_task_assignment_v1"),
     leave: localStorage.getItem("wm_hr_leave_requests_v1"),
     incidents: localStorage.getItem("wm_incident_reports_v1"),
     roster: localStorage.getItem("wm_roster_planner_v1"),
     shiftApps: localStorage.getItem("wm_employee_shift_applications_v1"),
-    careerApps: localStorage.getItem("wm_career_applications_v1"),
+    careerApps: localStorage.getItem("wm_employee_career_applications_v1"),
   };
 }
 

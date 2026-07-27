@@ -15,7 +15,7 @@ export function EmployerFavoritesEmptyState({ show }: EmployerFavoritesEmptyStat
   if (!show) return null;
 
   return (
-    <div style={{ marginTop: 12 }}>
+    <div style={{ marginTop: 0 }}>
       <EnterpriseEmpty
         domain="shift"
         title="No favorites yet"

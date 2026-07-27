@@ -1,20 +1,7 @@
-/* src/index.css — Job Mitra Enterprise: CSS entry point (imports only) */
+/* src/index.css — core theme only; role/route CSS via ensureThemeBundle */
 @import "./app/theme/tokens.css";
 @import "./app/theme/base.css";
 @import "./app/theme/buttons.css";
-@import "./app/theme/employee.css";
-@import "./app/theme/employer.css";
-@import "./app/theme/shift-employer-posts.css";
-@import "./app/theme/domain-governance.css";
-@import "./app/theme/shift-employee-home.css";
-@import "./app/theme/shift-direct-invite.css";
-@import "./app/theme/shift-employer-home.css";
-@import "./app/theme/shift-create-wizard.css";
-@import "./app/theme/shift-planner.css";
-@import "./app/theme/shift-metric-states.css";
-@import "./app/theme/shift-dashboard-analysis.css";
-@import "./app/theme/analytics-dashboard.css";
-@import "./app/theme/admin.css";
 @import "./app/theme/components.css";
 
 /* Hide number input spinners */

@@ -1,14 +1,14 @@
 // src/features/employer/workVault/components/EmployerVaultEducationView.tsx
 
-import type { VaultEducation } from "../../../employee/workVault/types/vaultProfileTypes";
+import type { VaultEducation } from "../../../shared/workVault/vaultPublic";
 
 const LEVEL_LABELS: Record<string, string> = {
   none: "Not specified",
-  high_school: "High School",
-  diploma: "Diploma",
-  degree: "Degree",
-  masters: "Masters",
-  phd: "PhD",
+  high_school: "Secondary School Certificate / High School Diploma",
+  diploma: "Diploma / Vocational Certification",
+  degree: "Bachelor's Degree",
+  masters: "Master's Degree",
+  phd: "Doctoral Degree",
 };
 
 type Props = {
@@ -20,7 +20,7 @@ export function EmployerVaultEducationView({ data }: Props) {
     <div
       style={{
         padding: "14px 16px",
-        borderRadius: 12,
+        borderRadius: "var(--wm-radius-button)",
         background: "var(--wm-er-bg, #fff)",
         border: "1px solid var(--wm-er-divider, rgba(15, 23, 42, 0.08))",
       }}
@@ -42,7 +42,7 @@ export function EmployerVaultEducationView({ data }: Props) {
               key={cert.id}
               style={{
                 padding: "8px 12px",
-                borderRadius: 8,
+                borderRadius: "var(--wm-radius-8)",
                 border: "1px solid var(--wm-er-divider, rgba(15, 23, 42, 0.08))",
                 fontSize: 12,
               }}
@@ -58,7 +58,9 @@ export function EmployerVaultEducationView({ data }: Props) {
       )}
 
       {data.certifications.length === 0 && data.level === "none" && (
-        <div style={{ fontSize: 12, color: "var(--wm-er-muted)", fontStyle: "italic", marginTop: 6 }}>
+        <div
+          style={{ fontSize: 12, color: "var(--wm-er-muted)", fontStyle: "italic", marginTop: 6 }}
+        >
           No education details added yet.
         </div>
       )}

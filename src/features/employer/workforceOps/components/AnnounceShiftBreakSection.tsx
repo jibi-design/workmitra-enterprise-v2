@@ -13,7 +13,7 @@ type Props = {
 
 const breakSectionStyle: React.CSSProperties = {
   padding: "10px 12px",
-  borderRadius: 8,
+  borderRadius: "var(--wm-radius-8)",
   border: `1px dashed ${AMBER}`,
   background: AMBER_BG,
   display: "grid",

@@ -33,7 +33,7 @@ export function ShiftDraftControlPanel({
       style={{
         marginTop: 12,
         padding: 14,
-        borderRadius: 20,
+        borderRadius: "var(--wm-radius-employee-card)",
         border: "1px solid rgba(245,158,11,0.2)",
         background:
           "linear-gradient(135deg, rgba(255,251,235,0.98), rgba(255,255,255,0.98) 58%, rgba(240,253,244,0.7))",
@@ -74,7 +74,7 @@ export function ShiftDraftControlPanel({
                 alignItems: "center",
                 gap: 6,
                 padding: "5px 9px",
-                borderRadius: 999,
+                borderRadius: "var(--wm-radius-pill)",
                 background: "rgba(22,163,74,0.1)",
                 color: "#15803d",
                 fontSize: 11,
@@ -140,7 +140,7 @@ export function ShiftDraftControlPanel({
                 alignItems: "center",
                 gap: 10,
                 padding: "10px 11px",
-                borderRadius: 16,
+                borderRadius: "var(--wm-radius-chip)",
                 background: "rgba(255,255,255,0.82)",
                 border: "1px solid rgba(148,163,184,0.18)",
               }}

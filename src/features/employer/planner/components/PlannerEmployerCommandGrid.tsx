@@ -1,8 +1,8 @@
-// Job Mitra | PlannerEmployerCommandGrid.tsx | All planner actions — always visible
+// Job Mitra | PlannerEmployerCommandGrid.tsx | Planner-native actions only (P-SEP-2)
+// Uses shared commandTile chrome — employer panel is one step ahead of employee hub.
 
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
-import { EnterpriseResponsiveGrid } from "../../../../shared/components/enterprise";
 
 type CommandItem = {
   label: string;
@@ -27,61 +27,47 @@ export function PlannerEmployerCommandGrid() {
       onClick: () => nav(ROUTE_PATHS.employerPlannerPlans),
     },
     {
-      label: "My Posts",
-      description: "Project plans grouped — not 30 separate cards",
-      onClick: () => nav(ROUTE_PATHS.employerShiftPosts),
+      label: "Applications",
+      description: "Plan bundle applicants — teal domain",
+      onClick: () => nav(ROUTE_PATHS.employerPlannerApplications),
     },
     {
-      label: "Favorite Workers",
-      description: "Direct invite to plan days (hidden posts)",
-      onClick: () => nav(ROUTE_PATHS.employerShiftFavorites),
-    },
-    {
-      label: "Workspaces",
-      description: "Confirmed crew per-day chat",
-      onClick: () => nav(ROUTE_PATHS.employerShiftWorkspaces),
-    },
-    {
-      label: "Shift Home",
-      description: "Single-day shift hiring (green domain)",
-      onClick: () => nav(ROUTE_PATHS.employerShiftHome),
+      label: "Roster",
+      description: "Confirmed crew by plan day",
+      onClick: () => nav(ROUTE_PATHS.employerPlannerRoster),
     },
   ];
 
   return (
-    <div className="wm-planner-card">
-      <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 4 }}>Planner Command Center</div>
-      <p
-        style={{ fontSize: 11, color: "var(--wm-neutral-500)", marginBottom: 12, lineHeight: 1.45 }}
-      >
-        Every Gig Projects tool is listed here — nothing is hidden. P2/P3 items show honest status
-        on open.
+    <section
+      className="wm-planner-card wm-planner-commandPanel wm-planner-commandPanel--employer"
+      data-testid="planner-employer-command-grid"
+      aria-label="Planner command center"
+    >
+      <div className="wm-planner-sectionLabel">Agency command</div>
+      <div className="wm-planner-sectionTitle">Demand Planner Hub</div>
+      <p className="wm-planner-commandGridIntro">
+        Gig Projects tools only — Shift Jobs hiring stays in the green Shift domain.
       </p>
-      <EnterpriseResponsiveGrid minItemWidth={148} gap={8} testId="planner-command-grid">
+      <div className="wm-planner-commandGrid" data-testid="planner-command-grid">
         {commands.map((cmd) => (
           <button
             key={cmd.label}
             type="button"
-            className={cmd.primary ? "wm-planner-btnPrimary" : "wm-planner-btnGhost"}
-            style={{
-              minHeight: 72,
-              flexDirection: "column",
-              alignItems: "flex-start",
-              justifyContent: "flex-start",
-              padding: "10px 12px",
-              textAlign: "left",
-              gap: 4,
-              width: "100%",
-            }}
+            className={`wm-planner-commandTile${cmd.primary ? " wm-planner-commandTile--primary" : ""}`}
             onClick={cmd.onClick}
+            aria-label={`${cmd.label}. ${cmd.description}`}
           >
-            <span style={{ fontSize: 12, fontWeight: 800 }}>{cmd.label}</span>
-            <span style={{ fontSize: 10, fontWeight: 600, opacity: 0.85, lineHeight: 1.35 }}>
-              {cmd.description}
-            </span>
+            <div className="wm-planner-commandTile__body">
+              <div className="wm-planner-commandTile__label">{cmd.label}</div>
+              <div className="wm-planner-commandTile__sep" aria-hidden="true">
+                {" · "}
+              </div>
+              <div className="wm-planner-commandTile__desc">{cmd.description}</div>
+            </div>
           </button>
         ))}
-      </EnterpriseResponsiveGrid>
-    </div>
+      </div>
+    </section>
   );
 }

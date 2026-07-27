@@ -29,7 +29,7 @@ const overlayStyle: React.CSSProperties = {
 
 const modalStyle: React.CSSProperties = {
   background: "#fff",
-  borderRadius: 16,
+  borderRadius: "var(--wm-radius-chip)",
   width: "100%",
   maxWidth: 440,
   maxHeight: "90vh",
@@ -100,7 +100,13 @@ export function WorkforcePostEventRatingModalShell({
           {children}
 
           {errors.length > 0 && (
-            <div style={{ padding: 10, borderRadius: 8, background: "rgba(220,38,38,0.06)" }}>
+            <div
+              style={{
+                padding: 10,
+                borderRadius: "var(--wm-radius-8)",
+                background: "rgba(220,38,38,0.06)",
+              }}
+            >
               {errors.map((error, index) => (
                 <div
                   key={index}

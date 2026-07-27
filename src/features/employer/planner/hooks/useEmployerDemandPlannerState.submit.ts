@@ -74,6 +74,7 @@ export async function submitDemandPlannerPlan(input: {
         workingDays: step1.workingDays,
         slots,
         description: step1.description.trim(),
+        waitingBuffer: Math.max(0, Math.floor(step1.waitingBuffer || 0)),
       });
       setPlanId(activePlanId);
       const created = demandPlannerStorage.getById(activePlanId);
@@ -104,11 +105,16 @@ export async function submitDemandPlannerPlan(input: {
         publishStatus: "publishing",
         publishRequestId,
         slots,
-        ...step1,
         name: step1.name.trim(),
         companyName: step1.companyName.trim(),
         locationName: step1.locationName.trim(),
+        category: step1.category,
+        experience: step1.experience,
+        startDate: step1.startDate,
+        endDate: step1.endDate,
+        workingDays: step1.workingDays,
         description: step1.description.trim(),
+        waitingBuffer: Math.max(0, Math.floor(step1.waitingBuffer || 0)),
       },
       {
         expectedUpdatedAt:

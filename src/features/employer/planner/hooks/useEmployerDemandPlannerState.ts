@@ -11,7 +11,7 @@ import {
   validateDemandPlannerSchedule,
   validateDemandPlannerDaySlots,
 } from "../helpers/employerDemandPlanner.helpers";
-import { getAutoFillData } from "../../../shared/planner/ports/plannerLegacyShiftBridge";
+import { getPlannerEmployerAutofill } from "../../../shared/planner/services/plannerEmployerAutofill";
 import { demandPlannerStorage, generateDates, type DaySlot } from "../storage/demandPlannerStorage";
 import type { DemandPlannerStep, SlotResult } from "../types/employerDemandPlanner.types";
 import { buildStep1FromDraft } from "./useEmployerDemandPlannerState.helpers";
@@ -20,7 +20,7 @@ import { submitDemandPlannerPlan } from "./useEmployerDemandPlannerState.submit"
 export function useEmployerDemandPlannerState() {
   const nav = useNavigate();
   const [searchParams] = useSearchParams();
-  const autoFill = useMemo(() => getAutoFillData(), []);
+  const autoFill = useMemo(() => getPlannerEmployerAutofill(), []);
 
   const resumePlanId = searchParams.get("planId");
   const resumeStep = Number(searchParams.get("step") ?? "1");
@@ -72,6 +72,7 @@ export function useEmployerDemandPlannerState() {
       workingDays: step1.workingDays,
       slots,
       description: step1.description.trim(),
+      waitingBuffer: Math.max(0, Math.floor(step1.waitingBuffer || 0)),
       draftStep: nextStep ?? step,
     };
 

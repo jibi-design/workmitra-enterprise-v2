@@ -1,15 +1,15 @@
 // App name: Job Mitra
 // Employee direct-invite pending flow — hub rows, safety modals, accept/decline.
 
-import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import type { PendingActionItem } from "../../../../shared/pendingActions/pendingActions.types";
 import {
   acceptShiftDirectInvite,
   declineShiftDirectInvite,
-} from "../../../employer/shiftJobs/services/shiftDirectInvite.service";
-import { shiftDirectInviteStorage } from "../../../employer/shiftJobs/storage/shiftDirectInvite.storage";
+  shiftDirectInviteStorage,
+} from "../../../shared/shift/shiftEmployerPublic";
 import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
 import {
   getEmployeePendingDirectInvitesSnapshot,
@@ -23,6 +23,19 @@ export function useEmployeeDirectInvitePendingFlow() {
   const [modal, setModal] = useState<ShiftDirectInviteModalState | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const [toast, setToast] = useState("");
+  const mountedRef = useRef(true);
+  const navTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (navTimerRef.current != null) {
+        clearTimeout(navTimerRef.current);
+        navTimerRef.current = null;
+      }
+    };
+  }, []);
 
   const pendingInvites = useSyncExternalStore(
     shiftDirectInviteStorage.subscribe,
@@ -63,16 +76,25 @@ export function useEmployeeDirectInvitePendingFlow() {
     [openAcceptModal, openDeclineModal, pendingInvites],
   );
 
-  const confirmModalAction = useCallback(() => {
+  const confirmModalAction = useCallback(async () => {
     if (!modal) return;
 
     const profile = employeeProfileStorage.get();
-    const activeWorkerWmId = profile.uniqueId?.trim().toUpperCase() ?? "";
-    if (!activeWorkerWmId) return;
+    const activeWorkerMlId = profile.uniqueId?.trim().toUpperCase() ?? "";
+    if (!activeWorkerMlId) {
+      setToast("Complete your profile Unique ID before accepting this invite.");
+      setModal(null);
+      navTimerRef.current = setTimeout(() => {
+        if (!mountedRef.current) return;
+        nav(ROUTE_PATHS.employeeProfile);
+      }, 600);
+      return;
+    }
 
     if (modal.kind === "decline") {
       setIsBusy(true);
-      const ok = declineShiftDirectInvite(modal.invite.id, activeWorkerWmId);
+      const ok = declineShiftDirectInvite(modal.invite.id, activeWorkerMlId);
+      if (!mountedRef.current) return;
       setIsBusy(false);
       setModal(null);
 
@@ -87,15 +109,17 @@ export function useEmployeeDirectInvitePendingFlow() {
 
     setIsBusy(true);
 
-    const result = acceptShiftDirectInvite({
+    const result = await acceptShiftDirectInvite({
       inviteId: modal.invite.id,
-      workerWmId: activeWorkerWmId,
+      workerMlId: activeWorkerMlId,
       workerName: profile.fullName.trim() || modal.invite.workerName,
       city: profile.city.trim() || undefined,
       experience: profile.experience || undefined,
       skills: profile.skills.length > 0 ? [...profile.skills] : undefined,
       languages: profile.languages.length > 0 ? [...profile.languages] : undefined,
     });
+
+    if (!mountedRef.current) return;
 
     setIsBusy(false);
     setModal(null);
@@ -108,14 +132,17 @@ export function useEmployeeDirectInvitePendingFlow() {
     setToast("Direct invite accepted. You are confirmed for this shift.");
 
     if (result.workspaceId) {
-      setTimeout(
-        () => nav(ROUTE_PATHS.employeeShiftWorkspace.replace(":workspaceId", result.workspaceId!)),
-        600,
-      );
+      navTimerRef.current = setTimeout(() => {
+        if (!mountedRef.current) return;
+        nav(ROUTE_PATHS.employeeShiftWorkspace.replace(":workspaceId", result.workspaceId!));
+      }, 600);
       return;
     }
 
-    setTimeout(() => nav(ROUTE_PATHS.employeeShiftApplications), 600);
+    navTimerRef.current = setTimeout(() => {
+      if (!mountedRef.current) return;
+      nav(ROUTE_PATHS.employeeShiftApplications);
+    }, 600);
   }, [modal, nav]);
 
   const pendingCount = pendingInvites.length;

@@ -1,9 +1,10 @@
 /** Job Mitra | EmployerVaultLookup.tsx | C:\projects\WorkMitra_Enterprise_v2\src\features\employer\workVault\components\EmployerVaultLookup.tsx */
 
 import { useState } from "react";
+import { ID_FORMAT_HINT } from "../../../../shared/identity/constants/idConstants";
 import { validateId } from "../../../../shared/identity/validators/idValidator";
 import { lookupById } from "../../../../shared/identity/registry/idRegistry";
-import { VAULT_ACCENT } from "../../../employee/workVault/constants/vaultConstants";
+import { VAULT_ACCENT } from "../../../shared/workVault/vaultPublic";
 import type { IdRegistryEntry } from "../../../../shared/identity/types/identityTypes";
 
 type EmployerVaultLookupProps = {
@@ -73,7 +74,7 @@ export function EmployerVaultLookup({ onEmployeeFound }: EmployerVaultLookupProp
                 handleSearch();
               }
             }}
-            placeholder="JM-XXXX-XXX-XXXX"
+            placeholder={ID_FORMAT_HINT}
             autoFocus
           />
 
@@ -83,7 +84,7 @@ export function EmployerVaultLookup({ onEmployeeFound }: EmployerVaultLookupProp
             style={{
               height: 42,
               padding: "0 18px",
-              borderRadius: 10,
+              borderRadius: "var(--wm-radius-10)",
               border: "none",
               background: VAULT_ACCENT,
               color: "#fff",
@@ -105,7 +106,8 @@ export function EmployerVaultLookup({ onEmployeeFound }: EmployerVaultLookupProp
       </div>
 
       <div style={{ fontSize: 11, color: "var(--wm-er-muted)", lineHeight: 1.6 }}>
-        Enter the employee&apos;s Job Mitra ID to view their public profile and request document access.
+        Enter the employee&apos;s Mitra Labs ID to view their public profile and request document
+        access.
       </div>
     </div>
   );

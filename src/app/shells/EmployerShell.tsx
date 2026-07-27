@@ -25,6 +25,8 @@ import {
   EnterpriseToastHost,
   useCommandPaletteHotkey,
 } from "../../shared/components/enterprise";
+import { AUTH_BACKEND_ENABLED } from "../../shared/config/authConfig";
+import { RouteGuardLoading } from "../../shared/components/routes/RouteGuardStatus";
 
 function useEmployerUnread(): number {
   return useSyncExternalStore(
@@ -101,6 +103,9 @@ export function EmployerShell() {
   }, [nav]);
 
   if (role !== "employer") {
+    if (AUTH_BACKEND_ENABLED && role === null) {
+      return <RouteGuardLoading overlay label="Checking your session" />;
+    }
     const target = role === "employee" ? ROUTE_PATHS.employeeHome : ROUTE_PATHS.landing;
     return <Navigate to={target} replace />;
   }

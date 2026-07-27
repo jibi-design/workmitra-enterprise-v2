@@ -10,13 +10,13 @@ import { useDocAccessModalState } from "./useDocAccessModalState";
 
 export function DocAccessModal({
   workerName,
-  workerWmId,
+  workerMlId,
   profile,
   domain,
   onClose,
 }: DocAccessModalProps) {
   const state = useDocAccessModalState({
-    workerWmId,
+    workerMlId,
     domain,
     onClose,
   });
@@ -41,9 +41,9 @@ export function DocAccessModal({
       <div
         style={{
           width: "100%",
-          maxWidth: 520,
+          maxWidth: "var(--wm-shell-max, 520px)",
           background: "var(--wm-er-card, #fff)",
-          borderRadius: 18,
+          borderRadius: "var(--wm-radius-chip)",
           padding: "20px 20px 24px",
           boxShadow: "0 8px 32px rgba(0,0,0,0.22)",
         }}

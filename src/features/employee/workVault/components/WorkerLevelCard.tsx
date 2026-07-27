@@ -47,7 +47,7 @@ export function WorkerLevelCard() {
   return (
     <div
       style={{
-        borderRadius: 12,
+        borderRadius: "var(--wm-radius-button)",
         padding: "14px 16px",
         background: bg,
         border: `1px solid ${color}22`,
@@ -62,7 +62,7 @@ export function WorkerLevelCard() {
             style={{
               width: 44,
               height: 44,
-              borderRadius: 12,
+              borderRadius: "var(--wm-radius-button)",
               flexShrink: 0,
               background: bg,
               border: `1.5px solid ${color}44`,
@@ -102,14 +102,14 @@ export function WorkerLevelCard() {
           <div
             style={{
               height: 6,
-              borderRadius: 999,
+              borderRadius: "var(--wm-radius-pill)",
               background: `${color}20`,
             }}
           >
             <div
               style={{
                 height: "100%",
-                borderRadius: 999,
+                borderRadius: "var(--wm-radius-pill)",
                 background: color,
                 width: `${progressPct}%`,
                 transition: "width 0.4s ease",

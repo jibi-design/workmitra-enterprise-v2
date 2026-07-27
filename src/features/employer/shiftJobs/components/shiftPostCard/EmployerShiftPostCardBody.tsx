@@ -82,7 +82,7 @@ export function EmployerShiftPostCardBody({
             fontWeight: 700,
             color: statusColor,
             padding: "2px 8px",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             border: `1px solid ${statusColor}`,
             whiteSpace: "nowrap",
             flexShrink: 0,
@@ -94,16 +94,18 @@ export function EmployerShiftPostCardBody({
 
       <div
         style={{
-          marginTop: 6,
+          marginTop: 10,
           display: "flex",
-          gap: 12,
-          fontSize: 12,
-          color: "var(--wm-er-muted)",
+          gap: 8,
+          flexWrap: "wrap",
+          alignItems: "center",
         }}
       >
-        <span>{appliedCount} applied</span>
-        <span>{post.confirmedIds.length} confirmed</span>
-        <span>{Math.max(0, post.vacancies - post.confirmedIds.length)} remaining</span>
+        <span className="wm-shift-pill wm-shift-pill--pay">{appliedCount} Applicants</span>
+        <span style={{ fontSize: 12, color: "var(--wm-er-muted)", fontWeight: 600 }}>
+          {post.confirmedIds.length} confirmed ·{" "}
+          {Math.max(0, post.vacancies - post.confirmedIds.length)} remaining
+        </span>
       </div>
 
       <EmployerShiftPostNextStepText
@@ -112,8 +114,20 @@ export function EmployerShiftPostCardBody({
         needsAnalysis={needsAnalysis}
       />
 
-      <div style={{ marginTop: 6, fontSize: 11, color: "var(--wm-er-muted)" }}>
+      <div style={{ marginTop: 8, fontSize: 12, color: "var(--wm-er-muted)", fontWeight: 600 }}>
         Pay: {payDisplay}
+      </div>
+
+      <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+        <span
+          className="wm-shift-cta wm-shift-cta--ghost"
+          style={{ flex: 1, pointerEvents: "none" }}
+        >
+          View
+        </span>
+        <span className="wm-shift-cta" style={{ flex: 1, pointerEvents: "none" }}>
+          Manage
+        </span>
       </div>
     </button>
   );

@@ -17,7 +17,7 @@ type CareerCreateCompensationSectionProps = {
 
 const PREMIUM_CARD_STYLE: CSSProperties = {
   padding: 20,
-  borderRadius: 24,
+  borderRadius: "var(--wm-radius-employer-card)",
   border: "1px solid rgba(255, 255, 255, 0.9)",
   background: "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,250,252,0.6))",
   boxShadow: "0 12px 32px -4px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255,255,255,1)",
@@ -27,7 +27,7 @@ const PREMIUM_CARD_STYLE: CSSProperties = {
 const PREMIUM_INPUT_STYLE: CSSProperties = {
   width: "100%",
   minHeight: 46,
-  borderRadius: 14,
+  borderRadius: "var(--wm-radius-button)",
   border: "1px solid rgba(15, 23, 42, 0.08)",
   background: "rgba(255, 255, 255, 0.8)",
   padding: "0 14px",
@@ -63,6 +63,7 @@ export function CareerCreateCompensationSection({
         <div>
           <label style={PREMIUM_LABEL_STYLE}>Minimum Salary</label>
           <input
+            className="wm-career-input"
             style={PREMIUM_INPUT_STYLE}
             value={data.salaryMin}
             onChange={(event) => onChange({ salaryMin: event.target.value.replace(/\D/g, "") })}
@@ -75,6 +76,7 @@ export function CareerCreateCompensationSection({
         <div>
           <label style={PREMIUM_LABEL_STYLE}>Maximum Salary</label>
           <input
+            className="wm-career-input"
             style={PREMIUM_INPUT_STYLE}
             value={data.salaryMax}
             onChange={(event) => onChange({ salaryMax: event.target.value.replace(/\D/g, "") })}
@@ -88,6 +90,7 @@ export function CareerCreateCompensationSection({
       <div style={{ marginTop: 16 }}>
         <label style={PREMIUM_LABEL_STYLE}>Salary Period</label>
         <select
+          className="wm-career-input"
           style={PREMIUM_INPUT_STYLE}
           value={data.salaryPeriod}
           onChange={(event) => onChange({ salaryPeriod: event.target.value as CareerSalaryPeriod })}
@@ -101,7 +104,7 @@ export function CareerCreateCompensationSection({
         style={{
           marginTop: 16,
           padding: "12px 14px",
-          borderRadius: 14,
+          borderRadius: "var(--wm-radius-chip)",
           background: "rgba(37, 99, 235, 0.05)",
           border: "1px solid rgba(37, 99, 235, 0.1)",
           fontSize: 12,

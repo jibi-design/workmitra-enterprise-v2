@@ -3,22 +3,23 @@
 // CRUD for all HR letters/documents.
 // Shared storage for appointment, warning, appreciation, salary slip, etc.
 
-import type { LetterRecord, LetterKind, LetterData, LetterStatus } from "../types/letterTemplates.types";
+import type {
+  LetterRecord,
+  LetterKind,
+  LetterData,
+  LetterStatus,
+} from "../types/letterTemplates.types";
+import { hrEmployerScopedKey } from "./hrStorageKeys";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────────────────────────────────────
-
-const STORAGE_KEY = "wm_hr_letters_v1";
 const CHANGED_EVENT = "wm:hr-letters-changed";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Internal Helpers
-// ─────────────────────────────────────────────────────────────────────────────
+function storageKey(): string {
+  return hrEmployerScopedKey("letters_v1");
+}
 
 function read(): LetterRecord[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey());
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
     return Array.isArray(parsed) ? (parsed as LetterRecord[]) : [];
@@ -28,7 +29,7 @@ function read(): LetterRecord[] {
 }
 
 function write(records: LetterRecord[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  localStorage.setItem(storageKey(), JSON.stringify(records));
   window.dispatchEvent(new Event(CHANGED_EVENT));
 }
 

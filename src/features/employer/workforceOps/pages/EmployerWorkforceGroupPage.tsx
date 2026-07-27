@@ -3,6 +3,7 @@
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\workforceOps\pages\EmployerWorkforceGroupPage.tsx
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
 import type {
   WorkforceGroup,
   WorkforceGroupMember,
@@ -24,7 +25,6 @@ import {
 } from "../../../../shared/domains/workforce/storage/workforceStorageUtils";
 import { validateMessage } from "../../../../shared/domains/workforce/validation/workforceValidation";
 import { IconBack } from "../../../../shared/domains/workforce/ui/workforceIcons";
-import { AMBER } from "../../../../shared/domains/workforce/ui/workforceStyles";
 import { EmployerWorkforceGroupChatPanel } from "../components/EmployerWorkforceGroupChatPanel";
 import { EmployerWorkforceGroupCompletePanel } from "../components/EmployerWorkforceGroupCompletePanel";
 import { EmployerWorkforceGroupHeader } from "../components/EmployerWorkforceGroupHeader";
@@ -161,23 +161,23 @@ export function EmployerWorkforceGroupPage({ groupId, onBack, onOpenRating }: Pr
   if (!data.group) {
     return (
       <div className="wm-er-vWorkforce">
-        <div className="wm-pageHead">
-          <button
-            type="button"
-            onClick={onBack}
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: AMBER,
-              padding: 4,
-            }}
-          >
-            <IconBack />
-          </button>
-
-          <div className="wm-pageTitle">Group not found</div>
-        </div>
+        <DomainHero
+          variant="workforce"
+          audience="employer"
+          icon={
+            <button
+              type="button"
+              className="wm-domainHeroIconBtn"
+              onClick={onBack}
+              aria-label="Back"
+            >
+              <IconBack />
+            </button>
+          }
+          title="Group not found"
+          subtitle="This work group may have been removed"
+          description="Return to Work Groups to continue."
+        />
       </div>
     );
   }

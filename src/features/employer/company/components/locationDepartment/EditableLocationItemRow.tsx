@@ -14,7 +14,7 @@ const inputStyle: CSSProperties = {
   fontWeight: 600,
   color: "#1e293b",
   border: `1.5px solid ${BORDER_COLOR}`,
-  borderRadius: 8,
+  borderRadius: "var(--wm-radius-8)",
   outline: "none",
   background: "#fff",
   boxSizing: "border-box",
@@ -57,7 +57,7 @@ export function EditableLocationItemRow({
         alignItems: "center",
         gap: 8,
         padding: "8px 10px",
-        borderRadius: 8,
+        borderRadius: "var(--wm-radius-8)",
         border: `1px solid ${BORDER_COLOR}`,
         background: "#f9fafb",
       }}

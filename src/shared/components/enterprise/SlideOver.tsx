@@ -12,6 +12,8 @@ export type SlideOverProps = {
   footer?: ReactNode;
   ariaLabel?: string;
   testId?: string;
+  /** Executive Obsidian glass panel for employer management */
+  variant?: "default" | "obsidian";
 };
 
 function usePrefersReducedMotion(): boolean {
@@ -37,6 +39,7 @@ export function SlideOver({
   footer,
   ariaLabel,
   testId,
+  variant = "default",
 }: SlideOverProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
 
@@ -61,10 +64,11 @@ export function SlideOver({
   if (!open) return null;
 
   const motionClass = prefersReducedMotion ? " wm-ent-slide--reduced" : "";
+  const variantClass = variant === "obsidian" ? " wm-ent-slide-panel--obsidian" : "";
 
   return (
     <div
-      className={`wm-ent-slide-backdrop${motionClass}`}
+      className={`wm-ent-slide-backdrop${motionClass}${variant === "obsidian" ? " wm-ent-slide-backdrop--obsidian" : ""}`}
       role="dialog"
       aria-modal="true"
       aria-label={ariaLabel ?? title}
@@ -73,7 +77,7 @@ export function SlideOver({
       onClick={onClose}
     >
       <div
-        className={`wm-ent-slide-panel${motionClass}`}
+        className={`wm-ent-slide-panel${motionClass}${variantClass}`}
         onClick={(e) => e.stopPropagation()}
         data-testid="wm-ent-slideover-panel"
       >

@@ -11,11 +11,11 @@ import type { EmploymentRecord as SharedEmploymentRecord } from "../../../../sha
 import {
   employmentLifecycleStorage,
   type EmploymentRecord as LifecycleEmploymentRecord,
-} from "../../../employee/employment/storage/employmentLifecycle.storage";
+} from "../../../../shared/employment/employmentLifecycle.storage";
 import {
   mapSharedEmploymentStatusToLifecycleStatus,
   mapSharedEmploymentStatusToStaffStatus,
-} from "../../../employee/careerJobs/services/careerEmploymentStatusMap";
+} from "../../../career/services/careerEmploymentPublic";
 import { employerSettingsStorage } from "../../company/storage/employerSettings.storage";
 import {
   myStaffStorage,
@@ -89,6 +89,8 @@ export function activateCareerHire(
   post: CareerJobPost,
   app: CareerApplication,
 ): CareerHireActivationResult {
+  // Auth on: LS writers remain as UX/cache prelude; hireCandidate must dual-write
+  // confirm-hire API or roll back. Auth off: LS remains authoritative for E2E/demo.
   const snapshots = captureCareerHireActivationSnapshots();
   const now = Date.now();
   const initialEmploymentStatus = "selected" as const;
@@ -144,10 +146,10 @@ export function activateCareerHire(
         careerPostId: post.id,
         employeeId: app.employeeId,
         employeeName: app.employeeName,
-        employeeWmId: app.profileSnapshot?.uniqueId ?? app.employeeId,
+        employeeMlId: app.profileSnapshot?.uniqueId ?? app.employeeId,
         employerId: post.employerId,
         companyName: post.companyName,
-        employerWmId: employerProfile.uniqueId ?? "",
+        employerMlId: employerProfile.uniqueId ?? "",
         jobTitle: post.jobTitle,
         department: post.department,
         salaryMin: app.offerDetails?.salary ?? post.salaryMin,

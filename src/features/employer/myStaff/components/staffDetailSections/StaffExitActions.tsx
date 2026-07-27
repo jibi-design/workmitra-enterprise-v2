@@ -12,7 +12,7 @@ export function ExitActions({ onStartExit }: ExitActionsProps) {
       <div
         style={{
           padding: 14,
-          borderRadius: 20,
+          borderRadius: "var(--wm-radius-employee-card)",
           background:
             "radial-gradient(circle at 100% 0%, rgba(220,38,38,0.065), transparent 34%), linear-gradient(135deg, rgba(255,255,255,1), rgba(248,250,252,0.98))",
           border: "1px solid rgba(220,38,38,0.13)",
@@ -34,7 +34,7 @@ export function ExitActions({ onStartExit }: ExitActionsProps) {
             width: "100%",
             marginTop: 11,
             padding: "13px 18px",
-            borderRadius: 15,
+            borderRadius: "var(--wm-radius-chip)",
             border: "1.5px solid rgba(220,38,38,0.28)",
             background: "rgba(220,38,38,0.055)",
             color: "#dc2626",

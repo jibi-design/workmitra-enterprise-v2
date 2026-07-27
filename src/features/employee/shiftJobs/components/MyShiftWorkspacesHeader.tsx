@@ -1,4 +1,6 @@
-// App name: Job Mitra | MyShiftWorkspacesHeader.tsx — shift + planner domains
+// App name: Job Mitra | MyShiftWorkspacesHeader.tsx — DomainHero (shift + planner)
+
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
 
 type Domain = "shift" | "planner";
 
@@ -14,69 +16,45 @@ export function MyShiftWorkspacesHeader({
   const isPlanner = domain === "planner";
 
   return (
-    <section
-      style={{
-        marginTop: 2,
-        padding: "16px 16px",
-        borderRadius: 22,
-        border: isPlanner ? "1px solid rgba(8,145,178,0.18)" : "1px solid rgba(22,163,74,0.16)",
-        background: isPlanner
-          ? "linear-gradient(135deg, rgba(8,145,178,0.1), rgba(255,255,255,0.98) 48%, rgba(236,254,255,0.86))"
-          : "linear-gradient(135deg, rgba(22,163,74,0.13), rgba(255,255,255,0.98) 48%, rgba(240,253,244,0.86))",
-        boxShadow: "0 18px 40px rgba(15,23,42,0.07)",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          gap: 12,
-        }}
-      >
-        <div style={{ minWidth: 0 }}>
-          <div
-            style={{ fontSize: 18, fontWeight: 950, color: "var(--wm-er-text)", lineHeight: 1.25 }}
-          >
-            {isPlanner ? "Project Workspaces" : "My Work Groups"}
-          </div>
-
-          <div
-            style={{ marginTop: 5, fontSize: 12, color: "var(--wm-er-muted)", lineHeight: 1.45 }}
-          >
-            {isPlanner
-              ? "Confirmed Gig project days — crew chat and updates."
-              : "Confirmed single-day shifts and active work groups."}
-          </div>
-        </div>
-
+    <DomainHero
+      variant={isPlanner ? "planner" : "shift"}
+      audience="employee"
+      icon={<WorkspacesHeroIcon />}
+      title={isPlanner ? "Project Workspaces" : "My Work Groups"}
+      subtitle={
+        isPlanner
+          ? "Confirmed Gig project days — crew chat and updates."
+          : "Confirmed single-day shifts and active work groups."
+      }
+      description={
+        isPlanner
+          ? "Only workspaces from multi-day project plans appear here — separate from green shift groups."
+          : "A work group is created after an employer confirms you for a single-day shift."
+      }
+      trailing={
         <button
-          className={isPlanner ? "wm-planner-btnGhost" : "wm-outlineBtn"}
+          className={
+            isPlanner
+              ? "wm-planner-btnGhost wm-shift-pressable"
+              : "wm-outlineBtn wm-shift-pressable"
+          }
           type="button"
           onClick={onFindShifts}
-          style={{ fontSize: 12, whiteSpace: "nowrap" }}
         >
           {isPlanner ? "Browse Projects" : "Find Shifts"}
         </button>
-      </div>
+      }
+    />
+  );
+}
 
-      <div
-        style={{
-          marginTop: 12,
-          padding: "9px 11px",
-          borderRadius: 14,
-          background: "rgba(255,255,255,0.72)",
-          border: "1px solid rgba(226,232,240,0.9)",
-          fontSize: 11,
-          fontWeight: 750,
-          color: "var(--wm-er-muted)",
-          lineHeight: 1.45,
-        }}
-      >
-        {isPlanner
-          ? "Only workspaces from multi-day project plans appear here — separate from green shift groups."
-          : "A work group is created after an employer confirms you for a single-day shift."}
-      </div>
-    </section>
+function WorkspacesHeroIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M16 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-8 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5Zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5Z"
+      />
+    </svg>
   );
 }

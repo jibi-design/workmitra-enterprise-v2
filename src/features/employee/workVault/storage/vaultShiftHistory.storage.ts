@@ -4,6 +4,9 @@
 
 export const VAULT_SHIFT_HISTORY_KEY = "wm_vault_shift_history_v1";
 export const VAULT_SHIFT_HISTORY_CHANGED = "wm:vault-shift-history-changed";
+/** Fired when oldest entries are dropped to enforce the 200-cap (P1-7). */
+export const VAULT_SHIFT_HISTORY_TRIMMED = "wm:vault-shift-history-trimmed";
+export const VAULT_SHIFT_HISTORY_MAX = 200;
 
 export type VaultShiftHistoryEntry = {
   id: string;
@@ -113,13 +116,23 @@ function readAll(): VaultShiftHistoryEntry[] {
   }
 }
 
-export type VaultStorageWriteResult = { ok: true } | { ok: false; reason: "storage_error" };
+export type VaultStorageWriteResult =
+  { ok: true; trimmedOldest: number } | { ok: false; reason: "storage_error" };
 
 function writeAllChecked(entries: VaultShiftHistoryEntry[]): VaultStorageWriteResult {
   try {
-    localStorage.setItem(VAULT_SHIFT_HISTORY_KEY, JSON.stringify(entries.slice(0, 200)));
+    const trimmedOldest = Math.max(0, entries.length - VAULT_SHIFT_HISTORY_MAX);
+    const capped = entries.slice(0, VAULT_SHIFT_HISTORY_MAX);
+    localStorage.setItem(VAULT_SHIFT_HISTORY_KEY, JSON.stringify(capped));
     window.dispatchEvent(new Event(VAULT_SHIFT_HISTORY_CHANGED));
-    return { ok: true };
+    if (trimmedOldest > 0) {
+      window.dispatchEvent(
+        new CustomEvent(VAULT_SHIFT_HISTORY_TRIMMED, {
+          detail: { trimmedOldest, max: VAULT_SHIFT_HISTORY_MAX },
+        }),
+      );
+    }
+    return { ok: true, trimmedOldest };
   } catch {
     return { ok: false, reason: "storage_error" };
   }
@@ -136,6 +149,11 @@ export function getVaultShiftHistoryForWorker(workerMlId: string): VaultShiftHis
   return readAll().filter((entry) => entry.workerMlId.trim().toUpperCase() === normalized);
 }
 
+export type VaultShiftHistoryUpsertResult = {
+  entry: VaultShiftHistoryEntry;
+  trimmedOldest: number;
+};
+
 export function upsertVaultShiftHistoryOnComplete(input: {
   workspaceId: string;
   postId: string;
@@ -146,7 +164,7 @@ export function upsertVaultShiftHistoryOnComplete(input: {
   startAt: number;
   endAt: number;
   completedAt: number;
-}): VaultShiftHistoryEntry | null {
+}): VaultShiftHistoryUpsertResult | null {
   const existing = readAll();
   const prior = existing.find((entry) => entry.workspaceId === input.workspaceId);
   const now = input.completedAt;
@@ -168,11 +186,13 @@ export function upsertVaultShiftHistoryOnComplete(input: {
     finalizedAt: prior?.finalizedAt,
   };
 
-  const without = existing.filter((entry) => entry.workspaceId !== input.workspaceId);
+  // Re-read under fresh list so concurrent upserts merge by workspaceId (P1-7).
+  const live = readAll();
+  const without = live.filter((entry) => entry.workspaceId !== input.workspaceId);
   const write = writeAllChecked([nextEntry, ...without]);
   if (!write.ok) return null;
 
-  return nextEntry;
+  return { entry: nextEntry, trimmedOldest: write.trimmedOldest };
 }
 
 export function updateVaultShiftHistoryRatings(

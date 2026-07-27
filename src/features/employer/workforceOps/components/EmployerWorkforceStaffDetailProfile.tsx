@@ -50,7 +50,7 @@ export function EmployerWorkforceStaffDetailProfile({ staff }: Props) {
                   key={skill}
                   style={{
                     padding: "2px 8px",
-                    borderRadius: 999,
+                    borderRadius: "var(--wm-radius-pill)",
                     background: AMBER_BG,
                     color: "var(--wm-er-accent-workforce, #b45309)",
                     fontSize: 10,

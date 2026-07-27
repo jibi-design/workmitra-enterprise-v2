@@ -11,8 +11,8 @@ export type EmployerWorkerReviewRecord = {
   id: string;
   source: WorkerToEmployerRating;
   domain: "shift" | "career";
-  workerWmId: string;
-  employerWmId: string;
+  workerMlId: string;
+  employerMlId: string;
   jobId: string;
   workspaceId?: string;
   title: string;
@@ -36,8 +36,8 @@ export type EmployerGivenWorkerRatingRecord = {
   id: string;
   source: EmployerToWorkerRating;
   domain: "shift" | "career";
-  employerWmId: string;
-  workerWmId: string;
+  employerMlId: string;
+  workerMlId: string;
   jobId: string;
   workspaceId?: string;
   title: string;

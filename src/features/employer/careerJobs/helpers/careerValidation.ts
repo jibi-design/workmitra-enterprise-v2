@@ -11,19 +11,21 @@ import type {
 import {
   safeWrite,
   EMPLOYEE_SEARCH_CAREER_KEY,
+  notifyEmployeeCareerSearchChanged,
   type CareerStorageWriteResult,
 } from "./careerStorageUtils";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Stage Transition Rules (one-directional, no backwards movement)
+// Stage Transition Rules (forward + documented reverse: shortlist↔applied, interview↔shortlist)
 // ─────────────────────────────────────────────────────────────────────────────
 
 const VALID_STAGE_TRANSITIONS: Record<CareerApplicationStage, CareerApplicationStage[]> = {
   applied: ["shortlisted", "rejected", "withdrawn"],
-  shortlisted: ["interview", "rejected", "withdrawn"],
-  interview: ["offered", "rejected", "withdrawn"],
-  offered: ["offer_accepted", "rejected", "withdrawn"],
+  shortlisted: ["interview", "rejected", "withdrawn", "applied"],
+  interview: ["offered", "rejected", "withdrawn", "shortlisted"],
+  offered: ["offer_accepted", "offer_declined", "rejected", "withdrawn"],
   offer_accepted: ["hired", "rejected", "withdrawn"],
+  offer_declined: [],
   hired: [],
   rejected: [],
   withdrawn: [],
@@ -50,7 +52,9 @@ export function recomputePostAnalytics(
     inInterview: postApps.filter((a) => a.stage === "interview").length,
     offered: postApps.filter((a) => a.stage === "offered" || a.stage === "offer_accepted").length,
     hired: postApps.filter((a) => a.stage === "hired").length,
-    rejected: postApps.filter((a) => a.stage === "rejected").length,
+    rejected: postApps.filter(
+      (a) => a.stage === "rejected" || a.stage === "withdrawn" || a.stage === "offer_declined",
+    ).length,
   };
 }
 
@@ -87,5 +91,9 @@ export function syncToEmployeeCareerSearch(posts: CareerJobPost[]): CareerStorag
       screeningQuestions: p.screeningQuestions ?? [],
     }));
 
-  return safeWrite(EMPLOYEE_SEARCH_CAREER_KEY, searchable);
+  const result = safeWrite(EMPLOYEE_SEARCH_CAREER_KEY, searchable);
+  if (result.ok) {
+    notifyEmployeeCareerSearchChanged();
+  }
+  return result;
 }

@@ -1,182 +1,55 @@
-// src/features/employer/company/storage/companyConfig.storage.ts
-//
-// Company Settings / Customization (Root Map 7.4.16).
-// Working days, holidays, shift timings, weekends, leave year.
-// Auto-applies to attendance calendar — weekends/holidays auto-marked Off.
+// src/features/employer/company/storage/companyConfig.storage.ts — facade
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────────────────────────────────────
+export type {
+  WeekDay,
+  WorkingDaysPreset,
+  CompanyHoliday,
+  CompanyConfig,
+} from "./companyConfig.storage.types";
 
-export type WeekDay = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+export { DAY_LABELS, MONTH_OPTIONS } from "./companyConfig.storage.internal";
 
-export type WorkingDaysPreset = "mon_fri" | "mon_sat" | "custom";
-
-export type CompanyHoliday = {
-  id: string;
-  /** Date in YYYY-MM-DD format */
-  date: string;
-  /** Holiday name */
-  name: string;
-};
-
-export type CompanyConfig = {
-  /** Working days preset */
-  workingDaysPreset: WorkingDaysPreset;
-  /** Custom working days (used when preset = "custom") */
-  customWorkingDays: WeekDay[];
-  /** Weekend days (auto-derived from working days, but stored for quick lookup) */
-  weekendDays: WeekDay[];
-  /** Default shift start time (HH:MM) */
-  shiftStartTime: string;
-  /** Default shift end time (HH:MM) */
-  shiftEndTime: string;
-  /** Company holidays list */
-  holidays: CompanyHoliday[];
-  /** Leave year start month (1-12, default 1 = January) */
-  leaveYearStartMonth: number;
-   /** Managed locations / sites */
-  locations: string[];
-  /** Managed departments / categories */
-  departments: string[];
-  /** Last updated timestamp */
-  updatedAt: number;
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────────────────────────────────────
-
-const STORAGE_KEY = "wm_company_config_v1";
-const CHANGED_EVENT = "wm:company-config-changed";
-
-const ALL_DAYS: WeekDay[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
-
-const DEFAULT_CONFIG: CompanyConfig = {
-  workingDaysPreset: "mon_fri",
-  customWorkingDays: ["mon", "tue", "wed", "thu", "fri"],
-  weekendDays: ["sat", "sun"],
-  shiftStartTime: "09:00",
-  shiftEndTime: "18:00",
-  holidays: [],
-  leaveYearStartMonth: 1,
-  locations: [],
-  departments: [],
-  updatedAt: 0,
-};
-
-export const DAY_LABELS: Record<WeekDay, string> = {
-  mon: "Monday",
-  tue: "Tuesday",
-  wed: "Wednesday",
-  thu: "Thursday",
-  fri: "Friday",
-  sat: "Saturday",
-  sun: "Sunday",
-};
-
-export const MONTH_OPTIONS = [
-  { value: 1, label: "January" },
-  { value: 2, label: "February" },
-  { value: 3, label: "March" },
-  { value: 4, label: "April" },
-  { value: 5, label: "May" },
-  { value: 6, label: "June" },
-  { value: 7, label: "July" },
-  { value: 8, label: "August" },
-  { value: 9, label: "September" },
-  { value: 10, label: "October" },
-  { value: 11, label: "November" },
-  { value: 12, label: "December" },
-];
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Internal Helpers
-// ─────────────────────────────────────────────────────────────────────────────
-
-function read(): CompanyConfig {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { ...DEFAULT_CONFIG };
-    const parsed = JSON.parse(raw) as CompanyConfig;
-    return { ...DEFAULT_CONFIG, ...parsed };
-  } catch {
-    return { ...DEFAULT_CONFIG };
-  }
-}
-
-function write(config: CompanyConfig): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-  window.dispatchEvent(new Event(CHANGED_EVENT));
-}
-
-function genId(): string {
-  return "hol_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
-}
-
-function deriveWeekendDays(preset: WorkingDaysPreset, customDays: WeekDay[]): WeekDay[] {
-  let workDays: WeekDay[];
-  switch (preset) {
-    case "mon_fri":
-      workDays = ["mon", "tue", "wed", "thu", "fri"];
-      break;
-    case "mon_sat":
-      workDays = ["mon", "tue", "wed", "thu", "fri", "sat"];
-      break;
-    case "custom":
-      workDays = customDays;
-      break;
-    default:
-      workDays = ["mon", "tue", "wed", "thu", "fri"];
-  }
-  return ALL_DAYS.filter((d) => !workDays.includes(d));
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Public API
-// ─────────────────────────────────────────────────────────────────────────────
+import type { CompanyHoliday, WeekDay, WorkingDaysPreset } from "./companyConfig.storage.types";
+import {
+  CHANGED_EVENT,
+  deriveWeekendDays,
+  genId,
+  readConfig,
+  writeConfig,
+} from "./companyConfig.storage.internal";
 
 export const companyConfigStorage = {
-
-  /** Get current config */
-  get(): CompanyConfig {
-    return read();
+  get() {
+    return readConfig();
   },
 
-  /** Check if a specific date is a weekend */
   isWeekend(dateKey: string): boolean {
-    const config = read();
+    const config = readConfig();
     const [y, m, d] = dateKey.split("-").map(Number);
     const date = new Date(y, m - 1, d);
-    const dayIndex = date.getDay(); // 0=Sun
+    const dayIndex = date.getDay();
     const dayMap: WeekDay[] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
     return config.weekendDays.includes(dayMap[dayIndex]);
   },
 
-  /** Check if a specific date is a company holiday */
   isHoliday(dateKey: string): boolean {
-    const config = read();
+    const config = readConfig();
     return config.holidays.some((h) => h.date === dateKey);
   },
 
-  /** Check if a date is a non-working day (weekend OR holiday) */
   isOffDay(dateKey: string): boolean {
     return this.isWeekend(dateKey) || this.isHoliday(dateKey);
   },
 
-  /** Get default shift times */
   getShiftTimes(): { start: string; end: string } {
-    const config = read();
+    const config = readConfig();
     return { start: config.shiftStartTime, end: config.shiftEndTime };
   },
 
-  // ── Update ──
-
-  /** Set working days preset */
   setWorkingDays(preset: WorkingDaysPreset, customDays?: WeekDay[]): void {
-    const config = read();
+    const config = readConfig();
     const days = customDays ?? config.customWorkingDays;
-    write({
+    writeConfig({
       ...config,
       workingDaysPreset: preset,
       customWorkingDays: preset === "custom" ? days : config.customWorkingDays,
@@ -185,10 +58,9 @@ export const companyConfigStorage = {
     });
   },
 
-  /** Set default shift timings */
   setShiftTimings(startTime: string, endTime: string): void {
-    const config = read();
-    write({
+    const config = readConfig();
+    writeConfig({
       ...config,
       shiftStartTime: startTime,
       shiftEndTime: endTime,
@@ -196,19 +68,16 @@ export const companyConfigStorage = {
     });
   },
 
-  /** Set leave year start month */
   setLeaveYearStart(month: number): void {
-    const config = read();
-    write({ ...config, leaveYearStartMonth: month, updatedAt: Date.now() });
+    const config = readConfig();
+    writeConfig({ ...config, leaveYearStartMonth: month, updatedAt: Date.now() });
   },
 
-  /** Add a company holiday */
   addHoliday(date: string, name: string): boolean {
-    const config = read();
-    // Prevent duplicates on same date
+    const config = readConfig();
     if (config.holidays.some((h) => h.date === date)) return false;
     const holiday: CompanyHoliday = { id: genId(), date, name: name.trim() };
-    write({
+    writeConfig({
       ...config,
       holidays: [...config.holidays, holiday].sort((a, b) => a.date.localeCompare(b.date)),
       updatedAt: Date.now(),
@@ -216,92 +85,91 @@ export const companyConfigStorage = {
     return true;
   },
 
-  /** Remove a company holiday */
   removeHoliday(id: string): boolean {
-    const config = read();
+    const config = readConfig();
     const filtered = config.holidays.filter((h) => h.id !== id);
     if (filtered.length === config.holidays.length) return false;
-    write({ ...config, holidays: filtered, updatedAt: Date.now() });
+    writeConfig({ ...config, holidays: filtered, updatedAt: Date.now() });
     return true;
   },
 
- // ── Locations ──
-
-  /** Get all managed locations */
   getLocations(): string[] {
-    return read().locations;
+    return readConfig().locations;
   },
 
-  /** Add a location (prevents duplicates) */
   addLocation(name: string): boolean {
-    const config = read();
+    const config = readConfig();
     const trimmed = name.trim();
     if (!trimmed) return false;
     if (config.locations.some((l) => l.toLowerCase() === trimmed.toLowerCase())) return false;
-    write({ ...config, locations: [...config.locations, trimmed].sort(), updatedAt: Date.now() });
+    writeConfig({
+      ...config,
+      locations: [...config.locations, trimmed].sort(),
+      updatedAt: Date.now(),
+    });
     return true;
   },
 
-  /** Remove a location */
   removeLocation(name: string): boolean {
-    const config = read();
+    const config = readConfig();
     const filtered = config.locations.filter((l) => l !== name);
     if (filtered.length === config.locations.length) return false;
-    write({ ...config, locations: filtered, updatedAt: Date.now() });
+    writeConfig({ ...config, locations: filtered, updatedAt: Date.now() });
     return true;
   },
 
-  /** Rename a location */
   renameLocation(oldName: string, newName: string): boolean {
-    const config = read();
+    const config = readConfig();
     const trimmed = newName.trim();
     if (!trimmed) return false;
-    if (config.locations.some((l) => l.toLowerCase() === trimmed.toLowerCase() && l !== oldName)) return false;
+    if (config.locations.some((l) => l.toLowerCase() === trimmed.toLowerCase() && l !== oldName))
+      return false;
     const updated = config.locations.map((l) => (l === oldName ? trimmed : l)).sort();
-    write({ ...config, locations: updated, updatedAt: Date.now() });
+    writeConfig({ ...config, locations: updated, updatedAt: Date.now() });
     return true;
   },
 
-  // ── Departments ──
-
-  /** Get all managed departments */
   getDepartments(): string[] {
-    return read().departments;
+    return readConfig().departments;
   },
 
-  /** Add a department (prevents duplicates) */
   addDepartment(name: string): boolean {
-    const config = read();
+    const config = readConfig();
     const trimmed = name.trim();
     if (!trimmed) return false;
     if (config.departments.some((d) => d.toLowerCase() === trimmed.toLowerCase())) return false;
-    write({ ...config, departments: [...config.departments, trimmed].sort(), updatedAt: Date.now() });
+    writeConfig({
+      ...config,
+      departments: [...config.departments, trimmed].sort(),
+      updatedAt: Date.now(),
+    });
     return true;
   },
 
-  /** Remove a department */
   removeDepartment(name: string): boolean {
-    const config = read();
+    const config = readConfig();
     const filtered = config.departments.filter((d) => d !== name);
     if (filtered.length === config.departments.length) return false;
-    write({ ...config, departments: filtered, updatedAt: Date.now() });
+    writeConfig({ ...config, departments: filtered, updatedAt: Date.now() });
     return true;
   },
 
-  /** Rename a department */
   renameDepartment(oldName: string, newName: string): boolean {
-    const config = read();
+    const config = readConfig();
     const trimmed = newName.trim();
     if (!trimmed) return false;
-    if (config.departments.some((d) => d.toLowerCase() === trimmed.toLowerCase() && d !== oldName)) return false;
+    if (config.departments.some((d) => d.toLowerCase() === trimmed.toLowerCase() && d !== oldName))
+      return false;
     const updated = config.departments.map((d) => (d === oldName ? trimmed : d)).sort();
-    write({ ...config, departments: updated, updatedAt: Date.now() });
+    writeConfig({ ...config, departments: updated, updatedAt: Date.now() });
     return true;
   },
 
-  /** Auto-detect locations and departments from existing HR records */
-  autoDetectFromHR(records: { location?: string; department?: string }[]): { locationsAdded: number; departmentsAdded: number } {
-    const config = read();
+  autoDetectFromHR(records: { location?: string; department?: string }[]): {
+    locationsAdded: number;
+    departmentsAdded: number;
+  } {
+    const config = readConfig();
     let locationsAdded = 0;
     let departmentsAdded = 0;
 
@@ -326,7 +194,7 @@ export const companyConfigStorage = {
     }
 
     if (locationsAdded > 0 || departmentsAdded > 0) {
-      write({
+      writeConfig({
         ...config,
         locations: newLocs.sort(),
         departments: newDepts.sort(),
@@ -336,8 +204,6 @@ export const companyConfigStorage = {
 
     return { locationsAdded, departmentsAdded };
   },
-
-  // ── Subscription ──
 
   subscribe(cb: () => void): () => void {
     window.addEventListener(CHANGED_EVENT, cb);

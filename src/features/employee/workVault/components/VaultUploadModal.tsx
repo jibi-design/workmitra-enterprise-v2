@@ -5,7 +5,12 @@
 import { useRef, useState } from "react";
 import { CenterModal } from "../../../../shared/components/CenterModal";
 import { ALLOWED_FILE_TYPES } from "../constants/vaultConstants";
-import { validateDocumentName, validateFile } from "../helpers/vaultValidation";
+import {
+  validateDocumentName,
+  validateFile,
+  validateVaultStorageQuota,
+} from "../helpers/vaultValidation";
+import { getVaultStorageUsedBytes } from "../services/vaultDocumentService";
 import type { VaultFileType } from "../types/vaultTypes";
 import { VaultUploadForm } from "./uploadModal/VaultUploadForm";
 
@@ -99,6 +104,13 @@ export function VaultUploadModal({ open, onClose, onUpload }: VaultUploadModalPr
       return;
     }
 
+    const quota = validateVaultStorageQuota(file.size, getVaultStorageUsedBytes());
+
+    if (!quota.valid) {
+      setError(quota.reason);
+      return;
+    }
+
     setSelectedFile(file);
     setFileName(file.name);
     setError("");
@@ -144,8 +156,14 @@ export function VaultUploadModal({ open, onClose, onUpload }: VaultUploadModalPr
       });
 
       resetForm();
-    } catch {
-      setError("Failed to read the file. Please try again.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "";
+      const looksLikeStorage =
+        /storage|quota|full|unavailable|not saved/i.test(message) ||
+        /storage|quota|full|unavailable|not saved/i.test(String(err));
+      setError(
+        looksLikeStorage && message ? message : "Failed to read the file. Please try again.",
+      );
       setUploading(false);
     }
   }

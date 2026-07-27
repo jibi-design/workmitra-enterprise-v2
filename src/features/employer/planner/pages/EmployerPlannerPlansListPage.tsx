@@ -1,10 +1,12 @@
 // Job Mitra | EmployerPlannerPlansListPage.tsx
-// Ultra-Enterprise U2/U4 — skeleton + EnterpriseEmpty buckets
+// All-plans index — same agency polish as Planner Home (no legacy hero / duplicate empty).
 
-import { useSyncExternalStore } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
-import { EnterpriseEmpty, EnterpriseSkeleton } from "../../../../shared/components/enterprise";
+import { EnterpriseSkeleton } from "../../../../shared/components/enterprise";
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
+import { PlannerShell } from "../../../../app/shells/PlannerShell";
 import {
   demandPlannerStorage,
   type DemandPlan,
@@ -13,7 +15,7 @@ import {
 import { PlannerEmployerCommandGrid } from "../components/PlannerEmployerCommandGrid";
 import { PlannerEmployerPlanStatusSection } from "../components/PlannerEmployerPlanStatusSection";
 
-const TABS: DemandPlanStatus[] = ["active", "draft", "completed", "cancelled"];
+const TABS: DemandPlanStatus[] = ["draft", "active", "completed", "cancelled"];
 
 function getPlansSnapshot() {
   return demandPlannerStorage.getAll();
@@ -32,6 +34,16 @@ export function EmployerPlannerPlansListPage() {
     () => false,
   );
 
+  const counts = useMemo(
+    () => ({
+      draft: plans.filter((p) => p.status === "draft").length,
+      active: plans.filter((p) => p.status === "active").length,
+      completed: plans.filter((p) => p.status === "completed").length,
+      cancelled: plans.filter((p) => p.status === "cancelled").length,
+    }),
+    [plans],
+  );
+
   function openPlan(plan: DemandPlan) {
     if (plan.status === "draft") {
       nav(`${ROUTE_PATHS.employerPlannerNew}?planId=${plan.id}&step=${plan.draftStep ?? 1}`);
@@ -42,35 +54,46 @@ export function EmployerPlannerPlansListPage() {
 
   if (!hydrated) {
     return (
-      <div className="wm-er-vPlanner wm-planner-page">
+      <PlannerShell audience="employer">
         <EnterpriseSkeleton domain="planner" count={3} testId="planner-plans-skeleton" />
-      </div>
+      </PlannerShell>
     );
   }
 
-  const hasAnyPlan = plans.length > 0;
-
   return (
-    <div className="wm-er-vPlanner wm-planner-page">
-      <section className="wm-planner-hero">
-        <div className="wm-planner-heroTitle">Demand Planner</div>
-        <div className="wm-planner-heroSub">
-          Every plan status is shown — empty buckets stay visible
+    <PlannerShell audience="employer">
+      <DomainHero
+        variant="planner"
+        audience="employer"
+        eyebrow="All plans"
+        title="Demand Planner"
+        subtitle="Drafts, live crews, completed & cancelled"
+        className="wm-domainHero--agencyDense"
+      >
+        <div
+          className="wm-planner-kpiStrip wm-planner-kpiStrip--agency wm-planner-kpiStrip--counts"
+          data-testid="planner-plans-counts"
+        >
+          <div className="wm-planner-kpiTile">
+            <div className="wm-planner-kpiLabel">Draft</div>
+            <div className="wm-planner-kpiValue">{counts.draft}</div>
+          </div>
+          <div className="wm-planner-kpiTile">
+            <div className="wm-planner-kpiLabel">Active</div>
+            <div className="wm-planner-kpiValue">{counts.active}</div>
+          </div>
+          <div className="wm-planner-kpiTile">
+            <div className="wm-planner-kpiLabel">Done</div>
+            <div className="wm-planner-kpiValue">{counts.completed}</div>
+          </div>
+          <div className="wm-planner-kpiTile">
+            <div className="wm-planner-kpiLabel">Cancelled</div>
+            <div className="wm-planner-kpiValue">{counts.cancelled}</div>
+          </div>
         </div>
-      </section>
+      </DomainHero>
 
       <PlannerEmployerCommandGrid />
-
-      {!hasAnyPlan ? (
-        <EnterpriseEmpty
-          domain="planner"
-          title="No demand plans yet"
-          subtitle="Create a multi-day demand plan to publish day slots into Shift hiring."
-          primaryLabel="Create demand plan"
-          onPrimary={() => nav(ROUTE_PATHS.employerPlannerNew)}
-          testId="planner-plans-empty"
-        />
-      ) : null}
 
       {TABS.map((status) => (
         <PlannerEmployerPlanStatusSection
@@ -97,6 +120,6 @@ export function EmployerPlannerPlansListPage() {
           />
         </svg>
       </button>
-    </div>
+    </PlannerShell>
   );
 }

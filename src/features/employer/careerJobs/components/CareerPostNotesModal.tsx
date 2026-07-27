@@ -46,7 +46,7 @@ export function CareerPostNotesModal({
             fontSize: 13,
             fontWeight: 500,
             padding: "10px 12px",
-            borderRadius: 10,
+            borderRadius: "var(--wm-radius-10)",
             border: "1.5px solid var(--wm-er-border)",
             background: "var(--wm-er-bg)",
             color: "var(--wm-er-text)",
@@ -68,7 +68,14 @@ export function CareerPostNotesModal({
           {value.length}/{MAX_EMPLOYER_NOTES_LENGTH}
         </div>
 
-        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 14 }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "var(--wm-space-10)",
+            justifyContent: "flex-end",
+            marginTop: "var(--wm-space-14)",
+          }}
+        >
           <button
             className="wm-outlineBtn"
             type="button"

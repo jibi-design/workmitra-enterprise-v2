@@ -142,7 +142,8 @@ function normalizeEmployerShiftWorkspace(raw: unknown): ShiftWorkspace | null {
     id,
     postId,
     appId: str(raw, "appId"),
-    workerWmId: str(raw, "workerWmId"),
+    // Dual-read: prefer workerMlId; accept legacy workerWmId from older localStorage JSON.
+    workerMlId: str(raw, "workerMlId") ?? str(raw, "workerWmId"),
     workerName: str(raw, "workerName"),
     companyName,
     jobName,

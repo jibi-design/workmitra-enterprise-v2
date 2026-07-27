@@ -28,7 +28,7 @@ function FilterPill({
         fontSize: 11,
         fontWeight: 600,
         padding: "4px 12px",
-        borderRadius: 999,
+        borderRadius: "var(--wm-radius-pill)",
         border: active
           ? "1.5px solid var(--wm-er-accent-console, #0369a1)"
           : "1px solid var(--wm-er-border)",
@@ -64,7 +64,7 @@ export function MyStaffSearchFilters({
           style={{
             width: "100%",
             height: 42,
-            borderRadius: 12,
+            borderRadius: "var(--wm-radius-button)",
             border: "1.5px solid var(--wm-er-border)",
             background: "var(--wm-er-card)",
             padding: "0 14px",

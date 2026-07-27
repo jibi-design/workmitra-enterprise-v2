@@ -13,7 +13,7 @@ import {
 import type { ShiftPost } from "../../shiftJobs/storage/employerShift.storage";
 import { EmployerShiftPostCard } from "./EmployerShiftPostCard";
 import { EmployerShiftPlannerGroupPromoCard } from "./EmployerShiftPlannerGroupPromoCard";
-import type { EmployerPlannerPostGroup } from "../../planner/helpers/employerPlannerPostsGrouping";
+import type { EmployerPlannerPostGroup } from "../../../shared/planner/ports/plannerShiftJobsBridge";
 import {
   countAppliedAppsForPost,
   getShiftPostStatusLabel,
@@ -172,5 +172,9 @@ function EmptyPostsState({ onCreate }: { onCreate: () => void }) {
 }
 
 function RecoveryTip({ text }: { readonly text: string }) {
-  return <div className="wm-shiftPostsRecoveryTip">{text}</div>;
+  return (
+    <div className="wm-shift-surface-glass wm-shift-surface-glass--shift wm-shiftPostsRecoveryTip">
+      {text}
+    </div>
+  );
 }

@@ -48,6 +48,7 @@ export function clampApplicationStage(value: unknown): CareerApplicationStage {
     value === "interview" ||
     value === "offered" ||
     value === "offer_accepted" ||
+    value === "offer_declined" ||
     value === "hired" ||
     value === "rejected" ||
     value === "withdrawn"

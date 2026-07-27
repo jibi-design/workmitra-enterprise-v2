@@ -33,7 +33,7 @@ const inlineEditBtnStyle: React.CSSProperties = {
   cursor: "pointer",
   color: AMBER,
   padding: 4,
-  borderRadius: 6,
+  borderRadius: "var(--wm-radius-8)",
   display: "inline-flex",
   alignItems: "center",
 };

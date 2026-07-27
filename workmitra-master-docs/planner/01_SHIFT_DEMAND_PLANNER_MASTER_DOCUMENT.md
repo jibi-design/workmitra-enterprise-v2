@@ -1,7 +1,7 @@
 <!-- App name: WorkMitra / Job Mitra
 File name: 01_SHIFT_DEMAND_PLANNER_MASTER_DOCUMENT.md
 Full file path: C:\projects\WorkMitra_Enterprise_v2\workmitra-master-docs\planner\01_SHIFT_DEMAND_PLANNER_MASTER_DOCUMENT.md
-Document version: v1.9 -->
+Document version: v1.10 -->
 
 # SHIFT DEMAND PLANNER — MASTER DOCUMENT
 
@@ -14,7 +14,7 @@ Document version: v1.9 -->
 | Priority              | **Pillar-level** — same strategic weight as Career Jobs for agency-style employers                                                                                                                                                                                                                                                        |
 | Build gate            | Product Owner approved Planner as separate premium section (2026-07-01)                                                                                                                                                                                                                                                                   |
 | Launch visibility     | **Launch-visible** employer feature (not hidden / not Workforce Ops)                                                                                                                                                                                                                                                                      |
-| Document version      | **v1.9** — Bespoke visual tier **implemented** (P1): quartz glass, wizard morph, odometer meter, mega shimmer, universal symbol-free pay display, Step 2 pay validation gate (2026-07-01)                                                                                                                                                 |
+| Document version      | **v1.10** — §11–12 synced to Hybrid A2 reality (Track T1-5, 2026-07-26); P0/P1 COMPLETE; P2 PARTIAL; P3 placeholder done / ledger deferred; live backlog = `07_PLANNER_PENDING_AND_DEFERRED_LIVE_NOTE.md`                                                                                                                                 |
 | **Coding start rule** | **Product Owner approved v1.7 (2026-07-01).** Employer and Employee Planner surfaces ship at **equal spec depth**. Ultra-premium employee features (Section 8.10) are **P1 launch differentiators** unless PO defers an item to P2 in writing. **Design + animation tier (Section 18) PO-approved as implemented baseline (2026-07-01).** |
 
 ## 2. Inherits From
@@ -1415,117 +1415,133 @@ fillRatio = selectedDayCount / max(1, selectableDayCount)
 
 ## 11. Implementation Phases
 
-### P0 — Foundation
+> **Track-1 sync (2026-07-26):** Checkboxes below reflect **Hybrid A2 code reality** + docs `03`/`04`/`07`.  
+> Live pending/deferred: `07_PLANNER_PENDING_AND_DEFERRED_LIVE_NOTE.md`.  
+> Do **not** re-open completed P0/P1 items from the stale 2026-07-01 unchecked list.
 
-- [ ] `--wm-planner-*` tokens + `shift-planner.css`
-- [ ] Routes `/employer/planner/*` + legacy redirect
-- [ ] `employerPlanner` in `navigation.config.ts` + `useDynamicNav`
-- [ ] Planner shell (Teal header) + placeholder home
-- [ ] Shift Home Teal teaser
+### P0 — Foundation — **COMPLETE**
 
-**Acceptance:** Planner tab shows Teal; `/employer/planner/home` renders; back navigation works.
+- [x] `--wm-planner-*` tokens + `shift-planner.css`
+- [x] Routes `/employer/planner/*` + legacy redirect (`/employer/shift/demand-planner`)
+- [x] `employerPlanner` / `employeePlanner` in navigation + dynamic nav
+- [x] Planner Teal shell + command homes (employer + employee)
+- [x] Shift Home Teal teaser / project strip entry points
+
+**Acceptance:** Planner tabs show Teal; `/employer/planner/home` and `/employee/planner/home` render; back navigation works. — **PASS**
 
 ---
 
-### P1 — Core Loop (Employer + Employee + Workspace — single release)
+### P1 — Core Loop (Employer + Employee + Workspace) — **COMPLETE (Hybrid A2 Phase-1)**
 
 **Employer:**
 
-- [ ] `EmployerPlannerHomePage` + `EmployerPlannerPlansListPage`
-- [ ] Wizard migrate + `updatePlan` draft auto-save + resume query params
-- [ ] `EmployerPlannerDetailPage` **P1 minimum** (Section 7.4)
-- [ ] Finance **placeholder** page (Section 7.5)
-- [ ] Publish: `planId` posts + public index + broadcast group shell
-- [ ] Plan cancel flow
-- [ ] My Posts plan grouping (Section 7.9)
-- [ ] Planner direct invite exception (Section 4.4)
-- [ ] `Broadcast to Project Crew` on plan detail
+- [x] `EmployerPlannerHomePage` + `EmployerPlannerPlansListPage`
+- [x] Wizard (`EmployerPlannerNewPage`) + draft auto-save + resume
+- [x] `EmployerPlannerDetailPage` P1 minimum (+ Activity / fill % hooks from Phase-2)
+- [x] Finance **placeholder** page (Section 7.5) — polished Track T1-1; **full ledger = P3**
+- [x] Publish: `planId` posts + public index + broadcast group shell
+- [x] Plan cancel flow (+ retry enqueue T1-3)
+- [x] My Posts plan grouping / planner-aware posts
+- [x] Planner direct invite exception (Section 4.4)
+- [x] `Broadcast to Project Crew` on plan detail (+ retry enqueue T1-3)
+- [x] Batch applications + roster consoles (`/applications`, `/roster`, `/roster/:planId`) — Hybrid A2 S4/S7
 
-**Employee (P1 — full parity, not thin MVP):**
+**Employee (P1 — parity on native `/employee/planner/*`):**
 
-- [ ] `plannerPublicIndex` storage + publish on plan submit
-- [ ] Mega Project Card wired in `ShiftSearchPage` (7.7)
-- [ ] Hide planner posts from `ShiftSearchResultsList`
-- [ ] `PlannerPickChooseModal` + full-page apply route (7.7, 5.4)
-- [ ] `EmployeeProjectDetailPage` `/projects/:planId` (7.11)
-- [ ] `EmployeePlanApplicationSummaryPage` `/applications/plan/:planId` (7.12)
-- [ ] `PlannerMyWorkPlanBundle` + breakdown navigation (7.8, 7.12)
-- [ ] Shift Home project strip (7.10)
-- [ ] Project context banner on hidden post deep links / direct invite (5.4, 7.14)
-- [ ] Plan crew workspace BCC UX — no worker-to-worker UI (7.13)
-- [ ] Plan cancel / unavailable employee states (7.15, 6.8)
-- [ ] `multiApplyGroup` with batch metadata (6.5)
-- [ ] Profile incomplete → redirect modal
-- [ ] Employee plan notifications per Section 8.5
-- [ ] **Ultra-Premium P1:** Live Earnings Calculator meter (8.10.1)
-- [ ] **Ultra-Premium P1:** Intelligent Conflict Guard on calendar (8.10.2)
-- [ ] **Ultra-Premium P1:** Commitment Streak badge earn + employer card tag (8.10.3)
-- [ ] **Ultra-Premium P1:** Diary auto-sync on confirm → Home calendar (8.10.4, 7.17)
-- [ ] **P1:** `EmployeeAvailability` calendar builder (6.11, 8.11)
-- [ ] **P1:** `SmartEarningsPredictorPayload` meter on day toggle (6.11, 8.11)
+- [x] `plannerPublicIndex` storage + publish on plan submit
+- [x] Mega Project Card on **Browse** (`EmployeePlannerBrowsePage` / `PlannerMegaProjectSection`) — not Shift soft-wrap
+- [x] Planner posts kept off Shift green search list
+- [x] `PlannerPickChooseModal` + apply route `/projects/:planId/apply`
+- [x] `EmployeeProjectDetailPage` `/employee/planner/projects/:planId`
+- [x] `EmployeePlanApplicationSummaryPage` `/applications/plan/:planId`
+- [x] `PlannerMyWorkPlanBundle` + applications list
+- [x] Shift Home / Planner home project strip entry
+- [x] Direct invite / hidden-post project context (planner paths)
+- [x] Plan crew workspace BCC UX — native workspace hub
+- [x] Plan cancel / unavailable employee states
+- [x] Batch / multi-day apply metadata
+- [x] Profile incomplete → gate modal
+- [x] Employee plan notifications (bridge)
+- [x] Ultra-Premium P1: Live Earnings Calculator / Conflict Guard / Streak / Diary sync (wired in pick&choose + services)
+- [x] Availability + Smart Earnings Predictor types/UX (6.11 / 8.11 baseline)
 
 **Workspace:**
 
-- [ ] `PlanBroadcastGroup` storage
-- [ ] Enroll on `confirmCandidate` + `confirmDirectInviteCandidate`
-- [ ] `broadcastToPlanCrew()` with BCC delivery (7.13)
-- [ ] `plannerDiarySyncService.upsertConfirmedDay` on planner confirm (8.10.4)
-- [ ] Employee workspace plan badge + no worker-to-worker UI (7.13)
+- [x] `PlanBroadcastGroup` storage
+- [x] Enroll on confirm / direct-invite confirm paths
+- [x] `broadcastToPlanCrew()` BCC delivery
+- [x] `plannerDiarySyncService.upsertConfirmedDay` on planner confirm
+- [x] Employee workspace plan badge + no worker-to-worker UI
 
-**Acceptance:** Full E2E per Appendix D — no dead ends. **Employer publish blocked until employee P1 checklist complete.**
+**Acceptance:** Hybrid A2 circuit e2e + route contract + Phase-2 ops smokes — **PASS**. See `03_PLANNER_HYBRID_A2_PHASE1_ROADMAP_v1.0.md` (COMPLETE) and `04_…PHASE2…` (Ops COMPLETE; snapshot deferred).
 
 ---
 
-### P2 — Plan Detail Calendar + Live Fill + Edit Rules
+### P2 — Plan Detail Calendar + Live Fill + Edit Rules — **PARTIAL**
 
 **Employer:**
 
 - [ ] Full calendar grid on plan detail
 - [ ] In-plan day drawer
-- [ ] Live fill % in cells
-- [ ] Crew member list
+- [x] Live fill % (detail / status surfaces — not full cell calendar yet)
+- [x] Crew / roster member list (`EmployerPlannerRosterPage` + detail)
 - [ ] Limited edit unfilled future slots
-- [ ] Bulk-cancel unfilled child posts UI/helper on plan cancel (P1 API already closes unfilled posts — P2 adds enhanced confirm UX only)
+- [ ] Bulk-cancel unfilled child posts **enhanced confirm UX** (P1 cancel API already closes unfilled posts)
 
 **Employee:**
 
-- [ ] `/employee/shift/projects` dedicated browse list
+- [x] Dedicated browse list — `/employee/planner/browse` (native; not `/employee/shift/projects`)
 - [ ] Smart match ranking for Mega Cards (7.16)
-- [ ] Saved + recently viewed projects — `EmployeePlanEngagement` (6.9)
+- [x] Saved + recently viewed — `EmployeePlanEngagement` (6.9)
 - [ ] New project near you bell (8.5)
-- [ ] Offline cached public index on Search (8.6)
+- [ ] Offline cached public index (8.6)
 - [ ] Day reopened notification after replacement (7.16)
 
----
-
-### P3 — Finance Tab
-
-- [ ] `plannerFinanceStorage` + full ledger UI + CSV export
+**Phase-2 Ops (separate roadmap `04`) — COMPLETE:** audit activity, concurrency, escalations, RTW. Optional plan snapshot still **deferred** (PO gate).
 
 ---
 
-### P4 — Advanced
+### P3 — Finance Tab — **PARTIAL**
+
+- [x] Honest finance **placeholder** + budget snapshot + e2e (Track T1-1 / T1-4)
+- [ ] `plannerFinanceStorage` + full ledger UI + CSV export — **DEFERRED** (doc 07 D-01)
+
+---
+
+### P4 — Advanced — **NOT STARTED**
 
 - [ ] Templates · Analytics · Duplicate plan · Earnings plan tag
 
-## 12. Current Code Map (As of 2026-07-01)
+**V2 intelligence** (forecast / Auto Planner / scenarios) — **DO NOT BUILD** until PO sprint; see `second-update/04_PLANNER_WORKFORCE_INTELLIGENCE_V2.md`.
 
-| Area                    | Path                               | Status                                                |
-| ----------------------- | ---------------------------------- | ----------------------------------------------------- |
-| Wizard                  | `EmployerDemandPlannerPage.tsx`    | 3-step; `isHiddenFromSearch: false` today — **wrong** |
-| Planner hook            | `useEmployerDemandPlannerState.ts` | No planId on posts                                    |
-| Plan storage            | `demandPlannerStorage.ts`          | No `updatePlan` / `cancel`                            |
-| Mega card               | `ShiftMultiDayPlanCard.tsx`        | Apply-all only; not wired                             |
-| Multi-day UI            | `ShiftSearchMultiDayPlans.tsx`     | **Not wired** to search page                          |
-| Grouping                | `groupPostsByPlan()`               | Heuristic — replace                                   |
-| Direct invite           | `shiftDirectInvite.service.ts`     | **Blocks** hidden posts                               |
-| Nav                     | `useDynamicNav.ts`                 | No `employerPlanner` domain                           |
-| Public index            | `plannerPublicIndex.storage.ts`    | P1 built                                              |
-| Plan broadcast          | `planBroadcast.service.ts`         | P1 BCC built                                          |
-| Employee Mega section   | `PlannerMegaProjectSection.tsx`    | P1 partial — modal only, no Project Detail page       |
-| Employee Project Detail | —                                  | **Not built** (7.11)                                  |
-| Employee Plan Summary   | —                                  | **Not built** (7.12)                                  |
-| Employee Home strip     | —                                  | **Not built** (7.10)                                  |
+## 12. Current Code Map (As of 2026-07-26 — Hybrid A2)
+
+| Area                    | Path                                                                                  | Status                                              |
+| ----------------------- | ------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| Employer home           | `employer/planner/pages/EmployerPlannerHomePage.tsx`                                  | **Built** — agency command hub                      |
+| Employer plans list     | `EmployerPlannerPlansListPage.tsx`                                                    | **Built** — status buckets                          |
+| Wizard                  | `EmployerPlannerNewPage.tsx` (+ wizard components)                                    | **Built** — 3-step; draft/resume                    |
+| Plan detail             | `EmployerPlannerDetailPage.tsx`                                                       | **Built** — P1+; full P2 calendar/drawer still open |
+| Finance                 | `EmployerPlannerFinancePlaceholderPage.tsx`                                           | **Built** — placeholder gate; not full P3 ledger    |
+| Applications / batch    | `EmployerPlannerApplicationsPage.tsx`                                                 | **Built**                                           |
+| Roster                  | `EmployerPlannerRosterPage.tsx` / `…RosterDetailPage.tsx`                             | **Built** — T1-2 cleanup                            |
+| Cancel / broadcast      | `plannerCancel.service.ts` / `planBroadcast.service.ts`                               | **Built** — T1-3 retry enqueue                      |
+| Plan storage            | `demandPlannerStorage.ts`                                                             | **Built** — update/cancel/publish                   |
+| Public index            | `plannerPublicIndex.storage.ts`                                                       | **Built**                                           |
+| Employee home           | `employee/planner/pages/EmployeePlannerHomePage.tsx`                                  | **Built**                                           |
+| Employee browse         | `EmployeePlannerBrowsePage.tsx` + `PlannerMegaProjectSection.tsx`                     | **Built**                                           |
+| Employee project detail | `EmployeeProjectDetailPage.tsx`                                                       | **Built**                                           |
+| Employee apply          | `EmployeeProjectPickApplyPage.tsx` + pick&choose modal                                | **Built**                                           |
+| Employee applications   | `EmployeePlannerApplicationsPage.tsx` + bundles                                       | **Built**                                           |
+| Employee plan summary   | `EmployeePlanApplicationSummaryPage.tsx`                                              | **Built**                                           |
+| Employee workspace      | `EmployeePlannerWorkspaceHubPage.tsx` / day page                                      | **Built**                                           |
+| Employee earnings       | `EmployeePlannerEarningsPage.tsx`                                                     | **Built** (shell)                                   |
+| Shared domain           | `features/shared/planner/**`                                                          | **Built** — routes, ports, escalations, RTW, vault  |
+| Nav / routes            | `routePaths.ts`, `employee.routes.tsx`, `employer.routes.tsx`, `navigation.config.ts` | **Built** — native `/planner/*`                     |
+| Retry queue             | `shared/shift/shiftRetryQueue.ts` (`wm_retry_queue_v1`)                               | **Built** — planner ops T1-3                        |
+| Visual e2e              | `tests/e2e/visual-inspection-*-planner-*.spec.ts`                                     | **Built** — home/plans/browse/applications/finance  |
+
+**Stale note:** Pre-Hybrid rows (e.g. “Project Detail not built”, “no employerPlanner nav”) are **obsolete** — do not use them for Track-1 backlog.
 
 ## 13. Explicitly Out of Scope
 
@@ -1976,6 +1992,7 @@ Find Shifts → Mega Card → Pick Mon/Wed/Fri → Submit → My Work bundle
 | v1.7    | 2026-07-01 | Employee Availability Calendar + Smart Earnings Predictor TypeScript contracts (6.11) and UX wiring spec (8.11)                                                                                                                                |
 | v1.8    | 2026-07-01 | Bespoke Visual Tier spec (Section 18): quartz glass, wizard morph, pulse glow-swap, odometer meter, mega shimmer, blind demand card, privacy shield                                                                                            |
 | v1.9    | 2026-07-01 | Section 18 marked **implemented P1** with file map; universal symbol-free pay display (18.8); Step 2 pay validation gate (18.9, F1b); all UI examples updated to remove hardcoded `₹`; 3-step wizard aligned in routes + `draftStep`           |
+| v1.10   | 2026-07-26 | **Track T1-5:** §11 Implementation Phases + §12 Code Map synced to Hybrid A2 (P0/P1 COMPLETE; P2 PARTIAL; P3 placeholder vs ledger; V2 gated). Stale “not built” rows removed. Live backlog → doc `07`.                                        |
 
 ## Appendix D — E2E Workflow Verification Matrix
 

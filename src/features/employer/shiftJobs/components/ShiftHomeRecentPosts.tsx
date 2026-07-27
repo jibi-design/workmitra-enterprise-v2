@@ -5,7 +5,7 @@
 import { PulseNode } from "../../../pulse/PulseNode";
 import { countApplicationsForPost, getPostStatusDisplay } from "../helpers/shiftHomeHelpers";
 import type { ShiftPost } from "../../shiftJobs/storage/employerShift.storage";
-import { IconEmpty, IconPlus } from "./ShiftHomeIcons";
+import { IconPlus } from "./ShiftHomeIcons";
 import { shiftHomeRecentPostButton, shiftHomeSectionTitle } from "./ShiftHomeSectionStyles";
 
 type ShiftHomeRecentPostsProps = {
@@ -67,40 +67,21 @@ function findPulseTargetPostId(posts: readonly ShiftPost[]): string | undefined 
 
 function ShiftHomeNoPostsState({ onCreate }: { onCreate: () => void }) {
   return (
-    <div className="wm-er-card" style={{ marginTop: 14, marginBottom: 24 }}>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 12,
-          padding: "34px 16px",
-          textAlign: "center",
-        }}
-      >
-        <IconEmpty />
-
-        <div style={{ fontSize: 16, fontWeight: 900, color: "var(--wm-er-text)" }}>
-          No shift posts yet
-        </div>
-
-        <div
-          style={{
-            fontSize: 13,
-            color: "var(--wm-er-muted)",
-            maxWidth: 290,
-            lineHeight: 1.55,
-          }}
-        >
-          Create your first shift post to start receiving applications from workers.
-        </div>
-
+    <div
+      className="wm-shiftHomeEmptyPostsCard"
+      data-testid="shift-home-empty-posts"
+      style={{ marginTop: 14, marginBottom: 24 }}
+    >
+      <div className="wm-shiftHomeEmptyPostsInner">
+        <div className="wm-shiftHomeEmptyPostsTitle">No shift posts yet</div>
+        <p className="wm-shiftHomeEmptyPostsCopy">
+          Ready to recruit? Post a new shift to start receiving instant worker applications.
+        </p>
         <button
           className="wm-primarybtn"
           type="button"
           onClick={onCreate}
-          style={{ marginTop: 4, display: "inline-flex", alignItems: "center", gap: 6 }}
+          style={{ marginTop: 2, display: "inline-flex", alignItems: "center", gap: 6 }}
         >
           <IconPlus /> Create First Shift
         </button>
@@ -148,7 +129,7 @@ function RecentPostButtonContent({ post }: { post: ShiftPost }) {
         <span
           style={{
             padding: "4px 9px",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             background: "rgba(22,163,74,0.08)",
             border: "1px solid rgba(22,163,74,0.14)",
             fontSize: 11,
@@ -209,7 +190,7 @@ function ReviewPendingBadge({ count }: { count: number }) {
         alignItems: "center",
         gap: 5,
         padding: "4px 8px",
-        borderRadius: 999,
+        borderRadius: "var(--wm-radius-pill)",
         background: "rgba(254,243,199,0.95)",
         border: "1px solid rgba(245,158,11,0.18)",
         color: "#b45309",
@@ -224,7 +205,7 @@ function ReviewPendingBadge({ count }: { count: number }) {
         style={{
           width: 6,
           height: 6,
-          borderRadius: 999,
+          borderRadius: "var(--wm-radius-pill)",
           background: "#f59e0b",
           boxShadow: "0 0 0 3px rgba(245,158,11,0.12)",
         }}
@@ -247,7 +228,7 @@ function MiniMetric({
     <div
       style={{
         padding: "7px 6px",
-        borderRadius: 10,
+        borderRadius: "var(--wm-radius-10)",
         background: "rgba(248,250,252,0.95)",
         border: "1px solid rgba(226,232,240,0.9)",
         textAlign: "center",

@@ -1,4 +1,5 @@
 // Job Mitra | PlannerEmployerPlanStatusSection.tsx | Plan list bucket — always visible
+// All empty statuses share the same compact chrome (Completed/Cancelled match Draft/Active).
 
 import type { DemandPlan, DemandPlanStatus } from "../storage/demandPlannerStorage";
 
@@ -9,22 +10,46 @@ type Props = {
   onCreate?: () => void;
 };
 
-const EMPTY_COPY: Record<DemandPlanStatus, string> = {
-  draft: "No drafts — start New Plan anytime.",
-  active: "No active projects — publish a plan to begin hiring.",
-  completed: "No completed plans yet.",
-  cancelled: "No cancelled plans.",
+const EMPTY_TITLE: Record<DemandPlanStatus, string> = {
+  draft: "No drafts yet",
+  active: "No active plans",
+  completed: "No completed plans",
+  cancelled: "No cancelled plans",
 };
 
-export function PlannerEmployerPlanStatusSection({ status, plans, onOpenPlan, onCreate }: Props) {
+const EMPTY_COPY: Record<DemandPlanStatus, string> = {
+  draft: "Start a New Plan anytime.",
+  active: "Publish a plan to begin hiring.",
+  completed: "Finished crews will land here.",
+  cancelled: "Cancelled plans will land here.",
+};
+
+function StatusEmptyIcon() {
   return (
-    <div className="wm-planner-card">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" />
+      <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function PlannerEmployerPlanStatusSection({ status, plans, onOpenPlan, onCreate }: Props) {
+  const isEmpty = plans.length === 0;
+  const showCreate = isEmpty && (status === "draft" || status === "active") && Boolean(onCreate);
+
+  return (
+    <div
+      className={`wm-planner-card wm-planner-statusBucket${isEmpty ? " wm-planner-statusBucket--empty" : ""}`}
+      data-testid={`planner-status-bucket-${status}`}
+      data-empty={isEmpty ? "true" : "false"}
+      data-status={status}
+    >
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: 10,
+          marginBottom: isEmpty ? 6 : 10,
         }}
       >
         <div style={{ fontSize: 13, fontWeight: 800, textTransform: "capitalize" }}>
@@ -33,39 +58,18 @@ export function PlannerEmployerPlanStatusSection({ status, plans, onOpenPlan, on
         <span className="wm-planner-badge">{plans.length}</span>
       </div>
 
-      {plans.length === 0 ? (
-        <div className="wm-planner-empty">
+      {isEmpty ? (
+        <div className="wm-planner-empty wm-planner-empty--compact">
           <div className="wm-planner-empty__icon" aria-hidden="true">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-              <rect
-                x="3"
-                y="4"
-                width="18"
-                height="18"
-                rx="2"
-                stroke="currentColor"
-                strokeWidth="2"
-              />
-              <path
-                d="M16 2v4M8 2v4M3 10h18"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
+            <StatusEmptyIcon />
           </div>
-          <div className="wm-planner-empty__title">
-            {status === "active" || status === "draft" ? "No plans yet" : EMPTY_COPY[status]}
+          <div className="wm-planner-empty__copy">
+            <div className="wm-planner-empty__title">{EMPTY_TITLE[status]}</div>
+            <div className="wm-planner-empty__sub">{EMPTY_COPY[status]}</div>
           </div>
-          <div className="wm-planner-empty__sub">{EMPTY_COPY[status]}</div>
-          {(status === "draft" || status === "active") && onCreate ? (
-            <button
-              type="button"
-              className="wm-planner-btnPrimary"
-              style={{ marginTop: 14 }}
-              onClick={onCreate}
-            >
-              Create your first demand plan
+          {showCreate && onCreate ? (
+            <button type="button" className="wm-planner-btnPrimary" onClick={onCreate}>
+              Create plan
             </button>
           ) : null}
         </div>

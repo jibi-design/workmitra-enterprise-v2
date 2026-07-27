@@ -26,7 +26,7 @@ export function CareerCompareToolbar({
       <div
         style={{
           padding: "11px 12px",
-          borderRadius: 20,
+          borderRadius: "var(--wm-radius-employee-card)",
           border: "1px solid rgba(29,78,216,0.12)",
           background: "linear-gradient(135deg, rgba(255,255,255,1), rgba(248,250,252,0.98))",
           boxShadow: "0 10px 22px rgba(15,23,42,0.04)",
@@ -59,7 +59,7 @@ export function CareerCompareToolbar({
           style={{
             flexShrink: 0,
             padding: "8px 12px",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             border: "1px solid rgba(29,78,216,0.18)",
             background: "rgba(239,246,255,0.96)",
             color: CAREER_BLUE_DEEP,
@@ -81,7 +81,7 @@ export function CareerCompareToolbar({
         top: 8,
         zIndex: 10,
         padding: "10px 11px",
-        borderRadius: 18,
+        borderRadius: "var(--wm-radius-chip)",
         border: "1px solid rgba(29,78,216,0.16)",
         background: "rgba(255,255,255,0.96)",
         boxShadow: "0 16px 32px rgba(15,23,42,0.10)",
@@ -101,7 +101,7 @@ export function CareerCompareToolbar({
           disabled={selectedCount < 2}
           style={{
             minHeight: 38,
-            borderRadius: 14,
+            borderRadius: "var(--wm-radius-chip)",
             border: "1px solid rgba(29,78,216,0.18)",
             background:
               selectedCount >= 2
@@ -122,7 +122,7 @@ export function CareerCompareToolbar({
           onClick={onCancelCompare}
           style={{
             minHeight: 38,
-            borderRadius: 14,
+            borderRadius: "var(--wm-radius-chip)",
             border: "1px solid rgba(148,163,184,0.20)",
             background: "rgba(255,255,255,0.92)",
             color: CAREER_TEXT,

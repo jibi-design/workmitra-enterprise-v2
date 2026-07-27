@@ -1,0 +1,60 @@
+---
+description: Maintain separate Cloudflare, Supabase, Planner, and Shift Ops live-state notes; update every related session; screenshot → note same session; no secret dumps; no SQL without explicit approve.
+alwaysApply: true
+---
+
+# Live State Notes (Cloudflare + Supabase + Planner + Shift Ops)
+
+## Canonical files (separate — never merge)
+
+1. Cloudflare: `workmitra-master-docs/architecture/evidence/CLOUDFLARE_LIVE_STATE_NOTE.md`
+2. Cloudflare operator UI click-map: `workmitra-master-docs/architecture/evidence/CLOUDFLARE_OPERATOR_UI_NAV_NOTE.md`
+3. Supabase: `workmitra-master-docs/architecture/evidence/SUPABASE_LIVE_STATE_NOTE.md`
+4. Supabase operator UI click-map: `workmitra-master-docs/architecture/evidence/SUPABASE_OPERATOR_UI_NAV_NOTE.md`
+5. Planner pending/deferred: `workmitra-master-docs/planner/07_PLANNER_PENDING_AND_DEFERRED_LIVE_NOTE.md`
+6. Shift Ops: `workmitra-master-docs/architecture/evidence/SHIFT_OPS_LIVE_STATE_NOTE.md`
+7. Cross-track board: `workmitra-master-docs/architecture/evidence/PENDING_WORK_BOARD.md`
+8. Track 3 Phase 2.1: `workmitra-master-docs/architecture/evidence/TRACK_3_PHASE_2_1_LIVE_NOTE.md`
+
+Archives (historical snapshots — do not replace live notes):
+
+- `CLOUDFLARE_CONFIGURATION_REPORT_MITRAACCESSHUB.md`
+- `SUPABASE_CONFIGURATION_AUDIT_ACCESS_HUB_JOB_MITRA.md`
+
+## Screenshot → note protocol (STANDING — operator request 2026-07-26)
+
+Whenever the operator sends a **dashboard / website screenshot** (Supabase, Cloudflare, or related infra UI):
+
+1. **Read** the matching live note + UI nav note first.
+2. **Extract** only non-secret facts: labels, menu paths, toggles, statuses, counts, warnings.
+3. **Update the matching note(s) in the same session** — do not leave knowledge only in chat:
+   - Supabase screens → `SUPABASE_LIVE_STATE_NOTE.md` and/or `SUPABASE_OPERATOR_UI_NAV_NOTE.md`
+   - Cloudflare screens → `CLOUDFLARE_LIVE_STATE_NOTE.md` and/or `CLOUDFLARE_OPERATOR_UI_NAV_NOTE.md`
+   - Shift Ops / apply progress → also `SHIFT_OPS_LIVE_STATE_NOTE.md` when relevant
+4. Add one **Change log** line + refresh **Last verified** when truth changed.
+5. Next time the same area is needed: guide from the note (click-by-click), ask for a new screenshot **only if** the UI differs from the note.
+6. **Never** copy secrets from screenshots into notes or chat replies (API keys, passwords, tokens, pepper, full connection strings).
+
+## Agent / operator protocol
+
+1. **Before** Cloudflare, Supabase, Planner, or Shift Ops work: read the matching live-state note first. For dashboard click guidance, also read the matching `*_OPERATOR_UI_NAV_NOTE.md`.
+2. Do **not** re-run a full zero-based audit if the note is current — verify only open items and deltas.
+3. **After** every verified finding or approved change: update the matching live-state note in the same session:
+   - Current truth / PENDING / DEFERRED tables as applicable
+   - Last verified date
+   - One Change log line
+   - New Dashboard path/label from screenshot → update the matching UI nav note the same session
+4. Keep Cloudflare, Supabase, Planner, and Shift Ops notes **separate**. Cross-link only; never combine into one file.
+5. Record **non-secret** values only. Never store API keys, JWTs, DB URLs, service_role, passwords, cookies, or `channel_pepper`.
+6. Do **not** run SQL migrations, delete buckets/functions/domains, or change DNS/SSL unless the user explicitly instructs — then update the note immediately after.
+7. If live Cloudflare type differs from docs intent (e.g. Worker live vs Pages intended), keep both rows visible in the Cloudflare note until founder decides.
+8. Planner deferred rows (D-xx) must stay in doc 07 until explicitly completed — do not rely on chat memory.
+9. Shift Ops SQL apply is **LOCKED** until the user explicitly says apply; after apply, prefer operator UI paths from the Supabase UI nav note.
+
+## Session start checklist (short)
+
+- [ ] Open correct live-state note (+ UI nav note if guiding clicks)
+- [ ] Confirm Last verified date
+- [ ] Work only on PENDING / changed items
+- [ ] If screenshot arrived: update notes before ending turn
+- [ ] Write Change log before ending session

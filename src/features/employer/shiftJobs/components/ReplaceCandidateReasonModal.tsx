@@ -92,7 +92,7 @@ function ReplaceCandidateReasonDialog({
         style={{
           width: "100%",
           maxWidth: 430,
-          borderRadius: 26,
+          borderRadius: "var(--wm-radius-employer-card)",
           background: "#ffffff",
           boxShadow: "0 24px 70px rgba(15,23,42,0.28)",
           border: "1px solid rgba(148,163,184,0.25)",
@@ -137,7 +137,7 @@ function ReplaceCandidateReasonDialog({
                 style={{
                   width: "100%",
                   textAlign: "left",
-                  borderRadius: 16,
+                  borderRadius: "var(--wm-radius-chip)",
                   border: selected
                     ? "1.5px solid rgba(180,83,9,0.42)"
                     : "1px solid rgba(148,163,184,0.18)",
@@ -152,7 +152,7 @@ function ReplaceCandidateReasonDialog({
                     style={{
                       width: 16,
                       height: 16,
-                      borderRadius: 999,
+                      borderRadius: "var(--wm-radius-pill)",
                       border: selected ? "5px solid #b45309" : "2px solid rgba(148,163,184,0.8)",
                       flexShrink: 0,
                       boxSizing: "border-box",
@@ -184,7 +184,7 @@ function ReplaceCandidateReasonDialog({
           <div
             style={{
               padding: "10px 11px",
-              borderRadius: 16,
+              borderRadius: "var(--wm-radius-chip)",
               border: "1px solid rgba(217,119,6,0.16)",
               background: "rgba(255,251,235,0.7)",
               color: "#92400e",
@@ -213,7 +213,7 @@ function ReplaceCandidateReasonDialog({
             disabled={isBusy}
             style={{
               flex: 1,
-              borderRadius: 14,
+              borderRadius: "var(--wm-radius-chip)",
               border: "1px solid rgba(148,163,184,0.28)",
               background: "#ffffff",
               color: "#475569",
@@ -232,7 +232,7 @@ function ReplaceCandidateReasonDialog({
             disabled={isBusy}
             style={{
               flex: 1.2,
-              borderRadius: 14,
+              borderRadius: "var(--wm-radius-chip)",
               border: "none",
               background: isBusy ? "rgba(180,83,9,0.45)" : "#b45309",
               color: "#ffffff",

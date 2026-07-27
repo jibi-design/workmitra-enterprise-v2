@@ -5,8 +5,9 @@
 import {
   CAREER_APPS_CHANGED,
   EMPLOYEE_SEARCH_CAREER_KEY,
+  EMPLOYEE_CAREER_SEARCH_CHANGED,
   safeRead,
-} from "../../../employer/careerJobs/helpers/careerStorageUtils";
+} from "../../../career/helpers/careerStoragePublic";
 import { isFutureClosingDate, parseSearchPosts } from "./careerSearchSanitizers";
 import type { CareerSearchPost } from "./careerSearchTypes";
 
@@ -37,7 +38,13 @@ export function getDiscoverableCareerPosts(posts: CareerSearchPost[]): CareerSea
 
 export function subscribeCareerSearch(cb: () => void): () => void {
   const handler = () => cb();
-  const events = ["storage", "focus", CAREER_POSTS_CHANGED, CAREER_APPS_CHANGED];
+  const events = [
+    "storage",
+    "focus",
+    CAREER_POSTS_CHANGED,
+    CAREER_APPS_CHANGED,
+    EMPLOYEE_CAREER_SEARCH_CHANGED,
+  ];
 
   for (const ev of events) {
     window.addEventListener(ev, handler);

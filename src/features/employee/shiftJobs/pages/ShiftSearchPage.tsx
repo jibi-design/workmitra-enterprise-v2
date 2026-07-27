@@ -1,19 +1,15 @@
-/** Job Mitra | ShiftSearchPage.tsx | src/features/employee/shiftJobs/pages/ShiftSearchPage.tsx */
+/** Job Mitra | ShiftSearchPage.tsx | Wave B — DomainHero + stack */
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Search } from "lucide-react";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
-import { useShiftSearchPageState } from "../hooks/useShiftSearchPageState";
-import { PlannerMegaProjectSection } from "../../planner/components/PlannerMegaProjectSection";
-import { PlannerProfileGateModal } from "../../planner/components/PlannerProfileGateModal";
-import { isProfileComplete } from "../helpers/shiftSearchHelpers";
-
-// Layout Engine Imports
-import { Section, PageHeader } from "../../../../shared/components/layout/EnterpriseLayout";
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
+import { Section } from "../../../../shared/components/layout/EnterpriseLayout";
 import { GlobalToast } from "../../../../shared/components/feedback/GlobalToast";
-
-// Feature Components
 import { SavedSearchCard } from "../../../../shared/components/SavedSearchCard";
+import { EmployeeGigProjectsPromoStrip } from "../../home/components/EmployeeGigProjectsPromoStrip";
+import { useShiftSearchPageState } from "../hooks/useShiftSearchPageState";
 import { RecentlyViewedSection, StarredShiftsSection } from "../components/ShiftSearchSections";
 import { ShiftSearchDiscoveryGuide } from "../components/ShiftSearchDiscoveryGuide";
 import { ShiftSearchFilterPanel } from "../components/ShiftSearchFilterPanel";
@@ -22,113 +18,103 @@ import { ShiftSearchSaveAlert } from "../components/ShiftSearchSaveAlert";
 import { ShiftSearchSmartMatches } from "../components/ShiftSearchSmartMatches";
 
 /**
- * ARCHITECTURE NOTE:
- * Migrated to the Unified Page Engine.
- * Implements 'Targeted Resolution' for the Shift Pulse system.
+ * Shift Search is green Shift domain only.
+ * Gig mega UI lives under /employee/planner/* — outbound promo only (P-SEP-1).
  */
 
 export function ShiftSearchPage() {
   const page = useShiftSearchPageState();
   const nav = useNavigate();
   const showSmartMatches = !page.hasFilters;
-  const [profileGateOpen, setProfileGateOpen] = useState(false);
-  const [gigToast, setGigToast] = useState("");
 
   useEffect(() => {
     if (window.location.hash === "#gig-projects") {
-      nav(ROUTE_PATHS.employeeShiftProjects, { replace: true });
+      nav(ROUTE_PATHS.employeePlannerBrowse, { replace: true });
     }
   }, [nav]);
 
   return (
-    <>
-      {/* 2. EXECUTIVE PAGE HEADER */}
-      <PageHeader
+    <div
+      className="wm-ee-vShift wm-stackGrid"
+      data-testid="shift-search-page"
+      style={{ gap: "var(--wm-stack-gap)" }}
+    >
+      <DomainHero
+        variant="shift"
+        audience="employee"
+        icon={<Search size={22} strokeWidth={2.25} />}
         title="Find Shifts"
         subtitle="Browse daily, helper, and experienced shifts tailored for you."
+        description="Filter by date, experience, and category. Apply from the feed or open a shift for full details."
+        trailing={<span className="wm-domainHeroBadge">Shift search</span>}
       />
 
-      {/* 3. DISCOVERY & PROFILE GUIDANCE */}
-      <Section eyebrow="Discovery" title="Location & Skills">
-        <div className="wm-ee-vShift">
+      <div className="wm-animateIn" style={{ animationDelay: "40ms" }}>
+        <Section eyebrow="Discovery" title="Location & Skills">
           <ShiftSearchDiscoveryGuide
             city={page.profileCity}
             hasSkills={page.hasProfileSkills}
             isProfileReady={page.isDiscoveryProfileReady}
             onOpenProfile={page.openProfile}
           />
-        </div>
-      </Section>
+        </Section>
+      </div>
 
-      {/* 4. SEARCH & FILTER CONTROLS */}
-      <Section eyebrow="Search" title="Filter Work">
-        <ShiftSearchFilterPanel
-          searchQuery={page.searchQuery}
-          setSearchQuery={page.setSearchQuery}
-          timeOpt={page.timeOpt}
-          setTimeOpt={page.setTimeOpt}
-          exp={page.exp}
-          setExp={page.setExp}
-          categories={page.categories}
-          catFilter={page.catFilter}
-          setCatFilter={page.setCatFilter}
-          dur={page.dur}
-          setDur={page.setDur}
-          hasFilters={page.hasFilters}
-          onClearFilters={page.clearFilters}
-        />
-        <SavedSearchCard />
-      </Section>
-
-      <Section eyebrow="Gig Projects" title="Multi-Day Project Plans">
-        <div className="wm-planner-gigSection wm-ee-vPlanner wm-planner-page" id="gig-projects">
-          <div className="wm-planner-gigSectionHead">
-            <div className="wm-planner-gigSectionEyebrow">Agency mode</div>
-            <div className="wm-planner-gigSectionTitle">Mega Project Cards</div>
-          </div>
-          <PlannerMegaProjectSection
-            onToast={setGigToast}
-            onNeedProfile={() => setProfileGateOpen(true)}
-            isProfileComplete={isProfileComplete()}
-          />
-          <div style={{ marginTop: 12, display: "flex", justifyContent: "flex-end" }}>
-            <button
-              type="button"
-              className="wm-planner-btnGhost"
-              onClick={() => nav(ROUTE_PATHS.employeeShiftProjects)}
-            >
-              Browse all Gig Projects →
-            </button>
-          </div>
-        </div>
-      </Section>
-
-      <Section eyebrow="Opportunities" title="Available Shifts">
-        <ShiftSearchResultsList
-          discoverableCount={page.discoverablePosts.length}
-          filteredPosts={page.filteredPosts}
-          hasFilters={page.hasFilters}
-          quickApplyEnabled={page.quickApplyEnabled}
-          appliedIds={page.appliedIds}
-          onOpenDetails={page.openDetails}
-          onQuickApply={page.handleQuickApply}
-          onClearFilters={page.clearFilters}
-          onOpenProfile={page.openProfile}
-        />
-
-        {page.hasFilters && (
-          <ShiftSearchSaveAlert
+      <div className="wm-animateIn" style={{ animationDelay: "70ms" }}>
+        <Section eyebrow="Search" title="Filter Work">
+          <ShiftSearchFilterPanel
             searchQuery={page.searchQuery}
-            catFilter={page.catFilter}
+            setSearchQuery={page.setSearchQuery}
+            timeOpt={page.timeOpt}
+            setTimeOpt={page.setTimeOpt}
             exp={page.exp}
-            minPay={0}
-            onToast={page.showToast}
+            setExp={page.setExp}
+            categories={page.categories}
+            catFilter={page.catFilter}
+            setCatFilter={page.setCatFilter}
+            dur={page.dur}
+            setDur={page.setDur}
+            hasFilters={page.hasFilters}
+            onClearFilters={page.clearFilters}
           />
-        )}
+          <SavedSearchCard />
+        </Section>
+      </div>
+
+      <Section eyebrow="Separate app" title="Need multi-day plans?">
+        <EmployeeGigProjectsPromoStrip onOpen={() => nav(ROUTE_PATHS.employeePlannerHome)} />
       </Section>
 
-      {/* 6. INTELLIGENCE (Smart Matches) */}
-      {showSmartMatches && (
+      <div className="wm-animateIn" style={{ animationDelay: "100ms" }}>
+        <Section eyebrow="Opportunities" title="Available Shifts">
+          <ShiftSearchResultsList
+            feedStatus={page.feedStatus}
+            feedErrorMessage={page.feedErrorMessage}
+            discoverableCount={page.discoverablePosts.length}
+            filteredPosts={page.filteredPosts}
+            hasFilters={page.hasFilters}
+            quickApplyEnabled={page.quickApplyEnabled}
+            appliedIds={page.appliedIds}
+            onOpenDetails={page.openDetails}
+            onQuickApply={page.handleQuickApply}
+            onClearFilters={page.clearFilters}
+            onOpenProfile={page.openProfile}
+            onRetryFeed={page.retryFeed}
+          />
+
+          {page.hasFilters ? (
+            <ShiftSearchSaveAlert
+              searchQuery={page.searchQuery}
+              catFilter={page.catFilter}
+              exp={page.exp}
+              minPay={0}
+              onToast={page.showToast}
+            />
+          ) : null}
+        </Section>
+      </div>
+
+      {showSmartMatches ? (
         <Section eyebrow="Intelligence" title="Smart Matches">
           <ShiftSearchSmartMatches
             matches={page.smartMatches}
@@ -136,9 +122,8 @@ export function ShiftSearchPage() {
             onOpenDetails={page.openDetails}
           />
         </Section>
-      )}
+      ) : null}
 
-      {/* 7. HISTORY & SAVED */}
       <Section eyebrow="History" title="Recently Viewed">
         <RecentlyViewedSection cards={page.recentlyViewed} onOpen={page.openDetails} />
       </Section>
@@ -147,18 +132,12 @@ export function ShiftSearchPage() {
         <StarredShiftsSection cards={page.favoriteCards} onOpen={page.openDetails} />
       </Section>
 
-      {/* 8. GLOBAL FEEDBACK SYSTEM */}
       <GlobalToast
-        message={page.toast || gigToast || ""}
-        tone="success"
-        visible={!!(page.toast || gigToast)}
-        onClose={() => {
-          page.showToast("");
-          setGigToast("");
-        }}
+        message={page.toast || ""}
+        tone={page.toastTone}
+        visible={!!page.toast}
+        onClose={() => page.showToast("")}
       />
-
-      <PlannerProfileGateModal open={profileGateOpen} onClose={() => setProfileGateOpen(false)} />
-    </>
+    </div>
   );
 }

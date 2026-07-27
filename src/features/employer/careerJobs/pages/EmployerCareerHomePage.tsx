@@ -1,6 +1,8 @@
 // App name: Job Mitra
 // File name: EmployerCareerHomePage.tsx
+// Wave 3 — Loading / Empty / Active / Error
 
+import { EnterpriseEmpty, EnterpriseSkeleton } from "../../../../shared/components/enterprise";
 import { PulseIndicator } from "../../../pulse/PulseIndicator";
 import { PulseTargetCard } from "../../../pulse/PulseTarget";
 import { EmployerActiveEmployeeWorkspaceCard } from "../components/EmployerActiveEmployeeWorkspaceCard";
@@ -14,16 +16,35 @@ import { useEmployerCareerHomeState } from "../hooks/useEmployerCareerHomeState"
 export function EmployerCareerHomePage() {
   const state = useEmployerCareerHomeState();
 
+  if (state.viewState === "loading") {
+    return (
+      <div className="wm-er-vCareer wm-stackGrid" data-testid="employer-career-home-loading">
+        <EnterpriseSkeleton domain="career" count={3} testId="career-home-skeleton" />
+      </div>
+    );
+  }
+
+  if (state.viewState === "error") {
+    return (
+      <div className="wm-er-vCareer wm-stackGrid" data-testid="employer-career-home-error">
+        <EnterpriseEmpty
+          domain="career"
+          title="Career home could not load"
+          subtitle={state.loadError || "Something went wrong while loading Career data."}
+          primaryLabel="Retry"
+          onPrimary={state.retryLoad}
+          testId="career-home-error"
+        />
+      </div>
+    );
+  }
+
   return (
     <div
-      className="wm-er-vCareer"
-      style={{
-        display: "grid",
-        gap: "var(--wm-stack-gap)",
-        position: "relative",
-      }}
+      className="wm-er-vCareer wm-stackGrid"
+      style={{ position: "relative" }}
+      data-testid="employer-career-home-active"
     >
-      {/* ULTRA-PREMIUM AMBIENT BACKGROUND GLOW */}
       <div
         style={{
           position: "absolute",
@@ -35,6 +56,7 @@ export function EmployerCareerHomePage() {
           overflow: "hidden",
           pointerEvents: "none",
         }}
+        aria-hidden="true"
       >
         <div
           style={{
@@ -56,7 +78,7 @@ export function EmployerCareerHomePage() {
             width: "60%",
             height: "60%",
             background:
-              "radial-gradient(ellipse at center, rgba(139, 92, 246, 0.06) 0%, rgba(255,255,255,0) 70%)",
+              "radial-gradient(ellipse at center, rgba(29, 78, 216, 0.06) 0%, rgba(255,255,255,0) 70%)",
             filter: "blur(60px)",
           }}
         />
@@ -68,7 +90,7 @@ export function EmployerCareerHomePage() {
             width: "50%",
             height: "40%",
             background:
-              "radial-gradient(ellipse at center, rgba(56, 189, 248, 0.06) 0%, rgba(255,255,255,0) 70%)",
+              "radial-gradient(ellipse at center, rgba(56, 189, 248, 0.05) 0%, rgba(255,255,255,0) 70%)",
             filter: "blur(60px)",
           }}
         />
@@ -78,17 +100,28 @@ export function EmployerCareerHomePage() {
 
       <EmployerCareerDraftReminderCard />
 
-      <PulseTargetCard pulseId="career-dashboard-applications" radius="24px">
-        <div style={{ position: "relative" }}>
-          <PulseIndicator notificationId="APPLICATION_RECEIVED" />
+      {state.viewState === "empty" ? (
+        <EnterpriseEmpty
+          domain="career"
+          title="No Career posts yet"
+          subtitle="Create your first Career job to start receiving applications and manage hiring here."
+          primaryLabel="Create Job"
+          onPrimary={state.openCreate}
+          testId="career-home-empty"
+        />
+      ) : (
+        <PulseTargetCard pulseId="career-dashboard-applications" radius="24px">
+          <div style={{ position: "relative" }}>
+            <PulseIndicator notificationId="APPLICATION_RECEIVED" />
 
-          <EmployerCareerPostListCard
-            summary={state.postSummary}
-            onOpenPosts={state.openCareerPosts}
-            onCreate={state.openCreate}
-          />
-        </div>
-      </PulseTargetCard>
+            <EmployerCareerPostListCard
+              summary={state.postSummary}
+              onOpenPosts={state.openCareerPosts}
+              onCreate={state.openCreate}
+            />
+          </div>
+        </PulseTargetCard>
+      )}
 
       <EmployerActiveEmployeeWorkspaceCard
         records={state.activeStaffRecords}

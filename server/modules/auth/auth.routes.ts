@@ -6,6 +6,8 @@ import { sessionStore } from "./session.store.js";
 import { extractRequestMeta } from "./request-meta.js";
 import { SESSION_ABSOLUTE_TTL_SEC } from "./constants.js";
 import type { AuthUser } from "./types.js";
+import { issueCsrfForSession, revokeCsrfForSession, parseCookies } from "../../middleware/csrf.js";
+import { mintSupabaseSessionForJobMitraUser } from "./supabaseBridge.service.js";
 
 const LOGIN_ATTEMPT_LIMIT = 5;
 const LOGIN_LOCKOUT_MS = 60_000;
@@ -72,27 +74,30 @@ function sendJson(res: ServerResponse, status: number, body: unknown): void {
   res.end(JSON.stringify(body));
 }
 
-function parseCookies(header: string | undefined): Record<string, string> {
-  if (!header) return {};
-  return Object.fromEntries(
-    header.split(";").map((part) => {
-      const [key, ...rest] = part.trim().split("=");
-      return [key, decodeURIComponent(rest.join("="))];
-    }),
-  );
-}
-
 function buildSessionCookie(token: string, maxAgeSec: number): string {
   const secure = secureCookiesEnabled() ? "; Secure" : "";
   return `${SESSION_COOKIE}=${encodeURIComponent(token)}; HttpOnly; Path=/; Max-Age=${maxAgeSec}; SameSite=Strict${secure}`;
 }
 
+function appendSetCookie(res: ServerResponse, value: string): void {
+  const existing = res.getHeader("Set-Cookie");
+  if (!existing) {
+    res.setHeader("Set-Cookie", value);
+    return;
+  }
+  if (Array.isArray(existing)) {
+    res.setHeader("Set-Cookie", [...existing, value]);
+    return;
+  }
+  res.setHeader("Set-Cookie", [String(existing), value]);
+}
+
 function setSessionCookie(res: ServerResponse, token: string): void {
-  res.setHeader("Set-Cookie", buildSessionCookie(token, SESSION_ABSOLUTE_TTL_SEC));
+  appendSetCookie(res, buildSessionCookie(token, SESSION_ABSOLUTE_TTL_SEC));
 }
 
 function clearSessionCookie(res: ServerResponse): void {
-  res.setHeader("Set-Cookie", buildSessionCookie("", 0));
+  appendSetCookie(res, buildSessionCookie("", 0));
 }
 
 async function readSessionUser(
@@ -211,7 +216,8 @@ export async function handleAuthRoutes(
       rawToken = sessionStore.create(loginResult.user.id);
     }
     setSessionCookie(res, rawToken);
-    sendJson(res, 200, envelope({ user: loginResult.user }, requestId));
+    const csrfToken = issueCsrfForSession(res, rawToken, SESSION_ABSOLUTE_TTL_SEC);
+    sendJson(res, 200, envelope({ user: loginResult.user, csrfToken }, requestId));
     return true;
   }
 
@@ -225,6 +231,7 @@ export async function handleAuthRoutes(
         sessionStore.delete(rawToken);
       }
     }
+    revokeCsrfForSession(res, rawToken);
     clearSessionCookie(res);
     sendJson(res, 200, envelope({ ok: true }, requestId));
     return true;
@@ -238,6 +245,32 @@ export async function handleAuthRoutes(
       return true;
     }
     sendJson(res, 200, envelope({ user: result.user }, requestId));
+    return true;
+  }
+
+  // GJ-3 — Job Mitra cookie session → Supabase Auth JWT (for shift_ops auth.uid())
+  if (method === "POST" && subpath === "/supabase-bridge") {
+    const result = await readSessionUser(req);
+    if (!result) {
+      const err = errorEnvelope("UNAUTHENTICATED", "Not authenticated", requestId, 401);
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+    const body = (await readJsonBody(req)) ?? {};
+    const mitraLabId =
+      typeof body.mitraLabId === "string"
+        ? body.mitraLabId
+        : typeof body.jobmitra_ml_id === "string"
+          ? body.jobmitra_ml_id
+          : undefined;
+    const minted = await mintSupabaseSessionForJobMitraUser(result.user, { mitraLabId });
+    if (!minted.ok) {
+      const status = minted.code === "BRIDGE_NOT_CONFIGURED" ? 503 : 502;
+      const err = errorEnvelope(minted.code, minted.message, requestId, status);
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+    sendJson(res, 200, envelope({ session: minted.session }, requestId));
     return true;
   }
 

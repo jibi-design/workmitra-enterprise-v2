@@ -36,7 +36,7 @@ export function EmployerInviteToShiftModal({ target, onClose }: EmployerInviteTo
 
     const ok = sendShiftDirectInvite({
       postId: post.id,
-      workerWmId: target.workerWmId,
+      workerMlId: target.workerMlId,
       workerName: target.workerName,
     });
 

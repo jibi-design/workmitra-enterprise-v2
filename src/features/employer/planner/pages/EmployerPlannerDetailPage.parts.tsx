@@ -4,7 +4,11 @@ import {
   formatPlannerPayPerDay,
   formatPlannerPayTotal,
 } from "../helpers/plannerPayDisplay.helpers";
-import { employerShiftStorage } from "../../../shared/planner/ports/plannerLegacyShiftBridge";
+import {
+  computePlanFillMetrics,
+  countConfirmedForSlot,
+} from "../../../shared/planner/services/plannerFillMetrics.helpers";
+import { readEmployeeApplications } from "../../../shared/planner/ports/plannerLegacyShiftBridge";
 
 type PlannerDetailSectionsProps = {
   plan: DemandPlan;
@@ -40,15 +44,17 @@ export function PlannerDetailDaysSection({
   plan: DemandPlan;
   onNavigate: (path: string) => void;
 }) {
+  const planApps = readEmployeeApplications().filter((a) => a.planId === plan.id);
+  const fill = computePlanFillMetrics(plan, planApps);
+
   return (
     <div className="wm-planner-card">
-      <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 10 }}>Plan days</div>
+      <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 10 }}>
+        Plan days · {fill.confirmed}/{fill.needed} filled
+      </div>
       {plan.slots.map((slot) => {
-        const post = slot.postId
-          ? employerShiftStorage.getPosts().find((p) => p.id === slot.postId)
-          : null;
-        const confirmed = post?.confirmedIds.length ?? 0;
-        const vacancies = post?.vacancies ?? slot.workers;
+        const confirmed = countConfirmedForSlot(planApps, slot);
+        const vacancies = slot.workers;
         return (
           <div
             key={slot.date}
@@ -67,19 +73,15 @@ export function PlannerDetailDaysSection({
                 {confirmed}/{vacancies} filled · {formatPlannerPayPerDay(slot.payPerDay)}
               </div>
             </div>
-            {slot.postId && (
-              <button
-                type="button"
-                className="wm-planner-btnGhost"
-                onClick={() =>
-                  onNavigate(
-                    ROUTE_PATHS.employerShiftPostDashboard.replace(":postId", slot.postId!),
-                  )
-                }
-              >
-                View Post
-              </button>
-            )}
+            <button
+              type="button"
+              className="wm-planner-btnGhost"
+              onClick={() =>
+                onNavigate(ROUTE_PATHS.employerPlannerRosterDetail.replace(":planId", plan.id))
+              }
+            >
+              Open roster
+            </button>
           </div>
         );
       })}

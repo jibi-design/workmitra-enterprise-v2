@@ -129,7 +129,7 @@ export function GroupAttendanceTab({ group, members }: Props) {
                         fontWeight: 800,
                         color: AMBER,
                         padding: "1px 6px",
-                        borderRadius: 999,
+                        borderRadius: "var(--wm-radius-pill)",
                         background: "rgba(180,83,9,0.08)",
                       }}
                     >
@@ -170,7 +170,7 @@ export function GroupAttendanceTab({ group, members }: Props) {
             <div
               style={{
                 height: 4,
-                borderRadius: 2,
+                borderRadius: "var(--wm-radius-8)",
                 background: "var(--wm-er-border)",
                 marginBottom: 10,
               }}
@@ -180,7 +180,7 @@ export function GroupAttendanceTab({ group, members }: Props) {
                   height: "100%",
                   width: `${progress}%`,
                   background: progress === 100 ? "var(--wm-success)" : AMBER,
-                  borderRadius: 2,
+                  borderRadius: "var(--wm-radius-8)",
                   transition: "width 0.3s ease",
                 }}
               />
@@ -201,7 +201,7 @@ export function GroupAttendanceTab({ group, members }: Props) {
                         justifyContent: "space-between",
                         alignItems: "center",
                         padding: "6px 10px",
-                        borderRadius: 8,
+                        borderRadius: "var(--wm-radius-8)",
                         background:
                           status === "signed_in" ? "rgba(22,163,74,0.04)" : "var(--wm-er-bg)",
                       }}
@@ -212,7 +212,7 @@ export function GroupAttendanceTab({ group, members }: Props) {
                           style={{
                             width: 8,
                             height: 8,
-                            borderRadius: 999,
+                            borderRadius: "var(--wm-radius-pill)",
                             background: statusDotColor(status),
                             flexShrink: 0,
                           }}

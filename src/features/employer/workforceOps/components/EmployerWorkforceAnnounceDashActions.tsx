@@ -27,7 +27,7 @@ type Props = {
 
 const actionSmBtnStyle = (color: string): CSSProperties => ({
   padding: "4px 10px",
-  borderRadius: 6,
+  borderRadius: "var(--wm-radius-8)",
   border: `1px solid ${color}`,
   background: "transparent",
   cursor: "pointer",
@@ -237,7 +237,7 @@ export function EmployerWorkforceAnnounceDashActions({
           style={{
             marginTop: 10,
             padding: 10,
-            borderRadius: 8,
+            borderRadius: "var(--wm-radius-8)",
             background: "rgba(220,38,38,0.06)",
           }}
         >

@@ -19,7 +19,8 @@ export type CareerResultTarget = {
 };
 
 export type CareerRejectTarget = {
-  appId: string;
+  mode: "single" | "bulk";
+  appIds: string[];
   candidateName: string;
   currentStage: CareerApplication["stage"];
 };

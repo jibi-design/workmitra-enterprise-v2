@@ -5,14 +5,15 @@
 import { useMemo, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
 import {
   employmentLifecycleStorage,
   type EmploymentRecord,
 } from "../../employment/storage/employmentLifecycle.storage";
 
 const CAREER_BLUE = "var(--wm-er-accent-career, #1d4ed8)";
-const CAREER_TEXT = "var(--wm-emp-text, #111827)";
-const CAREER_MUTED = "var(--wm-emp-muted, #64748b)";
+const CAREER_TEXT = "var(--wm-career-text, #111827)";
+const CAREER_MUTED = "var(--wm-career-muted, #64748b)";
 
 function getHistorySnapshot(): string {
   return JSON.stringify(employmentLifecycleStorage.getVerifiedHistory());
@@ -66,79 +67,15 @@ export function EmployeeCareerCompletedRecordsPage() {
   const records = useMemo(() => parseHistorySnapshot(raw), [raw]);
 
   return (
-    <div style={{ display: "grid", gap: 13, paddingBottom: 30 }}>
-      <section
-        style={{
-          marginTop: 2,
-          padding: "16px 15px",
-          borderRadius: 24,
-          border: "1px solid rgba(29,78,216,0.16)",
-          background:
-            "radial-gradient(circle at 94% 0%, rgba(29,78,216,0.12), transparent 32%), linear-gradient(135deg, rgba(255,255,255,1), rgba(248,250,252,0.98) 52%, rgba(239,246,255,0.82))",
-          boxShadow: "0 16px 34px rgba(15,23,42,0.075)",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-          <div
-            aria-hidden="true"
-            style={{
-              width: 46,
-              height: 46,
-              borderRadius: 18,
-              flexShrink: 0,
-              background: "rgba(29,78,216,0.09)",
-              border: "1px solid rgba(29,78,216,0.14)",
-              color: CAREER_BLUE,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
-              <path
-                fill="currentColor"
-                d="M7 3h7.2L19 7.8V20a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm7 1.8V8h3.2L14 4.8ZM8 12h8v1.7H8V12Zm0 3.4h6.5v1.7H8v-1.7Z"
-              />
-            </svg>
-          </div>
-
-          <div style={{ minWidth: 0 }}>
-            <div
-              style={{
-                width: "fit-content",
-                padding: "4px 9px",
-                borderRadius: 999,
-                background: "rgba(29,78,216,0.08)",
-                border: "1px solid rgba(29,78,216,0.12)",
-                color: CAREER_BLUE,
-                fontSize: 10.5,
-                fontWeight: 950,
-                letterSpacing: 0.7,
-                textTransform: "uppercase",
-              }}
-            >
-              Career Records
-            </div>
-
-            <div
-              style={{
-                marginTop: 8,
-                fontSize: 20,
-                fontWeight: 950,
-                color: CAREER_TEXT,
-                lineHeight: 1.18,
-              }}
-            >
-              Completed Career Records
-            </div>
-
-            <div style={{ marginTop: 6, fontSize: 12.5, color: CAREER_MUTED, lineHeight: 1.55 }}>
-              View closed Career jobs, feedback, work diary history, and saved reports from one
-              protected record hub.
-            </div>
-          </div>
-        </div>
-      </section>
+    <div className="wm-ee-vCareer wm-stackGrid" style={{ paddingBottom: 30 }}>
+      <DomainHero
+        variant="career"
+        audience="employee"
+        eyebrow="Career Records"
+        title="Completed Career Records"
+        subtitle="Closed jobs, feedback, and work diary history"
+        description="View closed Career jobs, feedback, work diary history, and saved reports from one protected record hub."
+      />
 
       {records.length === 0 ? (
         <section
@@ -157,7 +94,7 @@ export function EmployeeCareerCompletedRecordsPage() {
           </div>
         </section>
       ) : (
-        <section style={{ display: "grid", gap: 10 }}>
+        <section className="wm-stackGrid">
           {records.map((record) => (
             <button
               key={record.id}
@@ -166,7 +103,7 @@ export function EmployeeCareerCompletedRecordsPage() {
               style={{
                 width: "100%",
                 padding: 15,
-                borderRadius: 22,
+                borderRadius: "var(--wm-radius-employee-card)",
                 border: "1px solid rgba(29,78,216,0.14)",
                 background:
                   "radial-gradient(circle at 95% 10%, rgba(29,78,216,0.07), transparent 30%), linear-gradient(135deg, rgba(255,255,255,1), rgba(248,250,252,0.98))",
@@ -210,7 +147,7 @@ export function EmployeeCareerCompletedRecordsPage() {
                     fontSize: 10,
                     fontWeight: 950,
                     padding: "5px 9px",
-                    borderRadius: 999,
+                    borderRadius: "var(--wm-radius-pill)",
                     color: CAREER_BLUE,
                     background: "rgba(29,78,216,0.08)",
                     whiteSpace: "nowrap",
@@ -231,7 +168,7 @@ export function EmployeeCareerCompletedRecordsPage() {
                 <div
                   style={{
                     padding: "7px 10px",
-                    borderRadius: 12,
+                    borderRadius: "var(--wm-radius-button)",
                     background: "rgba(29,78,216,0.065)",
                     color: CAREER_BLUE,
                     fontSize: 10.8,
@@ -244,7 +181,7 @@ export function EmployeeCareerCompletedRecordsPage() {
                 <div
                   style={{
                     padding: "8px 10px",
-                    borderRadius: 13,
+                    borderRadius: "var(--wm-radius-chip)",
                     background: "rgba(15,23,42,0.035)",
                     color: CAREER_MUTED,
                     fontSize: 10.4,

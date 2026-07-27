@@ -48,7 +48,7 @@ export function AnnouncePreviewShiftsSection({
                       fontWeight: 800,
                       color: AMBER,
                       padding: "1px 6px",
-                      borderRadius: 999,
+                      borderRadius: "var(--wm-radius-pill)",
                       background: AMBER_BG,
                     }}
                   >

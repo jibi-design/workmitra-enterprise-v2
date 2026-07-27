@@ -6,6 +6,11 @@ import type {
   ShiftPostDemo,
   ShiftWorkspaceRecord,
 } from "../types/shiftSearch.types";
+import {
+  hydrateShiftApplicationsFromServer,
+  hydrateShiftPostsFromServer,
+} from "../../../shift/services/shiftDbTruth.service";
+import { isShiftApiSyncEnabled } from "../../../shift/services/shiftGateApi.service";
 
 const POSTS_KEY = "wm_employee_shift_search_v1";
 const APPS_KEY = "wm_employee_shift_applications_v1";
@@ -187,6 +192,10 @@ function normalizeWorkspace(raw: unknown): ShiftWorkspaceRecord | null {
 }
 
 export function getShiftSearchPostsSnapshot(): ShiftPostDemo[] {
+  if (isShiftApiSyncEnabled()) {
+    void hydrateShiftPostsFromServer();
+  }
+
   const raw = localStorage.getItem(POSTS_KEY);
 
   if (raw === cachedPostsRaw) {
@@ -202,6 +211,10 @@ export function getShiftSearchPostsSnapshot(): ShiftPostDemo[] {
 }
 
 export function getShiftSearchAppsSnapshot(): ShiftApplicationRecord[] {
+  if (isShiftApiSyncEnabled()) {
+    void hydrateShiftApplicationsFromServer();
+  }
+
   const raw = localStorage.getItem(APPS_KEY);
 
   if (raw === cachedAppsRaw) {

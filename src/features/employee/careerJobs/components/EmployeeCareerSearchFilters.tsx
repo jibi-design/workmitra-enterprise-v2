@@ -30,7 +30,6 @@ const WORK_MODE_OPTIONS: WorkModeFilter[] = ["any", "on-site", "remote", "hybrid
 const EXPERIENCE_OPTIONS: ExperienceFilter[] = ["any", "0-1", "1-3", "3-7", "7+"];
 
 const CAREER_ACCENT = "var(--wm-er-accent-career, #1d4ed8)";
-const CAREER_MUTED = "var(--wm-emp-muted, #64748b)";
 
 export function EmployeeCareerSearchFilters({
   resultCount,
@@ -52,7 +51,7 @@ export function EmployeeCareerSearchFilters({
         <div
           style={{
             padding: "6px 10px",
-            borderRadius: 8,
+            borderRadius: "var(--wm-radius-8)",
             background: "rgba(29,78,216,0.05)",
             border: "1px solid rgba(29,78,216,0.1)",
             color: CAREER_ACCENT,
@@ -101,16 +100,19 @@ export function EmployeeCareerSearchFilters({
         <div style={{ marginTop: 6, display: "flex", justifyContent: "flex-end" }}>
           <button
             type="button"
+            className="wm-career-tap"
             onClick={onClearFilters}
             style={{
-              fontSize: 11.5,
-              fontWeight: 900,
-              padding: "6px 12px",
-              borderRadius: 999,
+              fontSize: 12,
+              fontWeight: 800,
+              padding: "0 14px",
+              borderRadius: "var(--wm-radius-pill)",
               border: "1px solid rgba(220,38,38,0.18)",
               background: "rgba(254,242,242,0.82)",
               color: "var(--wm-error, #dc2626)",
               cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
             }}
           >
             Clear filters
@@ -150,21 +152,15 @@ function FilterChip({
   return (
     <button
       type="button"
+      className={
+        active
+          ? "wm-career-filter-chip wm-career-filter-chip--active"
+          : "wm-career-filter-chip wm-career-filter-chip--idle"
+      }
       onClick={onClick}
       style={{
-        flexShrink: 0,
-        fontSize: 11.2,
-        fontWeight: active ? 950 : 850,
-        padding: "6px 12px",
-        borderRadius: 999,
-        border: active ? "1px solid rgba(29,78,216,0.32)" : "1px solid rgba(148,163,184,0.22)",
-        background: active
-          ? "linear-gradient(135deg, rgba(239,246,255,1), rgba(255,255,255,0.96))"
-          : "rgba(255,255,255,0.9)",
-        color: active ? CAREER_ACCENT : CAREER_MUTED,
-        cursor: "pointer",
-        boxShadow: active ? "0 4px 10px rgba(29,78,216,0.06)" : "none",
-        transition: "all 0.15s ease",
+        fontSize: 12,
+        border: active ? undefined : "1px solid rgba(148,163,184,0.22)",
       }}
     >
       {label}

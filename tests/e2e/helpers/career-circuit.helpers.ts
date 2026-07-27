@@ -5,7 +5,7 @@ export const CAREER_CIRCUIT_IDS = {
   postId: "e2e-career-circuit-post-001",
   companyName: "Circuit Professional Services",
   jobTitle: "Operations Executive",
-  workerWmId: "WM-CAREER-CIRCUIT-001",
+  workerMlId: "ML-E2E2-CCR-CRCT",
   workerName: "Circuit Professional",
 } as const;
 
@@ -19,13 +19,15 @@ export const CAREER_CIRCUIT_DATA_KEYS = [
   "wm_employee_career_posts_search_v1",
   "wm_employee_career_workspaces_v1",
   "wm:employer-profile",
+  "wm_employer_profile_v1",
   "wm_career_employment_v1",
   "wm_employment_lifecycle_v1",
-  "wm_hr_management_v1",
   "wm_pulse_event_queue_v1",
   "wm_pulse_chain_state_v1",
   "wm_vault_career_history_v1",
   "wm_pending_actions_later_v1",
+  "wm_ratings_employer_to_worker_v1",
+  "wm_ratings_worker_to_employer_v1",
 ] as const;
 
 /** Bell stores — only sync when the source role authored them */
@@ -109,7 +111,7 @@ export async function initCareerRoleContext(
       profile:
         role === "employee"
           ? {
-              uniqueId: CAREER_CIRCUIT_IDS.workerWmId,
+              uniqueId: CAREER_CIRCUIT_IDS.workerMlId,
               fullName: CAREER_CIRCUIT_IDS.workerName,
               city: "Kochi",
               skills: ["operations"],
@@ -226,6 +228,12 @@ export async function seedCareerCircuitPost(page: Page): Promise<void> {
       localStorage.removeItem("wm_career_employment_v1");
       localStorage.removeItem("wm_employment_lifecycle_v1");
       localStorage.removeItem("wm_hr_management_v1");
+      for (let i = localStorage.length - 1; i >= 0; i -= 1) {
+        const key = localStorage.key(i);
+        if (key?.startsWith("wm_hr_employer_")) {
+          localStorage.removeItem(key);
+        }
+      }
       localStorage.removeItem("wm_vault_career_history_v1");
       localStorage.removeItem("wm_pending_actions_later_v1");
       localStorage.removeItem("wm_pulse_event_queue_v1");
@@ -257,6 +265,14 @@ export async function syncCareerCircuitStorage(
 
     for (const key of syncKeys) {
       data[key] = localStorage.getItem(key);
+    }
+
+    // Employer-scoped HR keys (wm_hr_employer_{id}_*)
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+      if (key?.startsWith("wm_hr_employer_")) {
+        data[key] = localStorage.getItem(key);
+      }
     }
 
     return data;
@@ -394,7 +410,31 @@ export async function readEmployerUnreadNotificationCount(page: Page): Promise<n
 
 export async function readHrCircuitRecords(page: Page): Promise<HRCircuitRecord[]> {
   return page.evaluate(() => {
-    const raw = localStorage.getItem("wm_hr_management_v1");
+    const resolveHrManagementKey = (): string => {
+      const readProfileUniqueId = (storageKey: string): string | null => {
+        try {
+          const raw = localStorage.getItem(storageKey);
+          if (!raw) return null;
+          const parsed = JSON.parse(raw) as { uniqueId?: unknown };
+          if (typeof parsed?.uniqueId === "string" && parsed.uniqueId.trim()) {
+            return parsed.uniqueId.trim().replace(/[^a-zA-Z0-9_-]/g, "_");
+          }
+        } catch {
+          // ignore
+        }
+        return null;
+      };
+
+      const employerId =
+        readProfileUniqueId("wm_employer_profile_v1") ||
+        readProfileUniqueId("wm:employer-profile") ||
+        "unknown_employer";
+
+      return `wm_hr_employer_${employerId}_management_v1`;
+    };
+
+    const scopedKey = resolveHrManagementKey();
+    const raw = localStorage.getItem(scopedKey) ?? localStorage.getItem("wm_hr_management_v1");
     if (!raw) return [];
 
     const parsed = JSON.parse(raw) as unknown;
@@ -426,30 +466,32 @@ export function notificationIncludes(
 }
 
 export async function ensureCareerCircuitWorkerIdentity(page: Page): Promise<void> {
-  await page.evaluate(({ workerWmId, workerName, postId }) => {
-    const profileRaw = localStorage.getItem("wm_employee_profile_v1");
-    const profile = profileRaw
-      ? (JSON.parse(profileRaw) as Record<string, unknown>)
-      : {
-          fullName: workerName,
-          city: "Kochi",
-          skills: ["operations"],
-          experience: "experienced",
-          languages: ["English"],
-          preferShiftJobs: false,
-          preferCareerJobs: true,
-          availability: {
-            weekdays: true,
-            weekends: false,
-            morning: true,
-            afternoon: true,
-            evening: false,
-          },
-        };
+  await page.evaluate(async ({ workerMlId, workerName, postId }) => {
+    const pii = await import("/src/shared/security/piiSecureStorage.ts");
+    const existing =
+      pii.piiSecureStorage.getJson<Record<string, unknown>>("wm_employee_profile_v1") ?? {};
 
-    profile.uniqueId = workerWmId;
-    profile.fullName = (profile.fullName as string | undefined) || workerName;
-    localStorage.setItem("wm_employee_profile_v1", JSON.stringify(profile));
+    const profile = {
+      fullName: workerName,
+      city: "Kochi",
+      skills: ["operations"],
+      experience: "experienced",
+      languages: ["English"],
+      preferShiftJobs: false,
+      preferCareerJobs: true,
+      availability: {
+        weekdays: true,
+        weekends: false,
+        morning: true,
+        afternoon: true,
+        evening: false,
+      },
+      ...existing,
+      uniqueId: workerMlId,
+      fullName: (typeof existing.fullName === "string" && existing.fullName) || workerName,
+    };
+
+    pii.piiSecureStorage.setJson("wm_employee_profile_v1", profile);
 
     const apps = JSON.parse(
       localStorage.getItem("wm_employee_career_applications_v1") ?? "[]",
@@ -463,11 +505,11 @@ export async function ensureCareerCircuitWorkerIdentity(page: Page): Promise<voi
     for (const app of apps) {
       if (app.jobId !== postId) continue;
 
-      app.employeeId = workerWmId;
+      app.employeeId = workerMlId;
       app.employeeName = app.employeeName || workerName;
       app.profileSnapshot = {
         ...app.profileSnapshot,
-        uniqueId: workerWmId,
+        uniqueId: workerMlId,
         fullName: app.profileSnapshot?.fullName || workerName,
       };
     }
@@ -577,9 +619,58 @@ export async function clickEmployerCareerPipelineTab(
   page: Page,
   tabLabel: "Applied" | "Shortlist" | "Interview" | "Offered" | "Hired",
 ): Promise<void> {
+  await dismissCareerEmployerNoticeModal(page);
   const tabButton = page.getByRole("button", { name: new RegExp(`\\b${tabLabel}\\b`) }).first();
   await tabButton.scrollIntoViewIfNeeded({ timeout: 15_000 });
   await tabButton.click({ timeout: 15_000 });
+}
+
+/** Close NoticeModal (Offer Sent / Hired / etc.) — OK button; Escape fallback. */
+export async function dismissCareerEmployerNoticeModal(page: Page): Promise<void> {
+  const dialog = page.locator('[role="dialog"].wm-modal-backdrop, [role="dialog"]').filter({
+    has: page.locator(".wm-noticeModal"),
+  });
+  const visible = await dialog
+    .first()
+    .isVisible()
+    .catch(() => false);
+  if (!visible) {
+    // Also match aria-label dialogs without requiring class on role node
+    const byLabel = page.getByRole("dialog", { name: /Offer Sent|Candidate Hired|Cannot/i });
+    if (!(await byLabel.isVisible().catch(() => false))) return;
+    await byLabel
+      .getByRole("button", { name: /^OK$/i })
+      .click({ timeout: 3_000 })
+      .catch(async () => {
+        await page.keyboard.press("Escape");
+      });
+    await byLabel.waitFor({ state: "hidden", timeout: 5_000 }).catch(() => undefined);
+    return;
+  }
+
+  await dialog
+    .first()
+    .getByRole("button", { name: /^OK$/i })
+    .click({ timeout: 3_000 })
+    .catch(async () => {
+      await page.keyboard.press("Escape");
+    });
+  await dialog
+    .first()
+    .waitFor({ state: "hidden", timeout: 5_000 })
+    .catch(() => undefined);
+}
+
+/** V2 hiring flow: employee accept leaves offer_accepted; employer must confirm hire. */
+export async function employerMarkCareerCandidateHired(page: Page): Promise<void> {
+  await gotoEmployerCareerPostDashboard(page);
+  await dismissCareerEmployerNoticeModal(page);
+  await clickEmployerCareerPipelineTab(page, "Offered");
+  await page.getByRole("button", { name: "Mark as Hired", exact: true }).click();
+  const hireDialog = page.getByRole("dialog", { name: /Hire this candidate/i });
+  await hireDialog.getByRole("button", { name: "Hire", exact: true }).click();
+  await hireDialog.waitFor({ state: "hidden", timeout: 10_000 }).catch(() => undefined);
+  await dismissCareerEmployerNoticeModal(page);
 }
 
 /** Runtime guard — init-script seed can be skipped after cross-context sync; upsert post if missing. */
@@ -733,6 +824,26 @@ export function getPendingActionAcceptButton(page: Page, actionId: string): Loca
   return page.getByTestId(`pending-action-accept-${actionId}`);
 }
 
+export function getPendingActionDeclineButton(page: Page, actionId: string): Locator {
+  return page.getByTestId(`pending-action-decline-${actionId}`);
+}
+
+/**
+ * Pulse breathe on the CTA makes Playwright's stability check hang.
+ * Force-click after visible — intentional for E2E against animated halo.
+ */
+export async function clickPendingActionAccept(page: Page, actionId: string): Promise<void> {
+  const button = getPendingActionAcceptButton(page, actionId);
+  await button.waitFor({ state: "visible", timeout: 15_000 });
+  await button.click({ force: true });
+}
+
+export async function clickPendingActionDecline(page: Page, actionId: string): Promise<void> {
+  const button = getPendingActionDeclineButton(page, actionId);
+  await button.waitFor({ state: "visible", timeout: 15_000 });
+  await button.click({ force: true });
+}
+
 export async function assertPendingActionAcceptHasPulseHalo(
   page: Page,
   actionId: string,
@@ -743,10 +854,10 @@ export async function assertPendingActionAcceptHasPulseHalo(
   const acceptButton = getPendingActionAcceptButton(page, actionId);
   await expect(acceptButton).toBeVisible();
 
-  const pulseHalo = row.locator(".wm-breathe");
+  const pulseHalo = row.locator(".wm-breathe, .wm-breathe-static, .wm-breathe-arrival");
   await expect(
     pulseHalo,
-    "Pending Actions accept CTA must render inside Pulse Halo (.wm-breathe)",
+    "Pending Actions accept CTA must render Pulse Halo (.wm-breathe*)",
   ).toBeVisible();
 }
 

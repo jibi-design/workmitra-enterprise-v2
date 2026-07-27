@@ -11,8 +11,8 @@ type EmployeeCareerDiscoveryTabsProps = {
 };
 
 const CAREER_ACCENT = "var(--wm-er-accent-career, #1d4ed8)";
-const CAREER_TEXT = "var(--wm-emp-text, #111827)";
-const CAREER_MUTED = "var(--wm-emp-muted, #64748b)";
+const CAREER_TEXT = "var(--wm-career-text, #111827)";
+const CAREER_MUTED = "var(--wm-career-muted, #64748b)";
 
 export function EmployeeCareerDiscoveryTabs({
   tabs,
@@ -26,7 +26,7 @@ export function EmployeeCareerDiscoveryTabs({
       style={{
         marginTop: 12,
         padding: 10,
-        borderRadius: 22,
+        borderRadius: "var(--wm-radius-employee-card)",
         border: "1px solid rgba(29,78,216,0.13)",
         background:
           "radial-gradient(circle at 96% 0%, rgba(29,78,216,0.08), transparent 34%), linear-gradient(135deg, rgba(255,255,255,0.99), rgba(248,250,252,0.98) 60%, rgba(239,246,255,0.7))",
@@ -57,7 +57,7 @@ export function EmployeeCareerDiscoveryTabs({
               style={{
                 flexShrink: 0,
                 padding: "7px 10px",
-                borderRadius: 999,
+                borderRadius: "var(--wm-radius-pill)",
                 border: isActive
                   ? "1px solid rgba(29,78,216,0.3)"
                   : "1px solid rgba(148,163,184,0.22)",

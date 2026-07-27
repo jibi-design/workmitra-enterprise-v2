@@ -12,15 +12,15 @@ import { ratingStorage } from "../rating/ratingStorage";
 
 type Props = {
   /** Pass explicitly if available. Falls back to employerSettingsStorage. */
-  employerWmId?: string;
+  employerMlId?: string;
   /** "compact" = inline row (search cards). "full" = stacked with ID. */
   variant?: "compact" | "full";
   /** Domain accent color for star. Defaults to muted. */
   accentColor?: string;
 };
 
-export function EmployerTrustBadge({ employerWmId, variant = "compact", accentColor }: Props) {
-  const jmId = employerWmId || getEmployerBusinessKey(employerSettingsStorage.get()) || "";
+export function EmployerTrustBadge({ employerMlId, variant = "compact", accentColor }: Props) {
+  const mlId = employerMlId || getEmployerBusinessKey(employerSettingsStorage.get()) || "";
 
   useSyncExternalStore(
     ratingStorage.subscribe,
@@ -28,7 +28,7 @@ export function EmployerTrustBadge({ employerWmId, variant = "compact", accentCo
     () => JSON.stringify(ratingStorage.getAllWRRatings()),
   );
 
-  const info = useMemo(() => (jmId ? getEmployerQuickInfo(jmId) : null), [jmId]);
+  const info = useMemo(() => (mlId ? getEmployerQuickInfo(mlId) : null), [mlId]);
 
   if (!info) return null;
 
@@ -126,29 +126,29 @@ export function EmployerTrustBadge({ employerWmId, variant = "compact", accentCo
         </span>
       </div>
 
-      <JmIdCopyable jmId={info.wmId} />
+      <MlIdCopyable mlId={info.wmId} />
     </div>
   );
 }
 
-function JmIdCopyable({ jmId }: { jmId: string }) {
+function MlIdCopyable({ mlId }: { mlId: string }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(() => {
     try {
-      void navigator.clipboard.writeText(jmId);
+      void navigator.clipboard.writeText(mlId);
     } catch {
       /* safe */
     }
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
-  }, [jmId]);
+  }, [mlId]);
 
   return (
     <button
       type="button"
       onClick={handleCopy}
-      aria-label="Copy Job Mitra ID"
+      aria-label="Copy Mitra Labs ID"
       style={{
         marginTop: 4,
         display: "inline-flex",
@@ -169,7 +169,7 @@ function JmIdCopyable({ jmId }: { jmId: string }) {
           fontFamily: "monospace",
         }}
       >
-        {jmId}
+        {mlId}
       </span>
       <span style={{ fontSize: 10, color: copied ? "#16a34a" : "var(--wm-er-muted, #94a3b8)" }}>
         {copied ? "✓ Copied" : "📋"}

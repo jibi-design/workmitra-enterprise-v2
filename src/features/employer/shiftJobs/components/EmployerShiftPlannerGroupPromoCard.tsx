@@ -1,6 +1,6 @@
 // Job Mitra | EmployerShiftPlannerGroupPromoCard.tsx | Green promo on shift posts — no teal planner UI
 
-import type { EmployerPlannerPostGroup } from "../../planner/helpers/employerPlannerPostsGrouping";
+import type { EmployerPlannerPostGroup } from "../../../shared/planner/ports/plannerShiftJobsBridge";
 
 type Props = {
   group: EmployerPlannerPostGroup;
@@ -12,7 +12,7 @@ export function EmployerShiftPlannerGroupPromoCard({ group, onOpenPlan }: Props)
     <article
       style={{
         padding: "14px 16px",
-        borderRadius: 16,
+        borderRadius: "var(--wm-radius-chip)",
         border: "1px solid rgba(39, 174, 96, 0.2)",
         background: "linear-gradient(180deg, rgba(240,253,244,0.88), rgba(255,255,255,0.98))",
       }}

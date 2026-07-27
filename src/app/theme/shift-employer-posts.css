@@ -69,31 +69,43 @@
 }
 
 .wm-shiftPostsKpiGrid {
-  margin-top: var(--wm-stack-gap);
+  margin-top: 0;
 }
 
 .wm-shiftPostsKpiTile {
   min-height: 76px;
 }
 
-.wm-shiftPostsKpiTile.isShift .wm-er-tileValue {
-  color: var(--wm-er-accent-shift);
+.wm-shiftPostsFilterBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
 }
 
-.wm-shiftPostsKpiTile.isSuccess .wm-er-tileValue {
-  color: var(--wm-success);
+.wm-shiftPostsFilterBannerText {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--wm-er-accent-shift, #16a34a);
+  line-height: 1.4;
 }
 
-.wm-shiftPostsKpiTile.isShift::before {
-  background: var(--wm-er-accent-shift);
-}
-
-.wm-shiftPostsKpiTile.isSuccess::before {
-  background: var(--wm-success);
+.wm-shiftPostsPlanToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #15803d;
+  cursor: pointer;
 }
 
 .wm-shiftPostsList {
-  margin-top: var(--wm-stack-gap);
+  margin-top: 0;
   display: grid;
   gap: 10px;
 }
@@ -150,15 +162,10 @@
 .wm-shiftPostsRecoveryTip {
   padding: 10px 11px;
   border-radius: var(--wm-radius-16);
-  background:
-    radial-gradient(circle at 100% 0%, rgba(22, 163, 74, 0.07), transparent 34%),
-    rgba(255, 255, 255, 0.74);
-  border: 1px solid rgba(22, 163, 74, 0.14);
   color: var(--wm-er-muted);
   font-size: 11px;
   font-weight: 800;
   line-height: 1.48;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
 }
 
 .wm-shiftPostsEmptyCreateBtn {

@@ -40,7 +40,7 @@ export function EmployerCompletedWorkHistory({
         <div
           style={{
             padding: "22px 16px",
-            borderRadius: 20,
+            borderRadius: "var(--wm-radius-employee-card)",
             textAlign: "center",
             background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
             border: "1px solid rgba(226,232,240,0.9)",

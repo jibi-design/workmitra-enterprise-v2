@@ -1,6 +1,9 @@
 // App name: Job Mitra
 // File name: EmployerShiftPostsHeader.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\components\EmployerShiftPostsHeader.tsx
+// My Posts hero — DomainHero aligned with Employer Shift Home (Step 2)
+
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
+import { IconPlus, IconPost } from "./ShiftHomeIcons";
 
 type EmployerShiftPostsHeaderProps = {
   readonly draftCount?: number;
@@ -13,50 +16,40 @@ export function EmployerShiftPostsHeader({
   onTemplates,
   onCreate,
 }: EmployerShiftPostsHeaderProps) {
-  return (
-    <div className="wm-pageHead">
-      <div>
-        <div className="wm-pageTitle">My Posts</div>
+  const subtitle =
+    draftCount > 0
+      ? `All your shift posts · ${draftCount} local draft${draftCount > 1 ? "s" : ""} saved`
+      : "All your shift posts";
 
-        <div className="wm-pageSub">
-          All your shift posts
-          {draftCount > 0 ? ` · ${draftCount} local draft${draftCount > 1 ? "s" : ""} saved` : ""}
+  return (
+    <DomainHero
+      variant="shift"
+      audience="employer"
+      icon={<IconPost />}
+      title="My Posts"
+      subtitle={subtitle}
+      description="Review open and active shift posts, templates, and vacancy status from one list."
+      trailing={
+        <div className="wm-shiftPostsHeaderActions">
+          {draftCount > 0 ? (
+            <span className="wm-shiftPostsDraftBadge">
+              {draftCount} Draft{draftCount > 1 ? "s" : ""}
+            </span>
+          ) : null}
+
+          <button
+            className="wm-outlineBtn wm-shiftPostsTemplatesBtn wm-shift-pressable"
+            type="button"
+            onClick={onTemplates}
+          >
+            Templates
+          </button>
+
+          <button className="wm-primarybtn wm-shiftPostsCreateBtn" type="button" onClick={onCreate}>
+            <IconPlus /> New Shift
+          </button>
         </div>
-      </div>
-
-      <div className="wm-shiftPostsHeaderActions">
-        {draftCount > 0 && (
-          <span className="wm-shiftPostsDraftBadge">
-            {draftCount} Draft{draftCount > 1 ? "s" : ""}
-          </span>
-        )}
-
-        <button
-          className="wm-outlineBtn wm-shiftPostsTemplatesBtn"
-          type="button"
-          onClick={onTemplates}
-        >
-          Templates
-        </button>
-
-        <button className="wm-primarybtn wm-shiftPostsCreateBtn" type="button" onClick={onCreate}>
-          <IconPlus /> New Shift
-        </button>
-      </div>
-    </div>
-  );
-}
-
-export function IconPlus() {
-  return (
-    <svg
-      className="wm-shiftPostsPlusIcon"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2Z" />
-    </svg>
+      }
+    />
   );
 }

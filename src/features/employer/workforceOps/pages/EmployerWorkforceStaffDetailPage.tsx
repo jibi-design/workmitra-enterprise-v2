@@ -3,6 +3,8 @@
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\workforceOps\pages\EmployerWorkforceStaffDetailPage.tsx
 
 import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
+import { EnterpriseEmpty } from "../../../../shared/components/enterprise/EnterpriseEmpty";
 import type {
   WorkforceCategory,
   WorkforceStaff,
@@ -12,7 +14,6 @@ import {
   WF_STAFF_CHANGED,
 } from "../../../../shared/domains/workforce/storage/workforceStorageUtils";
 import { IconBack } from "../../../../shared/domains/workforce/ui/workforceIcons";
-import { AMBER } from "../../../../shared/domains/workforce/ui/workforceStyles";
 import { EmployerWorkforceStaffDetailActions } from "../components/EmployerWorkforceStaffDetailActions";
 import { EmployerWorkforceStaffDetailCategories } from "../components/EmployerWorkforceStaffDetailCategories";
 import { EmployerWorkforceStaffDetailHeader } from "../components/EmployerWorkforceStaffDetailHeader";
@@ -72,14 +73,6 @@ function subscribe(cb: () => void): () => void {
     window.removeEventListener("storage", handler);
   };
 }
-
-const backButtonStyle: React.CSSProperties = {
-  background: "none",
-  border: "none",
-  cursor: "pointer",
-  color: AMBER,
-  padding: 4,
-};
 
 export function EmployerWorkforceStaffDetailPage({ staffId, onBack }: Props) {
   const snapshotFn = useMemo(() => getSnapshot(staffId), [staffId]);
@@ -163,28 +156,30 @@ export function EmployerWorkforceStaffDetailPage({ staffId, onBack }: Props) {
   if (!data.staff) {
     return (
       <div className="wm-er-vWorkforce">
-        <div className="wm-pageHead">
-          <button type="button" onClick={onBack} style={backButtonStyle}>
-            <IconBack />
-          </button>
+        <DomainHero
+          variant="workforce"
+          audience="employer"
+          icon={
+            <button
+              type="button"
+              className="wm-domainHeroIconBtn"
+              onClick={onBack}
+              aria-label="Back"
+            >
+              <IconBack />
+            </button>
+          }
+          title="Staff not found"
+          subtitle="This staff member may have been removed"
+          description="Return to Staff Directory to continue."
+        />
 
-          <div className="wm-pageTitle">Staff not found</div>
-        </div>
-
-        <div className="wm-er-card" style={{ marginTop: 14, padding: 24, textAlign: "center" }}>
-          <div style={{ fontSize: 14, color: "var(--wm-er-muted)" }}>
-            This staff member may have been removed.
-          </div>
-
-          <button
-            className="wm-primarybtn"
-            type="button"
-            onClick={onBack}
-            style={{ marginTop: 12, background: AMBER }}
-          >
-            Go Back
-          </button>
-        </div>
+        <EnterpriseEmpty
+          title="Staff unavailable"
+          subtitle="This staff member may have been removed."
+          primaryLabel="Go Back"
+          onPrimary={onBack}
+        />
       </div>
     );
   }

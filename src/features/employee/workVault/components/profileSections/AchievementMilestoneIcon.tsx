@@ -55,6 +55,16 @@ export function AchievementMilestoneIcon({
     );
   }
 
+  if (icon === "planner" || group === "planner") {
+    return (
+      <IconShell>
+        <path {...common} d="M4 5h16v14H4z" />
+        <path {...common} d="M8 3v4M16 3v4M4 9h16" />
+        <path {...common} d="M8 13h3M13 13h3M8 17h8" />
+      </IconShell>
+    );
+  }
+
   if (icon === "star") {
     return (
       <IconShell>

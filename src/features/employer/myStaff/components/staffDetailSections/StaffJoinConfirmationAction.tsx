@@ -16,7 +16,7 @@ export function StaffJoinConfirmationAction({
       <div
         style={{
           padding: "12px 13px",
-          borderRadius: 16,
+          borderRadius: "var(--wm-radius-chip)",
           background: "rgba(29,78,216,0.055)",
           border: "1px solid rgba(29,78,216,0.12)",
           color: "#1e3a8a",
@@ -36,7 +36,7 @@ export function StaffJoinConfirmationAction({
         style={{
           width: "100%",
           padding: "14px 20px",
-          borderRadius: 14,
+          borderRadius: "var(--wm-radius-chip)",
           border: "1px solid rgba(22,163,74,0.28)",
           background: "linear-gradient(135deg, #15803d, #16a34a)",
           color: "#ffffff",

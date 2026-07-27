@@ -1,6 +1,4 @@
-// App name: Job Mitra
-// File name: EmployerFavoritesPage.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\pages\EmployerFavoritesPage.tsx
+// App name: Job Mitra | EmployerFavoritesPage.tsx — stackGrid (Wave 3)
 
 import { EmployerFavoriteAddCard } from "../components/EmployerFavoriteAddCard";
 import { EmployerFavoritesEmptyState } from "../components/EmployerFavoritesEmptyState";
@@ -38,8 +36,14 @@ export function EmployerFavoritesPage() {
   } = useEmployerFavoritesPageState();
 
   return (
-    <div>
-      {inviteTarget && <EmployerInviteToShiftModal target={inviteTarget} onClose={closeInvite} />}
+    <div
+      className="wm-er-vShift wm-stackGrid"
+      data-testid="employer-favorites-page"
+      style={{ gap: "var(--wm-stack-gap)", paddingBottom: 32 }}
+    >
+      {inviteTarget ? (
+        <EmployerInviteToShiftModal target={inviteTarget} onClose={closeInvite} />
+      ) : null}
 
       <EmployerFavoritesHeader totalFavorites={favorites.length} />
 

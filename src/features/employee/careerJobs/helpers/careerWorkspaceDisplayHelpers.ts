@@ -66,7 +66,7 @@ export function toneBadgeStyle(tone: BadgeTone): CSSProperties {
   return {
     border: "1px solid rgba(29,78,216,0.12)",
     background: "rgba(29,78,216,0.04)",
-    color: "var(--wm-emp-muted, #6b7280)",
+    color: "var(--wm-career-muted, #6b7280)",
   };
 }
 
@@ -74,7 +74,7 @@ export function explanationBorder(tone: BadgeTone): string {
   if (tone === "career") return "rgba(29,78,216,0.16)";
   if (tone === "warn") return "rgba(217,119,6,0.18)";
   if (tone === "bad") return "rgba(220,38,38,0.18)";
-  return "var(--wm-emp-border, rgba(15,23,42,0.10))";
+  return "var(--wm-career-border, rgba(15,23,42,0.10))";
 }
 
 export function explanationBg(tone: BadgeTone): string {
@@ -130,7 +130,7 @@ export function updateKindTone(kind: string): BadgeTone {
 export function updateRowBorder(kind: string): string {
   if (kind === "broadcast") return "1px solid rgba(29,78,216,0.12)";
   if (kind === "direct") return "1px solid rgba(29,78,216,0.22)";
-  return "1px solid var(--wm-emp-border, rgba(15,23,42,0.10))";
+  return "1px solid var(--wm-career-border, rgba(15,23,42,0.10))";
 }
 
 export function updateRowBg(kind: string): string {

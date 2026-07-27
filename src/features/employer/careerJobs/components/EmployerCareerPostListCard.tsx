@@ -18,7 +18,7 @@ export function EmployerCareerPostListCard({ summary, onOpenPosts, onCreate }: P
   const hasPosts = summary.total > 0;
 
   return (
-    <section style={CARD_STYLE}>
+    <section className="wm-er-card wm-career-card wm-career-card--employer" style={CARD_STYLE}>
       <div
         style={{
           position: "absolute",
@@ -59,10 +59,10 @@ export function EmployerCareerPostListCard({ summary, onOpenPosts, onCreate }: P
       </div>
 
       <div style={{ position: "relative", zIndex: 1, ...ACTION_ROW_STYLE }}>
-        <button type="button" onClick={onOpenPosts} style={PRIMARY_BUTTON_STYLE}>
+        <button type="button" className="wm-primarybtn" onClick={onOpenPosts}>
           Open Post List
         </button>
-        <button type="button" onClick={onCreate} style={SECONDARY_BUTTON_STYLE}>
+        <button type="button" className="wm-outlineBtn" onClick={onCreate}>
           Create Job
         </button>
       </div>
@@ -92,7 +92,7 @@ function SummaryChip({ label, value }: { label: string; value: number }) {
 // ULTRA-PREMIUM STYLES
 const CARD_STYLE: CSSProperties = {
   padding: 18,
-  borderRadius: 24,
+  borderRadius: "var(--wm-radius-employer-card)",
   border: "1px solid rgba(255, 255, 255, 0.9)",
   background: "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,250,252,0.6))",
   boxShadow: "0 12px 32px -4px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255,255,255,1)",
@@ -105,7 +105,7 @@ const CARD_STYLE: CSSProperties = {
 const EYEBROW_STYLE: CSSProperties = {
   display: "inline-block",
   padding: "4px 10px",
-  borderRadius: 12,
+  borderRadius: "var(--wm-radius-button)",
   background: "rgba(37, 99, 235, 0.08)",
   border: "1px solid rgba(37, 99, 235, 0.12)",
   fontSize: 10,
@@ -132,7 +132,7 @@ const SUBTITLE_STYLE: CSSProperties = {
 const COUNT_BADGE_STYLE: CSSProperties = {
   minWidth: 38,
   height: 38,
-  borderRadius: 12,
+  borderRadius: "var(--wm-radius-button)",
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
@@ -152,7 +152,7 @@ const SUMMARY_GRID_STYLE: CSSProperties = {
 const SUMMARY_CHIP_STYLE: CSSProperties = {
   minWidth: 0,
   padding: "14px",
-  borderRadius: 16,
+  borderRadius: "var(--wm-radius-chip)",
   background: "rgba(255, 255, 255, 0.7)",
   border: "1px solid rgba(255, 255, 255, 0.9)",
   boxShadow: "0 4px 12px rgba(0,0,0,0.02), inset 0 1px 1px rgba(255,255,255,0.8)",
@@ -162,37 +162,12 @@ const SUMMARY_VALUE_STYLE: CSSProperties = { marginTop: 4, fontSize: 19, fontWei
 const ACTION_ROW_STYLE: CSSProperties = {
   display: "grid",
   gridTemplateColumns: "1fr 1fr",
-  gap: 10,
+  gap: "var(--wm-space-10)",
   marginTop: 2,
-};
-const PRIMARY_BUTTON_STYLE: CSSProperties = {
-  minHeight: 44,
-  borderRadius: 14,
-  border: "1px solid rgba(255,255,255,0.15)",
-  background: "linear-gradient(180deg, #3b82f6 0%, #2563eb 100%)",
-  color: "#fff",
-  fontSize: 13,
-  fontWeight: 700,
-  cursor: "pointer",
-  boxShadow: "inset 0 1px 1px rgba(255,255,255,0.3), 0 8px 16px -4px rgba(37, 99, 235, 0.25)",
-  textShadow: "0 1px 2px rgba(0,0,0,0.1)",
-  transition: "transform 0.1s var(--wm-motion-spring)",
-};
-const SECONDARY_BUTTON_STYLE: CSSProperties = {
-  minHeight: 44,
-  borderRadius: 14,
-  border: "1px solid rgba(15, 23, 42, 0.08)",
-  background: "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)",
-  color: CAREER_TEXT,
-  fontSize: 13,
-  fontWeight: 700,
-  cursor: "pointer",
-  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.03), inset 0 1px 1px rgba(255,255,255,1)",
-  transition: "transform 0.1s var(--wm-motion-spring)",
 };
 const EMPTY_NOTE_STYLE: CSSProperties = {
   padding: "12px",
-  borderRadius: 14,
+  borderRadius: "var(--wm-radius-chip)",
   background: "rgba(37, 99, 235, 0.05)",
   border: "1px solid rgba(37, 99, 235, 0.08)",
   color: CAREER_BLUE_DEEP,

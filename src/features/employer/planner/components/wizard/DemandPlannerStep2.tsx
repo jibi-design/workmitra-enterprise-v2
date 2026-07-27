@@ -98,8 +98,8 @@ export function DemandPlannerStep2({
               padding: "6px 12px",
               borderRadius: 8,
               border: "1px solid var(--wm-er-border)",
-              background: copyApplied ? "rgba(22,163,74,0.08)" : "var(--wm-er-surface)",
-              color: copyApplied ? "var(--wm-er-accent-shift)" : "var(--wm-er-text)",
+              background: copyApplied ? "var(--wm-planner-accent-soft)" : "var(--wm-er-surface)",
+              color: copyApplied ? "var(--wm-planner-accent-strong)" : "var(--wm-er-text)",
               cursor: "pointer",
             }}
           >

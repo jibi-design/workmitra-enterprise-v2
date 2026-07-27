@@ -3,7 +3,7 @@
 // Sub-components for EmployeeCareerWorkspacePage.
 // InfoRow (job details) + UpdateCard (updates feed).
 
-import type { CareerWorkspaceUpdate } from "../../../employer/careerJobs/types/careerTypes";
+import type { CareerWorkspaceUpdate } from "../../../career/types/careerDomainTypes";
 import {
   fmtDateTime,
   updateKindLabel,
@@ -19,14 +19,14 @@ export function InfoRow({ label, value }: { label: string; value: string }) {
   if (!value) return null;
   return (
     <div style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "4px 0" }}>
-      <div style={{ fontSize: 12, fontWeight: 700, color: "var(--wm-emp-muted, #6b7280)" }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: "var(--wm-career-muted, #6b7280)" }}>
         {label}
       </div>
       <div
         style={{
           fontSize: 12,
           fontWeight: 700,
-          color: "var(--wm-emp-text, #111827)",
+          color: "var(--wm-career-text, #111827)",
           textAlign: "right",
         }}
       >
@@ -46,7 +46,7 @@ export function UpdateCard({ update }: { update: CareerWorkspaceUpdate }) {
       style={{
         border: updateRowBorder(update.kind),
         background: updateRowBg(update.kind),
-        borderRadius: 16,
+        borderRadius: "var(--wm-radius-chip)",
         padding: "16px 20px",
         transition: "all 0.2s ease",
         boxShadow: "0 4px 6px -1px rgba(0,0,0,0.02)",
@@ -62,14 +62,14 @@ export function UpdateCard({ update }: { update: CareerWorkspaceUpdate }) {
         }}
       >
         <div style={{ display: "flex", gap: 8, alignItems: "baseline", flexWrap: "wrap" }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--wm-emp-text, #111827)" }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--wm-career-text, #111827)" }}>
             {update.title}
           </div>
           <span
             style={{
               height: 20,
               padding: "0 8px",
-              borderRadius: 999,
+              borderRadius: "var(--wm-radius-pill)",
               display: "inline-flex",
               alignItems: "center",
               fontSize: 10,
@@ -84,7 +84,7 @@ export function UpdateCard({ update }: { update: CareerWorkspaceUpdate }) {
           style={{
             fontSize: 11,
             fontWeight: 600,
-            color: "var(--wm-emp-muted, #6b7280)",
+            color: "var(--wm-career-muted, #6b7280)",
             whiteSpace: "nowrap",
           }}
         >
@@ -96,7 +96,7 @@ export function UpdateCard({ update }: { update: CareerWorkspaceUpdate }) {
           style={{
             marginTop: 6,
             fontSize: 12,
-            color: "var(--wm-emp-muted, #6b7280)",
+            color: "var(--wm-career-muted, #6b7280)",
             lineHeight: 1.6,
           }}
         >

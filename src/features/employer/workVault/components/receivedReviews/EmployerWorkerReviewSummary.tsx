@@ -22,7 +22,7 @@ export function EmployerWorkerReviewSummary({ summary }: EmployerWorkerReviewSum
     <section
       style={{
         padding: 14,
-        borderRadius: 22,
+        borderRadius: "var(--wm-radius-employee-card)",
         border: "1px solid rgba(124,58,237,0.16)",
         background:
           "radial-gradient(circle at top right, rgba(124,58,237,0.13), transparent 34%), linear-gradient(135deg, rgba(124,58,237,0.09), rgba(255,255,255,0.99) 52%, rgba(240,253,244,0.62))",
@@ -61,7 +61,7 @@ export function EmployerWorkerReviewSummary({ summary }: EmployerWorkerReviewSum
           style={{
             minWidth: 74,
             padding: "10px 10px",
-            borderRadius: 20,
+            borderRadius: "var(--wm-radius-employee-card)",
             textAlign: "center",
             background: "rgba(255,255,255,0.86)",
             border: "1px solid rgba(124,58,237,0.16)",
@@ -106,7 +106,7 @@ export function EmployerWorkerReviewSummary({ summary }: EmployerWorkerReviewSum
         <div
           style={{
             padding: "10px 11px",
-            borderRadius: 17,
+            borderRadius: "var(--wm-radius-chip)",
             background: "rgba(255,255,255,0.78)",
             border: "1px solid rgba(226,232,240,0.9)",
           }}
@@ -129,7 +129,7 @@ export function EmployerWorkerReviewSummary({ summary }: EmployerWorkerReviewSum
                 key={tag}
                 style={{
                   padding: "5px 10px",
-                  borderRadius: 999,
+                  borderRadius: "var(--wm-radius-pill)",
                   background: "rgba(124,58,237,0.08)",
                   border: "1px solid rgba(124,58,237,0.14)",
                   color: VAULT_PURPLE,
@@ -178,7 +178,7 @@ function VisualMeter({
         style={{
           marginTop: 6,
           height: 8,
-          borderRadius: 999,
+          borderRadius: "var(--wm-radius-pill)",
           background: "rgba(226,232,240,0.9)",
           overflow: "hidden",
         }}
@@ -187,7 +187,7 @@ function VisualMeter({
           style={{
             width: `${percent}%`,
             height: "100%",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             background: accent,
           }}
         />
@@ -201,7 +201,7 @@ function SummaryTile({ label, value, accent }: { label: string; value: string; a
     <div
       style={{
         padding: "9px 8px",
-        borderRadius: 15,
+        borderRadius: "var(--wm-radius-chip)",
         background: "rgba(255,255,255,0.9)",
         border: "1px solid rgba(226,232,240,0.92)",
         minWidth: 0,

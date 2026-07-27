@@ -20,7 +20,7 @@ export function WorkforcePostEventRatingRateAllBar({
         alignItems: "center",
         gap: 8,
         padding: "8px 10px",
-        borderRadius: 8,
+        borderRadius: "var(--wm-radius-8)",
         background: "rgba(180,83,9,0.06)",
       }}
     >
@@ -43,7 +43,7 @@ export function WorkforcePostEventRatingRateAllBar({
             style={{
               width: 28,
               height: 28,
-              borderRadius: 6,
+              borderRadius: "var(--wm-radius-8)",
               border: "1px solid var(--wm-er-border)",
               background: "#fff",
               color: "var(--wm-er-accent-workforce, #b45309)",

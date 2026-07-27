@@ -166,7 +166,7 @@ export function scorePost(post: MatchablePost): MatchResult {
 
   try {
     const wmId = profile.uniqueId ?? "";
-    const points = wmId ? workerPointsStorage.getByWmId(wmId) : null;
+    const points = wmId ? workerPointsStorage.getByMlId(wmId) : null;
     const stars = points
       ? points.total >= 300
         ? 4.5

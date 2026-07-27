@@ -4,8 +4,8 @@
 // Shows upcoming roster assignments as a clean list.
 // Employee can view but not edit assignments.
 
-import { useEmployeeSchedule } from "../../../employer/hrManagement/helpers/rosterPlannerHooks";
-import { getSiteColor } from "../../../employer/hrManagement/helpers/rosterPlannerConstants";
+import { useEmployeeSchedule } from "../../../shared/hr/hrPublic";
+import { getSiteColor } from "../../../shared/hr/hrPublic";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -49,10 +49,14 @@ export function EmployeeScheduleSection({ hrCandidateId }: Props) {
     <div className="wm-ee-card">
       {/* Header */}
       <div style={{ marginBottom: 12 }}>
-        <div style={{ fontWeight: 900, fontSize: 14, color: "var(--wm-emp-text, var(--wm-er-text))" }}>
+        <div
+          style={{ fontWeight: 900, fontSize: 14, color: "var(--wm-emp-text, var(--wm-er-text))" }}
+        >
           My Schedule
         </div>
-        <div style={{ fontSize: 11, color: "var(--wm-emp-muted, var(--wm-er-muted))", marginTop: 2 }}>
+        <div
+          style={{ fontSize: 11, color: "var(--wm-emp-muted, var(--wm-er-muted))", marginTop: 2 }}
+        >
           Your upcoming work schedule
         </div>
       </div>
@@ -79,48 +83,66 @@ export function EmployeeScheduleSection({ hrCandidateId }: Props) {
               }}
             >
               {/* Date Column */}
-              <div style={{
-                minWidth: 54,
-                textAlign: "center",
-                padding: "4px 0",
-              }}>
+              <div
+                style={{
+                  minWidth: 54,
+                  textAlign: "center",
+                  padding: "4px 0",
+                }}
+              >
                 {today && (
-                  <div style={{ fontSize: 9, fontWeight: 800, color: "#2563eb", textTransform: "uppercase", marginBottom: 1 }}>
+                  <div
+                    style={{
+                      fontSize: 9,
+                      fontWeight: 800,
+                      color: "#2563eb",
+                      textTransform: "uppercase",
+                      marginBottom: 1,
+                    }}
+                  >
                     Today
                   </div>
                 )}
-                <div style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: today ? "#2563eb" : "var(--wm-emp-text, var(--wm-er-text))",
-                }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: today ? "#2563eb" : "var(--wm-emp-text, var(--wm-er-text))",
+                  }}
+                >
                   {formatDate(a.date)}
                 </div>
               </div>
 
               {/* Divider */}
-              <div style={{
-                width: 3,
-                height: 28,
-                borderRadius: 2,
-                background: sc.color,
-                flexShrink: 0,
-              }} />
+              <div
+                style={{
+                  width: 3,
+                  height: 28,
+                  borderRadius: 2,
+                  background: sc.color,
+                  flexShrink: 0,
+                }}
+              />
 
               {/* Details */}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: "var(--wm-emp-text, var(--wm-er-text))",
-                }}>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: "var(--wm-emp-text, var(--wm-er-text))",
+                  }}
+                >
                   {a.site}
                 </div>
-                <div style={{
-                  fontSize: 11,
-                  color: "var(--wm-emp-muted, var(--wm-er-muted))",
-                  marginTop: 2,
-                }}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: "var(--wm-emp-muted, var(--wm-er-muted))",
+                    marginTop: 2,
+                  }}
+                >
                   🕐 {a.shiftStart} – {a.shiftEnd}
                   {a.note && ` · ${a.note}`}
                 </div>
@@ -130,12 +152,14 @@ export function EmployeeScheduleSection({ hrCandidateId }: Props) {
         })}
 
         {schedule.length > 10 && (
-          <div style={{
-            textAlign: "center",
-            padding: "6px 0",
-            fontSize: 11,
-            color: "var(--wm-emp-muted, var(--wm-er-muted))",
-          }}>
+          <div
+            style={{
+              textAlign: "center",
+              padding: "6px 0",
+              fontSize: 11,
+              color: "var(--wm-emp-muted, var(--wm-er-muted))",
+            }}
+          >
             +{schedule.length - 10} more scheduled
           </div>
         )}

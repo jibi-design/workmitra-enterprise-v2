@@ -60,7 +60,7 @@ export function CareerResultConfirmModal({
   const badgeBg = isPassed ? "rgba(22, 163, 74, 0.1)" : "rgba(220, 38, 38, 0.1)";
   const badgeBorder = isPassed ? "rgba(22, 163, 74, 0.2)" : "rgba(220, 38, 38, 0.2)";
   const gradientBg = isPassed
-    ? "linear-gradient(135deg, #16a34a 0%, #15803d 100%)"
+    ? "linear-gradient(135deg, var(--wm-career-success, #16a34a) 0%, var(--wm-career-success-strong, #15803d) 100%)"
     : "linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)";
 
   return (
@@ -87,7 +87,7 @@ export function CareerResultConfirmModal({
             alignItems: "center",
             gap: 6,
             padding: "6px 12px",
-            borderRadius: 12,
+            borderRadius: "var(--wm-radius-button)",
             background: badgeBg,
             border: `1px solid ${badgeBorder}`,
             color: confirmColor,
@@ -147,7 +147,7 @@ export function CareerResultConfirmModal({
           style={{
             marginTop: 20,
             padding: 16,
-            borderRadius: 16,
+            borderRadius: "var(--wm-radius-chip)",
             background: "rgba(241, 245, 249, 0.6)",
             border: "1px solid rgba(203, 213, 225, 0.4)",
             display: "flex",
@@ -169,7 +169,7 @@ export function CareerResultConfirmModal({
           style={{
             marginTop: 16,
             padding: 16,
-            borderRadius: 16,
+            borderRadius: "var(--wm-radius-chip)",
             background: isPassed ? "rgba(240, 253, 244, 0.5)" : "rgba(254, 242, 242, 0.5)",
             border: `1px dashed ${badgeBorder}`,
             color: "#334155",
@@ -192,7 +192,7 @@ export function CareerResultConfirmModal({
               fontSize: 14,
               fontWeight: 800,
               minHeight: 52,
-              borderRadius: 18,
+              borderRadius: "var(--wm-radius-chip)",
               background: "#ffffff",
               border: "1px solid #cbd5e1",
               color: "#475569",
@@ -211,7 +211,7 @@ export function CareerResultConfirmModal({
               fontSize: 14,
               fontWeight: 900,
               minHeight: 52,
-              borderRadius: 18,
+              borderRadius: "var(--wm-radius-chip)",
               background: gradientBg,
               border: "none",
               color: "#ffffff",

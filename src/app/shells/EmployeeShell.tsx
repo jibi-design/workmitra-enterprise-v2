@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { roleStorage, type AppRole } from "../storage/roleStorage";
 import { logoutApp, postLogoutRoute } from "../../shared/auth/logoutApp";
 import { ROUTE_PATHS } from "../router/routePaths";
 import { employeeNotificationsStorage } from "../../features/employee/notifications/storage/employeeNotifications.storage";
@@ -14,6 +13,10 @@ import { ConfirmModal, type ConfirmData } from "../../shared/components/ConfirmM
 import { usePulseEventBridgeConsumer } from "../../features/pulse/pulseEventBridge";
 import { showPhase2Features } from "../../shared/config/featureFlags";
 import BottomNav from "../../components/layout/BottomNav/BottomNav";
+import { useThemeBundle } from "./useThemeBundle";
+import { useAppRole } from "../router/guards/useAppRole";
+import { AUTH_BACKEND_ENABLED } from "../../shared/config/authConfig";
+import { RouteGuardLoading } from "../../shared/components/routes/RouteGuardStatus";
 
 function IconBack() {
   return (
@@ -42,10 +45,6 @@ function getInitials(name: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-function useRole(): AppRole | null {
-  return useSyncExternalStore(roleStorage.subscribe, roleStorage.get, roleStorage.get);
-}
-
 function useUnreadCount(): number {
   return useSyncExternalStore(
     employeeNotificationsStorage.subscribe,
@@ -63,17 +62,32 @@ function safeCanGoBack(): boolean {
 }
 
 export function EmployeeShell() {
-  const role = useRole();
+  const role = useAppRole();
   const unread = useUnreadCount();
   const loc = useLocation();
   const nav = useNavigate();
 
   const [showSheet, setShowSheet] = useState(false);
   const [logoutConfirm, setLogoutConfirm] = useState<ConfirmData | null>(null);
+  const [topbarScrolled, setTopbarScrolled] = useState(false);
+
+  useThemeBundle("employee-shell");
 
   useEffect(() => {
-    if (role === "employee") return initEmployeeNotificationService();
+    if (role === "employee") {
+      void employeeNotificationsStorage.hydrateFromDb();
+      return initEmployeeNotificationService();
+    }
   }, [role]);
+
+  useEffect(() => {
+    function onScroll() {
+      setTopbarScrolled(window.scrollY > 4);
+    }
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   usePulseEventBridgeConsumer(role === "employee" ? "employee" : null);
 
@@ -126,6 +140,9 @@ export function EmployeeShell() {
   }, []);
 
   if (role !== "employee") {
+    if (AUTH_BACKEND_ENABLED && role === null) {
+      return <RouteGuardLoading overlay label="Checking your session" />;
+    }
     const target = role === "employer" ? ROUTE_PATHS.employerHome : ROUTE_PATHS.landing;
     return <Navigate to={target} replace />;
   }
@@ -148,7 +165,7 @@ export function EmployeeShell() {
 
   return (
     <div className="wm-shellRoot wm-shellEmployee">
-      <div className="wm-topbar">
+      <div className={`wm-topbar${topbarScrolled ? " wm-topbarScrolled" : ""}`}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           {!isHome && (
             <button
@@ -176,15 +193,11 @@ export function EmployeeShell() {
             tabIndex={isHome ? undefined : 0}
           >
             <h1>Job Mitra</h1>
-            <p style={{ color: "var(--wm-text-muted, #64748b)" }}>Your career, your control.</p>
+            <p>Your career, your control.</p>
           </div>
         </div>
 
-        <div
-          className="wm-topbarActions"
-          aria-label="Top actions"
-          style={{ display: "flex", gap: 10, alignItems: "center" }}
-        >
+        <div className="wm-topbarActions" aria-label="Top actions">
           <button
             className="wm-iconbtn wm-iconbtnBadgeWrap"
             type="button"
@@ -197,24 +210,9 @@ export function EmployeeShell() {
               <IconBell />
               {unread > 0 ? (
                 <span
+                  key={unread}
+                  className="wm-bellBadge wm-bellBadgeBounce"
                   aria-label={`${unread} unread`}
-                  style={{
-                    position: "absolute",
-                    top: -6,
-                    right: -6,
-                    minWidth: 16,
-                    height: 16,
-                    borderRadius: 999,
-                    padding: "0 5px",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    background: "var(--wm-error)",
-                    color: "#fff",
-                    border: "2px solid var(--wm-er-bg, #fff)",
-                  }}
                 >
                   {unread > 99 ? "99+" : unread}
                 </span>
@@ -224,37 +222,12 @@ export function EmployeeShell() {
 
           <button
             type="button"
+            className="wm-avatarBtn"
             aria-label="Open account menu"
             title="Account menu"
             onClick={handleOpenSheet}
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: "50%",
-              border: "2px solid rgba(22,163,74,0.22)",
-              cursor: "pointer",
-              background: "rgba(22,163,74,0.10)",
-              color: "#16a34a",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 13,
-              fontWeight: 800,
-              letterSpacing: -0.5,
-              flexShrink: 0,
-              overflow: "hidden",
-              padding: 0,
-            }}
           >
-            {userPhoto ? (
-              <img
-                src={userPhoto}
-                alt={displayName}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            ) : (
-              initials
-            )}
+            {userPhoto ? <img src={userPhoto} alt={displayName} /> : initials}
           </button>
         </div>
       </div>

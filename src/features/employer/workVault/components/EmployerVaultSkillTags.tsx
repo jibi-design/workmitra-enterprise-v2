@@ -1,7 +1,10 @@
 // src/features/employer/workVault/components/EmployerVaultSkillTags.tsx
 
-import type { VaultSkillEntry } from "../../../employee/workVault/types/vaultProfileTypes";
-import { VAULT_ACCENT } from "../../../employee/workVault/constants/vaultConstants";
+import {
+  VAULT_ACCENT,
+  vaultAccentMix,
+  type VaultSkillEntry,
+} from "../../../shared/workVault/vaultPublic";
 
 type Props = {
   skills: VaultSkillEntry[];
@@ -24,11 +27,11 @@ export function EmployerVaultSkillTags({ skills }: Props) {
           style={{
             height: 26,
             padding: "0 10px",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             fontSize: 11,
             fontWeight: 700,
-            background: `${VAULT_ACCENT}06`,
-            border: `1px solid ${VAULT_ACCENT}14`,
+            background: `${vaultAccentMix(3)}`,
+            border: `1px solid ${vaultAccentMix(8)}`,
             color: VAULT_ACCENT,
             display: "inline-flex",
             alignItems: "center",

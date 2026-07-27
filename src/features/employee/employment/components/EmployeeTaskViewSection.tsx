@@ -6,8 +6,8 @@
 // Cannot create, edit, or delete tasks.
 
 import { useState, useCallback, useMemo, useSyncExternalStore } from "react";
-import { taskAssignmentStorage } from "../../../employer/hrManagement/storage/taskAssignment.storage";
-import type { TaskEntry } from "../../../employer/hrManagement/types/taskAssignment.types";
+import { taskAssignmentStorage } from "../../../shared/hr/hrPublic";
+import type { TaskEntry } from "../../../shared/hr/hrPublic";
 import { EmployeeTaskCard } from "./EmployeeTaskCard";
 import { EmployeeTaskDetailModal } from "./EmployeeTaskDetailModal";
 
@@ -34,10 +34,7 @@ export function EmployeeTaskViewSection({ hrCandidateId }: Props) {
   const [tab, setTab] = useState<TabKey>("active");
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
-  const subscribe = useCallback(
-    (cb: () => void) => taskAssignmentStorage.subscribe(cb),
-    [],
-  );
+  const subscribe = useCallback((cb: () => void) => taskAssignmentStorage.subscribe(cb), []);
 
   const getSnapshot = useCallback(
     () => JSON.stringify(taskAssignmentStorage.getAllForCandidate(hrCandidateId)),
@@ -47,17 +44,23 @@ export function EmployeeTaskViewSection({ hrCandidateId }: Props) {
   const raw = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 
   const allTasks: TaskEntry[] = useMemo(() => {
-    try { return JSON.parse(raw); } catch { return []; }
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return [];
+    }
   }, [raw]);
 
   const tasks = useMemo(() => {
     return tab === "active"
       ? allTasks.filter((t) => t.status !== "completed").sort((a, b) => a.dueDate - b.dueDate)
-      : allTasks.filter((t) => t.status === "completed").sort((a, b) => (b.completedAt ?? b.updatedAt) - (a.completedAt ?? a.updatedAt));
+      : allTasks
+          .filter((t) => t.status === "completed")
+          .sort((a, b) => (b.completedAt ?? b.updatedAt) - (a.completedAt ?? a.updatedAt));
   }, [allTasks, tab]);
 
   const selectedTask = selectedTaskId
-    ? allTasks.find((t) => t.id === selectedTaskId) ?? null
+    ? (allTasks.find((t) => t.id === selectedTaskId) ?? null)
     : null;
 
   const activeCount = allTasks.filter((t) => t.status !== "completed").length;
@@ -70,10 +73,14 @@ export function EmployeeTaskViewSection({ hrCandidateId }: Props) {
     <div className="wm-ee-card">
       {/* Header */}
       <div style={{ marginBottom: 12 }}>
-        <div style={{ fontWeight: 900, fontSize: 14, color: "var(--wm-emp-text, var(--wm-er-text))" }}>
+        <div
+          style={{ fontWeight: 900, fontSize: 14, color: "var(--wm-emp-text, var(--wm-er-text))" }}
+        >
           My Tasks
         </div>
-        <div style={{ fontSize: 11, color: "var(--wm-emp-muted, var(--wm-er-muted))", marginTop: 2 }}>
+        <div
+          style={{ fontSize: 11, color: "var(--wm-emp-muted, var(--wm-er-muted))", marginTop: 2 }}
+        >
           Tasks assigned to you by your employer
         </div>
       </div>
@@ -118,11 +125,7 @@ export function EmployeeTaskViewSection({ hrCandidateId }: Props) {
       {tasks.length > 0 ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {tasks.map((task) => (
-            <EmployeeTaskCard
-              key={task.id}
-              task={task}
-              onOpen={setSelectedTaskId}
-            />
+            <EmployeeTaskCard key={task.id} task={task} onOpen={setSelectedTaskId} />
           ))}
         </div>
       ) : (
@@ -134,9 +137,7 @@ export function EmployeeTaskViewSection({ hrCandidateId }: Props) {
             fontSize: 13,
           }}
         >
-          {tab === "active"
-            ? "No active tasks right now."
-            : "No completed tasks yet."}
+          {tab === "active" ? "No active tasks right now." : "No completed tasks yet."}
         </div>
       )}
 

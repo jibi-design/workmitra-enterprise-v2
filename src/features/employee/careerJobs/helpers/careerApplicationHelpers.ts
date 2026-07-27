@@ -2,12 +2,7 @@
 //
 // Pure helpers + stable-reference cache for EmployeeCareerApplicationsPage.
 
-import type { CareerApplicationStage } from "../../../employer/careerJobs/types/careerTypes";
-import {
-  CAREER_APPS_KEY,
-  CAREER_APPS_CHANGED,
-} from "../../../employer/careerJobs/helpers/careerStorageUtils";
-import { clampApplicationStage } from "../../../employer/careerJobs/helpers/careerNormalizers";
+import type { CareerApplicationStage } from "../../../career/types/careerDomainTypes";
 import type {
   Tab,
   BadgeTone,
@@ -15,7 +10,6 @@ import type {
   KpiCounts,
   TabCounts,
   ExplanationResult,
-  ScheduledInterviewSummary,
 } from "../types/careerApplicationTypes";
 
 /* ------------------------------------------------ */
@@ -31,7 +25,7 @@ export function stageToTab(stage: CareerApplicationStage): Tab {
   if (stage === "interview") return "interview";
   if (stage === "offered" || stage === "offer_accepted") return "offers";
   if (stage === "hired") return "closed";
-  if (stage === "rejected" || stage === "withdrawn") return "closed";
+  if (stage === "rejected" || stage === "withdrawn" || stage === "offer_declined") return "closed";
   return "active";
 }
 
@@ -53,6 +47,7 @@ export function stageLabel(stageOrApp: CareerApplicationStage | AppLite): string
     interview: "In Interview",
     offered: "Offer Received",
     offer_accepted: "Offer Accepted",
+    offer_declined: "Offer Declined",
     hired: "Confirmed",
     rejected: "Not Selected",
     withdrawn: "Withdrawn",
@@ -64,7 +59,7 @@ export function toneForStage(s: CareerApplicationStage): BadgeTone {
   if (s === "hired") return "info";
   if (s === "offered" || s === "offer_accepted") return "warn";
   if (s === "shortlisted" || s === "interview") return "info";
-  if (s === "rejected" || s === "withdrawn") return "bad";
+  if (s === "rejected" || s === "withdrawn" || s === "offer_declined") return "bad";
   return "neutral";
 }
 
@@ -84,7 +79,7 @@ export function cardLeftColor(stage: CareerApplicationStage): string {
   if (stage === "hired") return "#1d4ed8";
   if (stage === "offer_accepted") return "#2563eb";
   if (stage === "offered") return "#d97706";
-  if (stage === "rejected" || stage === "withdrawn") return "#ef4444";
+  if (stage === "rejected" || stage === "withdrawn" || stage === "offer_declined") return "#ef4444";
   return "#1d4ed8";
 }
 
@@ -92,7 +87,8 @@ export function cardBgTint(stage: CareerApplicationStage): string {
   if (stage === "hired") return "rgba(29,78,216,0.04)";
   if (stage === "offer_accepted") return "rgba(37,99,235,0.04)";
   if (stage === "offered") return "rgba(217,119,6,0.04)";
-  if (stage === "rejected" || stage === "withdrawn") return "rgba(220,38,38,0.03)";
+  if (stage === "rejected" || stage === "withdrawn" || stage === "offer_declined")
+    return "rgba(220,38,38,0.03)";
   return "rgba(29,78,216,0.03)";
 }
 
@@ -162,6 +158,12 @@ export function explanationForStage(app: AppLite, totalRounds: number): Explanat
       tone: "bad",
     };
   }
+  if (app.stage === "offer_declined")
+    return {
+      title: "Offer Declined",
+      body: "You declined this job offer. This is separate from withdrawing an application.",
+      tone: "bad",
+    };
   if (app.stage === "withdrawn")
     return { title: "Withdrawn", body: "You withdrew this application.", tone: "bad" };
   return null;
@@ -197,140 +199,4 @@ export function computeTabCounts(apps: AppLite[]): TabCounts {
   return { active, interview, offers, closed, all: apps.length };
 }
 
-/* ------------------------------------------------ */
-/* Parse helpers                                    */
-/* ------------------------------------------------ */
-type Rec = Record<string, unknown>;
-
-function isRec(x: unknown): x is Rec {
-  return typeof x === "object" && x !== null && !Array.isArray(x);
-}
-
-function str(r: Rec, k: string): string | undefined {
-  const v = r[k];
-  return typeof v === "string" ? v : undefined;
-}
-
-function num(r: Rec, k: string): number | undefined {
-  const v = r[k];
-  return typeof v === "number" && Number.isFinite(v) ? v : undefined;
-}
-
-function parseAppsLite(raw: string | null): AppLite[] {
-  if (!raw) return [];
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return [];
-    const out: AppLite[] = [];
-    for (const x of parsed) {
-      if (!isRec(x)) continue;
-      const id = str(x, "id");
-      const jobId = str(x, "jobId");
-      const appliedAt = num(x, "appliedAt");
-      if (!id || !jobId || appliedAt === undefined) continue;
-      const roundResults = Array.isArray(x["roundResults"]) ? (x["roundResults"] as Rec[]) : [];
-      let totalPassed = 0;
-      let totalScheduled = 0;
-      let nextScheduledInterview: AppLite["nextScheduledInterview"];
-
-      for (const rr of roundResults) {
-        if (!isRec(rr)) continue;
-
-        if (rr["status"] === "passed") totalPassed++;
-
-        if (rr["status"] === "scheduled") {
-          totalScheduled++;
-
-          const scheduledDate = str(rr, "scheduledDate") ?? "";
-          const scheduledTime = str(rr, "scheduledTime") ?? "";
-
-          if (scheduledDate && scheduledTime) {
-            const round = num(rr, "round") ?? totalScheduled;
-            const rsvpRaw = rr["rsvpStatus"];
-            const rsvpStatus =
-              rsvpRaw === "pending" || rsvpRaw === "accepted" || rsvpRaw === "declined"
-                ? rsvpRaw
-                : undefined;
-
-            const scheduledInterview: ScheduledInterviewSummary = {
-              round,
-              label: str(rr, "label") ?? `Round ${round}`,
-              mode: str(rr, "interviewMode") ?? "interview",
-              scheduledDate,
-              scheduledTime,
-              location: str(rr, "location"),
-              meetingLink: str(rr, "meetingLink"),
-              rsvpStatus,
-            };
-
-            if (!nextScheduledInterview || round < nextScheduledInterview.round) {
-              nextScheduledInterview = scheduledInterview;
-            }
-          }
-        }
-      }
-      out.push({
-        id,
-        jobId,
-        stage: clampApplicationStage(x["stage"]),
-        appliedAt,
-        updatedAt: num(x, "updatedAt") ?? appliedAt,
-        currentRound: num(x, "currentRound") ?? 0,
-        totalPassed,
-        totalScheduled,
-        employeeName: str(x, "employeeName") ?? "Applicant",
-        coverNote: str(x, "coverNote") ?? "",
-        noticePeriod: str(x, "noticePeriod") ?? "Immediate",
-        expectedSalary: num(x, "expectedSalary") ?? 0,
-        rejectionReason: str(x, "rejectionReason"),
-        rejectedAt: num(x, "rejectedAt"),
-        offeredAt: num(x, "offeredAt"),
-        hiredAt: num(x, "hiredAt"),
-        withdrawnAt: num(x, "withdrawnAt"),
-        offerDetails: (() => {
-          const od = x["offerDetails"];
-          if (!isRec(od)) return undefined;
-          const salary = num(od, "salary") ?? 0;
-          if (salary <= 0) return undefined;
-          return {
-            jobTitle: str(od, "jobTitle") ?? "",
-            salary,
-            salaryPeriod: str(od, "salaryPeriod") ?? "monthly",
-            startDate: str(od, "startDate") ?? "",
-            message: str(od, "message"),
-          };
-        })(),
-        nextScheduledInterview,
-      });
-    }
-    return out.sort((a, b) => b.appliedAt - a.appliedAt);
-  } catch {
-    return [];
-  }
-}
-
-/* ------------------------------------------------ */
-/* Stable-reference cache                           */
-/* ------------------------------------------------ */
-let _appsCacheRaw: string | null = "__init__";
-let _appsCacheList: AppLite[] = [];
-
-export function getAppsSnapshot(): AppLite[] {
-  const raw = localStorage.getItem(CAREER_APPS_KEY);
-  if (raw !== _appsCacheRaw) {
-    _appsCacheRaw = raw;
-    _appsCacheList = parseAppsLite(raw);
-  }
-  return _appsCacheList;
-}
-
-export function subscribeApps(cb: () => void): () => void {
-  const handler = () => cb();
-  const events = ["storage", "focus", CAREER_APPS_CHANGED];
-  for (const ev of events) window.addEventListener(ev, handler);
-  document.addEventListener("visibilitychange", handler);
-  return () => {
-    for (const ev of events) window.removeEventListener(ev, handler);
-    document.removeEventListener("visibilitychange", handler);
-  };
-}
+export { getAppsSnapshot, subscribeApps } from "./careerApplicationHelpers.snapshot";

@@ -5,6 +5,7 @@
 import { VaultEmptyState } from "../../../../vault/components/VaultEmptyState";
 import type { VaultDocument } from "../../types/vaultTypes";
 import { VaultDocumentCard } from "../VaultDocumentCard";
+import { VaultSensitiveUploadDisclaimer } from "../VaultSensitiveUploadDisclaimer";
 
 type Props = {
   docs: VaultDocument[];
@@ -21,10 +22,12 @@ export function EmployeeVaultFolderDocuments({
 }: Props) {
   return (
     <div style={{ marginTop: 16 }}>
+      <VaultSensitiveUploadDisclaimer />
+
       {docs.length === 0 ? (
         <VaultEmptyState
           title="No documents yet"
-          subtitle="Upload your documents here to keep them safe and share with employers when needed."
+          subtitle="Upload educational and professional career records here. Share visible folders with employers only via OTP when needed."
           ctaLabel="Add Document"
           onCta={onAddDocument}
         />

@@ -3,10 +3,11 @@
 import { useMemo, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { PlannerShell } from "../../../../app/shells/PlannerShell";
 import { DomainHero } from "../../../../shared/components/layout/DomainHero";
 import { plannerPublicIndex } from "../../../shared/planner/plannerPublic";
 import { formatPlannerPayRange } from "../../../shared/planner/plannerPublic";
-import { readEmployeeApplicationsPublic as readEmployeeApplications } from "../../../shared/planner/ports/plannerLegacyShiftBridge";
+import { readPlannerEmployeeApplications } from "../../../shared/planner/services/plannerApplications.reader";
 import { groupApplicationsForMyWork } from "../../planner/helpers/plannerApplicationBundles";
 import { employeeProjectDetailPath } from "../../planner/helpers/plannerEmployeeRoutes";
 import { PlannerEmployeeCommandGrid } from "./PlannerEmployeeCommandGrid";
@@ -19,7 +20,7 @@ function getIndexSnapshot() {
 }
 
 function getPlanBundleCount() {
-  const apps = readEmployeeApplications();
+  const apps = readPlannerEmployeeApplications();
   return groupApplicationsForMyWork(apps).filter((e) => e.kind === "plan").length;
 }
 
@@ -50,7 +51,7 @@ export function PlannerEmployeeGigHub() {
   const openDays = entries.reduce((sum, e) => sum + e.openDayCount, 0);
 
   return (
-    <div className="wm-ee-vPlanner wm-planner-page wm-stackGrid">
+    <PlannerShell audience="employee">
       <DomainHero
         variant="planner"
         audience="employee"
@@ -79,9 +80,8 @@ export function PlannerEmployeeGigHub() {
       <PlannerShiftHomeProjectStrip />
 
       <div className="wm-planner-card">
-        <div className="wm-typeSectionTitle" style={{ marginBottom: "var(--wm-stack-gap)" }}>
-          Open projects preview
-        </div>
+        <div className="wm-planner-sectionLabel">Preview</div>
+        <div className="wm-planner-sectionTitle">Open projects preview</div>
         {preview.length === 0 ? (
           <div className="wm-typeHelper">
             No project plans near you yet. When an employer publishes a plan, it appears here and on
@@ -116,6 +116,6 @@ export function PlannerEmployeeGigHub() {
           Browse all Gig Projects →
         </button>
       </div>
-    </div>
+    </PlannerShell>
   );
 }

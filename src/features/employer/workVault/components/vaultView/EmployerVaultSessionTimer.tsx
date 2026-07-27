@@ -3,9 +3,12 @@
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\workVault\components\vaultView\EmployerVaultSessionTimer.tsx
 
 import { useEffect, useState } from "react";
-import { VAULT_ACCENT } from "../../../../employee/workVault/constants/vaultConstants";
-import { getSessionRemainingMs } from "../../../../employee/workVault/services/vaultAccessService";
-import type { VaultSession } from "../../../../employee/workVault/types/vaultTypes";
+import {
+  getSessionRemainingMs,
+  VAULT_ACCENT,
+  vaultAccentMix,
+  type VaultSession,
+} from "../../../../shared/workVault/vaultPublic";
 
 type Props = {
   session: VaultSession;
@@ -34,9 +37,9 @@ export function EmployerVaultSessionTimer({ session }: Props) {
         alignItems: "center",
         gap: 6,
         padding: "6px 12px",
-        borderRadius: 999,
-        background: isLow ? "rgba(220, 38, 38, 0.08)" : `${VAULT_ACCENT}08`,
-        border: isLow ? "1px solid rgba(220, 38, 38, 0.20)" : `1px solid ${VAULT_ACCENT}18`,
+        borderRadius: "var(--wm-radius-pill)",
+        background: isLow ? "rgba(220, 38, 38, 0.08)" : `${vaultAccentMix(4)}`,
+        border: isLow ? "1px solid rgba(220, 38, 38, 0.20)" : `1px solid ${vaultAccentMix(10)}`,
       }}
     >
       <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">

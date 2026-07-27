@@ -163,4 +163,14 @@ export const ROUTE_PATHS = {
 
   // Employer Profile (Identity — Phase 1+)
   employerProfile: "/employer/profile",
+
+  // Shift Ops (Field Ops) — feature-flagged; SQL apply separate
+  employeeShiftOpsHub: "/employee/shift-ops",
+  employeeShiftOpsInvite: "/employee/shift-ops/invite",
+  employeeShiftOpsVerify: "/employee/shift-ops/verify",
+  employeeShiftOpsPending: "/employee/shift-ops/pending",
+  employeeShiftOpsAccept: "/employee/shift-ops/accept",
+  employeeShiftOpsReady: "/employee/shift-ops/ready",
+  employeeShiftOpsGate: "/employee/shift-ops/gate",
+  employerShiftOpsApprovals: "/employer/shift-ops/approvals",
 } as const;

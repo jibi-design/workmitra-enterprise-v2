@@ -23,7 +23,7 @@ export function ShiftDraftBottomAction({
       style={{
         marginTop: 12,
         padding: 14,
-        borderRadius: 20,
+        borderRadius: "var(--wm-radius-employee-card)",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",

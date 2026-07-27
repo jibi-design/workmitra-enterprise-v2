@@ -1,6 +1,6 @@
 // src/features/employee/shiftJobs/storage/earningsStorage.ts
 //
-// Earnings Tracker — computes worker earnings from confirmed shift applications.
+// Earnings Tracker — estimates from confirmed apps (not payout/settlement; v2.1).
 // Reads from existing shiftApplications.storage (no new keys).
 // Earnings = confirmed apps × (payPerDay × days in shift).
 

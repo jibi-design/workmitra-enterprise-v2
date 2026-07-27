@@ -5,21 +5,17 @@
 // Employee CANNOT see these notes.
 
 import type { EmployerNoteEntry } from "../types/employerNotes.types";
+import { hrEmployerScopedKey } from "./hrStorageKeys";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────────────────────────────────────
-
-const STORAGE_KEY = "wm_employer_notes_v1";
 const CHANGED_EVENT = "wm:employer-notes-changed";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Internal Helpers
-// ─────────────────────────────────────────────────────────────────────────────
+function storageKey(): string {
+  return hrEmployerScopedKey("employer_notes_v1");
+}
 
 function read(): EmployerNoteEntry[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey());
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
     return Array.isArray(parsed) ? (parsed as EmployerNoteEntry[]) : [];
@@ -29,7 +25,7 @@ function read(): EmployerNoteEntry[] {
 }
 
 function write(entries: EmployerNoteEntry[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  localStorage.setItem(storageKey(), JSON.stringify(entries));
   window.dispatchEvent(new Event(CHANGED_EVENT));
 }
 
@@ -42,7 +38,6 @@ function genId(): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const employerNotesStorage = {
-
   // ── Read ──
 
   /** Get all notes for a candidate (newest first — log style) */

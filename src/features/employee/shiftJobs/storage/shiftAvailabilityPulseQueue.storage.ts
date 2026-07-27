@@ -5,7 +5,7 @@ const KEY = "wm_shift_availability_pulse_queue_v1";
 const CHANGED = "wm:shift-availability-pulse-queue-changed";
 
 export type ShiftAvailabilityPulseEntry = {
-  readonly workerWmId: string;
+  readonly workerMlId: string;
   readonly postId: string;
   readonly createdAt: number;
 };
@@ -19,17 +19,22 @@ function read(): ShiftAvailabilityPulseEntry[] {
     if (!Array.isArray(parsed)) return [];
 
     return parsed
-      .filter((item): item is ShiftAvailabilityPulseEntry => {
-        if (typeof item !== "object" || item === null) return false;
-        const record = item as ShiftAvailabilityPulseEntry;
-        return (
-          typeof record.workerWmId === "string" &&
-          record.workerWmId.trim().length > 0 &&
-          typeof record.postId === "string" &&
-          record.postId.trim().length > 0 &&
-          typeof record.createdAt === "number"
-        );
+      .map((item): ShiftAvailabilityPulseEntry | null => {
+        if (typeof item !== "object" || item === null) return null;
+        const record = item as Record<string, unknown>;
+        // Dual-read: prefer workerMlId; accept legacy workerWmId from older localStorage JSON.
+        const workerMlId =
+          typeof record.workerMlId === "string"
+            ? record.workerMlId
+            : typeof record.workerWmId === "string"
+              ? record.workerWmId
+              : "";
+        const postId = typeof record.postId === "string" ? record.postId : "";
+        const createdAt = typeof record.createdAt === "number" ? record.createdAt : NaN;
+        if (!workerMlId.trim() || !postId.trim() || !Number.isFinite(createdAt)) return null;
+        return { workerMlId, postId, createdAt };
       })
+      .filter((entry): entry is ShiftAvailabilityPulseEntry => entry !== null)
       .slice(0, 500);
   } catch {
     return [];
@@ -46,22 +51,22 @@ function write(entries: readonly ShiftAvailabilityPulseEntry[]): void {
 }
 
 export const shiftAvailabilityPulseQueueStorage = {
-  enqueueForWorkers(workerWmIds: readonly string[], postId: string): void {
+  enqueueForWorkers(workerMlIds: readonly string[], postId: string): void {
     const cleanPostId = postId.trim();
     if (!cleanPostId) return;
 
     const now = Date.now();
     const existing = read();
-    const seen = new Set(existing.map((entry) => entry.workerWmId));
+    const seen = new Set(existing.map((entry) => entry.workerMlId));
 
     const additions: ShiftAvailabilityPulseEntry[] = [];
 
-    for (const rawId of workerWmIds) {
-      const workerWmId = rawId.trim();
-      if (!workerWmId || seen.has(workerWmId)) continue;
+    for (const rawId of workerMlIds) {
+      const workerMlId = rawId.trim();
+      if (!workerMlId || seen.has(workerMlId)) continue;
 
-      seen.add(workerWmId);
-      additions.push({ workerWmId, postId: cleanPostId, createdAt: now });
+      seen.add(workerMlId);
+      additions.push({ workerMlId, postId: cleanPostId, createdAt: now });
     }
 
     if (additions.length === 0) return;
@@ -70,15 +75,15 @@ export const shiftAvailabilityPulseQueueStorage = {
   },
 
   /** Returns postId and removes the pending pulse for this worker. */
-  consumeForWorker(workerWmId: string): string | null {
-    const id = workerWmId.trim();
+  consumeForWorker(workerMlId: string): string | null {
+    const id = workerMlId.trim();
     if (!id) return null;
 
     const existing = read();
-    const match = existing.find((entry) => entry.workerWmId === id);
+    const match = existing.find((entry) => entry.workerMlId === id);
     if (!match) return null;
 
-    write(existing.filter((entry) => entry.workerWmId !== id));
+    write(existing.filter((entry) => entry.workerMlId !== id));
     return match.postId;
   },
 

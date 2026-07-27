@@ -34,13 +34,13 @@ export function ShiftCreateWizardFooter({
   stepErrors,
 }: Props) {
   return (
-    <div style={{ marginTop: 8, paddingBottom: 28 }}>
-      {stepErrors.length > 0 && (
+    <div className="wm-shift-sticky-actions">
+      {stepErrors.length > 0 ? (
         <div
+          className="wm-shift-surface-glass wm-shift-surface-glass--inset"
+          role="alert"
           style={{
             marginBottom: 12,
-            padding: 12,
-            borderRadius: 14,
             border: "1px solid rgba(220,38,38,0.2)",
             background: "rgba(220,38,38,0.04)",
             fontSize: 12,
@@ -55,7 +55,7 @@ export function ShiftCreateWizardFooter({
             <div key={err}>• {err}</div>
           ))}
         </div>
-      )}
+      ) : null}
 
       <div style={FOOTER_STYLE}>
         {wizardStep === 1 ? (
@@ -72,6 +72,7 @@ export function ShiftCreateWizardFooter({
           <button
             type="button"
             className="wm-primarybtn"
+            style={{ minWidth: 140 }}
             onClick={onNext}
             data-testid="shift-create-wizard-next"
           >
@@ -82,7 +83,14 @@ export function ShiftCreateWizardFooter({
             type="button"
             className="wm-primarybtn"
             onClick={onReviewPublish}
-            style={{ display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}
+            style={{
+              width: "auto",
+              minWidth: 180,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              whiteSpace: "nowrap",
+            }}
           >
             <IconPlus /> Review &amp; Publish
           </button>

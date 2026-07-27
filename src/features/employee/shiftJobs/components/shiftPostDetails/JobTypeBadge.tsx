@@ -15,7 +15,7 @@ export function JobTypeBadge({ jobType }: { readonly jobType?: string }) {
           fontSize: 11,
           fontWeight: 900,
           padding: "5px 10px",
-          borderRadius: 999,
+          borderRadius: "var(--wm-radius-pill)",
           background: "rgba(22,163,74,0.08)",
           color: SHIFT_GREEN,
           border: "1px solid rgba(22,163,74,0.2)",

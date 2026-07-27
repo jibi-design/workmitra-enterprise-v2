@@ -15,7 +15,7 @@ export const sectionHeadStyle: CSSProperties = {
 export const sectionIconStyle: CSSProperties = {
   width: 34,
   height: 34,
-  borderRadius: 10,
+  borderRadius: "var(--wm-radius-10)",
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
@@ -118,7 +118,7 @@ export const comingSoonBadgeStyle: CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
   padding: "3px 10px",
-  borderRadius: 6,
+  borderRadius: "var(--wm-radius-8)",
   fontSize: 11,
   fontWeight: 800,
   background: "rgba(100, 116, 139, 0.08)",
@@ -128,7 +128,7 @@ export const comingSoonBadgeStyle: CSSProperties = {
 export const toggleTrackStyle = (enabled: boolean): CSSProperties => ({
   width: 44,
   height: 24,
-  borderRadius: 999,
+  borderRadius: "var(--wm-radius-pill)",
   border: "1px solid var(--wm-er-border)",
   background: enabled ? "var(--wm-success)" : "var(--wm-er-bg)",
   position: "relative",
@@ -140,7 +140,7 @@ export const toggleTrackStyle = (enabled: boolean): CSSProperties => ({
 export const toggleThumbStyle = (enabled: boolean): CSSProperties => ({
   width: 18,
   height: 18,
-  borderRadius: 999,
+  borderRadius: "var(--wm-radius-pill)",
   background: "#fff",
   boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
   position: "absolute",
@@ -168,7 +168,7 @@ export const dangerBtnStyle: CSSProperties = {
 export const logoPlaceholderStyle: CSSProperties = {
   width: 64,
   height: 64,
-  borderRadius: 12,
+  borderRadius: "var(--wm-radius-button)",
   border: "2px dashed #d1d5db",
   display: "flex",
   alignItems: "center",

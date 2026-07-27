@@ -24,7 +24,7 @@ export function ReviewCard({
     <section
       style={{
         padding: 14,
-        borderRadius: 24,
+        borderRadius: "var(--wm-radius-employer-card)",
         border: `1px solid ${CAREER_REVIEW_BORDER}`,
         background:
           "radial-gradient(circle at 100% 0%, rgba(29,78,216,0.045), transparent 32%), linear-gradient(135deg, rgba(255,255,255,1), rgba(248,250,252,0.98))",
@@ -58,7 +58,7 @@ export function InfoBox({ label, value }: { label: string; value: string }) {
       style={{
         minWidth: 0,
         padding: "9px 10px",
-        borderRadius: 15,
+        borderRadius: "var(--wm-radius-chip)",
         border: "1px solid rgba(148,163,184,0.12)",
         background: "rgba(255,255,255,0.8)",
       }}
@@ -127,7 +127,7 @@ export function SkillChips({ skills }: { skills: string[] }) {
           key={skill}
           style={{
             padding: "5px 10px",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             background: "rgba(29,78,216,0.075)",
             color: CAREER_REVIEW_BLUE,
             border: "1px solid rgba(29,78,216,0.12)",
@@ -148,7 +148,7 @@ export function StatusPill({ label }: { label: string }) {
       style={{
         flexShrink: 0,
         padding: "6px 10px",
-        borderRadius: 999,
+        borderRadius: "var(--wm-radius-pill)",
         background: "rgba(29,78,216,0.075)",
         color: CAREER_REVIEW_BLUE_DEEP,
         border: "1px solid rgba(29,78,216,0.13)",
@@ -169,7 +169,7 @@ export function AnswerPill({ answer }: { answer: "yes" | "no" }) {
     <span
       style={{
         padding: "4px 9px",
-        borderRadius: 999,
+        borderRadius: "var(--wm-radius-pill)",
         background: isYes ? "rgba(29,78,216,0.08)" : "rgba(220,38,38,0.08)",
         border: isYes ? "1px solid rgba(29,78,216,0.16)" : "1px solid rgba(220,38,38,0.16)",
         color: isYes ? CAREER_REVIEW_BLUE : "#dc2626",

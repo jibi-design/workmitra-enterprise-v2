@@ -81,7 +81,7 @@ export function EmployeeWorkforceGroupExitPanel({
                   onClick={() => onReasonChange(reason)}
                   style={{
                     padding: "6px 12px",
-                    borderRadius: 999,
+                    borderRadius: "var(--wm-radius-pill)",
                     border:
                       exitReason === reason
                         ? `2px solid ${AMBER}`
@@ -140,7 +140,7 @@ export function EmployeeWorkforceGroupExitPanel({
             <div
               style={{
                 padding: 12,
-                borderRadius: 10,
+                borderRadius: "var(--wm-radius-10)",
                 border: "1px solid var(--wm-error)",
                 background: "rgba(220,38,38,0.04)",
               }}

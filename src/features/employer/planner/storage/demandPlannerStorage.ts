@@ -9,6 +9,7 @@ import {
   type DaySlot,
   type DemandPlan,
   type DemandPlanCreateInput,
+  type PlanRoleGroup,
 } from "./demandPlanner.schema";
 import { plannerDispatchChanged, plannerReadJson, plannerWriteJson } from "./plannerSafeStorage";
 
@@ -18,6 +19,7 @@ export type {
   DemandPlanCreateInput,
   DemandPlanStatus,
   ExperienceLabel,
+  PlanRoleGroup,
   PublishStatus,
   WorkingDay,
 } from "./demandPlanner.schema";
@@ -48,6 +50,8 @@ function read(): DemandPlan[] {
 
 let sortedPlansCache: DemandPlan[] = [];
 let sortedPlansCacheKey = "";
+/** P1-4 — O(1) revision instead of JSON.stringify(raw) as cache key */
+let plansWriteRevision = 0;
 
 function invalidateSortedCache(): void {
   sortedPlansCacheKey = "";
@@ -60,12 +64,12 @@ let byIdCachePlan: DemandPlan | null = null;
 
 function getSortedPlans(): DemandPlan[] {
   const raw = read();
-  const cacheKey = JSON.stringify(raw);
-  if (
-    cacheKey === sortedPlansCacheKey &&
-    sortedPlansCache.length >= 0 &&
-    sortedPlansCacheKey !== ""
-  ) {
+  let maxUpdated = 0;
+  for (const plan of raw) {
+    if (plan.updatedAt > maxUpdated) maxUpdated = plan.updatedAt;
+  }
+  const cacheKey = `${plansWriteRevision}:${raw.length}:${maxUpdated}`;
+  if (cacheKey === sortedPlansCacheKey && sortedPlansCacheKey !== "") {
     return sortedPlansCache;
   }
   sortedPlansCacheKey = cacheKey;
@@ -75,6 +79,7 @@ function getSortedPlans(): DemandPlan[] {
 
 function write(list: DemandPlan[]): void {
   if (plannerWriteJson(KEY, list)) {
+    plansWriteRevision += 1;
     invalidateSortedCache();
     plannerDispatchChanged(CHANGED);
   }
@@ -154,6 +159,10 @@ export const demandPlannerStorage = {
       legalEntityMlId: data.legalEntityMlId?.trim() ?? "",
       siteId: data.siteId?.trim() || undefined,
       siteManagerId: data.siteManagerId?.trim() || undefined,
+      waitingBuffer: Math.max(
+        0,
+        Math.floor(typeof data.waitingBuffer === "number" ? data.waitingBuffer : 0),
+      ),
       epochDays:
         typeof data.epochDays === "number" && data.epochDays > 0
           ? Math.floor(data.epochDays)
@@ -272,6 +281,76 @@ export const demandPlannerStorage = {
     const plan = this.getById(id);
     if (!plan || plan.status !== "draft") return;
     write(read().filter((p) => p.id !== id));
+  },
+
+  upsertRoleGroup(planId: string, group: PlanRoleGroup): boolean {
+    const plan = this.getById(planId);
+    if (!plan) return false;
+    const nextGroup: PlanRoleGroup = {
+      id: group.id.trim(),
+      label: group.label.trim(),
+      color: group.color?.trim() || undefined,
+      workerMlIds: [...new Set(group.workerMlIds.map((w) => w.trim()).filter(Boolean))],
+    };
+    if (!nextGroup.id || !nextGroup.label) return false;
+    const existing = plan.roleGroups ?? [];
+    const idx = existing.findIndex((g) => g.id === nextGroup.id);
+    const roleGroups =
+      idx >= 0 ? existing.map((g, i) => (i === idx ? nextGroup : g)) : [...existing, nextGroup];
+    return this.updatePlan(planId, { roleGroups }).ok;
+  },
+
+  removeRoleGroup(planId: string, groupId: string): boolean {
+    const plan = this.getById(planId);
+    if (!plan) return false;
+    const roleGroups = (plan.roleGroups ?? []).filter((g) => g.id !== groupId);
+    return this.updatePlan(planId, { roleGroups }).ok;
+  },
+
+  assignWorkerToRoleGroup(planId: string, groupId: string, workerMlId: string): boolean {
+    const plan = this.getById(planId);
+    if (!plan) return false;
+    const ml = workerMlId.trim();
+    if (!ml) return false;
+    const roleGroups = (plan.roleGroups ?? []).map((g) => {
+      if (g.id !== groupId) {
+        return { ...g, workerMlIds: g.workerMlIds.filter((w) => w !== ml) };
+      }
+      if (g.workerMlIds.includes(ml)) return g;
+      return { ...g, workerMlIds: [...g.workerMlIds, ml] };
+    });
+    return this.updatePlan(planId, { roleGroups }).ok;
+  },
+
+  moveWorkerBetweenGroups(
+    planId: string,
+    fromGroupId: string,
+    toGroupId: string,
+    workerMlId: string,
+  ): boolean {
+    const plan = this.getById(planId);
+    if (!plan) return false;
+    const ml = workerMlId.trim();
+    if (!ml) return false;
+    const target = (plan.roleGroups ?? []).find((g) => g.id === toGroupId);
+    if (target?.workerMlIds.includes(ml)) {
+      /* TIER: ADVISORY */ console.warn(
+        "[RoleGroups] worker already in target group",
+        planId,
+        toGroupId,
+        ml,
+      );
+    }
+    const roleGroups = (plan.roleGroups ?? []).map((g) => {
+      if (g.id === fromGroupId) {
+        return { ...g, workerMlIds: g.workerMlIds.filter((w) => w !== ml) };
+      }
+      if (g.id === toGroupId && !g.workerMlIds.includes(ml)) {
+        return { ...g, workerMlIds: [...g.workerMlIds, ml] };
+      }
+      return g;
+    });
+    return this.updatePlan(planId, { roleGroups }).ok;
   },
 
   /** Force re-read + migrate (tests / ops). */

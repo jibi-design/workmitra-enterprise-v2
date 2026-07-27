@@ -10,21 +10,17 @@ import type {
   TaskChecklistItem,
   TaskStatus,
 } from "../types/taskAssignment.types";
+import { hrEmployerScopedKey } from "./hrStorageKeys";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────────────────────────────────────
-
-const STORAGE_KEY = "wm_task_assignment_v1";
 const CHANGED_EVENT = "wm:task-assignment-changed";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Internal Helpers
-// ─────────────────────────────────────────────────────────────────────────────
+function storageKey(): string {
+  return hrEmployerScopedKey("task_assignment_v1");
+}
 
 function read(): TaskEntry[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey());
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
     return Array.isArray(parsed) ? (parsed as TaskEntry[]) : [];
@@ -34,7 +30,7 @@ function read(): TaskEntry[] {
 }
 
 function write(entries: TaskEntry[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  localStorage.setItem(storageKey(), JSON.stringify(entries));
   window.dispatchEvent(new Event(CHANGED_EVENT));
 }
 
@@ -51,7 +47,6 @@ function genItemId(): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const taskAssignmentStorage = {
-
   // ── Read ──
 
   /** Get all tasks for a specific HR candidate (sorted: active first, then by date) */
@@ -89,9 +84,8 @@ export const taskAssignmentStorage = {
 
   /** Count active tasks for a candidate */
   countActive(hrCandidateId: string): number {
-    return read().filter(
-      (t) => t.hrCandidateId === hrCandidateId && t.status !== "completed",
-    ).length;
+    return read().filter((t) => t.hrCandidateId === hrCandidateId && t.status !== "completed")
+      .length;
   },
 
   // ── Create ──

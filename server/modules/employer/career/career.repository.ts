@@ -11,15 +11,103 @@ export interface CreateEmploymentResult {
   wasCreated: boolean;
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export function isCareerUuid(value: string): boolean {
+  return UUID_RE.test(value.trim());
+}
+
 export const employerCareerRepository = {
   async findPostById(postId: string): Promise<CareerPostRow | null> {
     const result = await getPool().query<CareerPostRow>(
-      `SELECT id, employer_user_id, title, description, location, status, created_at, updated_at
+      `SELECT id, employer_user_id, title, description, location, status,
+              COALESCE(details, '{}'::jsonb) AS details, created_at, updated_at
        FROM career_posts
        WHERE id = $1 AND status != 'deleted'`,
       [postId],
     );
     return result.rows[0] ?? null;
+  },
+
+  async listPostsByEmployer(employerUserId: string): Promise<CareerPostRow[]> {
+    const result = await getPool().query<CareerPostRow>(
+      `SELECT id, employer_user_id, title, description, location, status,
+              COALESCE(details, '{}'::jsonb) AS details, created_at, updated_at
+       FROM career_posts
+       WHERE employer_user_id = $1 AND status != 'deleted'
+       ORDER BY updated_at DESC`,
+      [employerUserId],
+    );
+    return result.rows;
+  },
+
+  async createPost(params: {
+    employerUserId: string;
+    title: string;
+    description: string;
+    location: string | null;
+    status: string;
+    details: Record<string, unknown>;
+  }): Promise<CareerPostRow> {
+    const result = await getPool().query<CareerPostRow>(
+      `INSERT INTO career_posts
+         (employer_user_id, title, description, location, status, details)
+       VALUES ($1, $2, $3, $4, $5, $6::jsonb)
+       RETURNING id, employer_user_id, title, description, location, status,
+                 COALESCE(details, '{}'::jsonb) AS details, created_at, updated_at`,
+      [
+        params.employerUserId,
+        params.title,
+        params.description,
+        params.location,
+        params.status,
+        JSON.stringify(params.details),
+      ],
+    );
+    return result.rows[0];
+  },
+
+  async updatePost(params: {
+    postId: string;
+    employerUserId: string;
+    title: string;
+    description: string;
+    location: string | null;
+    status: string;
+    details: Record<string, unknown>;
+  }): Promise<CareerPostRow | null> {
+    const result = await getPool().query<CareerPostRow>(
+      `UPDATE career_posts
+       SET title = $3,
+           description = $4,
+           location = $5,
+           status = $6,
+           details = $7::jsonb,
+           updated_at = now()
+       WHERE id = $1 AND employer_user_id = $2 AND status != 'deleted'
+       RETURNING id, employer_user_id, title, description, location, status,
+                 COALESCE(details, '{}'::jsonb) AS details, created_at, updated_at`,
+      [
+        params.postId,
+        params.employerUserId,
+        params.title,
+        params.description,
+        params.location,
+        params.status,
+        JSON.stringify(params.details),
+      ],
+    );
+    return result.rows[0] ?? null;
+  },
+
+  async softDeletePost(postId: string, employerUserId: string): Promise<boolean> {
+    const result = await getPool().query(
+      `UPDATE career_posts
+       SET status = 'deleted', updated_at = now()
+       WHERE id = $1 AND employer_user_id = $2 AND status != 'deleted'`,
+      [postId, employerUserId],
+    );
+    return (result.rowCount ?? 0) > 0;
   },
 
   async findApplicationById(applicationId: string): Promise<CareerApplicationRow | null> {
@@ -28,6 +116,31 @@ export const employerCareerRepository = {
        FROM career_applications
        WHERE id = $1`,
       [applicationId],
+    );
+    return result.rows[0] ?? null;
+  },
+
+  async listApplicationsByPostId(postId: string): Promise<CareerApplicationRow[]> {
+    const result = await getPool().query<CareerApplicationRow>(
+      `SELECT id, post_id, applicant_user_id, status, cover_note, applied_at, updated_at
+       FROM career_applications
+       WHERE post_id = $1
+       ORDER BY applied_at DESC
+       LIMIT 500`,
+      [postId],
+    );
+    return result.rows;
+  },
+
+  async findApplicationByPostAndId(
+    postId: string,
+    applicationId: string,
+  ): Promise<CareerApplicationRow | null> {
+    const result = await getPool().query<CareerApplicationRow>(
+      `SELECT id, post_id, applicant_user_id, status, cover_note, applied_at, updated_at
+       FROM career_applications
+       WHERE id = $1 AND post_id = $2`,
+      [applicationId, postId],
     );
     return result.rows[0] ?? null;
   },
@@ -46,10 +159,63 @@ export const employerCareerRepository = {
   async findEmploymentByApplicationId(applicationId: string): Promise<CareerEmploymentRow | null> {
     const result = await getPool().query<CareerEmploymentRow>(
       `SELECT id, application_id, post_id, employee_user_id, employer_user_id,
-              status, confirmed_at, created_at, updated_at
+              status, COALESCE(details, '{}'::jsonb) AS details,
+              confirmed_at, created_at, updated_at
        FROM career_employments
        WHERE application_id = $1`,
       [applicationId],
+    );
+    return result.rows[0] ?? null;
+  },
+
+  async listEmploymentsByEmployer(employerUserId: string): Promise<CareerEmploymentRow[]> {
+    const result = await getPool().query<CareerEmploymentRow>(
+      `SELECT id, application_id, post_id, employee_user_id, employer_user_id,
+              status, COALESCE(details, '{}'::jsonb) AS details,
+              confirmed_at, created_at, updated_at
+       FROM career_employments
+       WHERE employer_user_id = $1
+       ORDER BY confirmed_at DESC
+       LIMIT 200`,
+      [employerUserId],
+    );
+    return result.rows;
+  },
+
+  async updateEmploymentDetails(
+    employmentId: string,
+    employerUserId: string,
+    patch: { status?: string; details?: Record<string, unknown> },
+  ): Promise<CareerEmploymentRow | null> {
+    const existing = await getPool().query<CareerEmploymentRow>(
+      `SELECT id, application_id, post_id, employee_user_id, employer_user_id,
+              status, COALESCE(details, '{}'::jsonb) AS details,
+              confirmed_at, created_at, updated_at
+       FROM career_employments
+       WHERE id = $1 AND employer_user_id = $2`,
+      [employmentId, employerUserId],
+    );
+    const row = existing.rows[0];
+    if (!row) return null;
+
+    const nextStatus = patch.status?.trim() || row.status;
+    const nextDetails = {
+      ...(typeof row.details === "object" && row.details && !Array.isArray(row.details)
+        ? row.details
+        : {}),
+      ...(patch.details ?? {}),
+    };
+
+    const result = await getPool().query<CareerEmploymentRow>(
+      `UPDATE career_employments
+       SET status = $3,
+           details = $4::jsonb,
+           updated_at = now()
+       WHERE id = $1 AND employer_user_id = $2
+       RETURNING id, application_id, post_id, employee_user_id, employer_user_id,
+                 status, COALESCE(details, '{}'::jsonb) AS details,
+                 confirmed_at, created_at, updated_at`,
+      [employmentId, employerUserId, nextStatus, JSON.stringify(nextDetails)],
     );
     return result.rows[0] ?? null;
   },
@@ -116,6 +282,7 @@ export const employerCareerRepository = {
     postId: string;
     employeeUserId: string;
     employerUserId: string;
+    details?: Record<string, unknown>;
   }): Promise<CreateEmploymentResult> {
     const client = await getPool().connect();
     try {
@@ -156,13 +323,30 @@ export const employerCareerRepository = {
       // Step B: insert employment — ON CONFLICT DO NOTHING for idempotency
       const insertResult = await client.query<{ id: string }>(
         `INSERT INTO career_employments
-           (application_id, post_id, employee_user_id, employer_user_id)
-         VALUES ($1, $2, $3, $4)
+           (application_id, post_id, employee_user_id, employer_user_id, details)
+         VALUES ($1, $2, $3, $4, $5::jsonb)
          ON CONFLICT (application_id) DO NOTHING
          RETURNING id`,
-        [params.applicationId, params.postId, params.employeeUserId, params.employerUserId],
+        [
+          params.applicationId,
+          params.postId,
+          params.employeeUserId,
+          params.employerUserId,
+          JSON.stringify(params.details ?? {}),
+        ],
       );
       const wasCreated = insertResult.rowCount !== null && insertResult.rowCount > 0;
+
+      // If row already existed, merge details
+      if (!wasCreated && params.details) {
+        await client.query(
+          `UPDATE career_employments
+           SET details = COALESCE(details, '{}'::jsonb) || $2::jsonb,
+               updated_at = now()
+           WHERE application_id = $1`,
+          [params.applicationId, JSON.stringify(params.details)],
+        );
+      }
 
       // Step C: log lifecycle event
       await client.query(

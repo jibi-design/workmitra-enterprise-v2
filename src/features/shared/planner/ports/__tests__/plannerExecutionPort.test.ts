@@ -25,6 +25,13 @@ const plannerSources = {
   }),
 } as Record<string, string>;
 
+/** employer/shiftJobs sources — scanned for reverse planner coupling (SEP-SJB-1). */
+const shiftJobsSources = import.meta.glob("../../../employer/shiftJobs/**/*.{ts,tsx}", {
+  eager: true,
+  query: "?raw",
+  import: "default",
+}) as Record<string, string>;
+
 describe("PlannerExecutionPort (Hybrid A2 S3)", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -77,7 +84,7 @@ describe("PlannerExecutionPort (Hybrid A2 S3)", () => {
 describe("Planner → shiftJobs import boundary (Hybrid A2 S3)", () => {
   it("forbids direct shiftJobs imports outside soft-wrap debt allowlist", () => {
     const importRe =
-      /from\s+["'][^"']*shiftJobs[^"']*["']|from\s+["'][^"']*\/shift\/availability\.reader["']|from\s+["'][^"']*shiftEmployerPublic["']/;
+      /from\s+["'][^"']*shiftJobs[^"']*["']|from\s+["'][^"']*\/shift\/availability\.reader["']|from\s+["'][^"']*shiftEmployerPublic["']|from\s+["'][^"']*\/shiftOps\/[^"']*["']/;
     const violations: string[] = [];
 
     for (const [filePath, src] of Object.entries(plannerSources)) {
@@ -88,5 +95,44 @@ describe("Planner → shiftJobs import boundary (Hybrid A2 S3)", () => {
     }
 
     expect(violations, `Direct Shift imports found:\n${violations.join("\n")}`).toEqual([]);
+  });
+});
+
+describe("shiftJobs → planner import boundary (SEP-SJB-1 / P0-B)", () => {
+  it("forbids direct employer/planner imports; use plannerShiftJobsBridge or shared bridges", () => {
+    // Relative ../../planner/... or absolute .../employer/planner/...
+    // Does NOT match ../../../shared/planner/...
+    const importRe =
+      /from\s+["']\.\.\/\.\.\/planner\/[^"']*["']|from\s+["'][^"']*\/employer\/planner\/[^"']*["']/;
+    const violations: string[] = [];
+
+    for (const [filePath, src] of Object.entries(shiftJobsSources)) {
+      if (typeof src !== "string") continue;
+      if (importRe.test(src)) violations.push(filePath);
+    }
+
+    expect(
+      violations,
+      `Direct planner imports from shiftJobs (use plannerShiftJobsBridge):\n${violations.join("\n")}`,
+    ).toEqual([]);
+  });
+});
+
+describe("shiftJobs → shiftOps import boundary (SEP-SJO-1 / P0-C)", () => {
+  it("forbids direct features/shiftOps imports; use shiftJobsMembershipBridge", () => {
+    // Matches ../../../shiftOps/... but NOT ../../../shared/shiftOps/...
+    const importRe =
+      /from\s+["'](?:\.\.\/)+shiftOps\/[^"']*["']|from\s+["'][^"']*\/features\/shiftOps\/[^"']*["']/;
+    const violations: string[] = [];
+
+    for (const [filePath, src] of Object.entries(shiftJobsSources)) {
+      if (typeof src !== "string") continue;
+      if (importRe.test(src)) violations.push(filePath);
+    }
+
+    expect(
+      violations,
+      `Direct shiftOps imports from shiftJobs (use shiftJobsMembershipBridge):\n${violations.join("\n")}`,
+    ).toEqual([]);
   });
 });

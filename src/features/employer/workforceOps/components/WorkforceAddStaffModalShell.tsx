@@ -27,7 +27,7 @@ const overlayStyle: React.CSSProperties = {
 
 const modalStyle: React.CSSProperties = {
   background: "#fff",
-  borderRadius: 16,
+  borderRadius: "var(--wm-radius-chip)",
   width: "100%",
   maxWidth: 420,
   maxHeight: "90vh",
@@ -94,7 +94,7 @@ export function WorkforceAddStaffModalShell({
             <div
               style={{
                 padding: 10,
-                borderRadius: 8,
+                borderRadius: "var(--wm-radius-8)",
                 background: "rgba(220,38,38,0.06)",
                 border: "1px solid rgba(220,38,38,0.15)",
               }}

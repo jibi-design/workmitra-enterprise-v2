@@ -1,8 +1,6 @@
-// App name: Job Mitra
-// File name: ShiftSearchFilterPanel.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\components\ShiftSearchFilterPanel.tsx
+// App name: Job Mitra | ShiftSearchFilterPanel.tsx — glass + seg-tabs (Wave B)
 
-import type { CSSProperties, Dispatch, ReactNode, SetStateAction } from "react";
+import type { Dispatch, ReactNode, SetStateAction } from "react";
 import type { DurOpt, ExpOpt, TimeOpt } from "../types/shiftSearch.types";
 
 type Props = {
@@ -21,184 +19,134 @@ type Props = {
   onClearFilters: () => void;
 };
 
-const PANEL_STYLE: CSSProperties = {
-  marginTop: 12,
-  padding: "8px 4px" /* Removed heavy padding */,
-  /* Single Plain Layer UI: Removed heavy borders, background gradients, and shadows */
-  background: "transparent",
-};
-
-const INPUT_WRAP_STYLE: CSSProperties = {
-  padding: 0,
-  marginBottom: 10,
-  background: "transparent",
-};
-
-const NOTE_STYLE: CSSProperties = {
-  marginTop: 16,
-  padding: "10px 12px",
-  borderRadius: 16,
-  background: "rgba(248,250,252,0.6)",
-  border: "1px solid rgba(226,232,240,0.8)",
-  fontSize: 11,
-  color: "var(--wm-er-muted)",
-  fontWeight: 600,
-  lineHeight: 1.5,
-  boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.5)",
-};
-
 export function ShiftSearchFilterPanel(props: Props) {
   const visibleCategories = getVisibleCategories(props.categories);
   const shouldShowCategoryFilter = visibleCategories.length > 1;
 
   return (
-    <section className="wm-ee-vShift" style={PANEL_STYLE}>
-      <div className="wm-ee-headTint" style={INPUT_WRAP_STYLE}>
-        <input
-          className="wm-input"
-          value={props.searchQuery}
-          onChange={(event) => props.setSearchQuery(event.target.value)}
-          placeholder="Search job, company, area, or keyword..."
-          aria-label="Search shifts"
-          style={{
-            minHeight: 44,
-            borderRadius: 16,
-            border: "1px solid rgba(203,213,225,0.95)",
-            background: "rgba(255,255,255,0.94)",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.8)",
-          }}
-        />
-      </div>
+    <section
+      className="wm-ee-vShift wm-shift-surface-glass"
+      data-testid="shift-search-filter-panel"
+      style={{ padding: "12px 12px 10px" }}
+    >
+      <input
+        className="wm-input"
+        value={props.searchQuery}
+        onChange={(event) => props.setSearchQuery(event.target.value)}
+        placeholder="Search job, company, area, or keyword..."
+        aria-label="Search shifts"
+        data-testid="shift-search-query"
+        style={{ minHeight: 44, marginBottom: 10 }}
+      />
 
       <FilterGroup title="Date">
-        <button
-          className={`wm-chipBtn ${props.timeOpt === "any" ? "isActive" : ""}`}
-          type="button"
-          onClick={() => props.setTimeOpt("any")}
-        >
+        <SegTab active={props.timeOpt === "any"} onClick={() => props.setTimeOpt("any")}>
           All dates
-        </button>
-        <button
-          className={`wm-chipBtn ${props.timeOpt === "today" ? "isActive" : ""}`}
-          type="button"
-          onClick={() => props.setTimeOpt("today")}
-        >
+        </SegTab>
+        <SegTab active={props.timeOpt === "today"} onClick={() => props.setTimeOpt("today")}>
           Today
-        </button>
-        <button
-          className={`wm-chipBtn ${props.timeOpt === "next3" ? "isActive" : ""}`}
-          type="button"
-          onClick={() => props.setTimeOpt("next3")}
-        >
+        </SegTab>
+        <SegTab active={props.timeOpt === "next3"} onClick={() => props.setTimeOpt("next3")}>
           Next 3 days
-        </button>
-        <button
-          className={`wm-chipBtn ${props.timeOpt === "week" ? "isActive" : ""}`}
-          type="button"
-          onClick={() => props.setTimeOpt("week")}
-        >
+        </SegTab>
+        <SegTab active={props.timeOpt === "week"} onClick={() => props.setTimeOpt("week")}>
           This week
-        </button>
-        <button
-          className={`wm-chipBtn ${props.timeOpt === "weekend" ? "isActive" : ""}`}
-          type="button"
-          onClick={() => props.setTimeOpt("weekend")}
-        >
+        </SegTab>
+        <SegTab active={props.timeOpt === "weekend"} onClick={() => props.setTimeOpt("weekend")}>
           Weekend
-        </button>
+        </SegTab>
       </FilterGroup>
 
       <FilterGroup title="Worker type">
-        <button
-          className={`wm-chipBtn ${props.exp === "any" ? "isActive" : ""}`}
-          type="button"
-          onClick={() => props.setExp("any")}
-        >
+        <SegTab active={props.exp === "any"} onClick={() => props.setExp("any")}>
           Any level
-        </button>
-        <button
-          className={`wm-chipBtn ${props.exp === "fresher_ok" ? "isActive" : ""}`}
-          type="button"
-          onClick={() => props.setExp("fresher_ok")}
-        >
+        </SegTab>
+        <SegTab active={props.exp === "fresher_ok"} onClick={() => props.setExp("fresher_ok")}>
           No experience needed
-        </button>
-        <button
-          className={`wm-chipBtn ${props.exp === "helper" ? "isActive" : ""}`}
-          type="button"
-          onClick={() => props.setExp("helper")}
-        >
+        </SegTab>
+        <SegTab active={props.exp === "helper"} onClick={() => props.setExp("helper")}>
           Helper work
-        </button>
-        <button
-          className={`wm-chipBtn ${props.exp === "experienced" ? "isActive" : ""}`}
-          type="button"
-          onClick={() => props.setExp("experienced")}
-        >
+        </SegTab>
+        <SegTab active={props.exp === "experienced"} onClick={() => props.setExp("experienced")}>
           Experienced
-        </button>
+        </SegTab>
       </FilterGroup>
 
-      {shouldShowCategoryFilter && (
+      {shouldShowCategoryFilter ? (
         <FilterGroup title="Category">
-          <button
-            className={`wm-chipBtn ${props.catFilter === "any" ? "isActive" : ""}`}
-            type="button"
-            onClick={() => props.setCatFilter("any")}
-          >
+          <SegTab active={props.catFilter === "any"} onClick={() => props.setCatFilter("any")}>
             All categories
-          </button>
+          </SegTab>
           {visibleCategories.map((category) => (
-            <button
+            <SegTab
               key={category}
-              className={`wm-chipBtn ${props.catFilter === category ? "isActive" : ""}`}
-              type="button"
+              active={props.catFilter === category}
               onClick={() => props.setCatFilter(category)}
             >
               {category}
-            </button>
+            </SegTab>
           ))}
         </FilterGroup>
-      )}
+      ) : null}
 
       <FilterGroup title="Duration">
-        <button
-          className={`wm-chipBtn ${props.dur === "any" ? "isActive" : ""}`}
-          type="button"
-          onClick={() => props.setDur("any")}
-        >
+        <SegTab active={props.dur === "any"} onClick={() => props.setDur("any")}>
           Any duration
-        </button>
-        <button
-          className={`wm-chipBtn ${props.dur === "oneday" ? "isActive" : ""}`}
-          type="button"
-          onClick={() => props.setDur("oneday")}
-        >
+        </SegTab>
+        <SegTab active={props.dur === "oneday"} onClick={() => props.setDur("oneday")}>
           1 day
-        </button>
-        <button
-          className={`wm-chipBtn ${props.dur === "multiday" ? "isActive" : ""}`}
-          type="button"
-          onClick={() => props.setDur("multiday")}
-        >
+        </SegTab>
+        <SegTab active={props.dur === "multiday"} onClick={() => props.setDur("multiday")}>
           Multi-day
-        </button>
-        {props.hasFilters && (
+        </SegTab>
+        {props.hasFilters ? (
           <button
-            className="wm-chipBtn"
             type="button"
+            className="wm-shift-seg-tab wm-shift-pressable"
             onClick={props.onClearFilters}
-            style={{ marginLeft: "auto", color: "var(--wm-error)", fontWeight: 950 }}
+            style={{ marginLeft: "auto", color: "var(--wm-error)", fontWeight: 900 }}
+            data-testid="shift-search-clear-filters"
           >
             Clear all
           </button>
-        )}
+        ) : null}
       </FilterGroup>
 
-      <div style={NOTE_STYLE}>
+      <div
+        className="wm-shift-surface-glass wm-shift-surface-glass--shift"
+        style={{
+          marginTop: 12,
+          padding: "10px 12px",
+          fontSize: 11,
+          color: "var(--wm-er-muted)",
+          fontWeight: 600,
+          lineHeight: 1.5,
+        }}
+      >
         Pay is shown on each job card. Compare pay before opening or applying.
       </div>
     </section>
+  );
+}
+
+function SegTab({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      className={`wm-shift-seg-tab ${active ? "isActive" : ""}`}
+      aria-pressed={active}
+      onClick={onClick}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -217,8 +165,7 @@ function FilterGroup({ title, children }: { title: string; children: ReactNode }
       >
         {title}
       </div>
-
-      <div className="wm-chipRow" style={{ marginTop: 0, gap: 7 }}>
+      <div className="wm-shift-seg-tab-row" style={{ gap: 7 }}>
         {children}
       </div>
     </div>
@@ -227,11 +174,9 @@ function FilterGroup({ title, children }: { title: string; children: ReactNode }
 
 function getVisibleCategories(categories: string[]): string[] {
   const uniqueCategories = new Set<string>();
-
   for (const category of categories) {
     const cleaned = category.trim();
     if (cleaned) uniqueCategories.add(cleaned);
   }
-
   return Array.from(uniqueCategories).sort();
 }

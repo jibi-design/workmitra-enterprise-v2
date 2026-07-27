@@ -59,7 +59,7 @@ const DEFAULT_REVIEW_FILTERS: CandidateReviewFilters = {
 };
 
 const ROW_ESTIMATE_PX = 168;
-const LIST_HEIGHT_PX = 560;
+const LIST_HEIGHT_CSS = "min(560px, 70dvh)";
 
 export function EmployerShiftCandidateList({
   postId,
@@ -141,7 +141,7 @@ export function EmployerShiftCandidateList({
           ref={parentRef}
           data-testid="employer-shift-candidate-virtual-list"
           style={{
-            height: LIST_HEIGHT_PX,
+            height: LIST_HEIGHT_CSS,
             overflow: "auto",
             position: "relative",
             contain: "paint layout",

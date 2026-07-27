@@ -1,7 +1,9 @@
 // App name: Job Mitra
 // File name: EmployerShiftPostsPage.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\pages\EmployerShiftPostsPage.tsx
+// My Posts — adopt shared Shift design primitives (Step 2)
 
+import { useNavigate } from "react-router-dom";
+import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { EmployerShiftPostsHeader } from "../components/EmployerShiftPostsHeader";
 import { EmployerShiftPostsKpiTiles } from "../components/EmployerShiftPostsKpiTiles";
 import { EmployerShiftPostsList } from "../components/EmployerShiftPostsList";
@@ -14,68 +16,78 @@ const STATUS_FILTER_LABELS: Record<string, string> = {
 };
 
 export function EmployerShiftPostsPage() {
+  const nav = useNavigate();
   const state = useEmployerShiftPostsPageState();
+  const filterLabel =
+    state.statusFilter && STATUS_FILTER_LABELS[state.statusFilter]
+      ? STATUS_FILTER_LABELS[state.statusFilter]
+      : null;
 
   return (
-    <div className="wm-er-vShift wm-shiftPostsPage">
-      <EmployerShiftPostsHeader onTemplates={state.openTemplates} onCreate={state.openCreate} />
+    <div className="wm-er-vShift wm-shiftPostsPage wm-stackGrid" data-testid="shift-posts-page">
+      <EmployerShiftPostsHeader
+        draftCount={state.draftCount}
+        onTemplates={state.openTemplates}
+        onCreate={state.openCreate}
+      />
 
       <EmployerShiftPostsKpiTiles kpi={state.kpi} />
 
-      {state.statusFilter && STATUS_FILTER_LABELS[state.statusFilter] && (
+      {filterLabel ? (
         <div
-          style={{
-            margin: "0 0 4px",
-            padding: "8px 14px",
-            borderRadius: 10,
-            background: "rgba(16,185,129,0.07)",
-            border: "1px solid rgba(16,185,129,0.18)",
-            fontSize: 12,
-            fontWeight: 800,
-            color: "#059669",
-          }}
+          className="wm-shift-surface-glass wm-shift-surface-glass--shift wm-shiftPostsFilterBanner wm-animateIn"
+          role="status"
+          data-testid="shift-posts-status-filter"
+          style={{ animationDelay: "90ms" }}
         >
-          {STATUS_FILTER_LABELS[state.statusFilter]}
+          <span className="wm-shiftPostsFilterBannerText">{filterLabel}</span>
+          <button
+            type="button"
+            className="wm-shift-seg-tab isActive"
+            data-testid="shift-posts-clear-status-filter"
+            aria-label="Clear status filter"
+            onClick={() => nav(ROUTE_PATHS.employerShiftPosts)}
+          >
+            Clear filter
+          </button>
         </div>
-      )}
+      ) : null}
 
-      {state.saveSuccess && <div className="wm-shiftPostsSaveNotice">{state.saveSuccess}</div>}
+      {state.saveSuccess ? (
+        <div className="wm-shiftPostsSaveNotice wm-shift-surface-glass--shift" role="status">
+          {state.saveSuccess}
+        </div>
+      ) : null}
 
-      {state.hasPlannerGroups && (
+      {state.hasPlannerGroups ? (
         <label
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            margin: "0 0 10px",
-            fontSize: 12,
-            fontWeight: 700,
-            color: "#15803d",
-            cursor: "pointer",
-          }}
+          className="wm-shift-surface-glass wm-shiftPostsPlanToggle"
+          data-testid="shift-posts-plan-days-toggle"
         >
           <input
             type="checkbox"
             checked={state.showIndividualPlanDays}
             onChange={(e) => state.setShowIndividualPlanDays(e.target.checked)}
           />
-          Show individual plan days
+          <span>Show individual plan days</span>
         </label>
-      )}
+      ) : null}
 
-      <EmployerShiftPostsList
-        posts={state.posts}
-        planGroups={state.planGroups}
-        onOpenPlan={state.openPlan}
-        savingPostId={state.savingPostId}
-        templateName={state.templateName}
-        onOpen={state.openPost}
-        onCreate={state.openCreate}
-        onTemplateNameChange={state.setTemplateName}
-        onStartSaveTemplate={state.startSaveTemplate}
-        onCancelSaveTemplate={state.cancelSaveTemplate}
-        onSaveTemplate={state.handleSaveTemplate}
-      />
+      <div className="wm-animateIn" style={{ animationDelay: "120ms" }}>
+        <EmployerShiftPostsList
+          posts={state.posts}
+          planGroups={state.planGroups}
+          onOpenPlan={state.openPlan}
+          savingPostId={state.savingPostId}
+          templateName={state.templateName}
+          onOpen={state.openPost}
+          onCreate={state.openCreate}
+          onTemplateNameChange={state.setTemplateName}
+          onStartSaveTemplate={state.startSaveTemplate}
+          onCancelSaveTemplate={state.cancelSaveTemplate}
+          onSaveTemplate={state.handleSaveTemplate}
+        />
+      </div>
     </div>
   );
 }

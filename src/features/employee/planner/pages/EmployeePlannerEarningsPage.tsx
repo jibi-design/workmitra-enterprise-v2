@@ -1,11 +1,13 @@
 /**
  * Job Mitra | EmployeePlannerEarningsPage.tsx
  * Hybrid A2 S7 — native planner earnings (no MyShift earnings soft-wrap).
+ * P-UI-1 — DomainHero + soft glass KPI tiles.
  */
 
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
 import { listPlannerRosterAssignments } from "../../../shared/planner/services/plannerRoster.helpers";
 import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
 
@@ -32,87 +34,63 @@ export function EmployeePlannerEarningsPage() {
 
   return (
     <div className="wm-ee-vPlanner wm-planner-page" data-testid="planner-employee-earnings">
-      <section
-        style={{
-          marginBottom: 16,
-          padding: 16,
-          borderRadius: 18,
-          border: "1px solid rgba(8,145,178,0.2)",
-          background: "linear-gradient(135deg, rgba(8,145,178,0.1), rgba(255,255,255,0.98) 50%)",
-        }}
-      >
-        <h1 className="wm-pageTitle" style={{ margin: 0 }}>
-          Project Earnings
-        </h1>
-        <p className="wm-pageSub" style={{ marginTop: 6 }}>
-          Confirmed Gig Project days only — not mixed with green Shift earnings.
-        </p>
-        <Link
-          to={ROUTE_PATHS.employeePlannerWorkspaceHub}
-          data-testid="planner-earnings-workspace-cta"
-          className="wm-primarybtn"
-          style={{
-            display: "inline-flex",
-            marginTop: 12,
-            padding: "10px 14px",
-            borderRadius: 10,
-            textDecoration: "none",
-            fontWeight: 700,
-          }}
-        >
-          Open roster workspace
-        </Link>
-      </section>
+      <DomainHero
+        variant="planner"
+        audience="employee"
+        eyebrow="Earnings"
+        title="Project Earnings"
+        subtitle="Confirmed Gig Project days only — not mixed with green Shift earnings."
+        trailing={
+          <Link
+            to={ROUTE_PATHS.employeePlannerWorkspaceHub}
+            data-testid="planner-earnings-workspace-cta"
+            className="wm-planner-btnPrimary"
+            style={{
+              textDecoration: "none",
+              minHeight: 36,
+              padding: "6px 12px",
+              fontSize: 12,
+            }}
+          >
+            Open roster
+          </Link>
+        }
+      />
 
       {totalDays === 0 ? (
         <section
           data-testid="planner-earnings-empty"
-          style={{
-            padding: 28,
-            borderRadius: 18,
-            border: "1px dashed rgba(8,145,178,0.35)",
-            textAlign: "center",
-          }}
+          className="wm-planner-card"
+          style={{ marginTop: 14 }}
         >
-          <div style={{ fontWeight: 900 }}>No confirmed project days yet</div>
-          <p style={{ color: "#64748b", marginTop: 8 }}>
+          <div style={{ fontWeight: 900, textAlign: "center" }}>No confirmed project days yet</div>
+          <p style={{ color: "#64748b", marginTop: 8, textAlign: "center" }}>
             Earnings appear after batch approval places you on a roster.
           </p>
-          <Link to={ROUTE_PATHS.employeePlannerBrowse}>Browse Projects</Link>
+          <div style={{ textAlign: "center", marginTop: 12 }}>
+            <Link
+              to={ROUTE_PATHS.employeePlannerBrowse}
+              className="wm-planner-btnGhost"
+              style={{ textDecoration: "none" }}
+            >
+              Browse Projects
+            </Link>
+          </div>
         </section>
       ) : (
-        <div style={{ display: "grid", gap: 12 }}>
+        <div style={{ display: "grid", gap: 12, marginTop: 14 }}>
           <div
             data-testid="planner-earnings-summary"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 10,
-            }}
+            className="wm-planner-kpiStrip"
+            style={{ marginTop: 0 }}
           >
-            <div
-              style={{
-                padding: 14,
-                borderRadius: 14,
-                background: "#fff",
-                border: "1px solid rgba(8,145,178,0.18)",
-              }}
-            >
-              <div style={{ fontSize: 11, fontWeight: 800, color: "#0891b2" }}>Confirmed days</div>
-              <div style={{ fontSize: 22, fontWeight: 950 }}>{totalDays}</div>
+            <div className="wm-planner-kpiTile">
+              <div className="wm-planner-kpiLabel">Confirmed days</div>
+              <div className="wm-planner-kpiValue">{totalDays}</div>
             </div>
-            <div
-              style={{
-                padding: 14,
-                borderRadius: 14,
-                background: "#fff",
-                border: "1px solid rgba(8,145,178,0.18)",
-              }}
-            >
-              <div style={{ fontSize: 11, fontWeight: 800, color: "#0891b2" }}>Est. total</div>
-              <div style={{ fontSize: 22, fontWeight: 950 }}>
-                ₹{totalPay.toLocaleString("en-IN")}
-              </div>
+            <div className="wm-planner-kpiTile">
+              <div className="wm-planner-kpiLabel">Est. total</div>
+              <div className="wm-planner-kpiValue">₹{totalPay.toLocaleString("en-IN")}</div>
             </div>
           </div>
 
@@ -120,12 +98,8 @@ export function EmployeePlannerEarningsPage() {
             <article
               key={a.planId}
               data-testid="planner-earnings-plan-row"
-              style={{
-                padding: 14,
-                borderRadius: 14,
-                border: "1px solid rgba(226,232,240,0.95)",
-                background: "#fff",
-              }}
+              className="wm-planner-card"
+              style={{ marginTop: 0 }}
             >
               <div style={{ fontWeight: 900 }}>{a.planName}</div>
               <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>

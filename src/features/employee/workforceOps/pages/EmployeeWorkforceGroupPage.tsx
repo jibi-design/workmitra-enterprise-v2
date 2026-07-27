@@ -34,7 +34,7 @@ import { EmployeeWorkforceGroupShiftsPanel } from "../components/EmployeeWorkfor
 import { EmployeeWorkforceGroupTabs } from "../components/EmployeeWorkforceGroupTabs";
 import type { EmployeeWorkforceGroupTab } from "../components/EmployeeWorkforceGroupTabs";
 import { employeeWorkforceHelpers } from "../services/employeeWorkforceHelpers";
-import { workforceGroupMemberService } from "../../../employer/workforceOps/services/workforceGroupMemberService";
+import { workforceGroupMemberService } from "../../../shared/workforce/workforcePublic";
 
 type Props = {
   groupId: string;

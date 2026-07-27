@@ -408,7 +408,9 @@ export async function seedGigConflictOnDate(page: Page, conflictDate: string): P
 }
 
 export async function gotoEmployeeShiftSearch(employeePage: Page): Promise<void> {
-  await employeePage.goto("/#/employee/shift/search");
-  await expect(employeePage.getByRole("heading", { name: "Find Shifts" })).toBeVisible();
-  await expect(employeePage.getByText("Mega Project Cards")).toBeVisible();
+  // P-SEP-1: Mega Cards live on Gig Projects browse — not green Find Shifts.
+  await employeePage.goto("/#/employee/planner/browse");
+  await expect(employeePage.getByTestId("planner-employee-browse")).toBeVisible();
+  await expect(employeePage.getByRole("heading", { name: "Browse Projects" })).toBeVisible();
+  await expect(employeePage.getByTestId("planner-browse-open-plans")).toBeVisible();
 }

@@ -3,9 +3,19 @@
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\components\EmployerShiftWorkspaceControls.tsx
 
 import type { CSSProperties } from "react";
+import { useSyncExternalStore } from "react";
+import { GatedCallButton } from "../../../shared/calling";
+import { getEmployerBusinessKey } from "../../company/helpers/employerDualId.helpers";
+import { employerSettingsStorage } from "../../company/storage/employerSettings.storage";
 import { statusLabel } from "../types/shiftWorkspaceTypes";
 import type { ShiftWorkspace } from "../types/shiftWorkspaceTypes";
 import { RatingBanner } from "./ShiftWorkspaceComponents";
+import { getEmployerShiftPost } from "../storage/employerShift.postActions.crud";
+import {
+  getSiteMembershipTruth,
+  resolveShiftOpsSiteIdForPost,
+  subscribeSiteMembershipTruth,
+} from "../../../shared/shiftOps/shiftJobsMembershipBridge";
 
 const SHIFT_PRIMARY_BUTTON_STYLE: CSSProperties = {
   background: "var(--wm-er-accent-shift, #16a34a)",
@@ -37,16 +47,20 @@ export function EmployerShiftWorkspaceControls({
   onMarkCompleted,
   onRate,
 }: EmployerShiftWorkspaceControlsProps) {
+  const initiatorMl = getEmployerBusinessKey(employerSettingsStorage.get()) ?? "";
+  const receiverMl = workspace.workerMlId?.trim() ?? "";
+  const post = getEmployerShiftPost(workspace.postId);
+  const groupId = resolveShiftOpsSiteIdForPost(post ?? {});
+  const membership = useSyncExternalStore(
+    subscribeSiteMembershipTruth,
+    () => getSiteMembershipTruth(groupId, receiverMl),
+    () => getSiteMembershipTruth(groupId, receiverMl),
+  );
+
   return (
     <section
-      style={{
-        marginTop: 12,
-        padding: "15px 16px",
-        borderRadius: 20,
-        border: "1px solid rgba(226,232,240,0.95)",
-        background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
-        boxShadow: "0 10px 24px rgba(15,23,42,0.045)",
-      }}
+      className="wm-shift-surface-glass wm-shift-surface-glass--shift"
+      data-testid="employer-shift-workspace-controls"
     >
       <div style={{ fontSize: 14, fontWeight: 950, color: "var(--wm-er-text)" }}>
         Employer Controls
@@ -57,19 +71,43 @@ export function EmployerShiftWorkspaceControls({
         in this workspace.
       </div>
 
-      {workspace.status === "left" && (
+      {workspace.status === "left" ? (
         <WorkerLeftNotice workspace={workspace} onOpenPost={onOpenPost} />
-      )}
+      ) : null}
 
-      {readOnly && (
+      {readOnly ? (
         <div style={{ marginTop: 10, fontSize: 12, color: "var(--wm-er-muted)", lineHeight: 1.45 }}>
           Read-only: this workspace is {statusLabel(workspace.status)}.
         </div>
-      )}
+      ) : null}
 
-      {isCompleted && <RatingBanner workspace={workspace} hasRating={hasRating} onRate={onRate} />}
+      {isCompleted ? (
+        <RatingBanner workspace={workspace} hasRating={hasRating} onRate={onRate} />
+      ) : null}
 
-      <div style={{ marginTop: 13, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+      {!readOnly && receiverMl ? (
+        <div style={{ marginTop: 12 }}>
+          <GatedCallButton
+            groupId={groupId}
+            membershipStatus={membership?.status}
+            workerMlId={receiverMl}
+            initiatorMl={initiatorMl}
+            peerLabel={workspace.workerName ?? receiverMl}
+            extraDisabled={!initiatorMl}
+            shiftEndAt={workspace.endAt}
+            workspaceStatus={workspace.status}
+          />
+        </div>
+      ) : null}
+
+      <div
+        style={{
+          marginTop: 13,
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "var(--wm-kpi-grid-gap)",
+        }}
+      >
         <button className="wm-outlineBtn" type="button" onClick={onOpenPost}>
           Open Post
         </button>
@@ -121,12 +159,11 @@ function WorkerLeftNotice({
 }) {
   return (
     <div
+      className="wm-shift-surface-glass wm-shift-surface-glass--inset"
       style={{
         marginTop: 10,
-        padding: "10px 14px",
-        borderRadius: 14,
-        background: "rgba(220,38,38,0.06)",
         border: "1px solid rgba(220,38,38,0.18)",
+        background: "rgba(220,38,38,0.06)",
       }}
     >
       <div style={{ fontWeight: 900, fontSize: 13, color: "#dc2626" }}>

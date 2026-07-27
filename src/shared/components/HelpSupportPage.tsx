@@ -1,6 +1,7 @@
-/** Job Mitra | HelpSupportPage.tsx | C:\projects\WorkMitra_Enterprise_v2\src\shared\components\HelpSupportPage.tsx */
+/** Job Mitra | HelpSupportPage.tsx — DomainHero (pageHead purge) */
 
 import { useState } from "react";
+import { DomainHero } from "./layout/DomainHero";
 
 const FAQ_ITEMS: { q: string; a: string }[] = [
   {
@@ -13,7 +14,7 @@ const FAQ_ITEMS: { q: string; a: string }[] = [
   },
   {
     q: "How does the rating system work?",
-    a: "After a shift or job is completed, both the worker and employer rate each other. Ratings are permanent and linked to your Job Mitra ID. Higher ratings build trust and improve your chances.",
+    a: "After a shift or job is completed, both the worker and employer rate each other. Ratings are permanent and linked to your Mitra Labs ID. Higher ratings build trust and improve your chances.",
   },
   {
     q: "Can I edit my review?",
@@ -24,12 +25,12 @@ const FAQ_ITEMS: { q: string; a: string }[] = [
     a: "Go to Settings, scroll to 'Backup and restore', and tap 'Export my data'. A JSON file will be downloaded. You can import this file on a new device to restore it.",
   },
   {
-    q: "What is my Job Mitra ID?",
-    a: "Your Job Mitra ID (JM ID) is a unique, permanent identifier created from your name. Share it with employers so they can find and verify you. It appears on your profile and all job interactions.",
+    q: "What is my Mitra Labs ID?",
+    a: "Your Mitra Labs ID (ML ID) is a unique, permanent identifier created from your name. Share it with employers so they can find and verify you. It appears on your profile and all job interactions. Format: ML-XXXX-ABC-XXXX.",
   },
   {
     q: "How do I verify an employer?",
-    a: "Go to Work Vault, tap the 'Verify Employer' tab, and enter the employer's Job Mitra ID. You'll see their rating, reviews, and track record before applying.",
+    a: "Go to Work Vault, tap the 'Verify Employer' tab, and enter the employer's Mitra Labs ID. You'll see their rating, reviews, and track record before applying.",
   },
   {
     q: "How do I resign from a job?",
@@ -52,26 +53,40 @@ function buildMailtoUrl(subject: string): string {
   return `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}`;
 }
 
-function FaqItem({ q, a, open, onToggle }: { q: string; a: string; open: boolean; onToggle: () => void }) {
+function HelpIcon() {
   return (
-    <div style={{ borderBottom: "1px solid var(--wm-er-border, #eef1f5)" }}>
+    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm1 15h-2v-2h2v2Zm1.07-7.75-.9.92A1.99 1.99 0 0 0 12 12h-2v-.5c0-.55.22-1.05.59-1.41l1.24-1.26A1.5 1.5 0 0 0 12 7.5c-.83 0-1.5.67-1.5 1.5H8.5A3.5 3.5 0 0 1 12 5.5a3.5 3.5 0 0 1 2.07 6.25Z"
+      />
+    </svg>
+  );
+}
+
+function FaqItem({
+  q,
+  a,
+  open,
+  onToggle,
+}: {
+  q: string;
+  a: string;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div>
       <button
         type="button"
+        className="wm-helpFaqRow"
         onClick={onToggle}
-        style={{
-          width: "100%",
-          padding: "12px 0",
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          gap: 12,
-          textAlign: "left",
-        }}
+        aria-expanded={open}
+        aria-label={q}
       >
-        <span style={{ fontSize: 13, fontWeight: 600, color: "var(--wm-er-text)", lineHeight: 1.4 }}>
+        <span
+          style={{ fontSize: 14, fontWeight: 600, color: "var(--wm-er-text)", lineHeight: 1.4 }}
+        >
           {q}
         </span>
         <span
@@ -86,11 +101,18 @@ function FaqItem({ q, a, open, onToggle }: { q: string; a: string; open: boolean
           &#9662;
         </span>
       </button>
-      {open && (
-        <div style={{ padding: "0 0 12px", fontSize: 12, color: "var(--wm-er-muted)", lineHeight: 1.7 }}>
+      {open ? (
+        <div
+          style={{
+            padding: "0 0 12px",
+            fontSize: 13,
+            color: "var(--wm-er-muted)",
+            lineHeight: 1.7,
+          }}
+        >
           {a}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -111,98 +133,64 @@ export function HelpSupportPage() {
 
   return (
     <div>
-      <div className="wm-pageHead">
-        <div>
-          <div className="wm-pageTitle">Help & Support</div>
-          <div className="wm-pageSub">Find answers, report issues, or contact us.</div>
-        </div>
-      </div>
+      <DomainHero
+        variant="settings"
+        audience="employee"
+        icon={<HelpIcon />}
+        title="Help & Support"
+        subtitle="Find answers, report issues, or contact us"
+        description="FAQ, contact channels, and app info for Job Mitra."
+      />
 
-      <section className="wm-ee-card" style={{ marginTop: 12 }}>
+      <section className="wm-helpFaqCard" aria-label="Frequently Asked Questions">
         <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-er-text)" }}>
           Frequently Asked Questions
         </div>
         <div style={{ marginTop: 8 }}>
-          {FAQ_ITEMS.map((item, i) => (
-            <FaqItem
-              key={i}
-              q={item.q}
-              a={item.a}
-              open={openFaq === i}
-              onToggle={() => setOpenFaq(openFaq === i ? null : i)}
-            />
-          ))}
+          {FAQ_ITEMS.length === 0 ? (
+            <div
+              className="wm-ent-empty"
+              style={{ fontSize: 14, color: "var(--wm-er-muted)", padding: "12px 0" }}
+            >
+              No FAQ items available yet.
+            </div>
+          ) : (
+            FAQ_ITEMS.map((item, i) => (
+              <FaqItem
+                key={i}
+                q={item.q}
+                a={item.a}
+                open={openFaq === i}
+                onToggle={() => setOpenFaq(openFaq === i ? null : i)}
+              />
+            ))
+          )}
         </div>
       </section>
 
-      <section className="wm-ee-card" style={{ marginTop: 12 }}>
+      <section className="wm-helpContactCard" aria-label="Contact Us">
         <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-er-text)" }}>Contact Us</div>
         <div style={{ fontSize: 12, color: "var(--wm-er-muted)", marginTop: 4, lineHeight: 1.5 }}>
           Having trouble or want to share feedback? Reach out to us.
         </div>
 
         <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
-          <a
-            href={buildMailtoUrl("Job Mitra — Report a Problem")}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              padding: "12px 14px",
-              borderRadius: 10,
-              border: "1px solid var(--wm-er-border)",
-              background: "var(--wm-er-bg, #f8fafc)",
-              textDecoration: "none",
-              color: "var(--wm-er-text)",
-              fontSize: 13,
-              fontWeight: 600,
-            }}
-          >
+          <a href={buildMailtoUrl("Job Mitra — Report a Problem")} className="wm-helpContactLink">
             <span style={{ fontSize: 16 }}>&#9888;</span>
             Report a problem
           </a>
-          <a
-            href={buildMailtoUrl("Job Mitra — Feature Suggestion")}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              padding: "12px 14px",
-              borderRadius: 10,
-              border: "1px solid var(--wm-er-border)",
-              background: "var(--wm-er-bg, #f8fafc)",
-              textDecoration: "none",
-              color: "var(--wm-er-text)",
-              fontSize: 13,
-              fontWeight: 600,
-            }}
-          >
+          <a href={buildMailtoUrl("Job Mitra — Feature Suggestion")} className="wm-helpContactLink">
             <span style={{ fontSize: 16 }}>&#128161;</span>
             Suggest a feature
           </a>
-          <a
-            href={buildMailtoUrl("Job Mitra — General Enquiry")}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              padding: "12px 14px",
-              borderRadius: 10,
-              border: "1px solid var(--wm-er-border)",
-              background: "var(--wm-er-bg, #f8fafc)",
-              textDecoration: "none",
-              color: "var(--wm-er-text)",
-              fontSize: 13,
-              fontWeight: 600,
-            }}
-          >
+          <a href={buildMailtoUrl("Job Mitra — General Enquiry")} className="wm-helpContactLink">
             <span style={{ fontSize: 16 }}>&#9993;</span>
             {SUPPORT_EMAIL}
           </a>
         </div>
       </section>
 
-      <section className="wm-ee-card" style={{ marginTop: 12, marginBottom: 24 }}>
+      <section className="wm-helpContactCard" style={{ marginBottom: 24 }} aria-label="App Info">
         <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-er-text)" }}>App Info</div>
         <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
@@ -211,25 +199,16 @@ export function HelpSupportPage() {
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
             <span style={{ color: "var(--wm-er-muted)" }}>Build</span>
-            <span style={{ fontWeight: 700, color: "var(--wm-er-text)" }}>Production</span>
+            <span style={{ fontWeight: 700, color: "var(--wm-er-text)" }}>Beta</span>
           </div>
         </div>
 
         <button
           type="button"
+          className="wm-outlineBtn"
           onClick={handleTutorialReset}
-          style={{
-            marginTop: 12,
-            width: "100%",
-            padding: "10px 16px",
-            borderRadius: 10,
-            border: "1px solid var(--wm-er-border)",
-            background: "#fff",
-            color: "var(--wm-er-text)",
-            fontSize: 12,
-            fontWeight: 700,
-            cursor: "pointer",
-          }}
+          style={{ marginTop: 12, width: "100%" }}
+          aria-label={tutorialReset ? "Tutorial will show on next visit" : "View tutorial again"}
         >
           {tutorialReset ? "Tutorial will show on next visit!" : "View tutorial again"}
         </button>

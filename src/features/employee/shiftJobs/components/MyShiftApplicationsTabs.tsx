@@ -1,26 +1,7 @@
-// App name: Job Mitra
-// File name: MyShiftApplicationsTabs.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\components\MyShiftApplicationsTabs.tsx
+// App name: Job Mitra | MyShiftApplicationsTabs.tsx — seg-tab (Wave A)
 
-import type { CSSProperties } from "react";
 import type { ApplicationTab } from "../../shiftJobs/types/shiftApplicationTypes";
 import type { TabCounts } from "../../shiftJobs/helpers/shiftApplicationHelpers";
-const TAB_COLORS_SHIFT = {
-  all: "#16a34a",
-  active: "#16a34a",
-  confirmed: "#16a34a",
-  closed: "#16a34a",
-};
-
-const TAB_COLORS_PLANNER = {
-  all: "#0891b2",
-  active: "#0891b2",
-  confirmed: "#0891b2",
-  closed: "#0891b2",
-};
-
-const MUTED = "#94a3b8";
-const TAB_CSS = `.wm-app-tabs::-webkit-scrollbar{display:none}`;
 
 const TABS: { key: ApplicationTab; label: string }[] = [
   { key: "all", label: "All" },
@@ -42,108 +23,67 @@ export function MyShiftApplicationsTabs({
   domain = "shift",
   onChange,
 }: MyShiftApplicationsTabsProps) {
-  const tabColors = domain === "planner" ? TAB_COLORS_PLANNER : TAB_COLORS_SHIFT;
+  const isPlanner = domain === "planner";
+
   return (
-    <>
-      <style>{TAB_CSS}</style>
+    <div
+      className={
+        isPlanner
+          ? "wm-chipRow wm-animateIn"
+          : "wm-shift-surface-glass wm-shift-seg-tab-row wm-animateIn"
+      }
+      role="tablist"
+      aria-label={isPlanner ? "Project application filters" : "Shift application filters"}
+      data-testid="shift-applications-tabs"
+      style={{
+        animationDelay: "90ms",
+        ...(isPlanner ? undefined : { padding: "8px 10px" }),
+      }}
+    >
+      {TABS.map((item) => {
+        const isActive = tab === item.key;
+        const count = counts[item.key];
 
-      <div
-        className="wm-app-tabs"
-        style={{
-          display: "flex",
-          gap: 7,
-          overflowX: "auto",
-          flexWrap: "nowrap",
-          padding: 6,
-          marginBottom: 14,
-          scrollbarWidth: "none",
-          borderRadius: 18,
-          border: "1px solid rgba(226,232,240,0.95)",
-          background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
-          boxShadow: "0 10px 24px rgba(15,23,42,0.04)",
-        }}
-      >
-        {TABS.map((item) => {
-          const isActive = tab === item.key;
-          const count = counts[item.key];
-          const hasItems = count > 0;
-          const color = tabColors[item.key];
-          const style = getTabStyle(isActive, hasItems, color);
-
-          return (
-            <button
-              key={item.key}
-              type="button"
-              onClick={() => onChange(item.key)}
-              style={{
-                background: style.background,
-                color: style.color,
-                border: `1px solid ${style.borderColor}`,
-                fontSize: 12,
-                fontWeight: isActive ? 950 : 750,
-                padding: "8px 12px",
-                borderRadius: 14,
-                cursor: "pointer",
-                flexShrink: 0,
-                whiteSpace: "nowrap",
-                minHeight: 40,
-              }}
-            >
-              {item.label}
-              {count > 0 && (
-                <span
-                  style={{
-                    marginLeft: 6,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    minWidth: 20,
-                    height: 18,
-                    padding: "0 6px",
-                    borderRadius: 999,
-                    background: isActive ? "#fff" : `${color}18`,
-                    color: isActive ? color : style.color,
-                    fontSize: 10,
-                    fontWeight: 950,
-                  }}
-                >
-                  {count}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-    </>
+        return (
+          <button
+            key={item.key}
+            type="button"
+            role="tab"
+            aria-selected={isActive}
+            className={
+              isPlanner
+                ? `wm-chipBtn ${isActive ? "isActive" : ""}`
+                : `wm-shift-seg-tab ${isActive ? "isActive" : ""}`
+            }
+            onClick={() => onChange(item.key)}
+          >
+            {item.label}
+            {count > 0 ? (
+              <span
+                className="wm-shiftApplicationsTabCount"
+                style={{
+                  marginLeft: 4,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  minWidth: 18,
+                  height: 16,
+                  padding: "0 5px",
+                  borderRadius: "var(--wm-radius-pill)",
+                  fontSize: 10,
+                  fontWeight: 900,
+                  background: isActive ? "rgba(255,255,255,0.92)" : "rgba(22,163,74,0.12)",
+                  color: isActive
+                    ? "var(--wm-shift-accent, #16a34a)"
+                    : "var(--wm-shift-accent, #16a34a)",
+                }}
+              >
+                {count}
+              </span>
+            ) : null}
+          </button>
+        );
+      })}
+    </div>
   );
-}
-
-function getTabStyle(
-  isActive: boolean,
-  hasItems: boolean,
-  color: string,
-): CSSProperties & {
-  borderColor: string;
-} {
-  if (isActive) {
-    return {
-      background: color,
-      color: "#fff",
-      borderColor: color,
-    };
-  }
-
-  if (hasItems) {
-    return {
-      background: `${color}0F`,
-      color,
-      borderColor: `${color}36`,
-    };
-  }
-
-  return {
-    background: "transparent",
-    color: MUTED,
-    borderColor: "rgba(226,232,240,0.95)",
-  };
 }

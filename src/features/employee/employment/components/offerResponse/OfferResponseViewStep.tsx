@@ -2,7 +2,7 @@
 // File: OfferResponseViewStep.tsx
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\employment\components\offerResponse\OfferResponseViewStep.tsx
 
-import type { HRCandidateRecord } from "../../../../employer/hrManagement/types/hrManagement.types";
+import type { HRCandidateRecord } from "../../../../shared/hr/hrPublic";
 
 type OfferLetter = NonNullable<HRCandidateRecord["offerLetter"]>;
 

@@ -13,6 +13,29 @@ export function ShiftCalendarIcon() {
   );
 }
 
+/** Compact metric icons for Shift Jobs Home stats glass cards */
+export function ShiftAvailableMetricIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8 8.009 8.009 0 0 1-8 8Zm-1-5.59L8.41 12l-1.42 1.41L11 17.42 18 10.41 16.59 9 11 14.41Z"
+      />
+    </svg>
+  );
+}
+
+export function ShiftApplicationsMetricIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Zm4 18H6V4h7v5h5Zm-2-7H8v-2h8Zm0 4H8v-2h8Z"
+      />
+    </svg>
+  );
+}
+
 export function ShiftSearchIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">

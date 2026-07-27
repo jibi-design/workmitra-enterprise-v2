@@ -1,7 +1,7 @@
 // src/features/employee/workVault/components/VaultFolderCard.tsx
 
+import { StatusBadge } from "../../../../shared/components/enterprise/StatusBadge";
 import type { VaultFolder } from "../types/vaultTypes";
-import { VAULT_ACCENT } from "../constants/vaultConstants";
 
 /* ------------------------------------------------ */
 /* Folder Icons                                     */
@@ -25,33 +25,19 @@ function FolderIcon({ icon }: { icon: string }) {
   );
 }
 
-/* ------------------------------------------------ */
-/* Visibility Badge                                 */
-/* ------------------------------------------------ */
-function VisibilityBadge({ visibility }: { visibility: "visible" | "hidden" }) {
-  const isVisible = visibility === "visible";
-  return (
-    <span
-      style={{
-        height: 22,
-        padding: "0 8px",
-        borderRadius: 999,
-        fontSize: 10,
-        fontWeight: 700,
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 4,
-        border: isVisible
-          ? "1px solid rgba(22, 163, 74, 0.25)"
-          : "1px solid rgba(220, 38, 38, 0.25)",
-        background: isVisible ? "rgba(22, 163, 74, 0.08)" : "rgba(220, 38, 38, 0.08)",
-        color: isVisible ? "#15803d" : "#dc2626",
-        flexShrink: 0,
-      }}
-    >
-      {isVisible ? "Visible" : "Hidden"}
-    </span>
-  );
+function folderTypeLabel(icon: string): string {
+  switch (icon) {
+    case "edu":
+      return "Education";
+    case "cert":
+      return "Certificate";
+    case "license":
+      return "License";
+    case "id":
+      return "Experience";
+    default:
+      return "Documents";
+  }
 }
 
 /* ------------------------------------------------ */
@@ -73,6 +59,8 @@ export function VaultFolderCard({
   onTap,
   onToggleVisibility,
 }: VaultFolderCardProps) {
+  const isVisible = folder.visibility === "visible";
+
   return (
     <div
       role="button"
@@ -84,7 +72,8 @@ export function VaultFolderCard({
           onTap(folder.id);
         }
       }}
-      className="wm-vault-card"
+      className="wm-vault-card wm-vault-folder-card"
+      data-testid="vault-folder-card"
       style={{
         display: "flex",
         alignItems: "center",
@@ -92,11 +81,13 @@ export function VaultFolderCard({
         gap: 12,
         padding: "14px 16px",
         cursor: "pointer",
+        height: "100%",
+        boxSizing: "border-box",
       }}
     >
       {/* Left: icon + info */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
-        <div className="wm-vault-folder-icon">
+        <div className="wm-vault-folder-icon" aria-hidden="true">
           <FolderIcon icon={folder.icon} />
         </div>
 
@@ -113,19 +104,27 @@ export function VaultFolderCard({
           >
             {folder.name}
           </div>
-          <div style={{ fontSize: 12, color: "var(--wm-emp-muted)", marginTop: 2 }}>
-            {documentCount} {documentCount === 1 ? "document" : "documents"}
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 6,
+              marginTop: 6,
+              alignItems: "center",
+            }}
+          >
+            <StatusBadge label={folderTypeLabel(folder.icon)} tone="neutral" />
+            <span style={{ fontSize: 12, color: "var(--wm-emp-muted)", fontWeight: 600 }}>
+              {documentCount} {documentCount === 1 ? "file" : "files"}
+            </span>
           </div>
         </div>
       </div>
 
       {/* Right: visibility badge + toggle */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-        {folder.visibility === "hidden" ? (
-          <span
-            style={{ color: VAULT_ACCENT, display: "inline-flex" }}
-            aria-label="Access controlled"
-          >
+        {!isVisible ? (
+          <span className="wm-vault-folder-lock" aria-label="Access controlled">
             <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 fill="currentColor"
@@ -134,7 +133,10 @@ export function VaultFolderCard({
             </svg>
           </span>
         ) : null}
-        <VisibilityBadge visibility={folder.visibility} />
+        <StatusBadge
+          label={isVisible ? "Visible" : "Hidden"}
+          tone={isVisible ? "active" : "critical"}
+        />
         <button
           type="button"
           className="wm-vault-tap"
@@ -146,7 +148,7 @@ export function VaultFolderCard({
           style={{
             width: 44,
             height: 44,
-            borderRadius: 12,
+            borderRadius: "var(--wm-radius-button)",
             border: "1px solid var(--wm-emp-border, rgba(15, 23, 42, 0.08))",
             background: "transparent",
             cursor: "pointer",
@@ -158,7 +160,7 @@ export function VaultFolderCard({
           }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-            {folder.visibility === "visible" ? (
+            {isVisible ? (
               <path
                 fill="currentColor"
                 d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5ZM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5Zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3Z"

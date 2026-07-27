@@ -48,7 +48,7 @@ export function EmployerCandidateRequirementCard({
                 key={item}
                 style={{
                   padding: "10px 12px",
-                  borderRadius: 10,
+                  borderRadius: "var(--wm-radius-10)",
                   background: "var(--wm-er-surface)",
                   border: "1px solid var(--wm-er-border)",
                 }}

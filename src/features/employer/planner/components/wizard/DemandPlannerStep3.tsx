@@ -1,15 +1,9 @@
-// src/features/employer/shiftJobs/components/DemandPlannerStep3.tsx
-//
-// Demand Planner — Step 3: Review + Submit.
-// Shows full summary. Submit → auto-creates one shift post per day.
+// Job Mitra | DemandPlannerStep3.tsx | Step 3: Review + Publish (Planner domain)
 
 import type { DaySlot } from "../../storage/demandPlannerStorage";
 import { fmtPlanDate } from "../../storage/demandPlannerStorage";
 import type { Step1Data } from "./DemandPlannerStep1.types";
 
-/* ------------------------------------------------ */
-/* Props                                            */
-/* ------------------------------------------------ */
 type Props = {
   step1: Step1Data;
   slots: DaySlot[];
@@ -18,9 +12,6 @@ type Props = {
   onBack: () => void;
 };
 
-/* ------------------------------------------------ */
-/* Component                                        */
-/* ------------------------------------------------ */
 export function DemandPlannerStep3({ step1, slots, isSubmitting, onSubmit, onBack }: Props) {
   const totalDays = slots.length;
   const totalWorkers = slots.reduce((s, d) => s + d.workers, 0);
@@ -46,7 +37,8 @@ export function DemandPlannerStep3({ step1, slots, isSubmitting, onSubmit, onBac
         Step 3 of 3 — Review &amp; Publish
       </div>
       <div style={{ fontSize: 12, color: "var(--wm-er-muted)", marginBottom: 16 }}>
-        Review your plan before submitting. Each day will become a separate shift post.
+        Review your plan before publishing. Workers will see one Mega Project Card with pickable
+        days — not separate Shift Jobs posts.
       </div>
 
       {/* Plan summary card */}

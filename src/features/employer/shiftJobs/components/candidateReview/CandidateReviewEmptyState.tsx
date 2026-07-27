@@ -30,7 +30,7 @@ const CARD_STYLE: CSSProperties = {
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  borderRadius: 22,
+  borderRadius: "var(--wm-radius-employee-card)",
   border: "1px solid rgba(148,163,184,0.18)",
   background: "linear-gradient(180deg, rgba(248,250,252,0.9), rgba(255,255,255,0.99))",
 };
@@ -38,7 +38,7 @@ const CARD_STYLE: CSSProperties = {
 const ACTION_BUTTON_STYLE: CSSProperties = {
   marginTop: 13,
   border: "none",
-  borderRadius: 999,
+  borderRadius: "var(--wm-radius-pill)",
   background: "#16a34a",
   color: "#ffffff",
   padding: "10px 13px",
@@ -94,7 +94,7 @@ export function CandidateReviewEmptyState({
                 key={item}
                 style={{
                   padding: "8px 9px",
-                  borderRadius: 12,
+                  borderRadius: "var(--wm-radius-button)",
                   background: "rgba(248,250,252,0.92)",
                   border: "1px solid rgba(148,163,184,0.16)",
                   color: "var(--wm-er-muted)",

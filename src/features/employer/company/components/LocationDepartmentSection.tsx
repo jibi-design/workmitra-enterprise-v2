@@ -54,7 +54,7 @@ export function LocationDepartmentSection() {
       style={{
         padding: 16,
         background: "var(--wm-er-card, #fff)",
-        borderRadius: 14,
+        borderRadius: "var(--wm-radius-chip)",
         border: `1px solid ${BORDER_COLOR}`,
       }}
     >
@@ -71,7 +71,7 @@ export function LocationDepartmentSection() {
             style={{
               width: 34,
               height: 34,
-              borderRadius: 10,
+              borderRadius: "var(--wm-radius-10)",
               background: "rgba(3, 105, 161, 0.08)",
               border: "1px solid rgba(3, 105, 161, 0.12)",
               display: "flex",
@@ -105,7 +105,7 @@ export function LocationDepartmentSection() {
             color: "#0369a1",
             background: "rgba(3, 105, 161, 0.06)",
             border: "1px solid rgba(3, 105, 161, 0.15)",
-            borderRadius: 8,
+            borderRadius: "var(--wm-radius-8)",
             cursor: "pointer",
           }}
         >
@@ -118,7 +118,7 @@ export function LocationDepartmentSection() {
           style={{
             marginBottom: 12,
             padding: "8px 12px",
-            borderRadius: 8,
+            borderRadius: "var(--wm-radius-8)",
             background: "#f0fdf4",
             border: "1px solid #bbf7d0",
             fontSize: 12,

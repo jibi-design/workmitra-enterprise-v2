@@ -3,6 +3,8 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { requireAuth, requireEmployeeRole } from "../../middleware/index.js";
 import { handleEmployeeCareerRoutes } from "./career/career.routes.js";
 import { handleEmployeeVaultRoutes } from "./vault/vault.routes.js";
+import { handleEmployeeShiftRoutes } from "./shift/shift.routes.js";
+import { handleEmployeeNotificationRoutes } from "./notifications/notifications.routes.js";
 import { sendNotFound } from "../../utils/http.js";
 
 const EMPLOYEE_PREFIX = "/v1/jobmitra/employee";
@@ -40,15 +42,27 @@ export async function handleEmployeeRoutes(
         res,
         requestId,
         async (authedReq) => {
+          // Notifications inbox
+          const handledNotifications = await handleEmployeeNotificationRoutes(
+            authedReq,
+            res,
+            url,
+            method,
+          );
+          if (handledNotifications) return;
+
           // Career sub-domain
           const handledCareer = await handleEmployeeCareerRoutes(authedReq, res, url, method);
           if (handledCareer) return;
+
+          // Shift sub-domain
+          const handledShift = await handleEmployeeShiftRoutes(authedReq, res, url, method);
+          if (handledShift) return;
 
           // Work Vault sub-domain
           const handledVault = await handleEmployeeVaultRoutes(authedReq, res, url, method);
           if (handledVault) return;
 
-          // Future sub-domains: shift, profile, workspace, ratings
           sendNotFound(res, requestId, "Employee");
         },
         url,

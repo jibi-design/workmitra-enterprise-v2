@@ -1,6 +1,4 @@
-// App name: Job Mitra
-// File name: MyShiftWorkspacesPage.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\pages\MyShiftWorkspacesPage.tsx
+// App name: Job Mitra | MyShiftWorkspacesPage.tsx — Step 3 primitives
 
 import { MyShiftWorkspacesHeader } from "../components/MyShiftWorkspacesHeader";
 import { MyShiftWorkspacesList } from "../components/MyShiftWorkspacesList";
@@ -21,19 +19,29 @@ export function MyShiftWorkspacesPage() {
   } = useMyShiftWorkspacesState();
 
   return (
-    <div className="wm-ee-vShift">
+    <div
+      className="wm-ee-vShift wm-stackGrid"
+      data-testid="my-shift-workspaces-page"
+      style={{ gap: "var(--wm-stack-gap)" }}
+    >
       <MyShiftWorkspacesHeader onFindShifts={openFindShifts} />
 
-      <MyShiftWorkspacesSearch query={query} onQueryChange={setQuery} />
+      <div className="wm-animateIn" style={{ animationDelay: "60ms" }}>
+        <MyShiftWorkspacesSearch query={query} onQueryChange={setQuery} />
+      </div>
 
-      <MyShiftWorkspacesTabs tab={tab} counts={counts} onTabChange={setTab} domain="shift" />
+      <div className="wm-animateIn" style={{ animationDelay: "90ms" }}>
+        <MyShiftWorkspacesTabs tab={tab} counts={counts} onTabChange={setTab} domain="shift" />
+      </div>
 
-      <MyShiftWorkspacesList
-        tab={tab}
-        workspaces={filteredWorkspaces}
-        onOpenWorkspace={openWorkspace}
-        domain="shift"
-      />
+      <div className="wm-animateIn" style={{ animationDelay: "120ms" }}>
+        <MyShiftWorkspacesList
+          tab={tab}
+          workspaces={filteredWorkspaces}
+          onOpenWorkspace={openWorkspace}
+          domain="shift"
+        />
+      </div>
     </div>
   );
 }

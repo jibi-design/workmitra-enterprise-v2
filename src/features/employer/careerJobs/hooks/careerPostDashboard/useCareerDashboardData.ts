@@ -55,7 +55,11 @@ export function useCareerDashboardData(postId: string) {
   const hiredApps = useMemo(() => apps.filter((app) => app.stage === "hired"), [apps]);
 
   const rejectedApps = useMemo(
-    () => apps.filter((app) => app.stage === "rejected" || app.stage === "withdrawn"),
+    () =>
+      apps.filter(
+        (app) =>
+          app.stage === "rejected" || app.stage === "withdrawn" || app.stage === "offer_declined",
+      ),
     [apps],
   );
 

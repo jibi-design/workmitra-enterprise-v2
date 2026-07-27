@@ -8,7 +8,7 @@ export function EmployerVaultSecurityNote() {
       style={{
         marginTop: 10,
         padding: "8px 12px",
-        borderRadius: 8,
+        borderRadius: "var(--wm-radius-8)",
         background: "rgba(217, 119, 6, 0.06)",
         border: "1px solid rgba(217, 119, 6, 0.15)",
         fontSize: 11,

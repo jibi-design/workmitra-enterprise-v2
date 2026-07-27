@@ -50,13 +50,9 @@ export function EmployerReceivedWorkerReviews({
         return (
           <article
             key={review.id}
+            className="wm-reviewCard"
             style={{
-              padding: 14,
-              borderRadius: 20,
-              border: `1px solid ${theme.border}`,
-              borderLeft: `4px solid ${theme.accent}`,
-              background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
-              boxShadow: "0 10px 24px rgba(15,23,42,0.045)",
+              borderLeft: `3px solid ${theme.accent}`,
             }}
           >
             <div
@@ -71,15 +67,32 @@ export function EmployerReceivedWorkerReviews({
                 <div
                   style={{
                     fontSize: 14,
-                    fontWeight: 950,
+                    fontWeight: 700,
                     color: "var(--wm-er-text)",
                     lineHeight: 1.3,
                   }}
                 >
                   {title}
                 </div>
-                <div style={{ marginTop: 4, fontSize: 12, color: "var(--wm-er-muted)" }}>
-                  From worker: {review.workerWmId || "Worker"}
+                <div style={{ marginTop: 4, fontSize: 13, color: "var(--wm-er-muted)" }}>
+                  From worker: {review.workerMlId || "Worker"}
+                </div>
+                <div
+                  style={{
+                    marginTop: 8,
+                    display: "flex",
+                    gap: 2,
+                    color: "#d97706",
+                    fontSize: 28,
+                    lineHeight: 1,
+                  }}
+                  aria-label={`${review.stars} of 5 stars`}
+                >
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <span key={i} style={{ opacity: i < review.stars ? 1 : 0.25 }}>
+                      ★
+                    </span>
+                  ))}
                 </div>
               </div>
 
@@ -87,11 +100,11 @@ export function EmployerReceivedWorkerReviews({
                 style={{
                   padding: "5px 9px",
                   borderRadius: 999,
-                  background: theme.softBg,
-                  border: `1px solid ${theme.border}`,
-                  color: theme.accent,
+                  background: "rgba(217,119,6,0.12)",
+                  border: "1px solid rgba(217,119,6,0.22)",
+                  color: "#d97706",
                   fontSize: 11,
-                  fontWeight: 950,
+                  fontWeight: 800,
                   whiteSpace: "nowrap",
                 }}
               >
@@ -106,7 +119,7 @@ export function EmployerReceivedWorkerReviews({
                     key={tag}
                     style={{
                       fontSize: 11,
-                      fontWeight: 850,
+                      fontWeight: 800,
                       padding: "4px 9px",
                       borderRadius: 999,
                       background: "rgba(22,163,74,0.08)",
@@ -124,12 +137,8 @@ export function EmployerReceivedWorkerReviews({
               <div
                 style={{
                   marginTop: 10,
-                  padding: "9px 10px",
-                  borderRadius: 14,
-                  background: "rgba(248,250,252,0.96)",
-                  border: "1px solid rgba(226,232,240,0.9)",
-                  fontSize: 12,
-                  fontWeight: 700,
+                  fontSize: 13,
+                  fontWeight: 400,
                   color: "var(--wm-er-muted)",
                   lineHeight: 1.45,
                 }}
@@ -148,7 +157,7 @@ export function EmployerReceivedWorkerReviews({
                 flexWrap: "wrap",
               }}
             >
-              <div style={{ fontSize: 11, fontWeight: 800, color: "var(--wm-er-muted)" }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "var(--wm-er-muted)" }}>
                 Would work again: {review.workAgain ? "Yes" : "No"} · {formatDate(review.createdAt)}
               </div>
 
@@ -163,9 +172,10 @@ export function EmployerReceivedWorkerReviews({
                     background: "transparent",
                     color: theme.accent,
                     fontSize: 12,
-                    fontWeight: 950,
+                    fontWeight: 800,
                     cursor: "pointer",
                     padding: 0,
+                    minHeight: 44,
                   }}
                 >
                   Open work group

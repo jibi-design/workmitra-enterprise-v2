@@ -9,11 +9,6 @@ export const ID_CHARSET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" as const;
 /** Canonical Mitra Labs prefix for all newly generated IDs. */
 export const ID_PREFIX = "ML" as const;
 
-/** Legacy prefixes kept for backward compatibility with stored demo IDs. */
-export const LEGACY_ID_PREFIX = "JM" as const;
-export const LEGACY_WM_PREFIX = "WM" as const;
-export const LEGACY_ID_PREFIXES = [LEGACY_ID_PREFIX, LEGACY_WM_PREFIX] as const;
-
 /** Parent company brand shown on identity cards. */
 export const ID_BRAND_NAME = "Mitra Labs" as const;
 

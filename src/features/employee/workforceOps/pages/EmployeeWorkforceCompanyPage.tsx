@@ -5,6 +5,7 @@
 // Phase-0: since we have single employer, this shows all data.
 
 import { useMemo } from "react";
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
 import { employeeWorkforceHelpers } from "../services/employeeWorkforceHelpers";
 import { WorkforceAnnounceFeedCard } from "../components/WorkforceAnnounceFeedCard";
 import {
@@ -62,51 +63,41 @@ export function EmployeeWorkforceCompanyPage({ onBack, onOpenAnnouncement, onOpe
   if (!staff) {
     return (
       <div style={{ padding: "0 16px" }}>
-        <div className="wm-pageHead">
-          <button
-            type="button"
-            onClick={onBack}
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: AMBER,
-              padding: 4,
-            }}
-          >
-            <IconBack />
-          </button>
-          <div className="wm-pageTitle">Not added as staff</div>
-        </div>
+        <DomainHero
+          variant="workforce"
+          audience="employee"
+          icon={
+            <button
+              type="button"
+              className="wm-domainHeroIconBtn"
+              onClick={onBack}
+              aria-label="Back"
+            >
+              <IconBack />
+            </button>
+          }
+          title="Not added as staff"
+          subtitle="Company view unavailable"
+          description="Ask an employer to add your unique ID to their staff directory."
+        />
       </div>
     );
   }
 
   return (
     <div style={{ padding: "0 16px" }}>
-      {/* Header */}
-      <div className="wm-pageHead" style={{ gap: 12 }}>
-        <button
-          type="button"
-          onClick={onBack}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            color: AMBER,
-            padding: 4,
-            borderRadius: 6,
-            display: "inline-flex",
-            alignItems: "center",
-          }}
-        >
-          <IconBack />
-        </button>
-        <div style={{ flex: 1 }}>
-          <div className="wm-pageTitle">My Company</div>
-          <div className="wm-pageSub">{categoryNames.join(", ")}</div>
-        </div>
-      </div>
+      <DomainHero
+        variant="workforce"
+        audience="employee"
+        icon={
+          <button type="button" className="wm-domainHeroIconBtn" onClick={onBack} aria-label="Back">
+            <IconBack />
+          </button>
+        }
+        title="My Company"
+        subtitle={categoryNames.join(", ") || "Staff categories"}
+        description="Announcements and groups from your employer."
+      />
 
       {/* Staff Info */}
       <div className="wm-er-card" style={{ marginTop: 14 }}>

@@ -3,25 +3,18 @@
 // CRUD service for Team Calendar / Roster Planner (Root Map Section 7.4.15).
 // Assign staff to sites/shifts per day. Conflict detection built-in.
 
-import type {
-  RosterAssignment,
-  RosterAssignmentFormData,
-} from "../types/rosterPlanner.types";
+import type { RosterAssignment, RosterAssignmentFormData } from "../types/rosterPlanner.types";
+import { hrEmployerScopedKey } from "./hrStorageKeys";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────────────────────────────────────
-
-const STORAGE_KEY = "wm_roster_planner_v1";
 const CHANGED_EVENT = "wm:roster-planner-changed";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Internal Helpers
-// ─────────────────────────────────────────────────────────────────────────────
+function storageKey(): string {
+  return hrEmployerScopedKey("roster_planner_v1");
+}
 
 function read(): RosterAssignment[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey());
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
     return Array.isArray(parsed) ? (parsed as RosterAssignment[]) : [];
@@ -31,9 +24,12 @@ function read(): RosterAssignment[] {
 }
 
 function write(entries: RosterAssignment[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  localStorage.setItem(storageKey(), JSON.stringify(entries));
+  rosterRevision += 1;
   window.dispatchEvent(new Event(CHANGED_EVENT));
 }
+
+let rosterRevision = 0;
 
 function genId(): string {
   return "rst_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
@@ -44,7 +40,6 @@ function genId(): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const rosterPlannerStorage = {
-
   // ── Read ──
 
   /** Get all assignments */
@@ -132,7 +127,7 @@ export const rosterPlannerStorage = {
     return assignment.id;
   },
 
-   /** Bulk assign multiple employees to same site/date/shift */
+  /** Bulk assign multiple employees to same site/date/shift */
   createBulkAssignments(data: {
     date: string;
     site: string;
@@ -210,9 +205,25 @@ export const rosterPlannerStorage = {
 
   // ── Subscription ──
 
+  /** Bumps on every local write; used by hooks to avoid JSON.stringify snapshots (P1-2). */
+  getRevision(): number {
+    return rosterRevision;
+  },
+
   subscribe(cb: () => void): () => void {
-    window.addEventListener(CHANGED_EVENT, cb);
-    return () => window.removeEventListener(CHANGED_EVENT, cb);
+    const onLocal = () => cb();
+    const onStorage = (ev: StorageEvent) => {
+      if (!ev.key || ev.key === storageKey()) {
+        rosterRevision += 1;
+        cb();
+      }
+    };
+    window.addEventListener(CHANGED_EVENT, onLocal);
+    window.addEventListener("storage", onStorage);
+    return () => {
+      window.removeEventListener(CHANGED_EVENT, onLocal);
+      window.removeEventListener("storage", onStorage);
+    };
   },
 
   CHANGED_EVENT,

@@ -33,7 +33,7 @@ export function OwnershipAccessSection({ data, onProfileRefresh, onNotice }: Pro
         style={{
           marginTop: 14,
           padding: 14,
-          borderRadius: 16,
+          borderRadius: "var(--wm-radius-chip)",
           background: "rgba(255,255,255,0.75)",
           border: "1px solid rgba(226,232,240,0.8)",
           display: "grid",

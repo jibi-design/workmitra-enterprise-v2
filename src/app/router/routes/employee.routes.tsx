@@ -2,7 +2,7 @@
 
 import { Navigate, Route } from "react-router-dom";
 import { ROUTE_PATHS } from "../routePaths";
-import { showPhase2Features } from "../../../shared/launch/launchVisibility";
+import { showPhase2Features, showShiftOpsFeatures } from "../../../shared/launch/launchVisibility";
 import {
   LegacyShiftPlanSummaryRedirect,
   LegacyShiftProjectApplyRedirect,
@@ -48,6 +48,11 @@ import {
   MyShiftApplicationsPage,
   MyShiftWorkspacesPage,
   ShiftControlCenterPage,
+  ShiftOpsAcceptDeclinePage,
+  ShiftOpsControlCenterPage,
+  ShiftOpsDualVerifyPage,
+  ShiftOpsInviteLandingPage,
+  ShiftOpsPendingApprovalPage,
   ShiftPostDetailsApplyPage,
   ShiftSearchPage,
   ShiftWorkspacePage,
@@ -87,7 +92,10 @@ export const employeeRouteTree = (
       <Route path="workforce/timesheet" element={<EmployeeTimesheetWrapper />} />
     </Route>
     <Route path={EC.shiftSearch} element={<ShiftSearchPage />} />
-    <Route path={EC.shiftProjects} element={<EmployeePlannerBrowsePage />} />
+    <Route
+      path={EC.shiftProjects}
+      element={<Navigate to={ROUTE_PATHS.employeePlannerBrowse} replace />}
+    />
     <Route path={EC.plannerHome} element={<EmployeePlannerHomePage />} />
     <Route
       path={EC.plannerDiscover}
@@ -123,5 +131,25 @@ export const employeeRouteTree = (
     <Route path={EC.settings} element={<EmployeeSettingsPage />} />
     <Route path={EC.reviewCenter} element={<EmployeeReviewCenterPage />} />
     <Route path="help" element={<HelpSupportPage />} />
+    <Route
+      element={
+        <LaunchModuleBoundary enabled={showShiftOpsFeatures} fallback={ROUTE_PATHS.employeeHome} />
+      }
+    >
+      {/* Distinct path from /employee/shift so Home + Shift Ops tabs never dual-select. */}
+      <Route path={EC.shiftOpsHub} element={<ShiftOpsControlCenterPage />} />
+      <Route path={EC.shiftOpsInvite} element={<ShiftOpsInviteLandingPage />} />
+      <Route path={EC.shiftOpsVerify} element={<ShiftOpsDualVerifyPage />} />
+      <Route path={EC.shiftOpsPending} element={<ShiftOpsPendingApprovalPage />} />
+      <Route path={EC.shiftOpsAccept} element={<ShiftOpsAcceptDeclinePage />} />
+      <Route
+        path={EC.shiftOpsReady}
+        element={<Navigate to={ROUTE_PATHS.employeeShiftOpsHub} replace />}
+      />
+      <Route
+        path={EC.shiftOpsGate}
+        element={<Navigate to={ROUTE_PATHS.employeeShiftOpsHub} replace />}
+      />
+    </Route>
   </>
 );

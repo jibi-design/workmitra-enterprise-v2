@@ -1,11 +1,14 @@
-/** Job Mitra | PulseTargetIndicator.tsx | src/features/pulse/PulseTargetIndicator.tsx */
+/** Job Mitra | PulseTargetIndicator.tsx | Destination LED (single 10px dot — never strip) */
 
 import type { CSSProperties } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 import { PULSE_REGISTRY, type NotificationId, type PulseSectionId } from "./pulseRegistry";
 import { usePulseStore } from "./pulseStore";
+import { ARRIVAL_SUCCESS_TONE, getEdgeTone, getLedModeClassName } from "./pulseEdgeTones";
+import type { PulseChainSeverity } from "./pulseTypes";
 
-type PulseTargetSeverity = "info" | "success" | "warning" | "urgent";
+type PulseTargetSeverity = PulseChainSeverity;
 
 interface PulseTargetIndicatorProps {
   readonly notificationId: NotificationId;
@@ -20,39 +23,13 @@ const doesRequestedTargetMatch = (
   requestedValue: string | undefined,
   trailValue: string | undefined,
 ): boolean => {
-  if (requestedValue === undefined) {
-    return true;
-  }
-
+  if (requestedValue === undefined) return true;
   return requestedValue === trailValue;
 };
 
-function getPulseTargetEdgeLightStyle(
-  severity: PulseTargetSeverity,
-  style?: CSSProperties,
-): CSSProperties {
-  const isWarningTone = severity === "urgent" || severity === "warning";
-
-  return {
-    position: "absolute",
-    insetBlock: 0,
-    left: 0,
-    width: 8,
-    borderTopLeftRadius: "inherit",
-    borderBottomLeftRadius: "inherit",
-    background: isWarningTone ? "#f59e0b" : "#10b981",
-    boxShadow: isWarningTone ? "0 0 18px rgba(245,158,11,0.9)" : "0 0 18px rgba(16,185,129,0.9)",
-    zIndex: 9999,
-    pointerEvents: "none",
-    ...style,
-  };
-}
-
 /**
- * Shows a target-specific Pulse Navigation edge light.
- *
- * Use this when the pulse must appear only for one post, application,
- * section, or card. It never renders LED balls or full-card blinking.
+ * Target-specific left-edge pulse LED (single circular light).
+ * Never full-card blink. Never full-height strip (board LED rule).
  */
 export function PulseTargetIndicator({
   notificationId,
@@ -64,33 +41,59 @@ export function PulseTargetIndicator({
 }: PulseTargetIndicatorProps) {
   const config = PULSE_REGISTRY[notificationId];
 
-  const isTargetActive = usePulseStore((state) => {
-    return Object.values(state.activeTrails).some((trail) => {
-      if (trail.status !== "TRAIL_STARTED") {
-        return false;
+  // useShallow: selector must not return a fresh object each call (infinite re-render).
+  const trailState = usePulseStore(
+    useShallow((state) => {
+      for (const trail of Object.values(state.activeTrails)) {
+        if (trail.eventId !== notificationId) continue;
+        const matches =
+          doesRequestedTargetMatch(postId, trail.targetParams?.postId) &&
+          doesRequestedTargetMatch(appId, trail.targetParams?.appId) &&
+          doesRequestedTargetMatch(sectionId, trail.targetParams?.sectionId);
+        if (!matches) continue;
+        return { status: trail.status, severity: trail.severity };
       }
+      return null;
+    }),
+  );
 
-      if (trail.eventId !== notificationId) {
-        return false;
-      }
+  if (!config || !trailState) return null;
 
-      return (
-        doesRequestedTargetMatch(postId, trail.targetParams?.postId) &&
-        doesRequestedTargetMatch(appId, trail.targetParams?.appId) &&
-        doesRequestedTargetMatch(sectionId, trail.targetParams?.sectionId)
-      );
-    });
-  });
+  const mode =
+    trailState.status === "RESOLVING"
+      ? "arrival"
+      : trailState.status === "TRAIL_STARTED"
+        ? "breathe"
+        : "static";
 
-  if (!config || !isTargetActive) {
-    return null;
-  }
+  const toneSeverity = mode === "arrival" ? "success" : (severity ?? trailState.severity);
+  const tone =
+    mode === "arrival" ? ARRIVAL_SUCCESS_TONE : getEdgeTone(String(notificationId), toneSeverity);
 
   return (
     <span
       aria-hidden="true"
-      className="motion-safe:animate-pulse motion-reduce:animate-none"
-      style={getPulseTargetEdgeLightStyle(severity, style)}
-    />
+      className={getLedModeClassName(toneSeverity, mode)}
+      data-pulse-visual-mode={mode}
+      data-testid="pulse-target-led"
+      style={{
+        position: "absolute",
+        left: 12,
+        top: "50%",
+        transform: "translateY(-50%) translateZ(0)",
+        width: 10,
+        height: 10,
+        borderRadius: "50%",
+        background: tone.background ?? tone.solid,
+        boxShadow: tone.shadow,
+        zIndex: 9999,
+        pointerEvents: "none",
+        willChange: "opacity, transform",
+        flexShrink: 0,
+        ...style,
+      }}
+    >
+      <span className="wm-led__core" style={{ background: tone.solid, boxShadow: tone.shadow }} />
+    </span>
   );
 }

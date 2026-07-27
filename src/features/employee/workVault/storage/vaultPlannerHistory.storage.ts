@@ -11,7 +11,7 @@ import type { VaultStorageWriteResult } from "../helpers/vaultStorageUtils";
 export const VAULT_PLANNER_HISTORY_KEY = "wm_vault_planner_history_v1";
 export const VAULT_PLANNER_HISTORY_CHANGED = "wm:vault-planner-history-changed";
 
-export type VaultPlannerExitType = "offboard" | "inactivity" | "plan_cancelled";
+export type VaultPlannerExitType = "offboard" | "inactivity" | "plan_cancelled" | "plan_completed";
 
 export type VaultPlannerHistoryEntry = {
   id: string;
@@ -74,7 +74,12 @@ function makeId(): string {
 }
 
 function normalizeExitType(value: unknown): VaultPlannerExitType | undefined {
-  if (value === "offboard" || value === "inactivity" || value === "plan_cancelled") {
+  if (
+    value === "offboard" ||
+    value === "inactivity" ||
+    value === "plan_cancelled" ||
+    value === "plan_completed"
+  ) {
     return value;
   }
   return undefined;

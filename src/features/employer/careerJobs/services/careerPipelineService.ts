@@ -14,6 +14,8 @@ export {
   rejectCandidate,
   removeCandidateFromShortlist,
   shortlistCandidate,
+  shortlistCandidatesBulk,
+  rejectCandidatesBulk,
 } from "./careerCandidateActionService";
 
 export { recordInterviewResult, scheduleInterview } from "./careerInterviewService";

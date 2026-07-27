@@ -2,7 +2,7 @@
 // File name: EmployerVaultActiveSessionCard.tsx
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\workVault\components\accessSessions\EmployerVaultActiveSessionCard.tsx
 
-import type { VaultSession } from "../../../../employee/workVault/types/vaultTypes";
+import type { VaultSession } from "../../../../shared/workVault/vaultPublic";
 
 type EmployerVaultActiveSessionCardProps = {
   session: VaultSession | null;
@@ -22,7 +22,7 @@ export function EmployerVaultActiveSessionCard({
       <article
         style={{
           padding: 14,
-          borderRadius: 20,
+          borderRadius: "var(--wm-radius-employee-card)",
           border: "1px solid rgba(226,232,240,0.9)",
           background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
           boxShadow: "0 10px 24px rgba(15,23,42,0.04)",
@@ -43,7 +43,7 @@ export function EmployerVaultActiveSessionCard({
     <article
       style={{
         padding: 15,
-        borderRadius: 22,
+        borderRadius: "var(--wm-radius-employee-card)",
         border: "1px solid rgba(124,58,237,0.17)",
         borderLeft: `5px solid ${VAULT_PURPLE}`,
         background:
@@ -84,7 +84,7 @@ export function EmployerVaultActiveSessionCard({
               display: "inline-flex",
               maxWidth: "100%",
               padding: "5px 8px",
-              borderRadius: 999,
+              borderRadius: "var(--wm-radius-pill)",
               background: "rgba(124,58,237,0.08)",
               border: "1px solid rgba(124,58,237,0.14)",
               color: VAULT_PURPLE,
@@ -103,7 +103,7 @@ export function EmployerVaultActiveSessionCard({
         <span
           style={{
             padding: "6px 9px",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             background: "rgba(124,58,237,0.08)",
             border: "1px solid rgba(124,58,237,0.16)",
             color: VAULT_PURPLE,
@@ -120,7 +120,7 @@ export function EmployerVaultActiveSessionCard({
         style={{
           marginTop: 11,
           padding: "9px 10px",
-          borderRadius: 15,
+          borderRadius: "var(--wm-radius-chip)",
           background: "rgba(255,255,255,0.82)",
           border: "1px solid rgba(226,232,240,0.9)",
           fontSize: 12,
@@ -140,7 +140,7 @@ export function EmployerVaultActiveSessionCard({
           width: "100%",
           marginTop: 12,
           minHeight: 38,
-          borderRadius: 14,
+          borderRadius: "var(--wm-radius-chip)",
           border: "1px solid rgba(220,38,38,0.22)",
           background: "rgba(220,38,38,0.07)",
           color: "#dc2626",

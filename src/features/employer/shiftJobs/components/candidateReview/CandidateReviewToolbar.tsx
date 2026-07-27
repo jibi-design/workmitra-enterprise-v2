@@ -14,7 +14,7 @@ type CandidateReviewToolbarProps = {
 
 const PANEL_STYLE: CSSProperties = {
   padding: 13,
-  borderRadius: 20,
+  borderRadius: "var(--wm-radius-employee-card)",
   border: "1px solid rgba(22,163,74,0.15)",
   background: "linear-gradient(180deg, rgba(240,253,244,0.72), rgba(255,255,255,0.98))",
   boxShadow: "0 12px 26px rgba(15,23,42,0.055)",
@@ -50,7 +50,7 @@ const GRID_STYLE: CSSProperties = {
 
 const FIELD_STYLE: CSSProperties = {
   width: "100%",
-  borderRadius: 14,
+  borderRadius: "var(--wm-radius-chip)",
   border: "1px solid rgba(148,163,184,0.28)",
   background: "#ffffff",
   color: "var(--wm-er-text)",
@@ -64,7 +64,7 @@ const RESET_BUTTON_STYLE: CSSProperties = {
   border: "1px solid rgba(15,23,42,0.1)",
   background: "#ffffff",
   color: "var(--wm-er-muted)",
-  borderRadius: 999,
+  borderRadius: "var(--wm-radius-pill)",
   padding: "8px 10px",
   fontSize: 11,
   fontWeight: 900,

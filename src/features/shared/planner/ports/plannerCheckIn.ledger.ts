@@ -13,6 +13,8 @@ export type PlannerDailyCheckInRecord = {
   readonly postId?: string;
 };
 
+const UPSERT_ATTEMPTS = 4;
+
 function recordKey(planId: string, slotDate: string, workerMlId: string): string {
   return `${planId}::${slotDate}::${workerMlId}`;
 }
@@ -51,17 +53,39 @@ export function findPlannerCheckIn(
   return readRaw().find((r) => recordKey(r.planId, r.slotDate, r.workerMlId) === key) ?? null;
 }
 
+/**
+ * P0-5 — merge-by-key with retry so concurrent check-ins do not clobber each other.
+ * Last write still wins per worker key; other workers' rows are preserved on collision.
+ */
 export function upsertPlannerCheckIn(
   record: PlannerDailyCheckInRecord,
 ): { ok: true } | { ok: false; reason: "storage_error" } {
   const key = recordKey(record.planId, record.slotDate, record.workerMlId);
-  const existing = readRaw().filter((r) => recordKey(r.planId, r.slotDate, r.workerMlId) !== key);
-  const next = [record, ...existing].slice(0, 500);
-  try {
-    localStorage.setItem(PLANNER_DAILY_CHECKINS_KEY, JSON.stringify(next));
-    window.dispatchEvent(new Event(PLANNER_DAILY_CHECKINS_CHANGED));
-    return { ok: true };
-  } catch {
-    return { ok: false, reason: "storage_error" };
+
+  for (let attempt = 0; attempt < UPSERT_ATTEMPTS; attempt += 1) {
+    const existing = readRaw();
+    const byKey = new Map<string, PlannerDailyCheckInRecord>();
+    for (const row of existing) {
+      byKey.set(recordKey(row.planId, row.slotDate, row.workerMlId), row);
+    }
+    byKey.set(key, record);
+    const next = [...byKey.values()].sort((a, b) => b.checkedInAt - a.checkedInAt).slice(0, 500);
+
+    try {
+      localStorage.setItem(PLANNER_DAILY_CHECKINS_KEY, JSON.stringify(next));
+      const verified = readRaw().find(
+        (r) =>
+          recordKey(r.planId, r.slotDate, r.workerMlId) === key &&
+          r.checkedInAt === record.checkedInAt,
+      );
+      if (verified) {
+        window.dispatchEvent(new Event(PLANNER_DAILY_CHECKINS_CHANGED));
+        return { ok: true };
+      }
+    } catch {
+      return { ok: false, reason: "storage_error" };
+    }
   }
+
+  return { ok: false, reason: "storage_error" };
 }

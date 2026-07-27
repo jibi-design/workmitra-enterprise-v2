@@ -33,7 +33,7 @@ export function CompanyConfigSection() {
       style={{
         padding: 16,
         background: "#fff",
-        borderRadius: 12,
+        borderRadius: "var(--wm-radius-button)",
         border: `1px solid ${BORDER_COLOR}`,
         display: "flex",
         flexDirection: "column",

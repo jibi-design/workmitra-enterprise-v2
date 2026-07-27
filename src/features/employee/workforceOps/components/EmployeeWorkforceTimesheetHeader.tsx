@@ -1,7 +1,6 @@
-// App: Job Mitra / WorkMitra_Enterprise_v2
-// File: EmployeeWorkforceTimesheetHeader.tsx
-// Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\workforceOps\components\EmployeeWorkforceTimesheetHeader.tsx
+// App name: Job Mitra | EmployeeWorkforceTimesheetHeader.tsx — DomainHero (Wave 5)
 
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
 import { IconBack } from "../../../../shared/domains/workforce/ui/workforceIcons";
 import { AMBER } from "../../../../shared/domains/workforce/ui/workforceStyles";
 
@@ -28,7 +27,7 @@ const monthNavStyle: React.CSSProperties = {
 const navBtnStyle: React.CSSProperties = {
   background: "none",
   border: "1px solid var(--wm-er-border)",
-  borderRadius: 8,
+  borderRadius: "var(--wm-radius-8)",
   padding: "6px 12px",
   cursor: "pointer",
   fontSize: 14,
@@ -47,32 +46,21 @@ export function EmployeeWorkforceTimesheetHeader({
 }: Props) {
   return (
     <>
-      <div className="wm-pageHead" style={{ gap: 12 }}>
-        <button
-          type="button"
-          onClick={onBack}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            color: AMBER,
-            padding: 4,
-            borderRadius: 6,
-            display: "inline-flex",
-            alignItems: "center",
-          }}
-        >
-          <IconBack />
-        </button>
-
-        <div style={{ flex: 1 }}>
-          <div className="wm-pageTitle">My Timesheet</div>
-          <div className="wm-pageSub">Monthly attendance summary</div>
-        </div>
-      </div>
+      <DomainHero
+        variant="workforce"
+        audience="employee"
+        icon={
+          <button type="button" className="wm-domainHeroIconBtn" onClick={onBack} aria-label="Back">
+            <IconBack />
+          </button>
+        }
+        title="My Timesheet"
+        subtitle="Monthly attendance summary"
+        description="Review attendance by month and track workforce hours."
+      />
 
       <div style={{ ...monthNavStyle, marginTop: 14 }}>
-        <button type="button" onClick={onPrevMonth} style={navBtnStyle}>
+        <button type="button" onClick={onPrevMonth} style={navBtnStyle} aria-label="Previous month">
           ◀
         </button>
 
@@ -81,17 +69,18 @@ export function EmployeeWorkforceTimesheetHeader({
             {monthNames[month]} {year}
           </div>
 
-          {isCurrentMonth && (
+          {isCurrentMonth ? (
             <div style={{ fontSize: 10, color: AMBER, fontWeight: 700, marginTop: 2 }}>
               Current Month
             </div>
-          )}
+          ) : null}
         </div>
 
         <button
           type="button"
           onClick={onNextMonth}
           disabled={isCurrentMonth}
+          aria-label="Next month"
           style={{
             ...navBtnStyle,
             opacity: isCurrentMonth ? 0.3 : 1,

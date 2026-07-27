@@ -1,10 +1,12 @@
-﻿// App name: Job Mitra
-// File name: EmployerShiftPostDashboardPage.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\pages\EmployerShiftPostDashboardPage.tsx
+﻿// App name: Job Mitra | EmployerShiftPostDashboardPage.tsx — stackGrid (Wave 3)
 
 import { CompareApplicantsModal } from "../../../../shared/components/CompareApplicantsModal";
 import { ConfirmModal } from "../../../../shared/components/ConfirmModal";
 import { NoticeModal } from "../../../../shared/components/NoticeModal";
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
+import { EnterpriseEmpty } from "../../../../shared/components/enterprise";
+import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { useNavigate } from "react-router-dom";
 import { EmployerShiftActivityLog } from "../components/EmployerShiftActivityLog";
 import { EmployerShiftAutomationPanel } from "../components/EmployerShiftAutomationPanel";
 import { EmployerShiftCandidateList } from "../components/EmployerShiftCandidateList";
@@ -23,29 +25,47 @@ import { useEmployerShiftPostDashboardState } from "../hooks/useEmployerShiftPos
 
 export function EmployerShiftPostDashboardPage() {
   const state = useEmployerShiftPostDashboardState();
+  const nav = useNavigate();
 
   if (!state.post) {
     return (
-      <div>
-        <div className="wm-pageHead">
-          <div className="wm-pageTitle">Post Dashboard</div>
-        </div>
-        <div className="wm-er-card" style={{ marginTop: 12, padding: 16 }}>
-          <div style={{ fontWeight: 700 }}>Post not found.</div>
-        </div>
+      <div
+        className="wm-er-vShift wm-stackGrid"
+        data-testid="employer-shift-dashboard-missing"
+        style={{ gap: "var(--wm-stack-gap)" }}
+      >
+        <DomainHero
+          variant="shift"
+          audience="employer"
+          title="Post Dashboard"
+          subtitle="Post not found"
+          description="This shift post may have been removed or the link is outdated."
+        />
+        <EnterpriseEmpty
+          domain="shift"
+          title="Post not available"
+          subtitle="Return to My Posts to continue managing open shifts."
+          primaryLabel="My Posts"
+          onPrimary={() => nav(ROUTE_PATHS.employerShiftPosts)}
+          testId="employer-shift-dashboard-empty"
+        />
       </div>
     );
   }
 
   return (
-    <div>
-      {state.showRatingBlock && (
+    <div
+      className="wm-er-vShift wm-stackGrid"
+      data-testid="employer-shift-dashboard-page"
+      style={{ gap: "var(--wm-stack-gap)", paddingBottom: 32 }}
+    >
+      {state.showRatingBlock ? (
         <EmployerShiftRatingBlockOverlay
           post={state.post}
           confirmedApps={state.selectedApps}
           onDone={state.handleShiftClosed}
         />
-      )}
+      ) : null}
 
       <NoticeModal notice={state.notice} onClose={() => state.setNotice(null)} />
 
@@ -81,13 +101,13 @@ export function EmployerShiftPostDashboardPage() {
         backupSlots={state.backupSlots}
       />
 
-      {state.showRatingSection && (
+      {state.showRatingSection ? (
         <ShiftRatingSection
           post={state.post}
           confirmedApps={state.selectedApps}
           onShiftClosed={state.handleShiftClosed}
         />
-      )}
+      ) : null}
 
       <AnalysisBar
         alreadyAnalyzed={state.alreadyAnalyzed}
@@ -138,13 +158,13 @@ export function EmployerShiftPostDashboardPage() {
         onToggleSetting={state.handleToggleSetting}
       />
 
-      {state.showEdit && (
+      {state.showEdit ? (
         <ShiftEditModal
           post={state.post}
           onSave={state.handleSaveEdit}
           onClose={() => state.setShowEdit(false)}
         />
-      )}
+      ) : null}
 
       <CompareApplicantsModal
         isOpen={state.compareOpen}

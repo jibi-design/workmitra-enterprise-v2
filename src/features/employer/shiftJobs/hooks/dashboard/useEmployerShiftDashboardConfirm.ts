@@ -5,15 +5,20 @@
 import { useState } from "react";
 import type { ConfirmData } from "../../../../../shared/components/ConfirmModal";
 
-export type EmployerShiftDashboardConfirmHandler = (data: ConfirmData, fn: () => void) => void;
+export type EmployerShiftDashboardConfirmHandler = (
+  data: ConfirmData,
+  fn: () => void | Promise<void>,
+) => void;
 
 export function useEmployerShiftDashboardConfirm() {
   const [confirmData, setConfirmData] = useState<ConfirmData | null>(null);
   const [confirmFn, setConfirmFn] = useState<(() => void) | null>(null);
 
-  function openConfirm(data: ConfirmData, fn: () => void) {
+  function openConfirm(data: ConfirmData, fn: () => void | Promise<void>) {
     setConfirmData(data);
-    setConfirmFn(() => fn);
+    setConfirmFn(() => () => {
+      void Promise.resolve(fn());
+    });
   }
 
   function closeConfirm() {

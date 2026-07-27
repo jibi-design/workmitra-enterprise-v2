@@ -49,7 +49,7 @@ export function WorkforceAddStaffProfileSection({
               style={{
                 width: 36,
                 height: 36,
-                borderRadius: 8,
+                borderRadius: "var(--wm-radius-8)",
                 border:
                   initialRating === value ? `2px solid ${AMBER}` : "1px solid var(--wm-er-border)",
                 background: initialRating === value ? AMBER : "#fff",

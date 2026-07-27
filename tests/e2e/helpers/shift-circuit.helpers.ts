@@ -1,11 +1,11 @@
-import { type Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 
 /** Deterministic IDs for the Shift Full Circuit baseline run */
 export const SHIFT_CIRCUIT_IDS = {
   postId: "e2e-circuit-post-001",
   companyName: "Circuit Logistics",
   jobName: "Night Warehouse Helper",
-  workerWmId: "WM-CIRCUIT-001",
+  workerMlId: "ML-E2E2-SFT-SHFT",
   workerName: "Circuit Worker",
 } as const;
 
@@ -83,7 +83,7 @@ export async function initRoleContext(page: Page, role: "employer" | "employee")
       profile:
         role === "employee"
           ? {
-              uniqueId: SHIFT_CIRCUIT_IDS.workerWmId,
+              uniqueId: SHIFT_CIRCUIT_IDS.workerMlId,
               fullName: SHIFT_CIRCUIT_IDS.workerName,
               city: "Kochi",
               skills: ["loading"],
@@ -274,12 +274,12 @@ export function notificationIncludes(
 }
 
 export async function ensureCircuitWorkerIdentity(page: Page): Promise<void> {
-  await page.evaluate(({ workerWmId, workerName }) => {
+  await page.evaluate(({ workerMlId, workerName }) => {
     const profileRaw = localStorage.getItem("wm_employee_profile_v1");
     if (profileRaw) {
       const profile = JSON.parse(profileRaw) as Record<string, unknown>;
       if (!profile.uniqueId) {
-        profile.uniqueId = workerWmId;
+        profile.uniqueId = workerMlId;
         localStorage.setItem("wm_employee_profile_v1", JSON.stringify(profile));
       }
     }
@@ -291,7 +291,7 @@ export async function ensureCircuitWorkerIdentity(page: Page): Promise<void> {
     if (apps[0]) {
       apps[0].profileSnapshot = {
         ...apps[0].profileSnapshot,
-        uniqueId: apps[0].profileSnapshot?.uniqueId || workerWmId,
+        uniqueId: apps[0].profileSnapshot?.uniqueId || workerMlId,
         fullName: apps[0].profileSnapshot?.fullName || workerName,
       };
       localStorage.setItem("wm_employee_shift_applications_v1", JSON.stringify(apps));
@@ -299,10 +299,10 @@ export async function ensureCircuitWorkerIdentity(page: Page): Promise<void> {
 
     const workspaces = JSON.parse(
       localStorage.getItem("wm_employee_shift_workspaces_v1") ?? "[]",
-    ) as Array<{ workerWmId?: string; workerName?: string }>;
+    ) as Array<{ workerMlId?: string; workerName?: string }>;
 
     if (workspaces[0]) {
-      workspaces[0].workerWmId = workspaces[0].workerWmId || workerWmId;
+      workspaces[0].workerMlId = workspaces[0].workerMlId || workerMlId;
       workspaces[0].workerName = workspaces[0].workerName || workerName;
       localStorage.setItem("wm_employee_shift_workspaces_v1", JSON.stringify(workspaces));
       window.dispatchEvent(new Event("wm:employee-shift-workspaces-changed"));
@@ -364,3 +364,66 @@ export async function syncAndDeliverPulse(
 
 /** @deprecated Use syncAndDeliverPulse — kept for incremental migration */
 export const syncAndDeliverShiftCircuitPulse = syncAndDeliverPulse;
+
+const PULSE_ARRIVAL_LOCK_MS = 2500;
+
+/**
+ * Pillar 2 robot proof — destination arrival: solid success glow then auto-dim (~2.5s).
+ * Requires a mounted PulseNode for `pending-shift-shift-rating` (PendingActionsHub).
+ * Advances via store API (not CTA click) so navigation does not unmount the LED mid-lock.
+ */
+export async function assertPulseArrivalLock(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    localStorage.setItem("wm:pulse-nav-enabled", "true");
+    const navStore = await import("/src/features/pulse/pulseNavStore.ts");
+    navStore.usePulseNavStore.setState({ enabled: true });
+
+    const store = await import("/src/features/pulse/pulseStore.ts");
+    store.usePulseStore.getState().setChain(["pending-shift-shift-rating"], {
+      severity: "info",
+    });
+  });
+
+  const pulseHost = page.locator('[data-pulse-node-id="pending-shift-shift-rating"]');
+  await expect(pulseHost).toBeVisible({ timeout: 15_000 });
+  await expect(pulseHost).toHaveAttribute("data-pulse-active", "true");
+
+  await page.evaluate(async () => {
+    const store = await import("/src/features/pulse/pulseStore.ts");
+    store.usePulseStore.getState().advanceChain();
+  });
+
+  const arrival = page.locator(".wm-led-arrival, .wm-breathe-arrival").first();
+  await expect(arrival, "Arrival lock class must mount after destination advance").toBeVisible({
+    timeout: 3_000,
+  });
+
+  await expect
+    .poll(
+      async () => {
+        return arrival.evaluate((el) => {
+          const core = el.querySelector(".wm-led__core") ?? el;
+          return Number.parseFloat(window.getComputedStyle(core).opacity);
+        });
+      },
+      { timeout: 1_500, message: "Arrival glow must start solid (opacity ~1)" },
+    )
+    .toBeGreaterThan(0.85);
+
+  await expect
+    .poll(
+      async () => {
+        const count = await page.locator(".wm-led-arrival, .wm-breathe-arrival").count();
+        if (count === 0) return 0;
+        return arrival.evaluate((el) => {
+          const core = el.querySelector(".wm-led__core") ?? el;
+          return Number.parseFloat(window.getComputedStyle(core).opacity);
+        });
+      },
+      {
+        timeout: PULSE_ARRIVAL_LOCK_MS + 1_500,
+        message: `Arrival lock must auto-fade by ~${PULSE_ARRIVAL_LOCK_MS}ms`,
+      },
+    )
+    .toBeLessThan(0.08);
+}

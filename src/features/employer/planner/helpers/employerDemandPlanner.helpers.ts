@@ -9,8 +9,8 @@ import type { DaySlot } from "../storage/demandPlannerStorage";
 export const FILL_STATUS_CONFIG: Record<FillStatus, FillStatusConfig> = {
   filled: {
     label: "Filled",
-    color: "#15803d",
-    bg: "rgba(22,163,74,0.08)",
+    color: "#0e7490",
+    bg: "rgba(8, 145, 178, 0.1)",
   },
   filling: {
     label: "Filling",

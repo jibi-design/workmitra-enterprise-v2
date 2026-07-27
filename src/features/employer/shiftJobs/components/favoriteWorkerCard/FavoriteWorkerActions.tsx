@@ -8,10 +8,10 @@ type Props = {
   favorite: FavoriteWorker;
   isEditingNotes: boolean;
   isRemoving: boolean;
-  onStartEditNotes: (workerWmId: string, currentNotes?: string) => void;
-  onRequestRemove: (workerWmId: string) => void;
+  onStartEditNotes: (workerMlId: string, currentNotes?: string) => void;
+  onRequestRemove: (workerMlId: string) => void;
   onCancelRemove: () => void;
-  onConfirmRemove: (workerWmId: string) => void;
+  onConfirmRemove: (workerMlId: string) => void;
 };
 
 export function FavoriteWorkerActions({
@@ -36,12 +36,12 @@ export function FavoriteWorkerActions({
       {!isEditingNotes && (
         <button
           type="button"
-          onClick={() => onStartEditNotes(favorite.workerWmId, favorite.notes)}
+          onClick={() => onStartEditNotes(favorite.workerMlId, favorite.notes)}
           style={{
             fontSize: 11,
             fontWeight: 600,
             padding: "4px 10px",
-            borderRadius: 8,
+            borderRadius: "var(--wm-radius-8)",
             border: "1px solid var(--wm-er-border)",
             background: "none",
             color: "var(--wm-er-muted)",
@@ -60,12 +60,12 @@ export function FavoriteWorkerActions({
 
           <button
             type="button"
-            onClick={() => onConfirmRemove(favorite.workerWmId)}
+            onClick={() => onConfirmRemove(favorite.workerMlId)}
             style={{
               fontSize: 11,
               fontWeight: 700,
               padding: "4px 10px",
-              borderRadius: 8,
+              borderRadius: "var(--wm-radius-8)",
               border: "none",
               background: "rgba(220,38,38,0.1)",
               color: "var(--wm-error, #dc2626)",
@@ -82,7 +82,7 @@ export function FavoriteWorkerActions({
               fontSize: 11,
               fontWeight: 600,
               padding: "4px 10px",
-              borderRadius: 8,
+              borderRadius: "var(--wm-radius-8)",
               border: "1px solid var(--wm-er-border)",
               background: "none",
               color: "var(--wm-er-muted)",
@@ -95,12 +95,12 @@ export function FavoriteWorkerActions({
       ) : (
         <button
           type="button"
-          onClick={() => onRequestRemove(favorite.workerWmId)}
+          onClick={() => onRequestRemove(favorite.workerMlId)}
           style={{
             fontSize: 11,
             fontWeight: 600,
             padding: "4px 10px",
-            borderRadius: 8,
+            borderRadius: "var(--wm-radius-8)",
             border: "1px solid rgba(220,38,38,0.2)",
             background: "none",
             color: "var(--wm-error, #dc2626)",

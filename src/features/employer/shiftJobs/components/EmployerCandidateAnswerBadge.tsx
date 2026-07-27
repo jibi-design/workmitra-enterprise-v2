@@ -35,7 +35,7 @@ export function EmployerCandidateAnswerBadge({ answer }: { answer: AnswerState |
         fontSize: 11,
         fontWeight: 900,
         padding: "3px 10px",
-        borderRadius: 999,
+        borderRadius: "var(--wm-radius-pill)",
         background: style.bg,
         color: style.color,
       }}

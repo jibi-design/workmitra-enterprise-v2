@@ -2,7 +2,6 @@
 
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { VAULT_ACCENT } from "../constants/vaultConstants";
 import type { VaultFolder, VaultOTP } from "../types/vaultTypes";
 import { generateOtp, getCurrentOtp, isOtpActive, clearOtp } from "../services/vaultOtpService";
 import {
@@ -11,6 +10,7 @@ import {
   setAllFoldersVisibility,
 } from "../services/vaultFolderService";
 import { NoticeModal, type NoticeData } from "../../../../shared/components/NoticeModal";
+import { TrustStrip } from "../../../../shared/components/enterprise/TrustStrip";
 import { OtpFolderVisibility } from "../components/OtpFolderVisibility";
 import { IconBack, IconShield } from "./EmployeeVaultOtpPage.icons";
 import { VaultOtpSection } from "./EmployeeVaultOtpPage.parts";
@@ -83,39 +83,23 @@ export function EmployeeVaultOtpPage() {
   }
 
   return (
-    <div>
-      <div className="wm-pageHead">
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <button
-            type="button"
-            onClick={() => nav("/employee/vault", { state: { tab: "documents" } })}
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              border: "1px solid var(--wm-emp-border, rgba(15, 23, 42, 0.08))",
-              background: "#fff",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "var(--wm-emp-text)",
-              flexShrink: 0,
-            }}
-            aria-label="Back to vault documents"
-          >
-            <IconBack />
-          </button>
-          <div>
-            <div className="wm-pageTitle" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ color: VAULT_ACCENT }}>
-                <IconShield />
-              </span>
-              Share Access
-            </div>
-            <div className="wm-pageSub">
-              Generate a one-time code for an employer to view your documents.
-            </div>
+    <div className="wm-vault-otp-page wm-vault-otp-page--glass wm-stackGrid">
+      <div className="wm-vault-page-hero wm-vault-otp-page__hero">
+        <button
+          type="button"
+          className="wm-vault-otp-back"
+          onClick={() => nav("/employee/vault", { state: { tab: "documents" } })}
+          aria-label="Back to vault documents"
+        >
+          <IconBack />
+        </button>
+        <div className="wm-vault-otp-page__hero-copy">
+          <div className="wm-vault-page-hero__eyebrow">
+            <IconShield /> Secure share
+          </div>
+          <div className="wm-vault-page-hero__title">Share Access</div>
+          <div className="wm-vault-page-hero__sub">
+            Generate a one-time code for an employer to view your documents.
           </div>
         </div>
       </div>
@@ -127,22 +111,13 @@ export function EmployeeVaultOtpPage() {
         onOtpExpired={() => setOtp(null)}
       />
 
-      <div
-        style={{
-          marginTop: 12,
-          padding: "10px 14px",
-          borderRadius: 10,
-          background: "rgba(22, 163, 74, 0.06)",
-          border: "1px solid rgba(22, 163, 74, 0.15)",
-          fontSize: 12,
-          color: "#15803d",
-          fontWeight: 600,
-          lineHeight: 1.5,
-        }}
-      >
-        Only folders marked "Visible" will be shown. The employer gets read-only access for 30
-        minutes.
-      </div>
+      <TrustStrip
+        kind="info"
+        tone="neutral"
+        title="Visible folders only"
+        message="The employer gets read-only access for 30 minutes. Hidden folders stay invisible."
+        badgeLabel="Privacy"
+      />
 
       <OtpFolderVisibility
         folders={folders}
@@ -152,7 +127,7 @@ export function EmployeeVaultOtpPage() {
         onBulkVisibility={handleBulkVisibility}
       />
 
-      <div style={{ height: 80 }} />
+      <div className="wm-vault-otp-page__spacer" />
       <NoticeModal notice={notice} onClose={() => setNotice(null)} />
     </div>
   );

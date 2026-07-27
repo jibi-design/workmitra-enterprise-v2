@@ -14,7 +14,7 @@ const inputStyle: CSSProperties = {
   fontWeight: 600,
   color: "#1e293b",
   border: `1.5px solid ${BORDER_COLOR}`,
-  borderRadius: 8,
+  borderRadius: "var(--wm-radius-8)",
   outline: "none",
   background: "#fff",
   boxSizing: "border-box",
@@ -63,7 +63,7 @@ export function EditableLocationAddRow({ value, placeholder, onChange, onAdd }: 
         disabled={!canAdd}
         style={{
           padding: "0 14px",
-          borderRadius: 8,
+          borderRadius: "var(--wm-radius-8)",
           fontSize: 12,
           fontWeight: 700,
           border: "none",

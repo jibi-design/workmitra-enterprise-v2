@@ -59,7 +59,7 @@ function CommandMetric({
       style={{
         minWidth: 0,
         padding: "12px 10px",
-        borderRadius: 16,
+        borderRadius: "var(--wm-radius-chip)",
         border: primary ? "1px solid rgba(37, 99, 235, 0.2)" : "1px solid rgba(255, 255, 255, 0.9)",
         background: primary
           ? "linear-gradient(135deg, rgba(239, 246, 255, 0.95), rgba(219, 234, 254, 0.8))"
@@ -111,7 +111,7 @@ export function EmployerCareerHomeHeader({ onCreate, kpi }: EmployerCareerHomeHe
         style={{
           width: "100%",
           minHeight: 46,
-          borderRadius: 14,
+          borderRadius: "var(--wm-radius-chip)",
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",

@@ -1,35 +1,17 @@
 /** Job Mitra | routerHelpers.tsx | Shared router helpers */
 
-import { useSyncExternalStore, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { ROUTE_PATHS } from "../routePaths";
-import { roleStorage, type AppRole } from "../../storage/roleStorage";
+import type { AppRole } from "../../storage/roleStorage";
+import { useAppRole } from "../guards/useAppRole";
+import { AUTH_BACKEND_ENABLED } from "../../../shared/config/authConfig";
+import { RouteGuardLoading } from "../../../shared/components/routes/RouteGuardStatus";
 
 export const IS_DEV_ADMIN_ENABLED = import.meta.env.DEV;
 
 export function PageLoader() {
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "48px 16px",
-        minHeight: 200,
-      }}
-    >
-      <div
-        style={{
-          width: 32,
-          height: 32,
-          borderRadius: 999,
-          border: "3px solid var(--wm-brand-600, #1d4ed8)",
-          borderTopColor: "transparent",
-          animation: "wm-spin 0.6s linear infinite",
-        }}
-      />
-    </div>
-  );
+  return <RouteGuardLoading label="Loading page" />;
 }
 
 function getHomeForRole(role: AppRole): string {
@@ -38,13 +20,11 @@ function getHomeForRole(role: AppRole): string {
   return IS_DEV_ADMIN_ENABLED ? ROUTE_PATHS.adminHome : ROUTE_PATHS.landing;
 }
 
-function useRole(): AppRole | null {
-  return useSyncExternalStore(roleStorage.subscribe, roleStorage.get, roleStorage.get);
-}
-
 export function RoleHomeRedirect() {
-  const role = useRole();
-  if (!role) return <Navigate to={ROUTE_PATHS.landing} replace />;
+  const role = useAppRole();
+  if (!role) {
+    return <Navigate to={AUTH_BACKEND_ENABLED ? ROUTE_PATHS.login : ROUTE_PATHS.landing} replace />;
+  }
   return <Navigate to={getHomeForRole(role)} replace />;
 }
 

@@ -4,8 +4,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
 import { VaultEmptyState } from "../../../vault/components/VaultEmptyState";
-import { VAULT_ACCENT } from "../constants/vaultConstants";
+import { VAULT_ACCENT, vaultAccentMix } from "../constants/vaultConstants";
 import type { VaultAccessEntry } from "../types/vaultTypes";
 import {
   getAccessLogSorted,
@@ -73,7 +74,7 @@ function StatusBadge({ status }: { status: StatusType }) {
       style={{
         height: 22,
         padding: "0 8px",
-        borderRadius: 999,
+        borderRadius: "var(--wm-radius-pill)",
         fontSize: 10,
         fontWeight: 700,
         display: "inline-flex",
@@ -122,7 +123,7 @@ function HrAccessRow({
     <div
       style={{
         padding: "14px 16px",
-        borderRadius: 12,
+        borderRadius: "var(--wm-radius-button)",
         border: "1px solid var(--wm-emp-border, rgba(15,23,42,0.08))",
         background: "#fff",
       }}
@@ -157,11 +158,11 @@ function HrAccessRow({
               style={{
                 height: 22,
                 padding: "0 8px",
-                borderRadius: 999,
+                borderRadius: "var(--wm-radius-pill)",
                 fontSize: 11,
                 fontWeight: 600,
-                background: `${VAULT_ACCENT}08`,
-                border: `1px solid ${VAULT_ACCENT}18`,
+                background: `${vaultAccentMix(4)}`,
+                border: `1px solid ${vaultAccentMix(10)}`,
                 color: VAULT_ACCENT,
                 display: "inline-flex",
                 alignItems: "center",
@@ -218,7 +219,7 @@ function DocAccessRow({ entry }: { entry: DocAccessLogEntry }) {
     <div
       style={{
         padding: "14px 16px",
-        borderRadius: 12,
+        borderRadius: "var(--wm-radius-button)",
         border: "1px solid var(--wm-emp-border, rgba(15,23,42,0.08))",
         background: "#fff",
       }}
@@ -298,49 +299,32 @@ export function EmployeeVaultAccessLogPage() {
   }
 
   return (
-    <div>
-      {/* Header */}
-      <div className="wm-pageHead">
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <div className="wm-stackGrid">
+      <DomainHero
+        variant="settings"
+        audience="employee"
+        icon={
           <button
             type="button"
-            className="wm-vault-tap"
+            className="wm-domainHeroIconBtn wm-vault-tap"
             onClick={() => nav("/employee/vault")}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 12,
-              border: "1px solid var(--wm-emp-border, rgba(15,23,42,0.08))",
-              background: "#fff",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "var(--wm-emp-text)",
-              flexShrink: 0,
-            }}
             aria-label="Back to vault"
           >
             <IconBack />
           </button>
-          <div>
-            <div className="wm-pageTitle">Access History</div>
-            <div className="wm-pageSub">
-              {unified.length} {unified.length === 1 ? "record" : "records"} · Who viewed your
-              documents
-            </div>
-          </div>
-        </div>
-      </div>
+        }
+        title="Access History"
+        subtitle={`${unified.length} ${unified.length === 1 ? "record" : "records"} · Who viewed your documents`}
+        description="Review and revoke vault access sessions for your documents."
+      />
 
       {/* Info Note */}
       <div
         style={{
-          marginTop: 12,
           padding: "10px 14px",
-          borderRadius: 10,
-          background: `${VAULT_ACCENT}06`,
-          border: `1px solid ${VAULT_ACCENT}12`,
+          borderRadius: "var(--wm-radius-10)",
+          background: `${vaultAccentMix(3)}`,
+          border: `1px solid ${vaultAccentMix(7)}`,
           fontSize: 12,
           color: "var(--wm-emp-muted)",
           fontWeight: 600,

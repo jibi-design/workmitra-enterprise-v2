@@ -1,8 +1,11 @@
-
 // src/features/employee/workVault/components/EditProfileEducationSection.tsx
 
-import { VAULT_ACCENT } from "../constants/vaultConstants";
-import type { VaultCertification, EducationLevel, SkillProficiency } from "../types/vaultProfileTypes";
+import { VAULT_ACCENT, vaultAccentMix, EDUCATION_LEVEL_LABELS } from "../constants/vaultConstants";
+import type {
+  VaultCertification,
+  EducationLevel,
+  SkillProficiency,
+} from "../types/vaultProfileTypes";
 
 /* ------------------------------------------------ */
 /* Section Title                                    */
@@ -35,10 +38,15 @@ type EducationSectionProps = {
 /* Education Section                                */
 /* ------------------------------------------------ */
 export function EditProfileEducationSection({
-  eduLevel, onEduLevelChange,
-  certs, newCertName, onNewCertNameChange,
-  newCertIssuer, onNewCertIssuerChange,
-  onAddCert, onRemoveCert,
+  eduLevel,
+  onEduLevelChange,
+  certs,
+  newCertName,
+  onNewCertNameChange,
+  newCertIssuer,
+  onNewCertIssuerChange,
+  onAddCert,
+  onRemoveCert,
 }: EducationSectionProps) {
   return (
     <section className="wm-ee-card" style={{ marginTop: 12 }}>
@@ -51,12 +59,12 @@ export function EditProfileEducationSection({
           value={eduLevel}
           onChange={(e) => onEduLevelChange(e.target.value as EducationLevel)}
         >
-          <option value="none">Not specified</option>
-          <option value="high_school">High School</option>
-          <option value="diploma">Diploma</option>
-          <option value="degree">Degree</option>
-          <option value="masters">Masters</option>
-          <option value="phd">PhD</option>
+          <option value="none">{EDUCATION_LEVEL_LABELS.none}</option>
+          <option value="high_school">{EDUCATION_LEVEL_LABELS.high_school}</option>
+          <option value="diploma">{EDUCATION_LEVEL_LABELS.diploma}</option>
+          <option value="degree">{EDUCATION_LEVEL_LABELS.degree}</option>
+          <option value="masters">{EDUCATION_LEVEL_LABELS.masters}</option>
+          <option value="phd">{EDUCATION_LEVEL_LABELS.phd}</option>
         </select>
       </div>
 
@@ -66,23 +74,36 @@ export function EditProfileEducationSection({
             <div
               key={cert.id}
               style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                padding: "8px 12px", borderRadius: 10,
-                background: `${VAULT_ACCENT}06`, border: `1px solid ${VAULT_ACCENT}15`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "8px 12px",
+                borderRadius: "var(--wm-radius-10)",
+                background: `${vaultAccentMix(3)}`,
+                border: `1px solid ${vaultAccentMix(8)}`,
               }}
             >
               <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--wm-emp-text)" }}>{cert.name}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--wm-emp-text)" }}>
+                  {cert.name}
+                </div>
                 {cert.issuedBy && (
-                  <div style={{ fontSize: 11, color: "var(--wm-emp-muted)" }}>by {cert.issuedBy}</div>
+                  <div style={{ fontSize: 11, color: "var(--wm-emp-muted)" }}>
+                    by {cert.issuedBy}
+                  </div>
                 )}
               </div>
               <button
                 type="button"
                 onClick={() => onRemoveCert(cert.id)}
                 style={{
-                  border: "none", background: "transparent", cursor: "pointer",
-                  fontSize: 16, fontWeight: 900, color: "var(--wm-error, #dc2626)", padding: 0,
+                  border: "none",
+                  background: "transparent",
+                  cursor: "pointer",
+                  fontSize: 16,
+                  fontWeight: 900,
+                  color: "var(--wm-error, #dc2626)",
+                  padding: 0,
                 }}
               >
                 {"\u00D7"}
@@ -143,7 +164,14 @@ export function EditProfileSkillsSection({
       />
 
       {profileSkills.length === 0 ? (
-        <div style={{ fontSize: 12, color: "var(--wm-emp-muted)", textAlign: "center", padding: "12px 0" }}>
+        <div
+          style={{
+            fontSize: 12,
+            color: "var(--wm-emp-muted)",
+            textAlign: "center",
+            padding: "12px 0",
+          }}
+        >
           No skills in your profile yet. Go to Profile page to add skills first.
         </div>
       ) : (
@@ -155,8 +183,11 @@ export function EditProfileSkillsSection({
               <div
                 key={skill}
                 style={{
-                  display: "flex", alignItems: "center", justifyContent: "space-between",
-                  padding: "8px 12px", borderRadius: 10,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "8px 12px",
+                  borderRadius: "var(--wm-radius-10)",
                   background: "var(--wm-emp-bg)",
                   border: "1px solid var(--wm-emp-border, rgba(15, 23, 42, 0.08))",
                 }}
@@ -168,9 +199,13 @@ export function EditProfileSkillsSection({
                   value={current}
                   onChange={(e) => onProficiencyChange(key, e.target.value as SkillProficiency)}
                   style={{
-                    fontSize: 11, fontWeight: 800, padding: "4px 8px",
-                    borderRadius: 8, border: `1px solid ${VAULT_ACCENT}25`,
-                    background: `${VAULT_ACCENT}06`, color: VAULT_ACCENT,
+                    fontSize: 11,
+                    fontWeight: 800,
+                    padding: "4px 8px",
+                    borderRadius: "var(--wm-radius-8)",
+                    border: `1px solid ${vaultAccentMix(15)}`,
+                    background: `${vaultAccentMix(3)}`,
+                    color: VAULT_ACCENT,
                     cursor: "pointer",
                   }}
                 >

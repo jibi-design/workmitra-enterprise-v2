@@ -5,6 +5,6 @@
 import { employerSettingsStorage } from "../storage/employerSettings.storage";
 import { getEmployerCompanyId } from "./employerDualId.helpers";
 
-export function getCurrentEmployerJmId(): string {
+export function getCurrentEmployerMlId(): string {
   return getEmployerCompanyId(employerSettingsStorage.get()) ?? "";
 }

@@ -36,6 +36,13 @@ function buildDemoUsers(): StoredUser[] {
       role: "employer",
       passwordHash: hashPasswordDev("demo1234"),
     },
+    {
+      id: "usr_employer_b_demo",
+      fullName: "Demo Employer B",
+      email: "employer-b@demo.jobmitra.app",
+      role: "employer",
+      passwordHash: hashPasswordDev("demo1234"),
+    },
   ];
 }
 

@@ -74,7 +74,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
           alignItems: "center",
           gap: 6,
           padding: "9px 22px",
-          borderRadius: 10,
+          borderRadius: "var(--wm-radius-10)",
           border: "none",
           background: "var(--wm-er-accent-console, #0369a1)",
           color: "#fff",

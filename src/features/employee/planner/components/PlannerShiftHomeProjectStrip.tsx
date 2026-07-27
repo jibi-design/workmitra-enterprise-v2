@@ -48,7 +48,7 @@ export function PlannerShiftHomeProjectStrip() {
     >
       <div>
         <div style={{ fontSize: 12, fontWeight: 800, color: "var(--wm-planner-accent-strong)" }}>
-          📋 Project Plans near you
+          Project Plans near you
         </div>
         <div style={{ fontSize: 12, color: "var(--wm-neutral-500)", marginTop: 4 }}>
           {summary ? (

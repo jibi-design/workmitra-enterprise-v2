@@ -1,5 +1,6 @@
-/** Phase-0 demo contact OTP for employer phone/email verification. */
+/** Phase-0 demo contact OTP — hash only in sessionStorage. */
 
+import { hashOtpCode, otpCodesMatch } from "../../../../shared/security/otpCodeHash";
 import { employerSettingsStorage } from "../storage/employerSettings.storage";
 
 const OTP_STORAGE_KEY = "wm:employer-contact-otp";
@@ -7,20 +8,39 @@ const OTP_CODE_LENGTH = 6;
 const OTP_VALIDITY_MS = 5 * 60 * 1000;
 
 type PendingEmployerContactOtp = {
-  readonly code: string;
+  readonly codeHash: string;
   readonly target: string;
   readonly expiresAt: number;
   readonly used: boolean;
 };
+
+function scrubLegacyPlaintext(): void {
+  try {
+    const raw = sessionStorage.getItem(OTP_STORAGE_KEY);
+    if (!raw) return;
+    const parsed = JSON.parse(raw) as { code?: string };
+    if (typeof parsed?.code === "string") {
+      sessionStorage.removeItem(OTP_STORAGE_KEY);
+    }
+  } catch {
+    try {
+      sessionStorage.removeItem(OTP_STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
+scrubLegacyPlaintext();
 
 function readPending(): PendingEmployerContactOtp | null {
   try {
     const raw = sessionStorage.getItem(OTP_STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<PendingEmployerContactOtp>;
-    if (!parsed.code || !parsed.target || typeof parsed.expiresAt !== "number") return null;
+    if (!parsed.codeHash || !parsed.target || typeof parsed.expiresAt !== "number") return null;
     return {
-      code: parsed.code,
+      codeHash: parsed.codeHash,
       target: parsed.target,
       expiresAt: parsed.expiresAt,
       used: Boolean(parsed.used),
@@ -59,7 +79,7 @@ export type RequestContactOtpResult =
   | { readonly success: true; readonly target: string; readonly demoCode: string }
   | { readonly success: false; readonly reason: string };
 
-export function requestContactOtp(target: string): RequestContactOtpResult {
+export async function requestContactOtp(target: string): Promise<RequestContactOtpResult> {
   const normalized = normalizeTarget(target);
   if (!normalized) {
     return { success: false, reason: "Add a phone number or email on your account first." };
@@ -67,7 +87,7 @@ export function requestContactOtp(target: string): RequestContactOtpResult {
 
   const code = generateCode();
   writePending({
-    code,
+    codeHash: await hashOtpCode(code),
     target: normalized,
     expiresAt: Date.now() + OTP_VALIDITY_MS,
     used: false,
@@ -79,7 +99,10 @@ export function requestContactOtp(target: string): RequestContactOtpResult {
 export type VerifyContactOtpResult =
   { readonly success: true } | { readonly success: false; readonly reason: string };
 
-export function verifyContactOtp(target: string, submittedCode: string): VerifyContactOtpResult {
+export async function verifyContactOtp(
+  target: string,
+  submittedCode: string,
+): Promise<VerifyContactOtpResult> {
   const pending = readPending();
   const normalized = normalizeTarget(target);
   const code = submittedCode.trim();
@@ -96,7 +119,7 @@ export function verifyContactOtp(target: string, submittedCode: string): VerifyC
   if (normalizeTarget(pending.target) !== normalized) {
     return { success: false, reason: "Code does not match this contact. Request a new code." };
   }
-  if (pending.code !== code) {
+  if (!(await otpCodesMatch(code, pending.codeHash))) {
     return { success: false, reason: "Incorrect code. Please try again." };
   }
 

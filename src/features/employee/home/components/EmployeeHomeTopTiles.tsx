@@ -1,12 +1,4 @@
-/** Job Mitra | EmployeeHomeTopTiles.tsx | src/features/employee/home/components/EmployeeHomeTopTiles.tsx */
-
-import { IconCalendar, IconMegaphone } from "./employeeHomeIcons";
-
-/**
- * ARCHITECTURE NOTE:
- * Updated interface to match parent EmployeeHomePage requirements.
- * Integrated HD LED Pulse for status awareness.
- */
+/** Job Mitra | EmployeeHomeTopTiles.tsx | Glass Digital ID + frosted quick tiles */
 
 type Props = {
   userName: string;
@@ -15,6 +7,17 @@ type Props = {
   onShiftTile: () => void;
   onBroadcastTile: () => void;
 };
+
+function resolveStatusBadge(upcomingShiftDisplay: string): string {
+  const digits = upcomingShiftDisplay.replace(/[^\d]/g, "");
+  const count = digits ? Number.parseInt(digits, 10) : 0;
+
+  if (Number.isFinite(count) && count > 0) {
+    return `${upcomingShiftDisplay} shift${count === 1 ? "" : "s"} this week`;
+  }
+
+  return "Active";
+}
 
 export function EmployeeHomeTopTiles({
   userName,
@@ -25,156 +28,96 @@ export function EmployeeHomeTopTiles({
 }: Props) {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const statusBadge = resolveStatusBadge(upcomingShiftDisplay);
+  const initial = userName.trim().charAt(0).toUpperCase() || "U";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      {/* 1. HERO DIGITAL ID CARD */}
-      <div
-        style={{
-          padding: "24px 20px",
-          borderRadius: 24,
-          background: "linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)",
-          color: "#FFFFFF",
-          boxShadow: "0 12px 24px rgba(37, 99, 235, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.2)",
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            top: -30,
-            right: -20,
-            width: 120,
-            height: 120,
-            background: "rgba(255, 255, 255, 0.1)",
-            filter: "blur(40px)",
-            borderRadius: "50%",
-          }}
-        />
-
-        <div
-          style={{
-            position: "relative",
-            zIndex: 1,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-          }}
-        >
-          <div>
-            <div
-              style={{
-                fontSize: 13,
-                fontWeight: 500,
-                color: "rgba(255, 255, 255, 0.8)",
-                marginBottom: 4,
-              }}
-            >
-              {greeting},
-            </div>
-            <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: "-0.02em" }}>
-              {userName}
-            </div>
-            <div
-              style={{
-                marginTop: 12,
-                display: "inline-block",
-                padding: "4px 10px",
-                background: "rgba(255, 255, 255, 0.15)",
-                borderRadius: 100,
-                fontSize: 11,
-                fontWeight: 600,
-                letterSpacing: "0.5px",
-                textTransform: "uppercase",
-              }}
-            >
-              Worker Profile
-            </div>
+    <div className="wm-homePage" style={{ gap: 16 }}>
+      <header className="wm-homeHero wm-homeHero--employee wm-homeCardEnter">
+        <div className="wm-homeHero__orb wm-homeHero__orb--employee" aria-hidden="true" />
+        <div className="wm-homeHero__content">
+          <div
+            className="wm-homeHero__subtitle"
+            style={{ margin: 0, color: "rgba(255,255,255,0.8)" }}
+          >
+            {greeting},
           </div>
-
+          <h1 className="wm-homeHero__title wm-typeHero" style={{ marginTop: 4 }}>
+            {userName}
+          </h1>
           <div
             style={{
-              width: 48,
-              height: 48,
-              borderRadius: "50%",
-              background: "rgba(255,255,255,0.2)",
-              border: "2px solid rgba(255,255,255,0.4)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 18,
-              fontWeight: 700,
+              marginTop: 12,
+              display: "inline-block",
+              padding: "4px 10px",
+              background: "rgba(255, 255, 255, 0.15)",
+              borderRadius: 100,
+              fontSize: 11,
+              fontWeight: 600,
+              letterSpacing: "0.5px",
+              textTransform: "uppercase",
             }}
           >
-            {userName.charAt(0)}
+            {statusBadge}
           </div>
         </div>
-      </div>
-
-      {/* 2. CENTERED ACTION TILES */}
-      <div style={{ display: "flex", gap: 12 }}>
-        {/* Tile A: Upcoming Shifts */}
-        <button
-          onClick={onShiftTile}
+        <div
+          className="wm-homeHero__avatar"
           style={{
-            flex: 1,
-            height: 110,
-            padding: "20px",
-            borderRadius: 24,
-            position: "relative",
-            background: "rgba(255, 255, 255, 0.5)",
-            border: "1px solid rgba(255, 255, 255, 0.8)",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.02)",
-            cursor: "pointer",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            textAlign: "center",
-            transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+            borderColor: "rgba(22, 163, 74, 0.45)",
+            boxShadow: "0 0 0 3px rgba(22, 163, 74, 0.22), 0 0 14px rgba(22, 163, 74, 0.28)",
+            background: "rgba(255,255,255,0.2)",
           }}
+          aria-hidden="true"
         >
-          <div style={{ color: "#2563EB", marginBottom: 10 }}>
-            <IconCalendar />
+          {initial}
+        </div>
+      </header>
+
+      <div className="wm-homeQuickTiles">
+        <button
+          type="button"
+          className="wm-homeQuickTile wm-press-card wm-homeCardEnter wm-homeCardEnter--1"
+          onClick={onShiftTile}
+          aria-label={`${upcomingShiftDisplay} upcoming shifts`}
+        >
+          <div
+            className="wm-homeQuickTile__value"
+            style={{ color: "var(--wm-shift-accent, #2563EB)" }}
+          >
+            {upcomingShiftDisplay}
           </div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>
-            {upcomingShiftDisplay} Shifts
-          </div>
-          <div style={{ fontSize: 10, fontWeight: 500, color: "#94A3B8", marginTop: 2 }}>
-            Upcoming
+          <div>
+            <div
+              className="wm-homeQuickTile__label"
+              style={{ color: "var(--wm-neutral-900)", fontWeight: 700 }}
+            >
+              Shifts
+            </div>
+            <div className="wm-homeQuickTile__label">Upcoming</div>
           </div>
         </button>
 
-        {/* Tile B: Broadcasts */}
         <button
+          type="button"
+          className="wm-homeQuickTile wm-press-card wm-homeCardEnter wm-homeCardEnter--2"
           onClick={onBroadcastTile}
-          style={{
-            flex: 1,
-            height: 110,
-            padding: "20px",
-            borderRadius: 24,
-            position: "relative",
-            background: "rgba(255, 255, 255, 0.5)",
-            border: "1px solid rgba(255, 255, 255, 0.8)",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.02)",
-            cursor: "pointer",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            textAlign: "center",
-            transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
-          }}
+          aria-label={`${shiftBroadcastUnreadDisplay} broadcast alerts`}
         >
-          <div style={{ color: "#27AE60", marginBottom: 10 }}>
-            <IconMegaphone />
+          <div
+            className="wm-homeQuickTile__value"
+            style={{ color: "var(--wm-shift-accent, #27AE60)" }}
+          >
+            {shiftBroadcastUnreadDisplay}
           </div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>
-            {shiftBroadcastUnreadDisplay} Alerts
-          </div>
-          <div style={{ fontSize: 10, fontWeight: 500, color: "#94A3B8", marginTop: 2 }}>
-            Broadcasts
+          <div>
+            <div
+              className="wm-homeQuickTile__label"
+              style={{ color: "var(--wm-neutral-900)", fontWeight: 700 }}
+            >
+              Alerts
+            </div>
+            <div className="wm-homeQuickTile__label">Broadcasts</div>
           </div>
         </button>
       </div>

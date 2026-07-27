@@ -26,7 +26,7 @@ export function ShiftSearchSmartMatches({ matches, matchQuality, onOpenDetails }
         style={{
           marginTop: 14,
           borderLeft: "5px solid #d97706",
-          borderRadius: 22,
+          borderRadius: "var(--wm-radius-employee-card)",
           background: "linear-gradient(180deg, rgba(255,251,235,0.9), rgba(255,255,255,0.98))",
           boxShadow: "0 12px 28px rgba(15,23,42,0.06)",
         }}
@@ -43,7 +43,7 @@ export function ShiftSearchSmartMatches({ matches, matchQuality, onOpenDetails }
           style={{
             marginTop: 12,
             padding: "11px 12px",
-            borderRadius: 14,
+            borderRadius: "var(--wm-radius-chip)",
             background: "rgba(217,119,6,0.07)",
             border: "1px solid rgba(217,119,6,0.18)",
             color: "#92400e",
@@ -66,7 +66,7 @@ export function ShiftSearchSmartMatches({ matches, matchQuality, onOpenDetails }
       style={{
         marginTop: 14,
         borderLeft: "5px solid #16a34a",
-        borderRadius: 22,
+        borderRadius: "var(--wm-radius-employee-card)",
         border: "1px solid rgba(22,163,74,0.17)",
         background: "linear-gradient(180deg, rgba(240,253,244,0.78), rgba(255,255,255,0.98))",
         boxShadow: "0 14px 32px rgba(15,23,42,0.07)",
@@ -93,7 +93,7 @@ export function ShiftSearchSmartMatches({ matches, matchQuality, onOpenDetails }
         <span
           style={{
             padding: "6px 10px",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             background: "rgba(22,163,74,0.1)",
             border: "1px solid rgba(22,163,74,0.18)",
             color: "#16a34a",
@@ -123,7 +123,7 @@ export function ShiftSearchSmartMatches({ matches, matchQuality, onOpenDetails }
                 border: "1px solid rgba(22,163,74,0.18)",
                 background:
                   "linear-gradient(180deg, rgba(255,255,255,0.96), rgba(240,253,244,0.7))",
-                borderRadius: 16,
+                borderRadius: "var(--wm-radius-chip)",
                 padding: 12,
                 cursor: "pointer",
                 boxShadow: "0 8px 20px rgba(15,23,42,0.045)",
@@ -180,7 +180,7 @@ export function ShiftSearchSmartMatches({ matches, matchQuality, onOpenDetails }
                         color: "#15803d",
                         background: "rgba(22,163,74,0.09)",
                         border: "1px solid rgba(22,163,74,0.12)",
-                        borderRadius: 999,
+                        borderRadius: "var(--wm-radius-pill)",
                         padding: "4px 9px",
                       }}
                     >

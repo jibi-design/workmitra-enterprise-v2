@@ -3,7 +3,12 @@
 import type { IdRegistryEntry } from "../helpers/addStaffHelpers";
 import { EMPLOYMENT_TYPES } from "../helpers/addStaffHelpers";
 import type { StaffEmploymentType } from "../storage/myStaff.storage";
-import { INPUT_STYLE, LABEL_STYLE, CANCEL_BTN_STYLE, chipBtnStyle } from "../helpers/addStaffStyles";
+import {
+  INPUT_STYLE,
+  LABEL_STYLE,
+  CANCEL_BTN_STYLE,
+  chipBtnStyle,
+} from "../helpers/addStaffStyles";
 
 /* ------------------------------------------------ */
 /* Props                                            */
@@ -57,7 +62,7 @@ export function AddStaffStep2({
       <div
         style={{
           padding: 10,
-          borderRadius: 8,
+          borderRadius: "var(--wm-radius-8)",
           background: "rgba(22,163,74,0.06)",
           border: "1px solid rgba(22,163,74,0.12)",
           marginBottom: 14,
@@ -101,7 +106,7 @@ export function AddStaffStep2({
                   fontSize: 11,
                   fontWeight: 800,
                   padding: "5px 12px",
-                  borderRadius: 999,
+                  borderRadius: "var(--wm-radius-pill)",
                   border: "1px dashed var(--wm-er-border)",
                   background: "transparent",
                   color: "var(--wm-er-muted)",
@@ -123,7 +128,7 @@ export function AddStaffStep2({
                   fontSize: 11,
                   fontWeight: 800,
                   padding: "5px 12px",
-                  borderRadius: 999,
+                  borderRadius: "var(--wm-radius-pill)",
                   border: "1px dashed var(--wm-er-border)",
                   background: "transparent",
                   color: "var(--wm-er-muted)",
@@ -147,10 +152,13 @@ export function AddStaffStep2({
           />
           <button
             type="button"
-            onClick={() => { onToggleNewCategory(false); onNewCategoryChange(""); }}
+            onClick={() => {
+              onToggleNewCategory(false);
+              onNewCategoryChange("");
+            }}
             style={{
               padding: "0 12px",
-              borderRadius: 10,
+              borderRadius: "var(--wm-radius-10)",
               border: "1px solid var(--wm-er-border)",
               background: "transparent",
               fontWeight: 800,
@@ -192,14 +200,16 @@ export function AddStaffStep2({
       </div>
 
       <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-end", gap: 10 }}>
-        <button type="button" onClick={onBack} style={CANCEL_BTN_STYLE}>Back</button>
+        <button type="button" onClick={onBack} style={CANCEL_BTN_STYLE}>
+          Back
+        </button>
         <button
           type="button"
           onClick={onSubmit}
           disabled={!canSubmit}
           style={{
             padding: "10px 18px",
-            borderRadius: 10,
+            borderRadius: "var(--wm-radius-10)",
             border: "none",
             background: canSubmit ? "#16a34a" : "#e5e7eb",
             color: canSubmit ? "#fff" : "#9ca3af",

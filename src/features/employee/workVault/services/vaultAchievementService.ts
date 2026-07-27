@@ -13,6 +13,7 @@ import { employeeProfileStorage } from "../../../employee/profile/storage/employ
 
 const SHIFT_TARGETS = [1, 5, 10, 25, 50, 75, 100, 150, 200, 250, 500];
 const CAREER_TARGETS = [1, 3, 5, 10, 15, 25];
+const PLANNER_TARGETS = [1, 3, 5, 10, 15, 25, 50];
 const REVIEW_TARGETS = [1, 5, 10, 25, 50, 100];
 const FIVE_STAR_TARGETS = [1, 5, 10, 25, 50];
 const NEXT_GOAL_LIMIT = 2;
@@ -86,14 +87,28 @@ function careerDescription(target: number, earned: boolean): string {
   return `Next goal: reach ${target} Career Jobs record${target === 1 ? "" : "s"}.`;
 }
 
+function plannerTitle(target: number): string {
+  if (target === 1) return "First Planner Epoch";
+  return `${target} Planner Epochs`;
+}
+
+function plannerDescription(target: number, earned: boolean): string {
+  if (earned) {
+    return `${target} Gig Project / Planner epoch${target === 1 ? "" : "s"} recorded.`;
+  }
+  return `Next goal: complete ${target} Planner epoch${target === 1 ? "" : "s"}.`;
+}
+
 function reviewTitle(target: number): string {
-  if (target === 1) return "First Shift Review";
+  if (target === 1) return "First Work Review";
   if (target === 10) return "Trusted Review Record";
   return `${target} Work Reviews`;
 }
 
 function reviewDescription(target: number, earned: boolean): string {
-  if (earned) return `${target} completed work review${target === 1 ? "" : "s"}.`;
+  if (earned) {
+    return `${target} completed work review${target === 1 ? "" : "s"} across eligible domains.`;
+  }
   return `Next goal: collect ${target} completed work review${target === 1 ? "" : "s"}.`;
 }
 
@@ -106,7 +121,7 @@ function fiveStarTitle(target: number): string {
 function fiveStarDescription(target: number, earned: boolean): string {
   if (target === 1) {
     return earned
-      ? "First 5-star completed work review earned. More reviews are needed for strong reputation."
+      ? "First 5-star completed work review earned. More reviews strengthen reputation."
       : "Next goal: receive your first 5-star completed work review.";
   }
 
@@ -189,6 +204,19 @@ function buildCareerMilestones(stats: VaultWorkStats): VaultAchievement[] {
   });
 }
 
+function buildPlannerMilestones(stats: VaultWorkStats): VaultAchievement[] {
+  return buildCountMilestones({
+    group: "planner",
+    prefix: "planner",
+    currentValue: stats.totalPlannerEpochs,
+    targets: PLANNER_TARGETS,
+    nextLimit: NEXT_GOAL_LIMIT,
+    titleFor: plannerTitle,
+    descriptionFor: plannerDescription,
+    icon: "planner",
+  });
+}
+
 function buildReputationMilestones(performance: VaultPerformanceRecord): VaultAchievement[] {
   const reviewMilestones = buildCountMilestones({
     group: "reputation",
@@ -242,6 +270,7 @@ export function computeAchievements(
   return [
     ...buildShiftMilestones(stats),
     ...buildCareerMilestones(stats),
+    ...buildPlannerMilestones(stats),
     ...buildReputationMilestones(performance),
     ...buildProfileMilestones(profileComplete),
   ];

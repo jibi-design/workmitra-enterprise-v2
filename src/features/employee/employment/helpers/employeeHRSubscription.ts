@@ -5,8 +5,8 @@
 // Backend phase: will be replaced with API calls.
 
 import { useSyncExternalStore } from "react";
-import { hrManagementStorage } from "../../../employer/hrManagement/storage/hrManagement.storage";
-import type { HRCandidateRecord } from "../../../employer/hrManagement/types/hrManagement.types";
+import { hrManagementStorage } from "../../../shared/hr/hrPublic";
+import type { HRCandidateRecord } from "../../../shared/hr/hrPublic";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Stable snapshot cache
@@ -39,7 +39,5 @@ export function useEmployeeHRRecords(): HRCandidateRecord[] {
 /** Get pending offer for this employee (status = "offered") */
 export function useEmployeePendingOffer(employeeUniqueId: string): HRCandidateRecord | null {
   const all = useEmployeeHRRecords();
-  return all.find(
-    (r) => r.employeeUniqueId === employeeUniqueId && r.status === "offered",
-  ) ?? null;
+  return all.find((r) => r.employeeUniqueId === employeeUniqueId && r.status === "offered") ?? null;
 }

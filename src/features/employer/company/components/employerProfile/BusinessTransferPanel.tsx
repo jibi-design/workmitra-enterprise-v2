@@ -82,7 +82,7 @@ export function BusinessTransferPanel({ profile, onProfileRefresh, onNotice }: P
         <div
           style={{
             padding: 14,
-            borderRadius: 14,
+            borderRadius: "var(--wm-radius-chip)",
             background: "rgba(245,158,11,0.08)",
             border: "1px solid rgba(245,158,11,0.22)",
           }}
@@ -134,7 +134,7 @@ export function BusinessTransferPanel({ profile, onProfileRefresh, onNotice }: P
       <div
         style={{
           padding: 14,
-          borderRadius: 14,
+          borderRadius: "var(--wm-radius-chip)",
           background: "rgba(248,250,252,0.95)",
           border: "1px solid rgba(226,232,240,0.9)",
         }}
@@ -209,7 +209,7 @@ function Field({
 
 const inputStyle: CSSProperties = {
   height: 38,
-  borderRadius: 10,
+  borderRadius: "var(--wm-radius-10)",
   border: "1px solid #d1d5db",
   padding: "0 12px",
   fontSize: 13,
@@ -217,7 +217,7 @@ const inputStyle: CSSProperties = {
 
 const primaryBtn: CSSProperties = {
   height: 38,
-  borderRadius: 10,
+  borderRadius: "var(--wm-radius-10)",
   border: "none",
   background: "#7c3aed",
   color: "#fff",

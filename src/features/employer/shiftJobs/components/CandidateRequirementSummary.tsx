@@ -62,7 +62,7 @@ function RequirementBox({
     <div
       style={{
         padding: "8px 9px",
-        borderRadius: 13,
+        borderRadius: "var(--wm-radius-chip)",
         background: strong ? "rgba(22,163,74,0.08)" : "rgba(248,250,252,0.96)",
         border: strong ? "1px solid rgba(22,163,74,0.16)" : "1px solid rgba(226,232,240,0.9)",
         minWidth: 0,

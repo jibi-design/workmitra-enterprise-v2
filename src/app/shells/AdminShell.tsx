@@ -1,10 +1,12 @@
 /** Job Mitra | AdminShell.tsx | C:\projects\WorkMitra_Enterprise_v2\src\app\shells\AdminShell.tsx */
 
-import { useSyncExternalStore } from "react";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { roleStorage, type AppRole } from "../storage/roleStorage";
 import { logoutApp, postLogoutRoute } from "../../shared/auth/logoutApp";
 import { ROUTE_PATHS } from "../router/routePaths";
+import { useThemeBundle } from "./useThemeBundle";
+import { useAppRole } from "../router/guards/useAppRole";
+import { AUTH_BACKEND_ENABLED } from "../../shared/config/authConfig";
+import { RouteGuardLoading } from "../../shared/components/routes/RouteGuardStatus";
 
 function IconBack() {
   return (
@@ -48,8 +50,8 @@ const ADMIN_TABS: TabDef[] = [
   { label: "Settings", path: ROUTE_PATHS.adminSettings, enabled: true },
 ];
 
-function useRole(): AppRole | null {
-  return useSyncExternalStore(roleStorage.subscribe, roleStorage.get, roleStorage.get);
+function useRole() {
+  return useAppRole();
 }
 
 function safeCanGoBack(): boolean {
@@ -73,7 +75,12 @@ export function AdminShell() {
   const loc = useLocation();
   const nav = useNavigate();
 
+  useThemeBundle("admin-shell");
+
   if (role !== "admin") {
+    if (AUTH_BACKEND_ENABLED && role === null) {
+      return <RouteGuardLoading overlay label="Checking your session" />;
+    }
     return <Navigate to={ROUTE_PATHS.landing} state={{ from: loc.pathname }} replace />;
   }
 

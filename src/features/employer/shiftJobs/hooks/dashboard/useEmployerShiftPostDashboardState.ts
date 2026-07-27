@@ -2,7 +2,7 @@
 // File name: useEmployerShiftPostDashboardState.ts
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\hooks\dashboard\useEmployerShiftPostDashboardState.ts
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { NoticeData } from "../../../../../shared/components/NoticeModal";
 import type { DashboardTab } from "../../helpers/shiftDashboardHelpers";
@@ -23,6 +23,9 @@ export function useEmployerShiftPostDashboardState() {
 
   const [tab, setTab] = useState<DashboardTab>("applied");
   const [isBusy, setIsBusy] = useState(false);
+  const mountedRef = useRef(true);
+  const busyInFlightRef = useRef(false);
+  const busyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showLog, setShowLog] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
@@ -31,6 +34,17 @@ export function useEmployerShiftPostDashboardState() {
 
   const { confirmData, openConfirm, closeConfirm, handleConfirmModalConfirm } =
     useEmployerShiftDashboardConfirm();
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (busyTimerRef.current != null) {
+        clearTimeout(busyTimerRef.current);
+        busyTimerRef.current = null;
+      }
+    };
+  }, []);
 
   const settings: PostSettings = post?.settings ?? {
     backupSlots: 2,
@@ -101,14 +115,24 @@ export function useEmployerShiftPostDashboardState() {
       post,
     });
 
-  function busy(fn: () => void) {
+  function busy(fn: () => void | Promise<void>) {
+    // P0-4 — sync in-flight guard (React setState is not synchronous)
+    if (busyInFlightRef.current) return;
+    busyInFlightRef.current = true;
     setIsBusy(true);
 
-    try {
-      fn();
-    } finally {
-      window.setTimeout(() => setIsBusy(false), 400);
-    }
+    void (async () => {
+      try {
+        await fn();
+      } finally {
+        if (busyTimerRef.current != null) clearTimeout(busyTimerRef.current);
+        busyTimerRef.current = window.setTimeout(() => {
+          busyTimerRef.current = null;
+          busyInFlightRef.current = false;
+          if (mountedRef.current) setIsBusy(false);
+        }, 400);
+      }
+    })();
   }
 
   const {

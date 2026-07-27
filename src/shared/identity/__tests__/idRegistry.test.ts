@@ -239,26 +239,8 @@ describe("validateId", () => {
     expect(validateId(`  ${result.id}  `).valid).toBe(true);
   });
 
-  it("detects check digit tampering on legacy WM IDs only", () => {
-    const block1 = "ABCD";
-    const nameBlock = "TES";
-    const partial = "EFG";
-    let sum = 0;
-    const raw = block1 + nameBlock + partial;
-    const charset = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    for (let i = 0; i < raw.length; i++) {
-      const ch = raw[i];
-      sum += charset.indexOf(ch) * (i + 1);
-    }
-    const check = charset[sum % charset.length];
-    const legacyId = `WM-${block1}-${nameBlock}-${partial}${check}`;
-    const parts = legacyId.split("-");
-    const block3 = parts[3];
-    const flipped = block3[3] === "A" ? "B" : "A";
-    parts[3] = block3.slice(0, 3) + flipped;
-    const tampered = parts.join("-");
-
-    expect(validateId(tampered).valid).toBe(false);
+  it("rejects legacy WM prefix", () => {
+    expect(validateId("WM-ABCD-TES-EFGH").valid).toBe(false);
   });
 });
 

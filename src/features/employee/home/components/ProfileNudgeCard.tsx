@@ -15,7 +15,10 @@ import { getProfileCompletion } from "../../profile/services/profileCompletionSe
 function IconProfile() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4Zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4Z" />
+      <path
+        fill="currentColor"
+        d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4Zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4Z"
+      />
     </svg>
   );
 }
@@ -31,26 +34,43 @@ export function ProfileNudgeCard() {
 
   return (
     <section
+      className="wm-press-card wm-homeCardEnter"
       style={{
-        marginTop: 12, padding: "14px 16px", borderRadius: 14,
-        background: "rgba(180,83,9,0.04)",
-        border: "1px solid rgba(180,83,9,0.18)",
+        marginTop: 4,
+        padding: "14px 16px",
+        borderRadius: "var(--wm-radius-employee-card, 20px)",
+        background:
+          "color-mix(in srgb, rgba(180,83,9,0.06) 55%, var(--wm-emp-glass-bg-strong, #fff))",
+        border: "1px solid rgba(180,83,9,0.22)",
         borderLeft: "4px solid #b45309",
+        boxShadow: "var(--wm-emp-surface-shadow, 0 8px 20px rgba(15, 23, 42, 0.05))",
+        backdropFilter: "blur(var(--wm-blur-md)) var(--wm-glass-saturate)",
+        WebkitBackdropFilter: "blur(var(--wm-blur-md)) var(--wm-glass-saturate)",
         cursor: "pointer",
       }}
       role="button"
       tabIndex={0}
       onClick={() => nav(ROUTE_PATHS.employeeProfile)}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") nav(ROUTE_PATHS.employeeProfile); }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") nav(ROUTE_PATHS.employeeProfile);
+      }}
       aria-label="Complete your profile"
     >
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{
-          width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          background: "rgba(180,83,9,0.10)", color: "#b45309",
-        }}>
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 10,
+            flexShrink: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "rgba(180,83,9,0.10)",
+            color: "#b45309",
+          }}
+        >
           <IconProfile />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>

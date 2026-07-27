@@ -50,7 +50,7 @@ const editBtnStyle: React.CSSProperties = {
   cursor: "pointer",
   color: AMBER,
   padding: 4,
-  borderRadius: 6,
+  borderRadius: "var(--wm-radius-8)",
   display: "inline-flex",
   alignItems: "center",
   gap: 4,
@@ -60,7 +60,7 @@ const editBtnStyle: React.CSSProperties = {
 
 const chipStyle: React.CSSProperties = {
   padding: "3px 10px",
-  borderRadius: 999,
+  borderRadius: "var(--wm-radius-pill)",
   background: AMBER_BG,
   color: AMBER,
   fontSize: 11,

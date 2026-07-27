@@ -59,7 +59,7 @@ export function BusinessProfileSection({
           style={{
             width: 34,
             height: 34,
-            borderRadius: 12,
+            borderRadius: "var(--wm-radius-button)",
             background: "rgba(124,58,237,0.1)",
             display: "flex",
             alignItems: "center",

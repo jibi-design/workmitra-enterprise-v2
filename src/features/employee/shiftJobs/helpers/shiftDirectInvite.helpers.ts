@@ -4,7 +4,7 @@
 import {
   shiftDirectInviteStorage,
   type ShiftDirectInvite,
-} from "../../../employer/shiftJobs/storage/shiftDirectInvite.storage";
+} from "../../../shared/shift/shiftEmployerPublic";
 import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
 import type { ShiftPostData } from "../../shiftJobs/types/shiftApplicationTypes";
 
@@ -51,13 +51,13 @@ export function formatShiftInviteDate(startAt: number | null): string {
   });
 }
 
-function buildPendingInvites(workerWmId: string): EmployeePendingDirectInvite[] {
-  const key = workerWmId.trim().toUpperCase();
+function buildPendingInvites(workerMlId: string): EmployeePendingDirectInvite[] {
+  const key = workerMlId.trim().toUpperCase();
   if (!key) return EMPTY_PENDING;
 
   return shiftDirectInviteStorage
     .getAll()
-    .filter((invite) => invite.workerWmId === key && invite.status === "pending")
+    .filter((invite) => invite.workerMlId === key && invite.status === "pending")
     .map((invite) => ({
       ...invite,
       shiftDateLabel: formatShiftInviteDate(readPostStartAt(invite.postId)),
@@ -80,12 +80,12 @@ export function getEmployeePendingDirectInvitesSnapshot(): EmployeePendingDirect
   return pendingInvitesCacheList;
 }
 
-export function getEmployeePendingDirectInvites(workerWmId: string): EmployeePendingDirectInvite[] {
-  return buildPendingInvites(workerWmId);
+export function getEmployeePendingDirectInvites(workerMlId: string): EmployeePendingDirectInvite[] {
+  return buildPendingInvites(workerMlId);
 }
 
-export function countEmployeePendingDirectInvites(workerWmId: string): number {
-  return getEmployeePendingDirectInvites(workerWmId).length;
+export function countEmployeePendingDirectInvites(workerMlId: string): number {
+  return getEmployeePendingDirectInvites(workerMlId).length;
 }
 
 export function isDirectInviteAcceptedApplication(appId: string): boolean {

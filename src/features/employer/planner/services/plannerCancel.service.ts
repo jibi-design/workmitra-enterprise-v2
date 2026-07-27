@@ -1,4 +1,5 @@
 // Job Mitra | plannerCancel.service.ts | P1 atomic plan cancel (Section 6.8)
+// Track T1-3 — failed side-effects enqueue to wm_retry_queue_v1
 
 import {
   markEmployeeWorkspaceCancelled,
@@ -9,13 +10,18 @@ import {
   type EmployeeShiftApplication,
 } from "../../../shared/planner/ports/plannerLegacyShiftBridge";
 import { plannerEmployeeNotifications } from "../../../shared/planner/plannerEmployeeBridge";
-import { demandPlannerStorage } from "../storage/demandPlannerStorage";
-import { plannerPublicIndex } from "../storage/plannerPublicIndex.storage";
 import { plannerDiarySyncService } from "../../../shared/planner/plannerEmployeeBridge";
 import { recordPlannerOffboardInVault } from "../../../shared/planner/plannerVault";
+import { enqueueShiftRetry } from "../../../../shared/shift/shiftRetryQueue";
+import { demandPlannerStorage } from "../storage/demandPlannerStorage";
+import { plannerPublicIndex } from "../storage/plannerPublicIndex.storage";
 import { appendPlannerAudit } from "../storage/plannerAuditLog.storage";
 
 const PENDING: EmployeeShiftApplication["status"][] = ["applied", "shortlisted", "waiting"];
+
+function retryErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
 
 export type PlannerCancelResult =
   | {
@@ -103,7 +109,17 @@ export function cancelActivePlan(planId: string, reason?: string): PlannerCancel
         closedApplicationCount: closedApplicationIds.length,
         error,
       });
-      // TODO: enqueue to wm_retry_queue_v1 when retry infrastructure exists.
+      enqueueShiftRetry(
+        "planner_cancel_notify",
+        {
+          domain: "planner",
+          step: "plan_cancelled_pending",
+          planId,
+          planName: plan.name,
+          closedApplicationCount: String(closedApplicationIds.length),
+        },
+        retryErrorMessage(error),
+      );
     }
   }
 
@@ -126,7 +142,18 @@ export function cancelActivePlan(planId: string, reason?: string): PlannerCancel
           appId: app.id,
           reason: workspaceResult.reason,
         });
-        // TODO: enqueue to wm_retry_queue_v1 when retry infrastructure exists.
+        enqueueShiftRetry(
+          "planner_workspace_cancel",
+          {
+            domain: "planner",
+            step: "mark_workspace_cancelled",
+            planId,
+            postId: app.postId,
+            appId: app.id,
+            reason: workspaceResult.reason,
+          },
+          workspaceResult.reason,
+        );
       } else {
         try {
           plannerEmployeeNotifications.planCancelledConfirmedWorker(
@@ -143,7 +170,19 @@ export function cancelActivePlan(planId: string, reason?: string): PlannerCancel
             appId: app.id,
             error,
           });
-          // TODO: enqueue to wm_retry_queue_v1 when retry infrastructure exists.
+          enqueueShiftRetry(
+            "planner_cancel_notify",
+            {
+              domain: "planner",
+              step: "plan_cancelled_confirmed_worker",
+              planId,
+              planName: plan.name,
+              jobName: post.jobName,
+              postId: app.postId,
+              appId: app.id,
+            },
+            retryErrorMessage(error),
+          );
         }
       }
     }

@@ -1,6 +1,4 @@
-// App name: Job Mitra
-// File name: EmployerDemandPlannerFillStatus.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\components\EmployerDemandPlannerFillStatus.tsx
+// Job Mitra | EmployerDemandPlannerFillStatus.tsx | Post-publish fill summary (teal Planner)
 
 import {
   FILL_STATUS_CONFIG,
@@ -11,13 +9,13 @@ import type { SlotResult } from "../../types/employerDemandPlanner.types";
 type EmployerDemandPlannerFillStatusProps = {
   planName: string;
   results: SlotResult[];
-  onViewPosts: () => void;
+  onContinue: () => void;
 };
 
 export function EmployerDemandPlannerFillStatus({
   planName,
   results,
-  onViewPosts,
+  onContinue,
 }: EmployerDemandPlannerFillStatusProps) {
   const filledCount = results.filter((result) => result.status === "filled").length;
   const total = results.length;
@@ -28,18 +26,25 @@ export function EmployerDemandPlannerFillStatus({
         style={{
           padding: "14px 16px",
           borderRadius: 14,
-          background: "rgba(22,163,74,0.06)",
-          border: "1px solid rgba(22,163,74,0.2)",
+          background: "var(--wm-planner-soft)",
+          border: "1px solid var(--wm-planner-border)",
           marginBottom: 14,
         }}
       >
-        <div style={{ fontSize: 15, fontWeight: 700, color: "#15803d", marginBottom: 4 }}>
-          Plan submitted successfully
+        <div
+          style={{
+            fontSize: 15,
+            fontWeight: 700,
+            color: "var(--wm-planner-accent-strong)",
+            marginBottom: 4,
+          }}
+        >
+          Plan published successfully
         </div>
 
         <div style={{ fontSize: 12, color: "var(--wm-er-muted)" }}>
-          {total} shift{total !== 1 ? "s" : ""} created for <strong>{planName}</strong>. Workers can
-          now see and apply.
+          {total} plan day{total !== 1 ? "s" : ""} live for <strong>{planName}</strong>. Workers see
+          one Mega Project Card and can apply by day.
         </div>
 
         <div
@@ -56,7 +61,7 @@ export function EmployerDemandPlannerFillStatus({
               height: "100%",
               borderRadius: 999,
               width: `${total > 0 ? (filledCount / total) * 100 : 0}%`,
-              background: "#16a34a",
+              background: "var(--wm-planner-accent)",
               transition: "width var(--wm-motion-base) var(--wm-motion-spring)",
             }}
           />
@@ -130,20 +135,11 @@ export function EmployerDemandPlannerFillStatus({
       <div style={{ marginTop: 16 }}>
         <button
           type="button"
-          onClick={onViewPosts}
-          style={{
-            width: "100%",
-            padding: "12px 0",
-            borderRadius: 12,
-            border: "none",
-            background: "var(--wm-er-accent-shift, #16a34a)",
-            color: "#fff",
-            fontSize: 13,
-            fontWeight: 700,
-            cursor: "pointer",
-          }}
+          onClick={onContinue}
+          className="wm-planner-btnPrimary"
+          style={{ width: "100%", padding: "12px 0" }}
         >
-          View All Posts
+          Open Applications
         </button>
       </div>
     </div>

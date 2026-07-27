@@ -8,21 +8,17 @@ import type {
   ReviewType,
   ReviewRating,
 } from "../types/performanceReview.types";
+import { hrEmployerScopedKey } from "./hrStorageKeys";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Constants
-// ─────────────────────────────────────────────────────────────────────────────
-
-const STORAGE_KEY = "wm_hr_performance_reviews_v1";
 const CHANGED_EVENT = "wm:hr-performance-reviews-changed";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Internal Helpers
-// ─────────────────────────────────────────────────────────────────────────────
+function storageKey(): string {
+  return hrEmployerScopedKey("performance_reviews_v1");
+}
 
 function read(): PerformanceReviewRecord[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey());
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
     return Array.isArray(parsed) ? (parsed as PerformanceReviewRecord[]) : [];
@@ -32,7 +28,7 @@ function read(): PerformanceReviewRecord[] {
 }
 
 function write(records: PerformanceReviewRecord[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  localStorage.setItem(storageKey(), JSON.stringify(records));
   window.dispatchEvent(new Event(CHANGED_EVENT));
 }
 

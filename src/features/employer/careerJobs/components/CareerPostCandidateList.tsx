@@ -1,17 +1,23 @@
 // App name: Job Mitra
 // File name: CareerPostCandidateList.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\careerJobs\components\CareerPostCandidateList.tsx
+// Wave 1 SC-3 — SHOW_LIMIT=25 + Show more
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { PulseTargetIndicator } from "../../../pulse/PulseTargetIndicator";
-import { EnterpriseEmpty, SlideOver, StatusBadge } from "../../../../shared/components/enterprise";
-import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { SlideOver } from "../../../../shared/components/enterprise";
 import type { CareerApplication, CareerJobPost } from "../types/careerTypes";
+import { getCandidateWorkerName } from "../helpers/careerCandidateCard.helpers";
 import { CareerCandidateCard } from "./CareerCandidateCard";
 import { CareerCompareToolbar } from "./CareerCompareToolbar";
 import type { CareerTab } from "./CareerPipelineTabs";
-import { getCandidateWorkerName } from "../helpers/careerCandidateCard.helpers";
+import {
+  CANDIDATE_SHOW_LIMIT,
+  CareerApplicantQuickView,
+  EmptyCandidateState,
+  getCompareLabel,
+  getTabSectionLabel,
+  isCompareAllowed,
+} from "./CareerPostCandidateList.helpers";
 
 type CareerPostCandidateListProps = {
   apps: CareerApplication[];
@@ -28,6 +34,7 @@ type CareerPostCandidateListProps = {
   onShortlist: (appId: string) => void;
   onRemoveFromShortlist: (appId: string) => void;
   onReject: (appId: string) => void;
+  onBulkReject?: (appIds: string[]) => void;
   onScheduleInterview: (appId: string, roundNumber: number) => void;
   onRecordResult: (appId: string, roundNumber: number) => void;
   onSendOffer: (appId: string) => void;
@@ -55,6 +62,7 @@ export function CareerPostCandidateList({
   onShortlist,
   onRemoveFromShortlist,
   onReject,
+  onBulkReject,
   onScheduleInterview,
   onRecordResult,
   onSendOffer,
@@ -65,6 +73,18 @@ export function CareerPostCandidateList({
   const showCompareToolbar = compareAllowed && apps.length >= 2;
   const showCompareSelector = showCompareToolbar && compareMode;
   const [quickApp, setQuickApp] = useState<CareerApplication | null>(null);
+  const [visibleLimit, setVisibleLimit] = useState(CANDIDATE_SHOW_LIMIT);
+
+  useEffect(() => {
+    setVisibleLimit(CANDIDATE_SHOW_LIMIT);
+  }, [tab, post.id]);
+
+  const visibleApps = apps.slice(0, visibleLimit);
+  const hasMore = apps.length > visibleLimit;
+  const canBulkReject =
+    Boolean(onBulkReject) &&
+    apps.length > 1 &&
+    (tab === "applied" || tab === "backup" || tab === "shortlisted" || tab === "interview");
 
   return (
     <section style={{ marginTop: 16, display: "grid", gap: 16 }}>
@@ -84,9 +104,30 @@ export function CareerPostCandidateList({
           <div style={{ fontSize: 13, fontWeight: 800, color: CAREER_TEXT }}>
             {getTabSectionLabel(tab)}
           </div>
-          <span className="wm-career-pill wm-career-pill--pay">{apps.length}</span>
+          <span className="wm-career-pill wm-career-pill--pay">
+            {Math.min(visibleLimit, apps.length)} / {apps.length}
+          </span>
         </div>
       )}
+
+      {canBulkReject ? (
+        <button
+          type="button"
+          className="wm-outlineBtn"
+          data-testid="career-candidate-bulk-reject"
+          aria-label={`Reject all ${apps.length} candidates in this tab`}
+          disabled={isBusy}
+          onClick={() => onBulkReject?.(apps.map((app) => app.id))}
+          style={{
+            minHeight: 44,
+            fontWeight: 800,
+            color: "var(--wm-error, #dc2626)",
+            borderColor: "rgba(220,38,38,0.25)",
+          }}
+        >
+          Reject all in this tab ({apps.length})
+        </button>
+      ) : null}
 
       {showCompareToolbar && (
         <CareerCompareToolbar
@@ -98,7 +139,7 @@ export function CareerPostCandidateList({
         />
       )}
 
-      {apps.map((app) => (
+      {visibleApps.map((app) => (
         <div key={app.id} style={{ position: "relative" }}>
           <PulseTargetIndicator
             notificationId="APPLICATION_RECEIVED"
@@ -114,7 +155,7 @@ export function CareerPostCandidateList({
                 gap: 8,
                 marginBottom: 8,
                 padding: "8px 12px",
-                borderRadius: 16,
+                borderRadius: "var(--wm-radius-chip)",
                 cursor: "pointer",
                 fontSize: 12,
                 fontWeight: 900,
@@ -172,6 +213,19 @@ export function CareerPostCandidateList({
         </div>
       ))}
 
+      {hasMore ? (
+        <button
+          type="button"
+          className="wm-outlineBtn wm-press-card"
+          data-testid="career-candidate-show-more"
+          aria-label={`Show more candidates, ${apps.length - visibleLimit} remaining`}
+          onClick={() => setVisibleLimit((limit) => limit + CANDIDATE_SHOW_LIMIT)}
+          style={{ minHeight: 44, fontWeight: 800 }}
+        >
+          Show more ({apps.length - visibleLimit} remaining)
+        </button>
+      ) : null}
+
       <SlideOver
         open={Boolean(quickApp)}
         onClose={() => setQuickApp(null)}
@@ -184,116 +238,8 @@ export function CareerPostCandidateList({
           </button>
         }
       >
-        {quickApp ? (
-          <div style={{ display: "grid", gap: 10 }} data-testid="career-applicant-slideover-body">
-            <StatusBadge label={String(quickApp.stage)} tone="pending" accent="career" />
-            <div style={{ fontSize: 13 }}>
-              Notice: {quickApp.noticePeriod || "Not specified"} · Expected salary:{" "}
-              {quickApp.expectedSalary > 0
-                ? quickApp.expectedSalary.toLocaleString()
-                : "Not specified"}
-            </div>
-            <div style={{ fontSize: 12, color: CAREER_MUTED, lineHeight: 1.5 }}>
-              {quickApp.coverNote?.trim() || "No cover note provided."}
-            </div>
-          </div>
-        ) : null}
+        {quickApp ? <CareerApplicantQuickView app={quickApp} post={post} /> : null}
       </SlideOver>
     </section>
   );
-}
-
-function EmptyCandidateState({ tab, post }: { tab: CareerTab; post: CareerJobPost }) {
-  const copy = getEmptyStateCopy(tab, post);
-  const nav = useNavigate();
-
-  return (
-    <EnterpriseEmpty
-      domain="career"
-      title={copy.title}
-      subtitle={`${copy.body} ${copy.helper}`}
-      primaryLabel={tab === "applied" ? "Back to Career posts" : "Review Applied tab"}
-      onPrimary={() => {
-        if (tab === "applied") {
-          nav(ROUTE_PATHS.employerCareerPosts);
-          return;
-        }
-        nav(ROUTE_PATHS.employerCareerPostDashboard.replace(":postId", post.id));
-      }}
-      testId={`career-candidates-empty-${tab}`}
-    />
-  );
-}
-
-function getTabSectionLabel(tab: CareerTab): string {
-  if (tab === "applied") return "Applied candidates";
-  if (tab === "backup") return "Backup candidates";
-  if (tab === "shortlisted") return "Shortlisted candidates";
-  if (tab === "interview") return "Interview candidates";
-  if (tab === "offered") return "Offer candidates";
-  if (tab === "hired") return "Hired candidates";
-  return "Rejected candidates";
-}
-
-function getEmptyStateCopy(
-  tab: CareerTab,
-  post: CareerJobPost,
-): { title: string; body: string; helper: string } {
-  if (tab === "applied")
-    return {
-      title: post.status === "active" ? "No applicants yet" : "No applicants in this post",
-      body:
-        post.status === "active"
-          ? "This Career Job is live. Candidate applications will appear here after employees submit their profile and answers."
-          : "This post is not currently active, so new applications may not arrive until it is resumed or reposted.",
-      helper:
-        "When a candidate applies, review their profile, cover note, expected salary, notice period, and screening answers here.",
-    };
-  if (tab === "backup")
-    return {
-      title: "No backup candidates",
-      body: "Backup candidates will appear here after local analysis suggests reserve candidates for this post.",
-      helper: "Backup candidates remain in Applied and can be manually shortlisted later.",
-    };
-  if (tab === "shortlisted")
-    return {
-      title: "No shortlisted candidates yet",
-      body: "Shortlisted candidates will appear here after you review applicants and move suitable people forward.",
-      helper:
-        "Use the Applied tab first, then shortlist candidates who match the role requirements.",
-    };
-  if (tab === "interview")
-    return {
-      title: "No candidates in interview yet",
-      body: "Interview candidates will appear here after shortlisted candidates are scheduled for interview rounds.",
-      helper: "After scheduling, record interview results to keep the hiring pipeline accurate.",
-    };
-  if (tab === "offered")
-    return {
-      title: "No offers sent yet",
-      body: "Candidates with sent offers will appear here before you mark them as hired.",
-      helper:
-        "Send offers only after interview review is complete and the hiring decision is ready.",
-    };
-  if (tab === "hired")
-    return {
-      title: "No hired candidates yet",
-      body: "Hired candidates will appear here after you complete the offer and hiring decision.",
-      helper: "After hiring, the Career workspace can support onboarding and long-term follow-up.",
-    };
-  return {
-    title: "No rejected candidates",
-    body: "Rejected candidates will appear here after you reject an application or pipeline candidate.",
-    helper: "Keep rejection reasons professional and clear for internal tracking.",
-  };
-}
-
-function getCompareLabel(compareIds: Set<string>, appId: string): string {
-  if (compareIds.has(appId)) return "Selected for compare";
-  if (compareIds.size >= 3) return "Max 3 selected";
-  return "Select for compare";
-}
-
-function isCompareAllowed(tab: CareerTab): boolean {
-  return tab === "shortlisted" || tab === "interview" || tab === "offered";
 }

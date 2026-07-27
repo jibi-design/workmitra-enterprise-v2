@@ -28,7 +28,7 @@ export function getWorkedCountForCurrentCycle(employmentId: string): number {
 
 export function getActiveTasksCount(hrId: string): number {
   try {
-    const raw = localStorage.getItem("wm_task_assignments_v1");
+    const raw = localStorage.getItem("wm_task_assignment_v1");
     if (!raw) return 0;
 
     const all = JSON.parse(raw) as { employeeId: string; status: string }[];

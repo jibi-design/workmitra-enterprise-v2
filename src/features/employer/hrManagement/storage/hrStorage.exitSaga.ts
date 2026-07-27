@@ -2,8 +2,8 @@
 //
 // GAP-019: Cross-domain exit saga — HR + My Staff + lifecycle + shared employment.
 
-import { employmentLifecycleStorage } from "../../../employee/employment/storage/employmentLifecycle.storage";
-import type { ExitReason as LifecycleExitReason } from "../../../employee/employment/storage/employmentLifecycle.storage";
+import { employmentLifecycleStorage } from "../../../../shared/employment/employmentLifecycle.storage";
+import type { ExitReason as LifecycleExitReason } from "../../../../shared/employment/employmentLifecycle.storage";
 import { myStaffStorage, restoreStaffRecords } from "../../myStaff/storage/myStaff.storage";
 import type { StaffExitReason } from "../../myStaff/storage/myStaff.storage";
 import { employmentActions } from "../../../../shared/employment/employmentStorage";
@@ -44,31 +44,40 @@ function mapExitTriggerToLifecycleReason(trigger: ExitTrigger): LifecycleExitRea
   return mapExitTriggerToStaffReason(trigger);
 }
 
-function syncSharedEmploymentExit(
+async function syncSharedEmploymentExit(
   careerPostId: string,
   trigger: ExitTrigger,
   note: string,
-): boolean {
+): Promise<boolean> {
   const record = employmentStorage.getByPostId(careerPostId);
   if (!record || record.status === "completed") return true;
 
   if (trigger === "employer_terminated") {
-    return employmentActions.terminate(careerPostId, "other", note || "HR exit completed") !== null;
+    return (
+      (await employmentActions.terminate(careerPostId, "other", note || "HR exit completed")) !==
+      null
+    );
   }
 
   if (trigger === "contract_ended") {
     return (
-      employmentActions.terminate(careerPostId, "contract_ended", note || "Contract ended") !== null
+      (await employmentActions.terminate(
+        careerPostId,
+        "contract_ended",
+        note || "Contract ended",
+      )) !== null
     );
   }
 
-  const confirmed = employmentActions.confirmResignation(careerPostId);
+  const confirmed = await employmentActions.confirmResignation(careerPostId);
   if (confirmed) return true;
 
-  return employmentActions.terminate(careerPostId, "other", note || "HR exit completed") !== null;
+  return (
+    (await employmentActions.terminate(careerPostId, "other", note || "HR exit completed")) !== null
+  );
 }
 
-export function hrCompleteExitSaga(id: string): HrCompleteExitSagaResult {
+export async function hrCompleteExitSaga(id: string): Promise<HrCompleteExitSagaResult> {
   const rec = hrGetById(id);
   if (!rec || rec.status !== "exit_processing" || !rec.exitData) {
     return { ok: false, reason: "not_found" };
@@ -153,7 +162,7 @@ export function hrCompleteExitSaga(id: string): HrCompleteExitSagaResult {
 
   // Step 4 — CRITICAL: shared career employment completed (when linked).
   if (sharedEmploymentRecord && sharedEmploymentRecord.status !== "completed") {
-    const sharedUpdated = syncSharedEmploymentExit(
+    const sharedUpdated = await syncSharedEmploymentExit(
       rec.careerPostId,
       rec.exitData.trigger,
       triggerNote,

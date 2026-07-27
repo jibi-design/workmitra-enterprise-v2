@@ -2,6 +2,7 @@
 // File name: employerShiftReviewCenter.adapter.ts
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\shared\reviewCenter\adapters\employerShiftReviewCenter.adapter.ts
 
+import { getCurrentActorId, identityBridge } from "../../../../app/identity/identity.adapter";
 import { ratingStorage } from "../../../../shared/rating/ratingStorage";
 import { employerSettingsStorage } from "../../../employer/company/storage/employerSettings.storage";
 import type { ShiftWorkspace } from "../../../employer/shiftJobs/types/shiftWorkspaceTypes";
@@ -23,12 +24,18 @@ function hasWorkspaceRating(workspace: ShiftWorkspace): boolean {
 }
 
 function hasStoredEmployerRating(workspace: ShiftWorkspace): boolean {
-  const employerWmId = employerSettingsStorage.get().uniqueId?.trim() || "employer_local_demo";
-  const workerWmId = workspace.workerWmId?.trim() || "";
+  const profile = employerSettingsStorage.get();
+  const employerMlId = profile.uniqueId?.trim() || "employer_local_demo";
+  const actor = getCurrentActorId("employer");
+  const realLegacy = profile.uniqueId?.trim();
+  if (actor.source === "auth" && actor.authUserId && realLegacy) {
+    identityBridge.upsert("employer", realLegacy, actor.authUserId);
+  }
+  const workerMlId = workspace.workerMlId?.trim() || "";
 
-  if (!workerWmId) return false;
+  if (!workerMlId) return false;
 
-  return ratingStorage.hasEmployerRatedWorker(employerWmId, workspace.postId, workerWmId);
+  return ratingStorage.hasEmployerRatedWorker(employerMlId, workspace.postId, workerMlId);
 }
 
 function hasEmployerRating(workspace: ShiftWorkspace): boolean {

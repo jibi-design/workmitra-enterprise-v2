@@ -15,9 +15,9 @@ export function DemandPlannerSlotGrid({ slots, onUpdateSlot }: DemandPlannerSlot
           style={{
             padding: "10px 12px",
             borderRadius: 12,
-            border: `1px solid ${slot.workers > 0 && slot.payPerDay > 0 ? "rgba(22,163,74,0.2)" : "var(--wm-er-border)"}`,
+            border: `1px solid ${slot.workers > 0 && slot.payPerDay > 0 ? "var(--wm-planner-border)" : "var(--wm-er-border)"}`,
             background:
-              slot.workers > 0 && slot.payPerDay > 0 ? "rgba(22,163,74,0.03)" : "var(--wm-er-bg)",
+              slot.workers > 0 && slot.payPerDay > 0 ? "var(--wm-planner-soft)" : "var(--wm-er-bg)",
           }}
         >
           <div
@@ -111,7 +111,7 @@ export function DemandPlannerSlotGrid({ slots, onUpdateSlot }: DemandPlannerSlot
                 style={{
                   fontSize: 11,
                   fontWeight: 700,
-                  color: "var(--wm-er-accent-shift)",
+                  color: "var(--wm-planner-accent-strong)",
                   whiteSpace: "nowrap",
                 }}
               >
@@ -148,7 +148,7 @@ export function DemandPlannerTotals({ totalWorkers, estimatedCost }: DemandPlann
     >
       <div>
         <div style={{ fontSize: 11, color: "var(--wm-er-muted)" }}>Total worker-days</div>
-        <div style={{ fontSize: 16, fontWeight: 700, color: "var(--wm-er-accent-shift)" }}>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "var(--wm-planner-accent-strong)" }}>
           {totalWorkers}
         </div>
       </div>

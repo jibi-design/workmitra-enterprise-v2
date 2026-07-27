@@ -93,17 +93,17 @@ test.describe("Phase 1 — Availability Calendar & Privacy (live UI)", () => {
       withPendingReview: false,
       availabilityBroadcasts: [
         {
-          workerWmId: "WM-E2E-RADAR-001",
+          workerMlId: "ML-E2EA-RDR-AAA2",
           workerName: "Hidden Worker Alpha",
           selectedDates: [todayIso],
         },
         {
-          workerWmId: "WM-E2E-RADAR-002",
+          workerMlId: "ML-E2EB-RDR-AAA3",
           workerName: "Hidden Worker Beta",
           selectedDates: [rollingDates[2] ?? todayIso],
         },
         {
-          workerWmId: "WM-E2E-RADAR-003",
+          workerMlId: "ML-E2EC-RDR-AAA4",
           workerName: "Hidden Worker Gamma",
           selectedDates: [rollingDates[4] ?? todayIso],
         },
@@ -141,8 +141,8 @@ test.describe("Phase 1 — Availability Calendar & Privacy (live UI)", () => {
     await seedEmployerShiftDemo(page, {
       withAppliedApps: false,
       availabilityBroadcasts: [
-        { workerWmId: "WM-E2E-A", workerName: "Hidden A", selectedDates: [iso] },
-        { workerWmId: "WM-E2E-B", workerName: "Hidden B", selectedDates: [iso] },
+        { workerMlId: "ML-E2EA-AVL-AAAA", workerName: "Hidden A", selectedDates: [iso] },
+        { workerMlId: "ML-E2EB-AVL-AAAB", workerName: "Hidden B", selectedDates: [iso] },
       ],
     });
 
@@ -182,7 +182,7 @@ test.describe("Phase 1 — Availability Calendar & Privacy (live UI)", () => {
       postStartIso: iso,
       availabilityBroadcasts: [
         {
-          workerWmId: "WM-E2E-001",
+          workerMlId: "ML-E2E2-CND-AAA2",
           workerName: "Rahul Kumar",
           selectedDates: [iso],
         },

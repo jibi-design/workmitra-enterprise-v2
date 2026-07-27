@@ -2,6 +2,7 @@
 
 import type { HRCandidateStatus, HRCandidateRecord } from "../types/hrManagement.types";
 import type { FilterId } from "../components/HRFilterChips";
+import { hrEmployerScopedKey } from "../storage/hrStorageKeys";
 
 /* ------------------------------------------------ */
 /* Tab types & config                               */
@@ -35,7 +36,9 @@ export const STATUS_TABS: HRCandidateStatus[] = [
 /* ------------------------------------------------ */
 /* Constants                                        */
 /* ------------------------------------------------ */
-export const GUIDE_KEY = "wm_hr_guide_dismissed_v1";
+export function getHrGuideDismissedKey(): string {
+  return hrEmployerScopedKey("guide_dismissed_v1");
+}
 
 /* ------------------------------------------------ */
 /* Search & filter logic                            */

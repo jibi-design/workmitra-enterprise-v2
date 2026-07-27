@@ -5,6 +5,7 @@
 
 import { useSyncExternalStore } from "react";
 import { hrManagementStorage } from "../storage/hrManagement.storage";
+import { hrEmployerScopedKey } from "../storage/hrStorageKeys";
 import type { HRCandidateRecord } from "../types/hrManagement.types";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -15,7 +16,7 @@ let cachedRaw = "";
 let cachedRecords: HRCandidateRecord[] = [];
 
 function getSnapshot(): HRCandidateRecord[] {
-  const raw = localStorage.getItem("wm_hr_management_v1") ?? "";
+  const raw = localStorage.getItem(hrEmployerScopedKey("management_v1")) ?? "";
   if (raw === cachedRaw) return cachedRecords;
   cachedRaw = raw;
   cachedRecords = hrManagementStorage.getAll();

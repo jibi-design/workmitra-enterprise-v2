@@ -1,10 +1,11 @@
 // App name: Job Mitra
 // File name: employerCareerHome.helpers.ts
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\careerJobs\helpers\employerCareerHome.helpers.ts
+// Home KPI snapshot — posts + apps reactive (Wave 2)
 
 import type { CareerJobPost } from "../types/careerTypes";
-import { CAREER_POSTS_KEY } from "./careerStorageUtils";
-import { getCareerPosts } from "../services/careerPostService";
+import { CAREER_APPS_CHANGED, CAREER_APPS_KEY, CAREER_POSTS_KEY } from "./careerStorageUtils";
+import { readCareerApps, readCareerPosts } from "./careerNormalizers";
+import { recomputePostAnalytics } from "./careerValidation";
 import { CAREER_EVENTS } from "../services/careerPipelineService";
 
 export type CareerPostStatusDisplay = {
@@ -12,15 +13,24 @@ export type CareerPostStatusDisplay = {
   color: string;
 };
 
-let cachedRaw: string | null = "__init__";
+let cachedPostsRaw: string | null = "__init__";
+let cachedAppsRaw: string | null = "__init__";
 let cachedPosts: CareerJobPost[] = [];
 
-export function getCareerHomePostsSnapshot(): CareerJobPost[] {
-  const raw = localStorage.getItem(CAREER_POSTS_KEY);
+function recomputeHomePosts(): CareerJobPost[] {
+  const posts = readCareerPosts();
+  const apps = readCareerApps();
+  return posts.map((post) => recomputePostAnalytics(post, apps));
+}
 
-  if (raw !== cachedRaw) {
-    cachedRaw = raw;
-    cachedPosts = getCareerPosts();
+export function getCareerHomePostsSnapshot(): CareerJobPost[] {
+  const postsRaw = localStorage.getItem(CAREER_POSTS_KEY);
+  const appsRaw = localStorage.getItem(CAREER_APPS_KEY);
+
+  if (postsRaw !== cachedPostsRaw || appsRaw !== cachedAppsRaw) {
+    cachedPostsRaw = postsRaw;
+    cachedAppsRaw = appsRaw;
+    cachedPosts = recomputeHomePosts();
   }
 
   return cachedPosts;
@@ -30,12 +40,14 @@ export function subscribeCareerHomePosts(callback: () => void): () => void {
   const handler = () => callback();
 
   window.addEventListener(CAREER_EVENTS.careerPostsChanged, handler);
+  window.addEventListener(CAREER_APPS_CHANGED, handler);
   window.addEventListener("storage", handler);
   window.addEventListener("focus", handler);
   document.addEventListener("visibilitychange", handler);
 
   return () => {
     window.removeEventListener(CAREER_EVENTS.careerPostsChanged, handler);
+    window.removeEventListener(CAREER_APPS_CHANGED, handler);
     window.removeEventListener("storage", handler);
     window.removeEventListener("focus", handler);
     document.removeEventListener("visibilitychange", handler);
@@ -47,6 +59,10 @@ export function getCareerHomeStatusDisplay(post: CareerJobPost): CareerPostStatu
   if (post.status === "closed") return { label: "Closed", color: "var(--wm-er-muted)" };
   if (post.status === "paused") return { label: "Paused", color: "var(--wm-warning)" };
   if (post.status === "draft") return { label: "Draft", color: "var(--wm-er-muted)" };
+
+  if (post.status === "active" && post.closingDate > 0 && post.closingDate < Date.now()) {
+    return { label: "Expired", color: "var(--wm-warning)" };
+  }
 
   return { label: "Active", color: "var(--wm-er-accent-career)" };
 }

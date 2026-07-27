@@ -102,7 +102,7 @@ export function EmployerWorkforceStaffList({
                       key={catId}
                       style={{
                         padding: "2px 8px",
-                        borderRadius: 999,
+                        borderRadius: "var(--wm-radius-pill)",
                         background: AMBER_BG,
                         color: AMBER,
                         fontSize: 10,
@@ -184,7 +184,7 @@ export function EmployerWorkforceStaffList({
                   style={{
                     width: 20,
                     height: 20,
-                    borderRadius: 999,
+                    borderRadius: "var(--wm-radius-pill)",
                     background: AMBER_BG,
                     color: AMBER,
                     display: "flex",

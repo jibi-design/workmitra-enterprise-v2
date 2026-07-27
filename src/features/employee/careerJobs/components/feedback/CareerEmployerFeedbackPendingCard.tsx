@@ -138,7 +138,7 @@ export function CareerEmployerFeedbackPendingCard() {
 const COUNT_BADGE_STYLE: CSSProperties = {
   minWidth: 24,
   height: 24,
-  borderRadius: 999,
+  borderRadius: "var(--wm-radius-pill)",
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
@@ -168,7 +168,7 @@ const ACTION_ROW_STYLE: CSSProperties = {
 
 const BUTTON_STYLE: CSSProperties = {
   padding: "9px 8px",
-  borderRadius: 10,
+  borderRadius: "var(--wm-radius-10)",
   border: "1px solid rgba(29,78,216,0.16)",
   background: "rgba(29,78,216,0.06)",
   color: "var(--wm-career-accent, #1d4ed8)",
@@ -184,7 +184,7 @@ const SECONDARY_BUTTON_STYLE: CSSProperties = {
 
 const HIDE_NOTICE_STYLE: CSSProperties = {
   padding: "13px 14px",
-  borderRadius: 14,
+  borderRadius: "var(--wm-radius-chip)",
   background: "rgba(29,78,216,0.06)",
   border: "1px solid rgba(29,78,216,0.14)",
   color: "var(--wm-career-accent, #1d4ed8)",

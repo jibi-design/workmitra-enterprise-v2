@@ -21,7 +21,7 @@ const PURPLE = "#7c3aed";
 const PREVIEW_SHELL = {
   marginTop: 12,
   padding: 18,
-  borderRadius: 24,
+  borderRadius: "var(--wm-radius-employer-card)",
   background: "linear-gradient(160deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.92) 100%)",
   border: "1px solid rgba(255,255,255,0.4)",
   boxShadow: "0 10px 40px rgba(0,0,0,0.06)",
@@ -112,7 +112,7 @@ export function PublicProfilePreview({ profile }: PublicProfilePreviewProps) {
             style={{
               width: 44,
               height: 44,
-              borderRadius: 16,
+              borderRadius: "var(--wm-radius-chip)",
               objectFit: "cover",
               border: "1px solid rgba(148,163,184,0.35)",
               flexShrink: 0,
@@ -123,7 +123,7 @@ export function PublicProfilePreview({ profile }: PublicProfilePreviewProps) {
             style={{
               width: 44,
               height: 44,
-              borderRadius: 16,
+              borderRadius: "var(--wm-radius-chip)",
               background: "linear-gradient(135deg, rgba(124,58,237,0.14), rgba(99,102,241,0.08))",
               border: "1px dashed rgba(148,163,184,0.45)",
               flexShrink: 0,
@@ -145,7 +145,7 @@ export function PublicProfilePreview({ profile }: PublicProfilePreviewProps) {
         style={{
           marginTop: 14,
           padding: 16,
-          borderRadius: 18,
+          borderRadius: "var(--wm-radius-chip)",
           background: "rgba(255,255,255,0.78)",
           border: "1px solid rgba(226,232,240,0.75)",
           boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9)",
@@ -177,7 +177,7 @@ export function PublicProfilePreview({ profile }: PublicProfilePreviewProps) {
               fontSize: 10,
               fontWeight: 800,
               padding: "4px 10px",
-              borderRadius: 999,
+              borderRadius: "var(--wm-radius-pill)",
               background: isVerifiedBadge ? "rgba(22,163,74,0.12)" : "rgba(100,116,139,0.1)",
               color: isVerifiedBadge ? "#15803d" : "#64748b",
             }}
@@ -190,7 +190,7 @@ export function PublicProfilePreview({ profile }: PublicProfilePreviewProps) {
               fontSize: 10,
               fontWeight: 800,
               padding: "4px 10px",
-              borderRadius: 999,
+              borderRadius: "var(--wm-radius-pill)",
               background: levelBg,
               color: levelColor,
             }}

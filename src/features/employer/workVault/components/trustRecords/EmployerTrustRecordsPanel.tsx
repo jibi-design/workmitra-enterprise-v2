@@ -53,7 +53,7 @@ export function EmployerTrustRecordsPanel({
       <div
         style={{
           padding: "20px 17px",
-          borderRadius: 26,
+          borderRadius: "var(--wm-radius-employer-card)",
           border: "1px solid rgba(124,58,237,0.2)",
           background:
             "radial-gradient(circle at top left, rgba(124,58,237,0.18), transparent 34%), radial-gradient(circle at bottom right, rgba(22,163,74,0.1), transparent 30%), linear-gradient(135deg, rgba(245,243,255,0.94), rgba(255,255,255,0.99) 48%, rgba(240,253,244,0.68))",
@@ -65,7 +65,7 @@ export function EmployerTrustRecordsPanel({
             display: "inline-flex",
             alignItems: "center",
             padding: "5px 9px",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             background: "rgba(124,58,237,0.09)",
             border: "1px solid rgba(124,58,237,0.14)",
             color: VAULT_PURPLE,
@@ -119,7 +119,7 @@ export function EmployerTrustRecordsPanel({
           style={{
             marginTop: 12,
             padding: "10px 11px",
-            borderRadius: 15,
+            borderRadius: "var(--wm-radius-chip)",
             background: "rgba(255,255,255,0.8)",
             border: "1px solid rgba(226,232,240,0.9)",
             fontSize: 11,
@@ -189,7 +189,7 @@ function HeroStat({ label, value, accent }: { label: string; value: string; acce
     <div
       style={{
         padding: "10px 9px",
-        borderRadius: 17,
+        borderRadius: "var(--wm-radius-chip)",
         background: "rgba(255,255,255,0.88)",
         border: "1px solid rgba(226,232,240,0.9)",
         minWidth: 0,
@@ -227,7 +227,7 @@ function TrustSectionFrame({
     <details
       open={defaultOpen}
       style={{
-        borderRadius: 24,
+        borderRadius: "var(--wm-radius-employer-card)",
         border: "1px solid rgba(226,232,240,0.92)",
         background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.96))",
         boxShadow: "0 14px 32px rgba(15,23,42,0.055)",
@@ -269,7 +269,7 @@ function TrustSectionFrame({
         <span
           style={{
             padding: "5px 9px",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             background: "rgba(124,58,237,0.08)",
             border: "1px solid rgba(124,58,237,0.14)",
             color: VAULT_PURPLE,

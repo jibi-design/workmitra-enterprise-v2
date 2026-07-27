@@ -1,7 +1,7 @@
 // App: Job Mitra / WorkMitra_Enterprise_v2
-// File: RosterSiteGroupCard.tsx
-// Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\hrManagement\components\rosterWeekly\RosterSiteGroupCard.tsx
+// File: RosterSiteGroupCard.tsx — Wave 3 P2-1 worker list cap when expanded
 
+import { useState } from "react";
 import { getSiteColor } from "../../helpers/rosterPlannerConstants";
 import type { RosterAssignment } from "../../types/rosterPlanner.types";
 
@@ -10,6 +10,9 @@ export type RosterSiteGroup = {
   shiftLabel: string;
   assignments: RosterAssignment[];
 };
+
+/** Cap expanded worker rows to limit DOM under 100+ staff sites (P2-1). */
+const WORKER_SHOW_LIMIT = 12;
 
 type Props = {
   dateKey: string;
@@ -34,6 +37,11 @@ export function RosterSiteGroupCard({
   const groupHasConflict = dayConflicts
     ? group.assignments.some((assignment) => dayConflicts.has(assignment.hrCandidateId))
     : false;
+  const [showAllWorkers, setShowAllWorkers] = useState(false);
+  const visibleWorkers = showAllWorkers
+    ? group.assignments
+    : group.assignments.slice(0, WORKER_SHOW_LIMIT);
+  const hiddenWorkers = Math.max(0, group.assignments.length - WORKER_SHOW_LIMIT);
 
   return (
     <div
@@ -78,8 +86,16 @@ export function RosterSiteGroupCard({
       </button>
 
       {isExpanded && (
-        <div style={{ background: siteColor.bg, borderTop: `1px solid ${siteColor.color}20` }}>
-          {group.assignments.map((assignment) => {
+        <div
+          style={{
+            background: siteColor.bg,
+            borderTop: `1px solid ${siteColor.color}20`,
+            maxHeight: 220,
+            overflowY: "auto",
+            contain: "paint layout",
+          }}
+        >
+          {visibleWorkers.map((assignment) => {
             const employeeHasConflict = dayConflicts?.has(assignment.hrCandidateId) ?? false;
 
             return (
@@ -112,6 +128,24 @@ export function RosterSiteGroupCard({
               </button>
             );
           })}
+
+          {hiddenWorkers > 0 && !showAllWorkers ? (
+            <button
+              type="button"
+              className="wm-outlineBtn"
+              aria-label={`Show ${hiddenWorkers} more workers`}
+              onClick={() => setShowAllWorkers(true)}
+              style={{
+                width: "100%",
+                minHeight: 32,
+                fontSize: 10,
+                fontWeight: 800,
+                borderRadius: 0,
+              }}
+            >
+              Show {hiddenWorkers} more
+            </button>
+          ) : null}
         </div>
       )}
     </div>

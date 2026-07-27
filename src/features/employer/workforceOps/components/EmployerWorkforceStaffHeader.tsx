@@ -1,7 +1,6 @@
-// App: Job Mitra / WorkMitra_Enterprise_v2
-// File: EmployerWorkforceStaffHeader.tsx
-// Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\workforceOps\components\EmployerWorkforceStaffHeader.tsx
+// App name: Job Mitra | EmployerWorkforceStaffHeader.tsx — DomainHero (Wave 5)
 
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
 import { IconBack, IconPlus } from "../../../../shared/domains/workforce/ui/workforceIcons";
 import { AMBER } from "../../../../shared/domains/workforce/ui/workforceStyles";
 
@@ -13,45 +12,33 @@ type Props = {
 
 export function EmployerWorkforceStaffHeader({ staffCount, onBack, onAddStaff }: Props) {
   return (
-    <div className="wm-pageHead" style={{ gap: 12 }}>
-      <button
-        type="button"
-        onClick={onBack}
-        style={{
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          color: AMBER,
-          padding: 4,
-          borderRadius: 6,
-          display: "inline-flex",
-          alignItems: "center",
-        }}
-      >
-        <IconBack />
-      </button>
-
-      <div style={{ flex: 1 }}>
-        <div className="wm-pageTitle">Staff Directory</div>
-        <div className="wm-pageSub">
-          {staffCount} staff member{staffCount !== 1 ? "s" : ""}
-        </div>
-      </div>
-
-      <button
-        className="wm-primarybtn"
-        type="button"
-        onClick={onAddStaff}
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 6,
-          whiteSpace: "nowrap",
-          background: AMBER,
-        }}
-      >
-        <IconPlus /> Add Staff
-      </button>
-    </div>
+    <DomainHero
+      variant="workforce"
+      audience="employer"
+      icon={
+        <button type="button" className="wm-domainHeroIconBtn" onClick={onBack} aria-label="Back">
+          <IconBack />
+        </button>
+      }
+      title="Staff Directory"
+      subtitle={`${staffCount} staff member${staffCount !== 1 ? "s" : ""}`}
+      description="Add and manage permanent workforce staff for announcements and groups."
+      trailing={
+        <button
+          className="wm-primarybtn"
+          type="button"
+          onClick={onAddStaff}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            whiteSpace: "nowrap",
+            background: AMBER,
+          }}
+        >
+          <IconPlus /> Add Staff
+        </button>
+      }
+    />
   );
 }

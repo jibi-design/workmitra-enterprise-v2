@@ -1,12 +1,6 @@
 import type { ServerResponse } from "node:http";
 import type { AuthenticatedRequest } from "../../../middleware/index.js";
-import {
-  sendJson,
-  sendNotImplemented,
-  sendNotFound,
-  envelope,
-  readJsonBody,
-} from "../../../utils/http.js";
+import { sendJson, sendNotFound, envelope, readJsonBody } from "../../../utils/http.js";
 import { employerCareerService } from "./career.service.js";
 
 const CAREER_PREFIX = "/v1/jobmitra/employer/career";
@@ -39,14 +33,78 @@ export async function handleEmployerCareerRoutes(
   // POST /v1/jobmitra/employer/career/jobs
   // Employer creates a new Career job post
   if (method === "POST" && subpath === "/jobs") {
-    sendNotImplemented(res, requestId, "POST /employer/career/jobs");
+    const body = await readJsonBody(req);
+    if (body === null) {
+      sendJson(res, 413, {
+        error: { code: "PAYLOAD_TOO_LARGE", message: "Request body too large", requestId },
+      });
+      return true;
+    }
+
+    const result = await employerCareerService.createPost(req.authenticatedUser, body);
+    if (!result.ok) {
+      sendJson(res, result.httpStatus, {
+        error: { code: result.code, message: result.message, requestId },
+      });
+      return true;
+    }
+
+    sendJson(res, 201, envelope({ post: result.post }, requestId));
     return true;
   }
 
   // GET /v1/jobmitra/employer/career/jobs
   // Employer lists their own Career job posts
   if (method === "GET" && subpath === "/jobs") {
-    sendNotImplemented(res, requestId, "GET /employer/career/jobs");
+    const result = await employerCareerService.listMyPosts(req.authenticatedUser);
+    if (!result.ok) {
+      sendJson(res, result.httpStatus, {
+        error: { code: result.code, message: result.message, requestId },
+      });
+      return true;
+    }
+
+    sendJson(res, 200, envelope({ posts: result.posts }, requestId));
+    return true;
+  }
+
+  // PATCH /v1/jobmitra/employer/career/jobs/:jobId
+  const updateMatch = subpath.match(/^\/jobs\/([^/]+)$/);
+  if (method === "PATCH" && updateMatch) {
+    const jobId = updateMatch[1];
+    const body = await readJsonBody(req);
+    if (body === null) {
+      sendJson(res, 413, {
+        error: { code: "PAYLOAD_TOO_LARGE", message: "Request body too large", requestId },
+      });
+      return true;
+    }
+
+    const result = await employerCareerService.updatePost(jobId, req.authenticatedUser, body);
+    if (!result.ok) {
+      sendJson(res, result.httpStatus, {
+        error: { code: result.code, message: result.message, requestId },
+      });
+      return true;
+    }
+
+    sendJson(res, 200, envelope({ post: result.post }, requestId));
+    return true;
+  }
+
+  // DELETE /v1/jobmitra/employer/career/jobs/:jobId
+  const deleteMatch = subpath.match(/^\/jobs\/([^/]+)$/);
+  if (method === "DELETE" && deleteMatch) {
+    const jobId = deleteMatch[1];
+    const result = await employerCareerService.deletePost(jobId, req.authenticatedUser);
+    if (!result.ok) {
+      sendJson(res, result.httpStatus, {
+        error: { code: result.code, message: result.message, requestId },
+      });
+      return true;
+    }
+
+    sendJson(res, 200, envelope({ deleted: true }, requestId));
     return true;
   }
 
@@ -54,7 +112,63 @@ export async function handleEmployerCareerRoutes(
   // Employer views all applications for one of their Career job posts
   const appListMatch = subpath.match(/^\/jobs\/([^/]+)\/applications$/);
   if (method === "GET" && appListMatch) {
-    sendNotImplemented(res, requestId, "GET /employer/career/jobs/:jobId/applications");
+    const jobId = appListMatch[1];
+    const result = await employerCareerService.listApplicationsForJob(jobId, req.authenticatedUser);
+    if (!result.ok) {
+      sendJson(res, result.httpStatus, {
+        error: { code: result.code, message: result.message, requestId },
+      });
+      return true;
+    }
+    sendJson(res, 200, envelope({ applications: result.applications }, requestId));
+    return true;
+  }
+
+  // GET /v1/jobmitra/employer/career/jobs/:jobId/applications/:applicationId
+  const appGetMatch = subpath.match(/^\/jobs\/([^/]+)\/applications\/([^/]+)$/);
+  if (method === "GET" && appGetMatch) {
+    const jobId = appGetMatch[1];
+    const applicationId = appGetMatch[2];
+    const result = await employerCareerService.getApplicationForJob(
+      jobId,
+      applicationId,
+      req.authenticatedUser,
+    );
+    if (!result.ok) {
+      sendJson(res, result.httpStatus, {
+        error: { code: result.code, message: result.message, requestId },
+      });
+      return true;
+    }
+    sendJson(res, 200, envelope({ application: result.application }, requestId));
+    return true;
+  }
+
+  // PATCH /v1/jobmitra/employer/career/jobs/:jobId/applications/:applicationId/status
+  const appStatusMatch = subpath.match(/^\/jobs\/([^/]+)\/applications\/([^/]+)\/status$/);
+  if (method === "PATCH" && appStatusMatch) {
+    const jobId = appStatusMatch[1];
+    const applicationId = appStatusMatch[2];
+    const body = await readJsonBody(req);
+    if (body === null) {
+      sendJson(res, 413, {
+        error: { code: "PAYLOAD_TOO_LARGE", message: "Request body too large", requestId },
+      });
+      return true;
+    }
+    const result = await employerCareerService.updateApplicationStatus(
+      jobId,
+      applicationId,
+      req.authenticatedUser,
+      body,
+    );
+    if (!result.ok) {
+      sendJson(res, result.httpStatus, {
+        error: { code: result.code, message: result.message, requestId },
+      });
+      return true;
+    }
+    sendJson(res, 200, envelope({ application: result.application }, requestId));
     return true;
   }
 
@@ -62,11 +176,18 @@ export async function handleEmployerCareerRoutes(
   // Employer shortlists a candidate — moves application to interview stage
   const shortlistMatch = subpath.match(/^\/applications\/([^/]+)\/shortlist$/);
   if (method === "POST" && shortlistMatch) {
-    sendNotImplemented(
-      res,
-      requestId,
-      "POST /employer/career/applications/:applicationId/shortlist",
+    const applicationId = shortlistMatch[1];
+    const result = await employerCareerService.shortlistApplication(
+      applicationId,
+      req.authenticatedUser,
     );
+    if (!result.ok) {
+      sendJson(res, result.httpStatus, {
+        error: { code: result.code, message: result.message, requestId },
+      });
+      return true;
+    }
+    sendJson(res, 200, envelope({ application: result.application }, requestId));
     return true;
   }
 
@@ -142,7 +263,17 @@ export async function handleEmployerCareerRoutes(
   if (method === "POST" && confirmHireMatch) {
     const applicationId = confirmHireMatch[1];
 
-    const result = await employerCareerService.confirmHire(applicationId, req.authenticatedUser);
+    const body = (await readJsonBody(req)) ?? {};
+    const details =
+      body.details && typeof body.details === "object" && !Array.isArray(body.details)
+        ? (body.details as Record<string, unknown>)
+        : undefined;
+
+    const result = await employerCareerService.confirmHire(
+      applicationId,
+      req.authenticatedUser,
+      details,
+    );
 
     if (!result.ok) {
       sendJson(res, result.httpStatus, {
@@ -162,6 +293,45 @@ export async function handleEmployerCareerRoutes(
         requestId,
       ),
     );
+    return true;
+  }
+
+  // GET /v1/jobmitra/employer/career/staff — employments for HR/staff views
+  if (method === "GET" && subpath === "/staff") {
+    const result = await employerCareerService.listMyEmployments(req.authenticatedUser);
+    if (!result.ok) {
+      sendJson(res, result.httpStatus, {
+        error: { code: result.code, message: result.message, requestId },
+      });
+      return true;
+    }
+    sendJson(res, 200, envelope({ employments: result.employments }, requestId));
+    return true;
+  }
+
+  // PATCH /v1/jobmitra/employer/career/employments/:employmentId
+  const empPatchMatch = subpath.match(/^\/employments\/([^/]+)$/);
+  if (method === "PATCH" && empPatchMatch) {
+    const employmentId = empPatchMatch[1];
+    const body = await readJsonBody(req);
+    if (body === null) {
+      sendJson(res, 413, {
+        error: { code: "PAYLOAD_TOO_LARGE", message: "Request body too large", requestId },
+      });
+      return true;
+    }
+    const result = await employerCareerService.updateEmployment(
+      employmentId,
+      req.authenticatedUser,
+      body,
+    );
+    if (!result.ok) {
+      sendJson(res, result.httpStatus, {
+        error: { code: result.code, message: result.message, requestId },
+      });
+      return true;
+    }
+    sendJson(res, 200, envelope({ employment: result.employment }, requestId));
     return true;
   }
 

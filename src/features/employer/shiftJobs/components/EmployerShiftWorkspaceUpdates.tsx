@@ -12,14 +12,8 @@ type EmployerShiftWorkspaceUpdatesProps = {
 export function EmployerShiftWorkspaceUpdates({ workspace }: EmployerShiftWorkspaceUpdatesProps) {
   return (
     <section
-      style={{
-        marginTop: 12,
-        padding: "15px 16px",
-        borderRadius: 20,
-        border: "1px solid rgba(226,232,240,0.95)",
-        background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
-        boxShadow: "0 10px 24px rgba(15,23,42,0.045)",
-      }}
+      className="wm-shift-surface-glass wm-shift-surface-glass--shift"
+      data-testid="employer-shift-workspace-updates"
     >
       <div
         style={{
@@ -48,7 +42,7 @@ export function EmployerShiftWorkspaceUpdates({ workspace }: EmployerShiftWorksp
           <div
             style={{
               padding: "12px 14px",
-              borderRadius: 14,
+              borderRadius: "var(--wm-radius-chip)",
               background: "rgba(248,250,252,0.96)",
               border: "1px solid rgba(226,232,240,0.9)",
               fontSize: 12,

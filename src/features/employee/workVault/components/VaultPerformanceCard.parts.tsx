@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { VAULT_ACCENT } from "../constants/vaultConstants";
+import { VAULT_ACCENT, vaultAccentMix } from "../constants/vaultConstants";
 import { getTips, MIN_REVIEWS_FOR_VISIBLE_SCORE } from "./VaultPerformanceCard.helpers";
 
 export function RatingBar({ star, count, total }: { star: number; count: number; total: number }) {
@@ -24,7 +24,7 @@ export function RatingBar({ star, count, total }: { star: number; count: number;
         style={{
           flex: 1,
           height: 5,
-          borderRadius: 999,
+          borderRadius: "var(--wm-radius-pill)",
           background: "rgba(15, 23, 42, 0.06)",
           overflow: "hidden",
         }}
@@ -33,7 +33,7 @@ export function RatingBar({ star, count, total }: { star: number; count: number;
           style={{
             width: `${pct}%`,
             height: "100%",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             background: "#f59e0b",
             opacity: isEarly ? 0.5 : 1,
             transition: "width 0.3s ease",
@@ -87,9 +87,9 @@ export function TipsSection({
     <div
       style={{
         marginTop: 12,
-        borderRadius: 10,
-        border: `1px solid ${VAULT_ACCENT}18`,
-        background: `${VAULT_ACCENT}06`,
+        borderRadius: "var(--wm-radius-10)",
+        border: `1px solid ${vaultAccentMix(10)}`,
+        background: `${vaultAccentMix(3)}`,
         overflow: "hidden",
       }}
     >
@@ -141,7 +141,7 @@ export function TipsSection({
                 gap: 5,
                 marginTop: 8,
                 paddingTop: 8,
-                borderTop: `1px solid ${VAULT_ACCENT}12`,
+                borderTop: `1px solid ${vaultAccentMix(7)}`,
               }}
             >
               {secondary.map((tip, index) => (

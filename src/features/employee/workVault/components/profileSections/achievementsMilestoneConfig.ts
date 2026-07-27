@@ -34,6 +34,13 @@ export const ACHIEVEMENT_TONES: Record<GroupTone, ToneConfig> = {
     border: "rgba(37,99,235,0.18)",
     text: "#1d4ed8",
   },
+  planner: {
+    accent: "#0891b2",
+    softBg: "rgba(8,145,178,0.08)",
+    strongBg: "linear-gradient(135deg, rgba(255,255,255,1), rgba(236,254,255,0.94))",
+    border: "rgba(8,145,178,0.20)",
+    text: "#0e7490",
+  },
   reputation: {
     accent: "#ca8a04",
     softBg: "rgba(202,138,4,0.08)",
@@ -53,6 +60,7 @@ export const ACHIEVEMENT_TONES: Record<GroupTone, ToneConfig> = {
 export const MILESTONE_GROUPS: MilestoneGroup[] = [
   { title: "Shift Growth", tone: "shift" },
   { title: "Career Growth", tone: "career" },
+  { title: "Planner Growth", tone: "planner" },
   { title: "Reputation Growth", tone: "reputation" },
   { title: "Profile Growth", tone: "profile" },
 ];

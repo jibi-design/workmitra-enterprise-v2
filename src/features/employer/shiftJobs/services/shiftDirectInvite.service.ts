@@ -2,7 +2,7 @@
 // Favorite Worker Direct Invite Loop — send, accept, workspace merge (silent UX).
 
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
-import { employeeNotificationsStorage } from "../../../employee/notifications/storage/employeeNotifications.storage";
+import { employeeNotificationPort } from "../../../../shared/notifications/employeeNotificationPort";
 import { employerNotificationsStorage } from "../../notifications/storage/employerNotifications.storage";
 import { confirmDirectInviteCandidate } from "../storage/employerShift.candidateActions";
 import { broadcastToEmployeeWorkspace } from "../storage/employerShift.employeeBridge";
@@ -10,18 +10,24 @@ import {
   getEmployerShiftPost,
   updateEmployerShiftPost,
 } from "../storage/employerShift.postActions";
+import { withShiftConfirmLock } from "../storage/employerShift.confirmLock";
 import { shiftDirectInviteStorage } from "../storage/shiftDirectInvite.storage";
 import { findWorkspaceIdForPostAndWorker } from "../helpers/directInviteWorkspace.helpers";
+import {
+  getSiteMembershipTruth,
+  provisionSiteMembership,
+  resolveShiftOpsSiteIdForPost,
+} from "../../../shared/shiftOps/shiftJobsMembershipBridge";
 
 export type SendShiftDirectInviteInput = {
   postId: string;
-  workerWmId: string;
+  workerMlId: string;
   workerName: string;
 };
 
 export type AcceptShiftDirectInviteInput = {
   inviteId: string;
-  workerWmId: string;
+  workerMlId: string;
   workerName: string;
   city?: string;
   experience?: string;
@@ -37,19 +43,19 @@ export function sendShiftDirectInvite(input: SendShiftDirectInviteInput): boolea
   if (!post || post.status !== "active") return false;
   if (post.isHiddenFromSearch && post.source !== "planner") return false;
 
-  const workerWmId = input.workerWmId.trim().toUpperCase();
+  const workerMlId = input.workerMlId.trim().toUpperCase();
   const workerName = input.workerName.trim();
-  if (!workerWmId || !workerName) return false;
+  if (!workerMlId || !workerName) return false;
 
   shiftDirectInviteStorage.createPending({
     postId: post.id,
-    workerWmId,
+    workerMlId,
     workerName,
     companyName: post.companyName,
     jobName: post.jobName,
   });
 
-  employeeNotificationsStorage.pushShift(
+  employeeNotificationPort.pushShift(
     "You are invited to a shift",
     `${post.companyName} invited you to: ${post.jobName} · ${post.locationName}. Tap to accept your direct invite.`,
     ROUTE_PATHS.employeeShiftPostDetails.replace(":postId", post.id),
@@ -58,9 +64,9 @@ export function sendShiftDirectInvite(input: SendShiftDirectInviteInput): boolea
   return true;
 }
 
-export function acceptShiftDirectInvite(
+export async function acceptShiftDirectInvite(
   input: AcceptShiftDirectInviteInput,
-): ShiftDirectInviteResult {
+): Promise<ShiftDirectInviteResult> {
   const invite = shiftDirectInviteStorage
     .getAll()
     .find((item) => item.id === input.inviteId && item.status === "pending");
@@ -69,80 +75,108 @@ export function acceptShiftDirectInvite(
     return { ok: false, reason: "This invite is no longer available." };
   }
 
-  const workerWmId = input.workerWmId.trim().toUpperCase();
-  if (invite.workerWmId !== workerWmId) {
+  const workerMlId = input.workerMlId.trim().toUpperCase();
+  if (invite.workerMlId !== workerMlId) {
     return { ok: false, reason: "This invite was sent to a different worker profile." };
   }
 
-  const post = getEmployerShiftPost(invite.postId);
-  if (!post) {
-    return { ok: false, reason: "This shift post is no longer available." };
-  }
+  // SC-2 — same per-post lock + live re-read as employer confirm
+  return withShiftConfirmLock(invite.postId, async () => {
+    const post = getEmployerShiftPost(invite.postId);
+    if (!post) {
+      return { ok: false, reason: "This shift post is no longer available." };
+    }
 
-  const hadGroupBefore = Boolean(findWorkspaceIdForPostAndWorker(post.id));
+    const siteId = resolveShiftOpsSiteIdForPost(post);
+    if (!siteId) {
+      return {
+        ok: false,
+        reason: "This shift is not linked to an active Shift Ops group yet.",
+      };
+    }
 
-  const result = confirmDirectInviteCandidate(post, {
-    workerWmId,
-    workerName: input.workerName.trim() || invite.workerName,
-    city: input.city,
-    experience: input.experience,
-    skills: input.skills,
-    languages: input.languages,
-  });
+    const existingMembership = getSiteMembershipTruth(siteId, workerMlId);
+    if (!existingMembership?.membershipId) {
+      const provision = await provisionSiteMembership({
+        siteId,
+        workerMlId,
+        planId: post.planId?.trim() || undefined,
+        context: "accept_direct_invite",
+      });
+      if (!provision.ok) {
+        return {
+          ok: false,
+          reason: "Unable to join the formal Shift Ops group. Try again after group setup.",
+        };
+      }
+    }
 
-  if (result.ok) {
-    updateEmployerShiftPost(post.id, result.post);
-  } else {
-    const reason =
-      result.reason === "vacancy_full"
-        ? "All confirmed slots are already filled for this shift."
-        : result.reason === "already_confirmed"
-          ? "You are already confirmed for this shift."
-          : "Unable to accept this invite right now.";
+    const livePost = getEmployerShiftPost(invite.postId) ?? post;
+    const hadGroupBefore = Boolean(findWorkspaceIdForPostAndWorker(livePost.id));
 
-    return { ok: false, reason };
-  }
+    const result = confirmDirectInviteCandidate(livePost, {
+      workerMlId,
+      workerName: input.workerName.trim() || invite.workerName,
+      city: input.city,
+      experience: input.experience,
+      skills: input.skills,
+      languages: input.languages,
+    });
 
-  shiftDirectInviteStorage.markAccepted(invite.id, result.appId);
+    if (result.ok) {
+      updateEmployerShiftPost(livePost.id, result.post);
+    } else {
+      const reason =
+        result.reason === "vacancy_full"
+          ? "All confirmed slots are already filled for this shift."
+          : result.reason === "already_confirmed"
+            ? "You are already confirmed for this shift."
+            : "Unable to accept this invite right now.";
 
-  if (hadGroupBefore && post.source !== "planner") {
-    broadcastToEmployeeWorkspace(
-      post.id,
-      "New member joined",
-      `${input.workerName.trim() || invite.workerName} joined the shift group.`,
+      return { ok: false, reason };
+    }
+
+    shiftDirectInviteStorage.markAccepted(invite.id, result.appId);
+
+    if (hadGroupBefore && livePost.source !== "planner") {
+      broadcastToEmployeeWorkspace(
+        livePost.id,
+        "New member joined",
+        `${input.workerName.trim() || invite.workerName} joined the shift group.`,
+      );
+    }
+
+    const workspaceId = findWorkspaceIdForPostAndWorker(livePost.id, workerMlId);
+
+    employerNotificationsStorage.pushShift(
+      `${invite.workerName} accepted your invite!`,
+      "Added to workspace.",
+      workspaceId
+        ? ROUTE_PATHS.employerShiftWorkspace.replace(":workspaceId", workspaceId)
+        : ROUTE_PATHS.employerShiftPostDashboard.replace(":postId", livePost.id),
     );
-  }
 
-  const workspaceId = findWorkspaceIdForPostAndWorker(post.id, workerWmId);
+    employeeNotificationPort.pushShift(
+      "You are confirmed",
+      `${livePost.companyName} confirmed you for ${livePost.jobName}. Your workspace is ready.`,
+      workspaceId
+        ? ROUTE_PATHS.employeeShiftWorkspace.replace(":workspaceId", workspaceId)
+        : ROUTE_PATHS.employeeShiftWorkspaces,
+    );
 
-  employerNotificationsStorage.pushShift(
-    `${invite.workerName} accepted your invite!`,
-    "Added to workspace.",
-    workspaceId
-      ? ROUTE_PATHS.employerShiftWorkspace.replace(":workspaceId", workspaceId)
-      : ROUTE_PATHS.employerShiftPostDashboard.replace(":postId", post.id),
-  );
-
-  employeeNotificationsStorage.pushShift(
-    "You are confirmed",
-    `${post.companyName} confirmed you for ${post.jobName}. Your workspace is ready.`,
-    workspaceId
-      ? ROUTE_PATHS.employeeShiftWorkspace.replace(":workspaceId", workspaceId)
-      : ROUTE_PATHS.employeeShiftWorkspaces,
-  );
-
-  return { ok: true, appId: result.appId, workspaceId };
+    return { ok: true, appId: result.appId, workspaceId };
+  });
 }
 
-export function declineShiftDirectInvite(inviteId: string, workerWmId: string): boolean {
+export function declineShiftDirectInvite(inviteId: string, workerMlId: string): boolean {
   const invite = shiftDirectInviteStorage
     .getAll()
     .find((item) => item.id === inviteId && item.status === "pending");
 
   if (!invite) return false;
 
-  const key = workerWmId.trim().toUpperCase();
-  if (invite.workerWmId !== key) return false;
+  const key = workerMlId.trim().toUpperCase();
+  if (invite.workerMlId !== key) return false;
 
   shiftDirectInviteStorage.markDeclined(invite.id);
   return true;

@@ -1,6 +1,4 @@
-// App name: Job Mitra
-// File name: EmployerFavoritesSearch.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\components\EmployerFavoritesSearch.tsx
+// App name: Job Mitra | EmployerFavoritesSearch.tsx — glass (Wave 3)
 
 type EmployerFavoritesSearchProps = {
   show: boolean;
@@ -16,12 +14,13 @@ export function EmployerFavoritesSearch({
   if (!show) return null;
 
   return (
-    <div style={{ marginTop: 10 }}>
+    <div className="wm-shift-surface-glass wm-shift-surface-glass--compact">
       <input
         className="wm-input"
         value={search}
         onChange={(event) => onSearchChange(event.target.value)}
-        placeholder="Search by name or Job Mitra ID..."
+        placeholder="Search by name or Mitra Labs ID..."
+        aria-label="Search favorites"
       />
     </div>
   );

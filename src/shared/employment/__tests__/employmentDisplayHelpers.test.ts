@@ -23,26 +23,45 @@ import type { EmploymentRecord, TimelineEntry } from "../employmentTypes";
 /* ── Record Factory ── */
 function makeRecord(overrides?: Partial<EmploymentRecord>): EmploymentRecord {
   return {
-    id: "emp_001", careerPostId: "post_001",
-    employeeId: "ee_001", employeeName: "Rahul",
-    employeeWmId: "WM-AB12-RAH-CD34",
-    employerId: "er_001", companyName: "TechCorp",
-    employerWmId: "WM-XY56-TEC-ZW78",
-    jobTitle: "Engineer", department: "IT",
-    salaryMin: 25000, salaryMax: 35000, salaryPeriod: "monthly",
-    status: "working", offeredAt: 1000, acceptedAt: 2000,
-    joinedAt: 3000, resignedAt: null, completedAt: null,
-    noticePeriodDays: 7, lastWorkingDay: null,
-    exitType: null, exitReason: null, exitNotes: "",
-    wasWithdrawn: false, withdrawnAt: null,
+    id: "emp_001",
+    careerPostId: "post_001",
+    employeeId: "ee_001",
+    employeeName: "Rahul",
+    employeeMlId: "WM-AB12-RAH-CD34",
+    employerId: "er_001",
+    companyName: "TechCorp",
+    employerMlId: "WM-XY56-TEC-ZW78",
+    jobTitle: "Engineer",
+    department: "IT",
+    salaryMin: 25000,
+    salaryMax: 35000,
+    salaryPeriod: "monthly",
+    status: "working",
+    offeredAt: 1000,
+    acceptedAt: 2000,
+    joinedAt: 3000,
+    resignedAt: null,
+    completedAt: null,
+    noticePeriodDays: 7,
+    lastWorkingDay: null,
+    exitType: null,
+    exitReason: null,
+    exitNotes: "",
+    wasWithdrawn: false,
+    withdrawnAt: null,
     forceCompleted: false,
-    workDurationDays: null, workDurationDisplay: "",
-    timeline: [], employeeRated: false, employerRated: false,
+    workDurationDays: null,
+    workDurationDisplay: "",
+    timeline: [],
+    employeeRated: false,
+    employerRated: false,
     ...overrides,
   };
 }
 
-afterEach(() => { vi.useRealTimers(); });
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 /* ── Date Formatters ── */
 describe("formatDate", () => {
@@ -53,8 +72,12 @@ describe("formatDate", () => {
     expect(formatDate(epoch)).toMatch(/2026/);
   });
 
-  it("returns dash for null", () => { expect(formatDate(null)).toBe("—"); });
-  it("returns dash for 0", () => { expect(formatDate(0)).toBe("—"); });
+  it("returns dash for null", () => {
+    expect(formatDate(null)).toBe("—");
+  });
+  it("returns dash for 0", () => {
+    expect(formatDate(0)).toBe("—");
+  });
 });
 
 describe("formatDateTime", () => {
@@ -65,7 +88,9 @@ describe("formatDateTime", () => {
     expect(result).toContain("at");
   });
 
-  it("returns dash for null", () => { expect(formatDateTime(null)).toBe("—"); });
+  it("returns dash for null", () => {
+    expect(formatDateTime(null)).toBe("—");
+  });
 });
 
 describe("toInputDate / fromInputDate", () => {
@@ -104,7 +129,9 @@ describe("getStatusBadge", () => {
 
 describe("getStatusLabel", () => {
   it("returns Terminated for terminated exit", () => {
-    expect(getStatusLabel(makeRecord({ status: "completed", exitType: "terminated" }))).toBe("Terminated");
+    expect(getStatusLabel(makeRecord({ status: "completed", exitType: "terminated" }))).toBe(
+      "Terminated",
+    );
   });
 
   it("returns normal label for non-terminated", () => {
@@ -141,21 +168,27 @@ describe("getNoticeCountdownText", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-04-01T00:00:00Z"));
     const lwd = Date.now() + 14 * 86_400_000;
-    expect(getNoticeCountdownText(makeRecord({ status: "notice", lastWorkingDay: lwd }))).toBe("14 days remaining");
+    expect(getNoticeCountdownText(makeRecord({ status: "notice", lastWorkingDay: lwd }))).toBe(
+      "14 days remaining",
+    );
   });
 
   it("singular day", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-04-01T00:00:00Z"));
     const lwd = Date.now() + 1 * 86_400_000;
-    expect(getNoticeCountdownText(makeRecord({ status: "notice", lastWorkingDay: lwd }))).toBe("1 day remaining");
+    expect(getNoticeCountdownText(makeRecord({ status: "notice", lastWorkingDay: lwd }))).toBe(
+      "1 day remaining",
+    );
   });
 
   it("shows ended when expired", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-04-10T00:00:00Z"));
     const lwd = Date.now() - 86_400_000;
-    expect(getNoticeCountdownText(makeRecord({ status: "notice", lastWorkingDay: lwd }))).toBe("Notice period ended");
+    expect(getNoticeCountdownText(makeRecord({ status: "notice", lastWorkingDay: lwd }))).toBe(
+      "Notice period ended",
+    );
   });
 
   it("returns empty for non-notice", () => {
@@ -167,28 +200,42 @@ describe("isNoticeExpired", () => {
   it("true when past lastWorkingDay", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-04-10T00:00:00Z"));
-    expect(isNoticeExpired(makeRecord({ status: "notice", lastWorkingDay: Date.now() - 1000 }))).toBe(true);
+    expect(
+      isNoticeExpired(makeRecord({ status: "notice", lastWorkingDay: Date.now() - 1000 })),
+    ).toBe(true);
   });
 
   it("false when before lastWorkingDay", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-04-01T00:00:00Z"));
-    expect(isNoticeExpired(makeRecord({ status: "notice", lastWorkingDay: Date.now() + 86_400_000 }))).toBe(false);
+    expect(
+      isNoticeExpired(makeRecord({ status: "notice", lastWorkingDay: Date.now() + 86_400_000 })),
+    ).toBe(false);
   });
 });
 
 /* ── Exit Reason Label ── */
 describe("getExitReasonLabel", () => {
   it("maps employee resign reason", () => {
-    expect(getExitReasonLabel(makeRecord({
-      exitType: "resigned", exitReason: "better_opportunity",
-    }))).toBe("Found better opportunity");
+    expect(
+      getExitReasonLabel(
+        makeRecord({
+          exitType: "resigned",
+          exitReason: "better_opportunity",
+        }),
+      ),
+    ).toBe("Found better opportunity");
   });
 
   it("maps employer terminate reason", () => {
-    expect(getExitReasonLabel(makeRecord({
-      exitType: "terminated", exitReason: "misconduct",
-    }))).toBe("Misconduct");
+    expect(
+      getExitReasonLabel(
+        makeRecord({
+          exitType: "terminated",
+          exitReason: "misconduct",
+        }),
+      ),
+    ).toBe("Misconduct");
   });
 
   it("returns empty when no exit reason", () => {
@@ -196,23 +243,38 @@ describe("getExitReasonLabel", () => {
   });
 
   it("falls back to raw value for unknown code", () => {
-    expect(getExitReasonLabel(makeRecord({
-      exitType: "resigned", exitReason: "unknown_code" as never,
-    }))).toBe("unknown_code");
+    expect(
+      getExitReasonLabel(
+        makeRecord({
+          exitType: "resigned",
+          exitReason: "unknown_code" as never,
+        }),
+      ),
+    ).toBe("unknown_code");
   });
 });
 
 /* ── Timeline Display ── */
 describe("formatTimelineEntry", () => {
   it("formats working entry", () => {
-    const entry: TimelineEntry = { status: "working", timestamp: Date.now(), actor: "employer", note: "Joined" };
+    const entry: TimelineEntry = {
+      status: "working",
+      timestamp: Date.now(),
+      actor: "employer",
+      note: "Joined",
+    };
     const result = formatTimelineEntry(entry);
     expect(result.label).toBe("Currently Working");
     expect(result.actor).toBe("Employer");
   });
 
   it("formats withdrawn entry", () => {
-    const entry: TimelineEntry = { status: "withdrawn", timestamp: Date.now(), actor: "employee", note: "Changed mind" };
+    const entry: TimelineEntry = {
+      status: "withdrawn",
+      timestamp: Date.now(),
+      actor: "employee",
+      note: "Changed mind",
+    };
     expect(formatTimelineEntry(entry).label).toBe("Withdrawal");
   });
 });

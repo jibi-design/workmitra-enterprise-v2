@@ -1,11 +1,13 @@
 // src/features/employee/workVault/components/VaultEmployerProfileCards.tsx
 //
 // Sub-components for VaultVerifyEmployerTab.
-// ProfileCard, StatsCard, TagsCard, ReviewsCard.
+// ProfileCard, StatsCard, TagsCard, ReviewsCard — L-V3 slate elevation.
 
+import { StatusBadge } from "../../../../shared/components/enterprise/StatusBadge";
+import { TrustStrip } from "../../../../shared/components/enterprise/TrustStrip";
+import type { EnterpriseTone } from "../../../../shared/components/enterprise/enterprise.types";
 import {
-  EMPLOYER_LEVEL_COLORS,
-  EMPLOYER_LEVEL_BG,
+  type EmployerLevel,
   type EmployerPublicProfile,
   type EmployerReview,
 } from "../../../../shared/employerProfile/employerPublicProfileService";
@@ -13,8 +15,15 @@ import {
 /* ── Helpers ───────────────────────────────────── */
 
 function fmtDate(ts: number): string {
-  try { return new Date(ts).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }); }
-  catch { return ""; }
+  try {
+    return new Date(ts).toLocaleDateString(undefined, {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return "";
+  }
 }
 
 function fmtRelative(ts: number): string {
@@ -29,28 +38,97 @@ function starString(n: number): string {
   return "★".repeat(n) + "☆".repeat(5 - n);
 }
 
+function levelTone(level: EmployerLevel): EnterpriseTone {
+  switch (level) {
+    case "verified":
+      return "active";
+    case "trusted":
+      return "warning";
+    case "established":
+      return "pending";
+    default:
+      return "neutral";
+  }
+}
+
+function trustCopy(profile: EmployerPublicProfile): {
+  kind: "info" | "lock" | "compliance";
+  tone: EnterpriseTone;
+  title: string;
+  message: string;
+  badgeLabel: string;
+} {
+  if (profile.level === "verified") {
+    return {
+      kind: "compliance",
+      tone: "active",
+      title: "Verified employer track record",
+      message: `${profile.totalRatings} public ratings · strong history of completed work.`,
+      badgeLabel: profile.levelLabel,
+    };
+  }
+  if (profile.level === "trusted") {
+    return {
+      kind: "lock",
+      tone: "warning",
+      title: "Trusted employer",
+      message: "Consistently rated by workers. Still review recent comments before applying.",
+      badgeLabel: profile.levelLabel,
+    };
+  }
+  if (profile.level === "established") {
+    return {
+      kind: "info",
+      tone: "pending",
+      title: "Established employer",
+      message: "Building a public track record. Check activity and reviews carefully.",
+      badgeLabel: profile.levelLabel,
+    };
+  }
+  return {
+    kind: "info",
+    tone: "neutral",
+    title: "New on Job Mitra",
+    message: "Limited public ratings so far. Prefer OTP document review and clear job details.",
+    badgeLabel: profile.levelLabel,
+  };
+}
+
 /* ── ProfileCard ───────────────────────────────── */
 
 export function ProfileCard({ profile }: { profile: EmployerPublicProfile }) {
-  const lc = EMPLOYER_LEVEL_COLORS[profile.level];
-  const lb = EMPLOYER_LEVEL_BG[profile.level];
   const has = profile.totalRatings > 0;
+  const trust = trustCopy(profile);
+
   return (
-    <div className="wm-ee-card" style={{ marginTop: 12 }}>
-      <div style={{ fontSize: 16, fontWeight: 700, color: "var(--wm-emp-text, #111827)" }}>{profile.companyName}</div>
-      <div style={{ marginTop: 4, fontSize: 11, fontFamily: "monospace", color: "var(--wm-emp-muted, #6b7280)", letterSpacing: 0.3 }}>
-        {profile.wmId}
-      </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
-        <span style={{ fontSize: 18, fontWeight: 700, color: has ? "#f59e0b" : "var(--wm-emp-muted, #94a3b8)" }}>
-          ★ {has ? profile.averageStars.toFixed(1) : "—"}
-        </span>
-        <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 10, background: lb, color: lc }}>
-          {profile.levelLabel}
-        </span>
-        <span style={{ fontSize: 12, color: "var(--wm-emp-muted, #6b7280)" }}>
-          {profile.totalRatings} {profile.totalRatings === 1 ? "rating" : "ratings"}
-        </span>
+    <div className="wm-vault-verify-card">
+      <TrustStrip
+        kind={trust.kind}
+        tone={trust.tone}
+        title={trust.title}
+        message={trust.message}
+        badgeLabel={trust.badgeLabel}
+      />
+
+      <div className="wm-vault-verify-card__body">
+        <div className="wm-vault-verify-card__name">{profile.companyName}</div>
+        <div className="wm-vault-verify-card__id">{profile.wmId}</div>
+
+        <div className="wm-vault-verify-card__meta">
+          <span
+            className={`wm-vault-verify-card__stars${has ? " wm-vault-verify-card__stars--lit" : ""}`}
+          >
+            ★ {has ? profile.averageStars.toFixed(1) : "—"}
+          </span>
+          <StatusBadge label={profile.levelLabel} tone={levelTone(profile.level)} />
+          <StatusBadge
+            label={`${profile.totalRatings} ${profile.totalRatings === 1 ? "rating" : "ratings"}`}
+            tone="neutral"
+          />
+          {profile.locationCity ? (
+            <StatusBadge label={profile.locationCity} tone="neutral" />
+          ) : null}
+        </div>
       </div>
     </div>
   );
@@ -59,25 +137,58 @@ export function ProfileCard({ profile }: { profile: EmployerPublicProfile }) {
 /* ── StatsCard ─────────────────────────────────── */
 
 export function StatsCard({ profile }: { profile: EmployerPublicProfile }) {
-  const rows: { label: string; value: string }[] = [
-    { label: "Total shifts posted", value: String(profile.totalShiftPosts) },
-    { label: "Total career jobs", value: String(profile.totalCareerPosts) },
+  const rows: { label: string; value: string; badge?: string }[] = [
+    { label: "Total shifts posted", value: String(profile.totalShiftPosts), badge: "Shift" },
+    { label: "Total career jobs", value: String(profile.totalCareerPosts), badge: "Career" },
     { label: "Workers hired", value: String(profile.totalWorkersHired) },
     { label: "Active job posts", value: String(profile.activeJobPosts) },
   ];
-  if (profile.memberSince) rows.push({ label: "Member since", value: fmtDate(profile.memberSince) });
-  if (profile.industryType) rows.push({ label: "Industry", value: profile.industryType });
+  if (profile.memberSince) {
+    rows.push({ label: "Member since", value: fmtDate(profile.memberSince) });
+  }
+  if (profile.industryType) {
+    rows.push({ label: "Industry", value: profile.industryType });
+  }
+  if (profile.companySize) {
+    rows.push({ label: "Company size", value: profile.companySize });
+  }
+
   return (
-    <div className="wm-ee-card" style={{ marginTop: 10 }}>
-      <div style={{ fontWeight: 700, fontSize: 13, color: "var(--wm-emp-text, #111827)", marginBottom: 8 }}>Activity</div>
-      <div style={{ display: "grid", gap: 6 }}>
+    <div className="wm-vault-verify-card">
+      <div className="wm-vault-verify-card__section-title">Activity & credentials</div>
+      <div className="wm-vault-verify-stat-list">
         {rows.map((r) => (
-          <div key={r.label} style={{ display: "flex", justifyContent: "space-between", padding: "3px 0" }}>
-            <span style={{ fontSize: 12, color: "var(--wm-emp-muted, #6b7280)" }}>{r.label}</span>
-            <span style={{ fontSize: 12, fontWeight: 700, color: "var(--wm-emp-text, #111827)" }}>{r.value}</span>
+          <div key={r.label} className="wm-vault-verify-stat-row">
+            <span className="wm-vault-verify-stat-row__label">
+              {r.label}
+              {r.badge === "Shift" ? (
+                <>
+                  {" "}
+                  <StatusBadge label="Shift" tone="neutral" accent="shift" />
+                </>
+              ) : null}
+              {r.badge === "Career" ? (
+                <>
+                  {" "}
+                  <StatusBadge label="Career" tone="neutral" accent="career" />
+                </>
+              ) : null}
+            </span>
+            <span className="wm-vault-verify-stat-row__value">{r.value}</span>
           </div>
         ))}
       </div>
+      {profile.workAgainTotal > 0 ? (
+        <div className="wm-vault-verify-card__signal">
+          <TrustStrip
+            kind="info"
+            tone="active"
+            title="Would work again"
+            message={`${profile.workAgainCount} of ${profile.workAgainTotal} workers said they would work with this employer again.`}
+            badgeLabel="Signal"
+          />
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -85,20 +196,17 @@ export function StatsCard({ profile }: { profile: EmployerPublicProfile }) {
 /* ── TagsCard ──────────────────────────────────── */
 
 export function TagsCard({ profile }: { profile: EmployerPublicProfile }) {
-  const entries = Object.entries(profile.tagCounts).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+  const entries = Object.entries(profile.tagCounts)
+    .filter(([, v]) => v > 0)
+    .sort((a, b) => b[1] - a[1]);
   if (entries.length === 0) return null;
+
   return (
-    <div className="wm-ee-card" style={{ marginTop: 10 }}>
-      <div style={{ fontWeight: 700, fontSize: 13, color: "var(--wm-emp-text, #111827)", marginBottom: 8 }}>What workers say</div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+    <div className="wm-vault-verify-card">
+      <div className="wm-vault-verify-card__section-title">What workers say</div>
+      <div className="wm-vault-verify-tags">
         {entries.map(([tag, count]) => (
-          <span key={tag} style={{
-            fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 12,
-            background: "rgba(124,58,237,0.06)", border: "1px solid rgba(124,58,237,0.15)",
-            color: "var(--wm-er-accent-hr, #7c3aed)",
-          }}>
-            {tag} ({count})
-          </span>
+          <StatusBadge key={tag} label={`${tag} (${count})`} tone="neutral" />
         ))}
       </div>
     </div>
@@ -110,27 +218,25 @@ export function TagsCard({ profile }: { profile: EmployerPublicProfile }) {
 export function ReviewsCard({ reviews }: { reviews: EmployerReview[] }) {
   const visible = reviews.filter((r) => r.comment).slice(0, 10);
   if (visible.length === 0) return null;
+
   return (
-    <div className="wm-ee-card" style={{ marginTop: 10 }}>
-      <div style={{ fontWeight: 700, fontSize: 13, color: "var(--wm-emp-text, #111827)", marginBottom: 8 }}>
-        Worker reviews ({visible.length})
-      </div>
-      <div style={{ display: "grid", gap: 8 }}>
+    <div className="wm-vault-verify-card">
+      <div className="wm-vault-verify-card__section-title">Worker reviews ({visible.length})</div>
+      <div className="wm-vault-verify-review-list">
         {visible.map((r) => (
-          <div key={r.id} style={{
-            padding: "10px 12px", borderRadius: 10,
-            border: "1px solid var(--wm-emp-border, rgba(15,23,42,0.08))", background: "rgba(17,24,39,0.02)",
-          }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: 13, color: "#f59e0b", letterSpacing: 1 }}>{starString(r.stars)}</span>
-              <span style={{ fontSize: 10, color: "var(--wm-emp-muted, #6b7280)" }}>{fmtRelative(r.createdAt)}</span>
+          <div key={r.id} className="wm-vault-verify-review">
+            <div className="wm-vault-verify-review__head">
+              <span className="wm-vault-verify-review__stars">{starString(r.stars)}</span>
+              <StatusBadge
+                label={r.domain === "career" ? "Career" : "Shift"}
+                tone="neutral"
+                accent={r.domain === "career" ? "career" : "shift"}
+              />
             </div>
-            {r.comment && (
-              <div style={{ marginTop: 6, fontSize: 12, color: "var(--wm-emp-text, #111827)", lineHeight: 1.5 }}>{r.comment}</div>
-            )}
-            <div style={{ marginTop: 4, fontSize: 10, color: "var(--wm-emp-muted, #6b7280)" }}>
-              {r.workAgain ? "Would work again ✓" : "Would not work again"}
-              {r.domain === "career" ? " · Career" : " · Shift"}
+            {r.comment ? <div className="wm-vault-verify-review__comment">{r.comment}</div> : null}
+            <div className="wm-vault-verify-review__meta">
+              {r.workAgain ? "Would work again" : "Would not work again"} ·{" "}
+              {fmtRelative(r.createdAt)}
             </div>
           </div>
         ))}

@@ -2,7 +2,7 @@
 
 import { Navigate, Route } from "react-router-dom";
 import { ROUTE_PATHS } from "../routePaths";
-import { showPhase2Features } from "../../../shared/launch/launchVisibility";
+import { showPhase2Features, showShiftOpsFeatures } from "../../../shared/launch/launchVisibility";
 import { LaunchModuleBoundary } from "./routerHelpers";
 import { ER } from "./routeSegments";
 import { HelpSupportPage } from "./adminLazyPages";
@@ -59,6 +59,7 @@ import {
   HRManagementPage,
   ManagerConsolePage,
   RosterPlannerPage,
+  ShiftOpsManagerApprovalsPage,
   StaffAvailabilityPage,
 } from "./employerLazyPages";
 
@@ -149,5 +150,12 @@ export const employerRouteTree = (
     <Route path={ER.candidateDocumentAccess} element={<EmployerCandidateDocumentAccessPage />} />
     <Route path={ER.shiftWorkspace} element={<EmployerShiftWorkspacePage />} />
     <Route path="help" element={<HelpSupportPage />} />
+    <Route
+      element={
+        <LaunchModuleBoundary enabled={showShiftOpsFeatures} fallback={ROUTE_PATHS.employerHome} />
+      }
+    >
+      <Route path={ER.shiftOpsApprovals} element={<ShiftOpsManagerApprovalsPage />} />
+    </Route>
   </>
 );

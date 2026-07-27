@@ -2,6 +2,7 @@
 // File: EmployeeWorkforceAnnounceDetailContent.tsx
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\workforceOps\components\EmployeeWorkforceAnnounceDetailContent.tsx
 
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
 import type { WorkforceAnnouncement } from "../../../../shared/domains/workforce/types/workforceTypes";
 import { IconBack } from "../../../../shared/domains/workforce/ui/workforceIcons";
 import { AMBER, AMBER_BG } from "../../../../shared/domains/workforce/ui/workforceStyles";
@@ -33,34 +34,18 @@ export function EmployeeWorkforceAnnounceDetailContent({
 }: Props) {
   return (
     <div style={{ padding: "0 16px" }}>
-      <div className="wm-pageHead" style={{ gap: 12 }}>
-        <button
-          type="button"
-          onClick={onBack}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            color: AMBER,
-            padding: 4,
-            borderRadius: 6,
-            display: "inline-flex",
-            alignItems: "center",
-          }}
-        >
-          <IconBack />
-        </button>
-
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            className="wm-pageTitle"
-            style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-          >
-            {announcement.title}
-          </div>
-          <div className="wm-pageSub">Announcement Details</div>
-        </div>
-      </div>
+      <DomainHero
+        variant="workforce"
+        audience="employee"
+        icon={
+          <button type="button" className="wm-domainHeroIconBtn" onClick={onBack} aria-label="Back">
+            <IconBack />
+          </button>
+        }
+        title={announcement.title}
+        subtitle="Announcement Details"
+        description="Review shifts, mark availability, and apply for this workforce announcement."
+      />
 
       <div className="wm-er-card" style={{ marginTop: 14 }}>
         <div style={{ display: "grid", gap: 6 }}>
@@ -102,7 +87,7 @@ export function EmployeeWorkforceAnnounceDetailContent({
               key={catId}
               style={{
                 padding: "2px 8px",
-                borderRadius: 999,
+                borderRadius: "var(--wm-radius-pill)",
                 background: AMBER_BG,
                 color: AMBER,
                 fontSize: 10,
@@ -120,7 +105,7 @@ export function EmployeeWorkforceAnnounceDetailContent({
           style={{
             marginTop: 10,
             padding: 10,
-            borderRadius: 8,
+            borderRadius: "var(--wm-radius-8)",
             background: "rgba(217,119,6,0.08)",
             border: "1px solid rgba(217,119,6,0.2)",
           }}
@@ -214,7 +199,7 @@ export function EmployeeWorkforceAnnounceDetailContent({
               style={{
                 marginTop: 10,
                 padding: 10,
-                borderRadius: 8,
+                borderRadius: "var(--wm-radius-8)",
                 background: "rgba(220,38,38,0.06)",
               }}
             >

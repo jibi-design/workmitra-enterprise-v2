@@ -129,7 +129,7 @@ function NavCard({
               minWidth: 34,
               height: 28,
               padding: "0 10px",
-              borderRadius: 999,
+              borderRadius: "var(--wm-radius-pill)",
               background: hasMetric ? CAREER_BLUE : INACTIVE_BADGE_BG,
               color: hasMetric ? "#fff" : INACTIVE_BADGE_TEXT,
               display: "flex",
@@ -157,7 +157,7 @@ function NavCard({
             style={{
               width: 26,
               height: 26,
-              borderRadius: 999,
+              borderRadius: "var(--wm-radius-pill)",
               background: "rgba(29,78,216,0.055)",
               color: CAREER_BLUE_DEEP,
               display: "flex",
@@ -180,7 +180,7 @@ export function EmployeeCareerNavCards({
   onMyApplications,
 }: Props) {
   return (
-    <section style={{ display: "grid", gap: 10 }}>
+    <section className="wm-stackGrid">
       <div>
         <div style={{ fontSize: 13, fontWeight: 950, color: CAREER_TEXT }}>Career actions</div>
         <div style={{ marginTop: 3, fontSize: 11.5, fontWeight: 750, color: CAREER_MUTED }}>

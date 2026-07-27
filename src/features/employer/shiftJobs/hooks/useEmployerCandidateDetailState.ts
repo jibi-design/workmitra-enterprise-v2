@@ -30,10 +30,10 @@ export function useEmployerCandidateDetailState() {
   const displayId = app ? getCandidateDisplayId(app) : "";
 
   // Shift application view uses snapshot only — not the logged-in profile store.
-  const workerWmId = app?.profileSnapshot?.uniqueId ?? "";
+  const workerMlId = app?.profileSnapshot?.uniqueId ?? "";
   const workerRating = useMemo(
-    () => (workerWmId ? ratingStorage.getWorkerSummary(workerWmId) : null),
-    [workerWmId],
+    () => (workerMlId ? ratingStorage.getWorkerSummary(workerMlId) : null),
+    [workerMlId],
   );
 
   return {
@@ -42,7 +42,7 @@ export function useEmployerCandidateDetailState() {
     mustHave,
     goodToHave,
     displayId,
-    workerWmId,
+    workerMlId,
     workerRating,
   };
 }

@@ -74,7 +74,7 @@ function ProjectDetailBody({ entry }: { entry: PlannerPublicIndexEntry }) {
             color: "var(--wm-planner-accent-strong)",
           }}
         >
-          {payLabel} · {entry.openDayCount} shifts open
+          {payLabel} · {entry.openDayCount} days open
         </div>
       </section>
 

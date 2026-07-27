@@ -16,7 +16,7 @@ export function StatusBadge({ status }: { status: string }) {
         fontSize: 10,
         fontWeight: 900,
         padding: "2px 8px",
-        borderRadius: 999,
+        borderRadius: "var(--wm-radius-pill)",
         background: s.color + "14",
         color: s.color,
         border: "1px solid " + s.color + "33",

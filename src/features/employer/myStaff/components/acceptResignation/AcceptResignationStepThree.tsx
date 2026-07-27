@@ -33,7 +33,7 @@ export function AcceptResignationStepThree({ employeeName, onDone }: Props) {
             onClick={onDone}
             style={{
               padding: "12px 28px",
-              borderRadius: 10,
+              borderRadius: "var(--wm-radius-10)",
               border: "none",
               background: "#16a34a",
               color: "#fff",

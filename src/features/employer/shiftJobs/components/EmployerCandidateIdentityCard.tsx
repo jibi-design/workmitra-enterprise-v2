@@ -24,7 +24,7 @@ export function EmployerCandidateIdentityCard({
       style={{
         marginTop: 12,
         padding: "16px",
-        borderRadius: 14,
+        borderRadius: "var(--wm-radius-chip)",
         background: "rgba(15,118,110,0.06)",
         border: "1px solid rgba(15,118,110,0.22)",
         display: "flex",
@@ -67,7 +67,7 @@ export function EmployerCandidateIdentityCard({
           fontSize: 11,
           fontWeight: 900,
           padding: "4px 12px",
-          borderRadius: 999,
+          borderRadius: "var(--wm-radius-pill)",
           background: `${statusColor}18`,
           color: statusColor,
           border: `1px solid ${statusColor}33`,

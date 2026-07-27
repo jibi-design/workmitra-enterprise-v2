@@ -2,7 +2,8 @@
 // File: VaultPerformanceCard.tsx
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\workVault\components\VaultPerformanceCard.tsx
 
-import type { VaultPerformanceRecord } from "../types/vaultProfileTypes";
+import { StatusBadge } from "../../../../shared/components/enterprise/StatusBadge";
+import type { VaultDomainRatingSummary, VaultPerformanceRecord } from "../types/vaultProfileTypes";
 import {
   getConfidenceBody,
   getConfidenceLabel,
@@ -15,6 +16,31 @@ type Props = {
   data: VaultPerformanceRecord;
   showTips?: boolean;
 };
+
+function DomainRatingRow({
+  label,
+  accent,
+  summary,
+  note,
+}: {
+  label: string;
+  accent: "career" | "shift" | "planner";
+  summary: VaultDomainRatingSummary;
+  note?: string;
+}) {
+  const value =
+    summary.count === 0 || summary.average === null
+      ? "No ratings yet"
+      : `${summary.average.toFixed(1)} / 5 · ${summary.count}`;
+
+  return (
+    <div className="wm-vault-domain-rating">
+      <StatusBadge label={label} tone="neutral" accent={accent} />
+      <div className="wm-vault-domain-rating__value">{value}</div>
+      {note ? <div className="wm-vault-domain-rating__note">{note}</div> : null}
+    </div>
+  );
+}
 
 export function VaultPerformanceCard({ data, showTips = false }: Props) {
   const bd = data.ratingBreakdown;
@@ -31,14 +57,7 @@ export function VaultPerformanceCard({ data, showTips = false }: Props) {
 
   return (
     <div>
-      <div
-        style={{
-          padding: "14px 16px",
-          borderRadius: 12,
-          background: "var(--wm-emp-bg)",
-          border: "1px solid var(--wm-emp-border, rgba(15, 23, 42, 0.08))",
-        }}
-      >
+      <div className="wm-vault-performance-card">
         <div style={{ marginBottom: 12 }}>
           <div style={{ fontSize: 13, fontWeight: 900, color: "var(--wm-emp-text)" }}>
             Work reputation from completed assignments
@@ -52,8 +71,8 @@ export function VaultPerformanceCard({ data, showTips = false }: Props) {
               lineHeight: 1.45,
             }}
           >
-            Based on eligible completed work ratings. Career feedback tags stay separate as approved
-            work feedback.
+            Overall score uses Career, Shift, and Workforce ratings only. Gig Project ratings stay
+            separate from that overall score.
           </div>
         </div>
 
@@ -91,11 +110,22 @@ export function VaultPerformanceCard({ data, showTips = false }: Props) {
           </div>
         </div>
 
+        <div className="wm-vault-domain-rating-grid" data-testid="vault-domain-ratings">
+          <DomainRatingRow label="Career" accent="career" summary={data.domainRatings.career} />
+          <DomainRatingRow label="Shift" accent="shift" summary={data.domainRatings.shift} />
+          <DomainRatingRow
+            label="Planner"
+            accent="planner"
+            summary={data.domainRatings.planner}
+            note="Not included in overall"
+          />
+        </div>
+
         <div
           style={{
             marginTop: 12,
             padding: "9px 10px",
-            borderRadius: 12,
+            borderRadius: "var(--wm-radius-button)",
             border: "1px solid rgba(245,158,11,0.18)",
             background: "rgba(245,158,11,0.07)",
           }}

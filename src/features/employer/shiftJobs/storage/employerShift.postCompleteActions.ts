@@ -6,7 +6,7 @@ import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import {
   finalizeVaultShiftHistoryForPost,
   recordShiftCompletedInVault,
-} from "../../../employee/workVault/services/shiftVaultHistory.service";
+} from "../../../shared/workVault/vaultPublic";
 import { notifyCrossRole } from "../../../pulse/pulseEventBridge";
 import { notifyShiftBothPleaseRate } from "../services/shiftCompletionNotifications";
 import type { ShiftWorkspace, ShiftWorkspaceUpdate } from "../types/shiftWorkspaceTypes";
@@ -15,6 +15,7 @@ import { EMP_POSTS_KEY } from "./employerShift.keys";
 import { readEmployerPosts, syncToEmployeeSearch } from "./employerShift.postStorage";
 import { notifyEmployerShiftPostsChanged, safeWrite } from "./employerShift.utils";
 import { getWorkspacesSnapshot, saveWorkspaces } from "./shiftWorkspaceStorage";
+import { enqueueShiftRetry } from "../../../../shared/shift/shiftRetryQueue";
 
 export type CompletePostSagaResult =
   | { ok: true }
@@ -25,7 +26,10 @@ export type CompletePostSagaResult =
 
 export type MarkShiftWorkspaceCompletedResult =
   | { ok: true; postCompleted: boolean }
-  | { ok: false; reason: "not_found" | "already_completed" | "workspace_write_error" };
+  | {
+      ok: false;
+      reason: "not_found" | "already_completed" | "terminal_status" | "workspace_write_error";
+    };
 
 function areAllPostWorkspacesCompleted(postId: string, workspaces: ShiftWorkspace[]): boolean {
   const postWorkspaces = workspaces.filter((workspace) => workspace.postId === postId);
@@ -44,6 +48,13 @@ export function markShiftWorkspaceCompleted(
 
   if (!workspace) return { ok: false, reason: "not_found" };
   if (workspace.status === "completed") return { ok: false, reason: "already_completed" };
+  if (
+    workspace.status === "left" ||
+    workspace.status === "replaced" ||
+    workspace.status === "cancelled"
+  ) {
+    return { ok: false, reason: "terminal_status" };
+  }
 
   const now = Date.now();
   const update: ShiftWorkspaceUpdate = {
@@ -89,14 +100,21 @@ export function markShiftWorkspaceCompleted(
   let postCompleted = false;
 
   if (areAllPostWorkspacesCompleted(completedWorkspace.postId, nextWorkspaces)) {
-    const postResult = completePostSaga(completedWorkspace.postId);
+    // Workspaces already received please-rate on mark-complete — do not re-fire in saga.
+    const postResult = completePostSaga(completedWorkspace.postId, {
+      notifyPleaseRate: false,
+    });
     postCompleted = postResult.ok;
   }
 
   return { ok: true, postCompleted };
 }
 
-export function completePostSaga(postId: string): CompletePostSagaResult {
+export function completePostSaga(
+  postId: string,
+  options?: { readonly notifyPleaseRate?: boolean },
+): CompletePostSagaResult {
+  const notifyPleaseRate = options?.notifyPleaseRate !== false;
   const priorPosts = readEmployerPosts();
   const target = priorPosts.find((post) => post.id === postId);
 
@@ -121,23 +139,9 @@ export function completePostSaga(postId: string): CompletePostSagaResult {
 
   const workspaces = getWorkspacesSnapshot().filter((workspace) => workspace.postId === postId);
 
-  // Step 3 — IMPORTANT: rating notifications per completed workspace.
-  for (const workspace of workspaces) {
-    if (workspace.status !== "completed") continue;
-
-    try {
-      notifyShiftBothPleaseRate({
-        employeeName: workspace.workerName?.trim() || "Worker",
-        companyName: workspace.companyName,
-        jobName: workspace.jobName,
-        workspaceId: workspace.id,
-      });
-    } catch {
-      // TODO: enqueue to wm_retry_queue_v1 when retry infrastructure exists.
-    }
-  }
-
-  // Step 4 — CRITICAL: finalize verified work history in vault.
+  // Step 3 — CRITICAL: finalize verified work history in vault BEFORE please-rate.
+  // Vault failure rolls posts back; notifications must not fire until vault succeeds
+  // (otherwise please-rate / workspace alerts would orphan after rollback).
   const vaultResult = finalizeVaultShiftHistoryForPost(postId, workspaces);
   if (!vaultResult.ok) {
     safeWrite(EMP_POSTS_KEY, priorPosts);
@@ -150,6 +154,29 @@ export function completePostSaga(postId: string): CompletePostSagaResult {
     }
 
     return { ok: false, reason: "vault_finalize_error" };
+  }
+
+  // Step 4 — IMPORTANT: rating notifications only after vault success.
+  // Skipped when caller already notified (markShiftWorkspaceCompleted path).
+  if (notifyPleaseRate) {
+    for (const workspace of workspaces) {
+      if (workspace.status !== "completed") continue;
+
+      try {
+        notifyShiftBothPleaseRate({
+          employeeName: workspace.workerName?.trim() || "Worker",
+          companyName: workspace.companyName,
+          jobName: workspace.jobName,
+          workspaceId: workspace.id,
+        });
+      } catch {
+        enqueueShiftRetry("post_complete_side_effect", {
+          postId,
+          workspaceId: workspace.id,
+          step: "please_rate",
+        });
+      }
+    }
   }
 
   // Step 5 — IMPORTANT: pulse on full success.
@@ -167,7 +194,7 @@ export function completePostSaga(postId: string): CompletePostSagaResult {
       route: postDashboardRoute,
     });
   } catch {
-    // TODO: enqueue to wm_retry_queue_v1 when retry infrastructure exists.
+    enqueueShiftRetry("post_complete_side_effect", { postId, step: "completed_pulse" });
   }
 
   return { ok: true };

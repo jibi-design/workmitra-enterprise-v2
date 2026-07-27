@@ -1,9 +1,6 @@
-// App name: Job Mitra
-// File name: EmployeeEarningsSummaryTiles.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\components\EmployeeEarningsSummaryTiles.tsx
+// App name: Job Mitra | EmployeeEarningsSummaryTiles.tsx — glass KPI (Wave B)
 
 import type { EarningsSummary } from "../storage/earningsStorage";
-import { EARNINGS_GREEN } from "../helpers/employeeEarnings.helpers";
 
 type EmployeeEarningsSummaryTilesProps = {
   summary: EarningsSummary;
@@ -11,44 +8,52 @@ type EmployeeEarningsSummaryTilesProps = {
 
 export function EmployeeEarningsSummaryTiles({ summary }: EmployeeEarningsSummaryTilesProps) {
   return (
-    <>
-      <div className="wm-ee-tiles" style={{ marginTop: 14 }}>
-        <SummaryTile label="Total Earned" value={summary.totalEarned.toLocaleString()} active />
-        <SummaryTile label="Shifts" value={String(summary.totalShifts)} active />
-        <SummaryTile label="Days Worked" value={String(summary.totalDays)} />
-      </div>
-
-      <div className="wm-ee-tiles" style={{ marginTop: 8 }}>
-        <SummaryTile label="Avg / Shift" value={summary.avgPerShift.toLocaleString()} compact />
-        <SummaryTile label="Avg / Day" value={summary.avgPerDay.toLocaleString()} compact />
-      </div>
-    </>
-  );
-}
-
-function SummaryTile({
-  label,
-  value,
-  active = false,
-  compact = false,
-}: {
-  label: string;
-  value: string;
-  active?: boolean;
-  compact?: boolean;
-}) {
-  return (
-    <div className="wm-ee-tile">
-      <div className="wm-ee-tileLabel">{label}</div>
+    <div className="wm-animateIn" style={{ animationDelay: "60ms", display: "grid", gap: 12 }}>
       <div
-        style={{
-          marginTop: 4,
-          fontSize: compact ? 16 : 18,
-          fontWeight: 700,
-          color: active ? EARNINGS_GREEN : "var(--wm-er-text)",
-        }}
+        className="wm-shift-surface-glass wm-shift-surface-glass--shift"
+        data-testid="shift-earnings-total"
+        style={{ padding: "16px 14px", textAlign: "center" }}
       >
-        {value}
+        <div className="wm-shift-kpi-tile__label">Total earned (estimate)</div>
+        <div
+          className="wm-shift-kpi-tile__value isPositive"
+          style={{ fontSize: 32, marginTop: 8, color: "var(--wm-shift-accent, #16a34a)" }}
+        >
+          {summary.totalEarned.toLocaleString()}
+        </div>
+        <div
+          style={{
+            marginTop: 8,
+            fontSize: 13,
+            fontWeight: 600,
+            color: "var(--wm-emp-muted, #64748b)",
+          }}
+        >
+          {summary.totalShifts} shifts · {summary.totalDays} days worked
+        </div>
+      </div>
+
+      <div className="wm-shift-kpi-grid" data-testid="shift-earnings-kpi-grid">
+        <div className="wm-shift-kpi-tile isShift isPositive">
+          <div className="wm-shift-kpi-tile__label">Avg / Shift</div>
+          <div className="wm-shift-kpi-tile__value" style={{ fontSize: 18 }}>
+            {summary.avgPerShift.toLocaleString()}
+          </div>
+        </div>
+        <div className="wm-shift-kpi-tile isShift isPositive">
+          <div className="wm-shift-kpi-tile__label">Avg / Day</div>
+          <div className="wm-shift-kpi-tile__value" style={{ fontSize: 18 }}>
+            {summary.avgPerDay.toLocaleString()}
+          </div>
+        </div>
+        <div
+          className={`wm-shift-kpi-tile ${summary.totalShifts > 0 ? "isShift isPositive" : "isZero"}`}
+        >
+          <div className="wm-shift-kpi-tile__label">Shifts</div>
+          <div className="wm-shift-kpi-tile__value" style={{ fontSize: 18 }}>
+            {summary.totalShifts}
+          </div>
+        </div>
       </div>
     </div>
   );

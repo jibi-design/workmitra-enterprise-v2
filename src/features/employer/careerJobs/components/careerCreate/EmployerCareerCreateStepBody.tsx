@@ -46,7 +46,7 @@ export function EmployerCareerCreateStepBody({
   onCancel,
 }: Props) {
   return (
-    <div style={{ marginTop: 12 }}>
+    <div style={{ marginTop: "var(--wm-stack-gap)" }}>
       {step === 1 && <CareerCreateStepBasic data={basic} onChange={onBasicChange} />}
 
       {step === 2 && (

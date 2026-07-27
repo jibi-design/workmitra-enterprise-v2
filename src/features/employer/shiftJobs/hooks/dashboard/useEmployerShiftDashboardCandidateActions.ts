@@ -16,8 +16,8 @@ type UseEmployerShiftDashboardCandidateActionsInput = {
   readonly post: ShiftPost | null;
   readonly selectedApps: readonly EmployeeShiftApplication[];
   readonly isBusy: boolean;
-  readonly busy: (fn: () => void) => void;
-  readonly openConfirm: (data: ConfirmData, fn: () => void) => void;
+  readonly busy: (fn: () => void | Promise<void>) => void;
+  readonly openConfirm: (data: ConfirmData, fn: () => void | Promise<void>) => void;
   readonly setNotice: Dispatch<SetStateAction<NoticeData | null>>;
   readonly setTab: Dispatch<SetStateAction<DashboardTab>>;
   readonly navigate: NavigateFunction;
@@ -49,7 +49,7 @@ export function useEmployerShiftDashboardCandidateActions({
         employerShiftStorage.moveToWaiting(postId, id);
       }),
     onConfirm: (id: string) =>
-      busy(() => {
+      busy(async () => {
         if (!post) {
           return;
         }
@@ -67,7 +67,7 @@ export function useEmployerShiftDashboardCandidateActions({
           return;
         }
 
-        const workspaceId = employerShiftStorage.confirm(postId, id);
+        const workspaceId = await employerShiftStorage.confirm(postId, id);
 
         setNotice({
           title: "Candidate confirmed",

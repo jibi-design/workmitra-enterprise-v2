@@ -32,7 +32,7 @@ type Props = {
 const counterBtnStyle: React.CSSProperties = {
   width: 30,
   height: 30,
-  borderRadius: 8,
+  borderRadius: "var(--wm-radius-8)",
   border: "1px solid var(--wm-er-border)",
   background: "#fff",
   cursor: "pointer",
@@ -137,7 +137,10 @@ export function AnnounceStepVacancy({
             if (!cat) return null;
 
             return (
-              <div key={catId} style={{ padding: 12, borderRadius: 10, background: AMBER_BG }}>
+              <div
+                key={catId}
+                style={{ padding: 12, borderRadius: "var(--wm-radius-10)", background: AMBER_BG }}
+              >
                 <div style={{ fontSize: 13, fontWeight: 800, color: AMBER, marginBottom: 8 }}>
                   {cat.name}
                 </div>
@@ -153,7 +156,7 @@ export function AnnounceStepVacancy({
                           justifyContent: "space-between",
                           alignItems: "center",
                           padding: "6px 10px",
-                          borderRadius: 8,
+                          borderRadius: "var(--wm-radius-8)",
                           background: "#fff",
                         }}
                       >
@@ -232,7 +235,7 @@ export function AnnounceStepVacancy({
       <div
         style={{
           padding: 12,
-          borderRadius: 10,
+          borderRadius: "var(--wm-radius-10)",
           background: AMBER_BG,
           display: "flex",
           justifyContent: "space-between",
@@ -247,7 +250,13 @@ export function AnnounceStepVacancy({
 
       {/* Errors */}
       {errors.length > 0 && (
-        <div style={{ padding: 10, borderRadius: 8, background: "rgba(220,38,38,0.06)" }}>
+        <div
+          style={{
+            padding: 10,
+            borderRadius: "var(--wm-radius-8)",
+            background: "rgba(220,38,38,0.06)",
+          }}
+        >
           {errors.map((e, i) => (
             <div key={i} style={{ fontSize: 12, color: "var(--wm-error)" }}>
               {e}

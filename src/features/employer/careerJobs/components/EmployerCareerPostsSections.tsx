@@ -65,12 +65,16 @@ export function EmployerCareerPostCard({
   onOpen: () => void;
 }) {
   return (
-    <div className="wm-career-card wm-career-card--employer wm-hover-card" style={POSTS_CARD_STYLE}>
+    <div
+      className="wm-career-card wm-career-card--employer wm-hover-card wm-press-card"
+      style={POSTS_CARD_STYLE}
+    >
       <PulseTargetIndicator notificationId="APPLICATION_RECEIVED" postId={post.id} />
 
       <button
         type="button"
         onClick={onOpen}
+        aria-label={`Open dashboard for ${post.jobTitle}`}
         style={{
           width: "100%",
           background: "transparent",
@@ -78,7 +82,6 @@ export function EmployerCareerPostCard({
           padding: 0,
           textAlign: "left",
           cursor: "pointer",
-          outline: "none",
         }}
       >
         <div

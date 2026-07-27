@@ -2,7 +2,7 @@
 // File: SkillsSection.tsx
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\workVault\components\profileSections\SkillsSection.tsx
 
-import { VAULT_ACCENT } from "../../constants/vaultConstants";
+import { VAULT_ACCENT, vaultAccentMix } from "../../constants/vaultConstants";
 import type { VaultSectionData } from "../../services/vaultDataAggregator";
 import { Chip, SectionCard } from "./VaultProfileSharedUi";
 
@@ -27,7 +27,7 @@ export function SkillsSection({ data }: { data: VaultSectionData["skills"] }) {
               key={skill.name}
               label={`${skill.name} - ${skill.proficiency.charAt(0).toUpperCase()}${skill.proficiency.slice(1)}`}
               color={VAULT_ACCENT}
-              bg={`${VAULT_ACCENT}08`}
+              bg={`${vaultAccentMix(4)}`}
             />
           ))}
         </div>

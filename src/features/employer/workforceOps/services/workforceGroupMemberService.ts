@@ -6,134 +6,27 @@
 
 import type {
   WorkforceGroupMember,
-  WorkforceApplication,
-  WorkforceStaff,
   WorkforceGroup,
   CancelReason,
-  WorkforceActivityEntry,
-  WorkforceActivityKind,
 } from "../../../../shared/domains/workforce/types/workforceTypes";
-
-import {
-  WF_MEMBERS_KEY,
-  WF_MEMBERS_CHANGED,
-  WF_APPLICATIONS_KEY,
-  WF_APPLICATIONS_CHANGED,
-  WF_STAFF_KEY,
-  WF_STAFF_CHANGED,
-  WF_GROUPS_KEY,
-  WF_ACTIVITY_KEY,
-  WF_ACTIVITY_CHANGED,
-  EMPLOYEE_NOTIF_KEY,
-  EMPLOYEE_NOTIF_CHANGED,
-  safeWrite,
-  safeDispatch,
-  uid,
-} from "../../../../shared/domains/workforce/storage/workforceStorageUtils";
-
-import {
-  readMembers,
-  readApplications,
-  readStaff,
-  readGroups,
-  readActivity,
-} from "../../../../shared/domains/workforce/helpers/workforceNormalizers";
 
 import { validatePostEventRating } from "../../../../shared/domains/workforce/validation/workforceValidation";
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Internal Helpers
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-function readAllMembers(): WorkforceGroupMember[] {
-  return readMembers(WF_MEMBERS_KEY);
-}
-
-function writeMembers(members: WorkforceGroupMember[]): void {
-  safeWrite(WF_MEMBERS_KEY, members);
-  safeDispatch(WF_MEMBERS_CHANGED);
-}
-
-function readAllApplications(): WorkforceApplication[] {
-  return readApplications(WF_APPLICATIONS_KEY);
-}
-
-function writeApplications(apps: WorkforceApplication[]): void {
-  safeWrite(WF_APPLICATIONS_KEY, apps);
-  safeDispatch(WF_APPLICATIONS_CHANGED);
-}
-
-function readAllStaff(): WorkforceStaff[] {
-  return readStaff(WF_STAFF_KEY);
-}
-
-function writeStaff(staff: WorkforceStaff[]): void {
-  safeWrite(WF_STAFF_KEY, staff);
-  safeDispatch(WF_STAFF_CHANGED);
-}
-
-function readAllGroups(): WorkforceGroup[] {
-  return readGroups(WF_GROUPS_KEY);
-}
-
-function logActivity(kind: WorkforceActivityKind, title: string, body?: string): void {
-  const existing = readActivity(WF_ACTIVITY_KEY);
-  const entry: WorkforceActivityEntry = {
-    id: uid("wa"),
-    kind,
-    title,
-    body,
-    createdAt: Date.now(),
-  };
-  safeWrite(WF_ACTIVITY_KEY, [entry, ...existing]);
-  safeDispatch(WF_ACTIVITY_CHANGED);
-}
-
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Employee Notification Helper
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-type EmployeeNotification = {
-  id: string;
-  domain: string;
-  title: string;
-  body: string;
-  route?: string;
-  read: boolean;
-  createdAt: number;
-};
-
-function pushEmployeeNotification(title: string, body: string, route?: string): void {
-  const raw = localStorage.getItem(EMPLOYEE_NOTIF_KEY);
-  let existing: EmployeeNotification[] = [];
-  try {
-    const parsed = JSON.parse(raw ?? "[]");
-    if (Array.isArray(parsed)) existing = parsed as EmployeeNotification[];
-  } catch {
-    // ignore
-  }
-
-  const notification: EmployeeNotification = {
-    id: uid("en"),
-    domain: "workforce",
-    title,
-    body,
-    route,
-    read: false,
-    createdAt: Date.now(),
-  };
-
-  safeWrite(EMPLOYEE_NOTIF_KEY, [notification, ...existing]);
-  safeDispatch(EMPLOYEE_NOTIF_CHANGED);
-}
-
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Public API
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+import {
+  logActivity,
+  pushEmployeeNotification,
+  readAllApplications,
+  readAllGroups,
+  readAllMembers,
+  readAllStaff,
+  writeApplications,
+  writeMembers,
+  writeStaff,
+  WF_MEMBERS_CHANGED,
+  uid,
+} from "./workforceGroupMemberService.helpers";
 
 export const workforceGroupMemberService = {
-  // â”€â”€ Reads â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
   getMembersForGroup(groupId: string): WorkforceGroupMember[] {
     return readAllMembers().filter((m) => m.groupId === groupId);
   },
@@ -153,8 +46,6 @@ export const workforceGroupMemberService = {
       ) ?? null
     );
   },
-
-  // â”€â”€ Member Exit (with reason) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   exitMember(
     memberId: string,
@@ -176,7 +67,6 @@ export const workforceGroupMemberService = {
       return { success: false, errors: ["Group not found."] };
     }
 
-    // Mark member as exited
     const updatedMembers = allMembers.map((m) =>
       m.id === memberId
         ? {
@@ -196,7 +86,6 @@ export const workforceGroupMemberService = {
       `Reason: ${reason}`,
     );
 
-    // Auto-replace logic
     let replacedByName: string | undefined;
 
     if (group.autoReplace && group.announcementId) {
@@ -205,8 +94,6 @@ export const workforceGroupMemberService = {
 
     return { success: true, replacedBy: replacedByName };
   },
-
-  // â”€â”€ Auto-Replace from Waiting List â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   _tryAutoReplace(
     group: WorkforceGroup,
@@ -229,7 +116,6 @@ export const workforceGroupMemberService = {
     const topCandidate = waitingApps[0];
     if (!topCandidate) return undefined;
 
-    // Promote waiting â†’ confirmed in applications
     const updatedApps = allApps.map((a) =>
       a.id === topCandidate.id
         ? { ...a, status: "confirmed" as const, confirmedAt: Date.now() }
@@ -237,7 +123,6 @@ export const workforceGroupMemberService = {
     );
     writeApplications(updatedApps);
 
-    // Add as new group member
     const newMember: WorkforceGroupMember = {
       id: uid("wgm"),
       groupId: group.id,
@@ -265,8 +150,6 @@ export const workforceGroupMemberService = {
 
     return topCandidate.employeeName;
   },
-
-  // â”€â”€ Urgent Replacement Broadcast (IMP-3) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   sendUrgentBroadcast(
     groupId: string,
@@ -310,8 +193,6 @@ export const workforceGroupMemberService = {
     return { success: true, notifiedCount: targetStaff.length };
   },
 
-  // â”€â”€ Post-Event Rating (IMP-4) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
   rateGroupMember(
     memberId: string,
     rating: number,
@@ -328,7 +209,6 @@ export const workforceGroupMemberService = {
       return { success: false, errors: ["Member not found."] };
     }
 
-    // Update member with post-event rating
     const updatedMembers = allMembers.map((m) =>
       m.id === memberId
         ? {
@@ -340,7 +220,6 @@ export const workforceGroupMemberService = {
     );
     writeMembers(updatedMembers);
 
-    // Update staff weighted average rating
     this._updateStaffRating(target.staffId, rating);
 
     logActivity(
@@ -351,9 +230,6 @@ export const workforceGroupMemberService = {
 
     return { success: true };
   },
-
-  // â”€â”€ Staff Rating Weighted Average (IMP-4) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // Formula: newAvg = (oldRating * oldCount + newRating) / (oldCount + 1)
 
   _updateStaffRating(staffId: string, newRating: number): void {
     const allStaff = readAllStaff();
@@ -370,8 +246,6 @@ export const workforceGroupMemberService = {
     );
     writeStaff(updatedStaff);
   },
-
-  // â”€â”€ Bulk Rate All Members (Post-Event) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   rateAllGroupMembers(ratings: Array<{ memberId: string; rating: number; comment: string }>): {
     success: boolean;
@@ -397,14 +271,10 @@ export const workforceGroupMemberService = {
     return { success: true, ratedCount };
   },
 
-  // â”€â”€ Check if All Members Rated (for auto-delete gate) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
   areAllMembersRated(groupId: string): boolean {
     const members = readAllMembers().filter((m) => m.groupId === groupId && m.status === "active");
     return members.length > 0 && members.every((m) => m.postEventRating !== undefined);
   },
-
-  // â”€â”€ Events â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   _events: {
     changed: WF_MEMBERS_CHANGED,

@@ -18,12 +18,8 @@ type Props = {
 };
 
 const CARD_STYLE: CSSProperties = {
-  marginTop: 12,
+  padding: 16,
   borderLeft: "4px solid var(--wm-er-accent-shift, #16a34a)",
-  borderRadius: 22,
-  border: "1px solid rgba(226,232,240,0.95)",
-  background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
-  boxShadow: "0 14px 30px rgba(15,23,42,0.055)",
 };
 
 const PAY_BADGE_STYLE: CSSProperties = {
@@ -31,7 +27,7 @@ const PAY_BADGE_STYLE: CSSProperties = {
   flexDirection: "column",
   alignItems: "flex-end",
   padding: "8px 11px",
-  borderRadius: 16,
+  borderRadius: "var(--wm-radius-chip)",
   background: "rgba(22,163,74,0.08)",
   color: SHIFT_GREEN,
   fontSize: 15,
@@ -119,7 +115,11 @@ export function ShiftApplyJobCard({ post, status }: Props) {
   const payDisplay = formatShiftPayDisplay(post.payPerDay, post.payBasis);
 
   return (
-    <section className="wm-ee-card" style={CARD_STYLE}>
+    <section
+      className="wm-shift-surface-glass wm-shift-surface-glass--shift wm-animateIn"
+      data-testid="shift-apply-job-card"
+      style={{ ...CARD_STYLE, animationDelay: "20ms" }}
+    >
       <div
         style={{
           display: "flex",
@@ -156,14 +156,12 @@ export function ShiftApplyJobCard({ post, status }: Props) {
         </div>
       </div>
 
-      {statusUi && (
+      {statusUi ? (
         <div style={{ marginTop: 12 }}>
           <span
+            className="wm-shift-pill"
             style={{
               fontSize: 11,
-              fontWeight: 900,
-              padding: "5px 10px",
-              borderRadius: 999,
               background: statusUi.background,
               color: statusUi.color,
               border: statusUi.border,
@@ -172,32 +170,24 @@ export function ShiftApplyJobCard({ post, status }: Props) {
             {statusUi.label}
           </span>
         </div>
-      )}
+      ) : null}
 
       <div style={META_GRID_STYLE}>
-        <DetailBox label="Company" value={employerName} />
-        <DetailBox
+        <MetaTile label="Company" value={employerName} />
+        <MetaTile
           label="Location"
           value={`${locationName}${post.distanceKm > 0 && locationName !== "Location not specified" ? ` · ${post.distanceKm} km` : ""}`}
         />
-        <DetailBox label="Date" value={dateRange} />
-        <DetailBox label="Experience" value={expLabel(post.experience)} />
+        <MetaTile label="Date" value={dateRange} />
+        <MetaTile label="Experience" value={expLabel(post.experience)} />
       </div>
     </section>
   );
 }
 
-function DetailBox({ label, value }: { label: string; value: string }) {
+function MetaTile({ label, value }: { label: string; value: string }) {
   return (
-    <div
-      style={{
-        padding: "10px 10px",
-        borderRadius: 14,
-        background: "rgba(248,250,252,0.96)",
-        border: "1px solid rgba(226,232,240,0.9)",
-        minWidth: 0,
-      }}
-    >
+    <div className="wm-shift-surface-glass" style={{ padding: "10px 10px", minWidth: 0 }}>
       <div
         style={{
           fontSize: 9,

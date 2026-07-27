@@ -1,6 +1,4 @@
-// App name: Job Mitra
-// File name: EmployerShiftCreatePage.tsx
-// 3-step distraction-free Create Shift wizard (Phase 1).
+// App name: Job Mitra | EmployerShiftCreatePage.tsx — stackGrid wizard (Wave 3)
 
 import { ShiftDraftControlPanel } from "../components/createShiftDrafts/ShiftDraftControlPanel";
 import { ShiftCreateBasicSection } from "../components/ShiftCreateBasicSection";
@@ -36,7 +34,12 @@ export function EmployerShiftCreatePage() {
   } = useEmployerShiftCreateState();
 
   return (
-    <div className="wm-er-vShift wm-shiftCreateWizardPage" ref={setFormNode}>
+    <div
+      className="wm-er-vShift wm-shiftCreateWizardPage wm-stackGrid"
+      data-testid="employer-shift-create-page"
+      ref={setFormNode}
+      style={{ gap: "var(--wm-stack-gap)" }}
+    >
       <ShiftCreateWizardTopBar
         wizardStep={wizardStep}
         onCancel={footer.onCancel}
@@ -44,24 +47,21 @@ export function EmployerShiftCreatePage() {
         lastSavedAt={draft.lastSavedAt}
       />
 
-      {isTemplate && (
+      {isTemplate ? (
         <div
+          className="wm-shift-surface-glass wm-shift-surface-glass--shift wm-shift-surface-glass--compact"
+          role="status"
           style={{
-            marginTop: 10,
-            padding: "10px 14px",
-            borderRadius: 16,
-            background: "linear-gradient(180deg, rgba(240,253,244,0.95), rgba(255,255,255,0.98))",
-            border: "1px solid rgba(22,163,74,0.2)",
+            color: "var(--wm-er-accent-shift, #16a34a)",
             fontSize: 12,
-            color: "#16a34a",
             fontWeight: 800,
           }}
         >
           Template pre-filled. Review each step before publishing.
         </div>
-      )}
+      ) : null}
 
-      {draft.otherDrafts.length > 0 && (
+      {draft.otherDrafts.length > 0 ? (
         <ShiftDraftControlPanel
           draftId={draft.draftId}
           lastSavedAt={draft.lastSavedAt}
@@ -71,12 +71,11 @@ export function EmployerShiftCreatePage() {
           onDeleteDraft={draft.handleDeleteSavedDraft}
           onResumeDraft={draft.applyDraft}
         />
-      )}
+      ) : null}
 
-      {/* Always visible on every wizard step — live count for selected shift start date */}
       <ShiftCreateNearbyAvailabilityCard startAt={schedule.startAt} />
 
-      {wizardStep === 1 && (
+      {wizardStep === 1 ? (
         <>
           <ShiftCreateBasicSection
             companyName={basic.companyName}
@@ -101,9 +100,9 @@ export function EmployerShiftCreatePage() {
             category={workers.category}
           />
         </>
-      )}
+      ) : null}
 
-      {wizardStep === 2 && (
+      {wizardStep === 2 ? (
         <>
           <ShiftCreateScheduleSection
             startAt={schedule.startAt}
@@ -128,9 +127,9 @@ export function EmployerShiftCreatePage() {
             onMapsLink={location.onMapsLink}
           />
         </>
-      )}
+      ) : null}
 
-      {wizardStep === 3 && (
+      {wizardStep === 3 ? (
         <>
           <ShiftCreateProvidesSection
             selected={provides.selected}
@@ -155,7 +154,7 @@ export function EmployerShiftCreatePage() {
             onDressCode={requirements.onDressCode}
           />
         </>
-      )}
+      ) : null}
 
       <ShiftCreateWizardFooter
         wizardStep={wizardStep}

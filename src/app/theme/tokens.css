@@ -55,9 +55,13 @@
 
   --wm-amber-50: #fffbeb;
   --wm-amber-100: #fef3c7;
+  --wm-amber-400: #f59e0b;
   --wm-amber-600: #d97706;
   --wm-amber-700: #b45309;
   --wm-amber-800: #92400e;
+
+  --wm-indigo-500: #6366f1;
+  --wm-indigo-600: #4f46e5;
 
   --wm-red-50: #fef2f2;
   --wm-red-100: #fee2e2;
@@ -89,6 +93,15 @@
   --wm-career-accent-strong: var(--wm-blue-700);
   --wm-career-accent-soft: rgba(29, 78, 216, 0.1);
   --wm-career-accent-border: rgba(29, 78, 216, 0.18);
+  --wm-career-text: var(--wm-neutral-900);
+  --wm-career-muted: var(--wm-neutral-600);
+  --wm-career-border: rgba(148, 163, 184, 0.18);
+  --wm-career-bg: #ffffff;
+  --wm-career-success: var(--wm-green-600);
+  --wm-career-success-strong: var(--wm-green-700);
+  --wm-career-success-soft: rgba(22, 163, 74, 0.12);
+  --wm-career-success-border: rgba(22, 163, 74, 0.24);
+  --wm-shell-max: 520px;
 
   --wm-workforce-accent: var(--wm-amber-700);
   --wm-workforce-accent-strong: var(--wm-amber-800);
@@ -115,10 +128,15 @@
   --wm-planner-border: rgba(8, 145, 178, 0.22);
   --wm-planner-border-strong: rgba(8, 145, 178, 0.36);
   --wm-planner-wash: rgba(8, 145, 178, 0.07);
-  --wm-planner-glass-bg: rgba(236, 254, 255, 0.92);
-  --wm-planner-glass-border: rgba(8, 145, 178, 0.24);
-  --wm-planner-surface: linear-gradient(135deg, #ecfeff 0%, #f0fdfa 52%, #ffffff 100%);
-  --wm-planner-shadow: 0 16px 36px rgba(8, 145, 178, 0.14);
+  --wm-planner-glass-bg: rgba(255, 255, 255, 0.78);
+  --wm-planner-glass-border: rgba(8, 145, 178, 0.18);
+  --wm-planner-surface: linear-gradient(
+    135deg,
+    rgba(236, 254, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.82) 52%,
+    rgba(255, 255, 255, 0.9) 100%
+  );
+  --wm-planner-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
   --wm-er-accent-planner: var(--wm-planner-accent);
   --wm-er-planner-wash: var(--wm-planner-wash);
   --wm-ee-planner-accent: var(--wm-planner-accent);
@@ -248,6 +266,18 @@
 
   --wm-stack-gap: var(--wm-space-16);
   --wm-card-padding: var(--wm-space-16);
+  --wm-card-padding-compact: var(--wm-space-12);
+  --wm-card-padding-inset: var(--wm-space-10);
+
+  /* Prose / hero description width lock (Wave 1 token contract) */
+  --wm-prose-max: 410px;
+
+  /* KPI + seg control geometry (Wave 1) */
+  --wm-kpi-min-height: 76px;
+  --wm-kpi-padding: var(--wm-space-12);
+  --wm-kpi-grid-gap: var(--wm-space-8);
+  --wm-seg-min-height: 32px;
+  --wm-seg-padding-x: var(--wm-space-12);
 
   /* ------------------------------------------------ */
   /* Typography � Step 4 strict scale                   */
@@ -267,6 +297,9 @@
   --wm-weight-black: 900;
 
   --wm-type-hero-size: var(--wm-font-3xl);
+  /* Mobile hero lock (Wave 6) — DomainHero + legacy pageTitle share one scale */
+  --wm-type-hero-size-mobile: 18px;
+  --wm-type-helper-size-mobile: 11px;
   --wm-type-hero-weight: var(--wm-weight-heavy);
   --wm-type-card-title-size: var(--wm-font-xl);
   --wm-type-card-title-weight: var(--wm-weight-bold);
@@ -287,10 +320,11 @@
   --wm-shadow-lg: 0 22px 54px rgba(15, 23, 42, 0.11);
   --wm-shadow-xl: 0 30px 80px rgba(15, 23, 42, 0.16);
 
-  --wm-shadow-shift: 0 12px 26px rgba(22, 163, 74, 0.2);
-  --wm-shadow-career: 0 12px 26px rgba(29, 78, 216, 0.18);
-  --wm-shadow-warning: 0 12px 26px rgba(217, 119, 6, 0.16);
-  --wm-shadow-danger: 0 12px 26px rgba(220, 38, 38, 0.16);
+  /* Domain button glow tokens — flat CTAs (no colored halo / spread) */
+  --wm-shadow-shift: none;
+  --wm-shadow-career: none;
+  --wm-shadow-warning: none;
+  --wm-shadow-danger: none;
 
   /* ------------------------------------------------ */
   /* Material Engine � Step 2 (dual-tier glass)       */

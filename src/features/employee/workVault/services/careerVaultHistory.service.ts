@@ -12,6 +12,13 @@ import {
   type VaultCareerHistoryEntry,
 } from "../storage/vaultCareerHistory.storage";
 
+/** Minimal fields for rating key resolve (shared EmploymentRecord or profile IDs). */
+export type VaultCareerRatingSource = {
+  employeeMlId?: string | null;
+  employeeId?: string | null;
+  employerMlId?: string | null;
+};
+
 export function recordCareerClosureInVault(
   record: EmploymentRecord,
   exitType: VaultCareerHistoryEntry["exitType"],
@@ -43,7 +50,7 @@ export function recordCareerClosureInVault(
 
 export function syncVaultCareerRatingsForPost(
   careerPostId: string,
-  record: EmploymentRecord,
+  record: VaultCareerRatingSource,
 ): void {
   const workerMlId = record.employeeMlId?.trim() || record.employeeId?.trim() || "";
   const employerMlId = record.employerMlId?.trim() ?? "";

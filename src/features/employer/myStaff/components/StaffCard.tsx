@@ -34,7 +34,9 @@ export function StaffCard({ staff, nowMs }: Props) {
       }}
       style={{ padding: 14, cursor: "pointer" }}
     >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+      <div
+        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}
+      >
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <span style={{ fontWeight: 1000, fontSize: 13, color: "var(--wm-er-text)" }}>
@@ -52,17 +54,44 @@ export function StaffCard({ staff, nowMs }: Props) {
           </div>
           <div style={{ marginTop: 4, display: "flex", gap: 6, flexWrap: "wrap" }}>
             {staff.addMethod === "via_app" && (
-              <span style={{ fontSize: 9, fontWeight: 800, padding: "1px 6px", borderRadius: 999, background: "rgba(55, 48, 163, 0.08)", color: "var(--wm-er-accent-career)" }}>
+              <span
+                style={{
+                  fontSize: 9,
+                  fontWeight: 800,
+                  padding: "1px 6px",
+                  borderRadius: "var(--wm-radius-pill)",
+                  background: "rgba(55, 48, 163, 0.08)",
+                  color: "var(--wm-er-accent-career)",
+                }}
+              >
                 Via App
               </span>
             )}
             {staff.addMethod === "manually_added" && (
-              <span style={{ fontSize: 9, fontWeight: 800, padding: "1px 6px", borderRadius: 999, background: "rgba(217, 119, 6, 0.08)", color: "#d97706" }}>
+              <span
+                style={{
+                  fontSize: 9,
+                  fontWeight: 800,
+                  padding: "1px 6px",
+                  borderRadius: "var(--wm-radius-pill)",
+                  background: "rgba(217, 119, 6, 0.08)",
+                  color: "#d97706",
+                }}
+              >
                 Manually Added
               </span>
             )}
             {staff.employeeConfirmed && (
-              <span style={{ fontSize: 9, fontWeight: 800, padding: "1px 6px", borderRadius: 999, background: "rgba(22, 163, 74, 0.08)", color: "#16a34a" }}>
+              <span
+                style={{
+                  fontSize: 9,
+                  fontWeight: 800,
+                  padding: "1px 6px",
+                  borderRadius: "var(--wm-radius-pill)",
+                  background: "rgba(22, 163, 74, 0.08)",
+                  color: "#16a34a",
+                }}
+              >
                 Confirmed
               </span>
             )}

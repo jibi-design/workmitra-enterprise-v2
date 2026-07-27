@@ -4,19 +4,49 @@
   --wm-planner-accent: #0891b2;
   --wm-planner-accent-strong: #0e7490;
   --wm-planner-soft: rgba(8, 145, 178, 0.08);
-  --wm-planner-border: rgba(8, 145, 178, 0.22);
+  --wm-planner-border: rgba(8, 145, 178, 0.18);
+  position: relative;
+  isolation: isolate;
   min-height: 100%;
 }
 
+.wm-planner-page::before {
+  content: "";
+  position: absolute;
+  inset: -8px -6px auto;
+  height: 420px;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 10% 6%, rgba(8, 145, 178, 0.12), transparent 42%),
+    radial-gradient(circle at 92% 0%, rgba(15, 23, 42, 0.04), transparent 36%),
+    radial-gradient(circle at 48% 38%, rgba(148, 163, 184, 0.08), transparent 52%);
+}
+
 .wm-planner-hero {
-  border-radius: var(--wm-radius-employer-card);
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--wm-radius-employee-card, 20px);
   padding: 18px 16px;
-  background: linear-gradient(135deg, #ecfeff, #f0fdfa);
-  border: 1px solid var(--wm-planner-border);
-  box-shadow: 0 14px 34px rgba(8, 145, 178, 0.08);
+  background: var(--wm-planner-glass-bg, rgba(255, 255, 255, 0.78));
+  border: 1px solid var(--wm-planner-glass-border, rgba(8, 145, 178, 0.18));
+  box-shadow: var(--wm-planner-shadow, 0 8px 24px rgba(15, 23, 42, 0.05));
+  backdrop-filter: blur(var(--wm-blur-md, 16px)) var(--wm-glass-saturate, saturate(140%));
+  -webkit-backdrop-filter: blur(var(--wm-blur-md, 16px)) var(--wm-glass-saturate, saturate(140%));
+}
+
+.wm-planner-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.4), transparent 42%);
+  opacity: 0.7;
 }
 
 .wm-planner-heroTitle {
+  position: relative;
+  z-index: 1;
   font-size: 22px;
   font-weight: 800;
   color: var(--wm-neutral-900);
@@ -24,6 +54,8 @@
 }
 
 .wm-planner-heroSub {
+  position: relative;
+  z-index: 1;
   margin-top: 4px;
   font-size: 13px;
   color: var(--wm-neutral-500);
@@ -44,10 +76,15 @@
 }
 
 .wm-planner-kpiTile {
+  position: relative;
+  overflow: hidden;
   border-radius: 16px;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid var(--wm-planner-border);
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--wm-glass-border, rgba(148, 163, 184, 0.28));
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.03);
+  backdrop-filter: blur(10px) var(--wm-glass-saturate, saturate(140%));
+  -webkit-backdrop-filter: blur(10px) var(--wm-glass-saturate, saturate(140%));
 }
 
 .wm-planner-kpiLabel {
@@ -66,14 +103,31 @@
 }
 
 .wm-planner-card {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
   margin-top: var(--wm-stack-gap);
-  border-radius: var(--wm-radius-employee-card);
+  border-radius: var(--wm-radius-employee-card, 20px);
   padding: var(--wm-card-padding);
-  background: var(--wm-planner-glass-bg);
-  border: 1px solid var(--wm-planner-glass-border);
-  box-shadow: var(--wm-planner-shadow);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: var(--wm-planner-glass-bg, rgba(255, 255, 255, 0.78));
+  border: 1px solid var(--wm-planner-glass-border, rgba(8, 145, 178, 0.18));
+  box-shadow: var(--wm-planner-shadow, 0 8px 24px rgba(15, 23, 42, 0.05));
+  backdrop-filter: blur(var(--wm-blur-md, 16px)) var(--wm-glass-saturate, saturate(140%));
+  -webkit-backdrop-filter: blur(var(--wm-blur-md, 16px)) var(--wm-glass-saturate, saturate(140%));
+}
+
+.wm-planner-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.38), transparent 40%);
+  opacity: 0.65;
+}
+
+.wm-planner-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .wm-planner-btnPrimary {
@@ -84,12 +138,18 @@
   min-height: 44px;
   padding: 10px 16px;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--wm-planner-accent);
   color: #fff;
   font-size: 13px;
   font-weight: 800;
   cursor: pointer;
+  box-shadow: 0 8px 18px rgba(8, 145, 178, 0.2);
+  transition: transform var(--wm-motion-fast) var(--wm-motion-spring);
+}
+
+.wm-planner-btnPrimary:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .wm-planner-btnPrimary:disabled {
@@ -103,13 +163,21 @@
   justify-content: center;
   min-height: 44px;
   padding: 10px 14px;
-  border-radius: 12px;
-  border: 1px solid var(--wm-planner-border);
-  background: #fff;
+  border-radius: 14px;
+  border: 1px solid var(--wm-glass-border, rgba(148, 163, 184, 0.28));
+  background: rgba(255, 255, 255, 0.55);
   color: var(--wm-planner-accent-strong);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
+  backdrop-filter: blur(10px) var(--wm-glass-saturate, saturate(140%));
+  -webkit-backdrop-filter: blur(10px) var(--wm-glass-saturate, saturate(140%));
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.03);
+  transition: transform var(--wm-motion-fast) var(--wm-motion-spring);
+}
+
+.wm-planner-btnGhost:active {
+  transform: scale(0.98);
 }
 
 .wm-planner-badge {
@@ -123,6 +191,422 @@
   background: var(--wm-planner-soft);
   color: var(--wm-planner-accent-strong);
   border: 1px solid var(--wm-planner-border);
+}
+
+.wm-planner-commandGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 10px;
+}
+
+.wm-planner-commandPanel {
+  padding: var(--wm-card-padding, 16px);
+  border: 1px solid rgba(8, 145, 178, 0.35);
+  background:
+    linear-gradient(165deg, rgba(8, 145, 178, 0.08), rgba(255, 255, 255, 0.92) 42%),
+    rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 28px rgba(8, 145, 178, 0.08);
+}
+
+/* Employer command panel — one step ahead of employee hub chrome */
+.wm-planner-commandPanel--employer {
+  position: relative;
+  overflow: hidden;
+  padding: 18px 16px 16px;
+  border: 1px solid rgba(8, 145, 178, 0.42);
+  background:
+    linear-gradient(
+      155deg,
+      rgba(8, 145, 178, 0.16) 0%,
+      rgba(165, 243, 252, 0.22) 28%,
+      rgba(255, 255, 255, 0.96) 58%
+    ),
+    rgba(255, 255, 255, 0.98);
+  box-shadow:
+    0 14px 36px rgba(8, 145, 178, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+.wm-planner-commandPanel--employer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #0891b2, #22d3ee 55%, rgba(8, 145, 178, 0.35));
+  pointer-events: none;
+}
+
+.wm-planner-commandPanel--employer .wm-planner-sectionTitle {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--wm-planner-accent-strong, #0e7490);
+}
+
+.wm-planner-commandGrid > button.wm-planner-commandTile,
+button.wm-planner-commandTile {
+  position: relative;
+  min-height: 84px;
+  padding: 12px 14px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(8, 145, 178, 0.38);
+  /* Soft teal fill on ALL tiles — not hollow white */
+  background: linear-gradient(
+    165deg,
+    rgba(8, 145, 178, 0.26) 0%,
+    rgba(103, 232, 249, 0.42) 42%,
+    rgba(207, 250, 254, 0.98) 100%
+  );
+  box-shadow: 0 8px 20px rgba(8, 145, 178, 0.12);
+  backdrop-filter: blur(10px) var(--wm-glass-saturate, saturate(140%));
+  -webkit-backdrop-filter: blur(10px) var(--wm-glass-saturate, saturate(140%));
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+  text-align: left;
+  cursor: pointer;
+  color: var(--wm-planner-accent-strong, #0e7490);
+  transition:
+    transform var(--wm-motion-fast) var(--wm-motion-spring),
+    box-shadow 160ms ease,
+    border-color 160ms ease;
+}
+
+.wm-planner-commandTile__body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0;
+  width: 100%;
+  min-width: 0;
+}
+
+.wm-planner-commandTile:hover {
+  transform: translateY(-1px);
+  border-color: rgba(8, 145, 178, 0.55);
+  box-shadow: 0 12px 26px rgba(8, 145, 178, 0.18);
+  filter: brightness(1.03);
+}
+
+.wm-planner-commandTile:active {
+  transform: scale(0.98);
+}
+
+/* Soft primary — same family as Employer .wm-planner-btnPrimary (not midnight teal) */
+.wm-planner-commandGrid > button.wm-planner-commandTile--primary,
+button.wm-planner-commandTile--primary {
+  border: none;
+  background: var(--wm-planner-accent, #0891b2);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(8, 145, 178, 0.2);
+}
+
+.wm-planner-commandGrid > button.wm-planner-commandTile--primary:hover,
+button.wm-planner-commandTile--primary:hover {
+  border: none;
+  filter: brightness(1.04);
+  box-shadow: 0 10px 22px rgba(8, 145, 178, 0.28);
+}
+
+.wm-planner-commandTile__label {
+  display: block;
+  width: 100%;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--wm-planner-accent-strong, #0e7490);
+  letter-spacing: -0.01em;
+}
+
+.wm-planner-commandTile--primary .wm-planner-commandTile__label {
+  color: #ffffff;
+  text-shadow: none;
+}
+
+.wm-planner-commandTile__sep {
+  display: block;
+  width: 100%;
+  height: 1px;
+  margin: 8px 0 6px;
+  padding: 0;
+  overflow: hidden;
+  font-size: 0;
+  line-height: 0;
+  color: transparent;
+  background: linear-gradient(
+    90deg,
+    rgba(8, 145, 178, 0.35),
+    rgba(8, 145, 178, 0.08) 70%,
+    transparent
+  );
+}
+
+.wm-planner-commandTile--primary .wm-planner-commandTile__sep {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.55),
+    rgba(255, 255, 255, 0.12) 70%,
+    transparent
+  );
+}
+
+.wm-planner-commandTile__desc {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: rgba(14, 116, 144, 0.78);
+  opacity: 0.95;
+}
+
+/* Employer tiles — slightly taller + richer soft fill than employee */
+.wm-planner-commandPanel--employer .wm-planner-commandGrid > button.wm-planner-commandTile,
+.wm-planner-commandPanel--employer button.wm-planner-commandTile {
+  min-height: 92px;
+  border-radius: 18px;
+  background: linear-gradient(
+    160deg,
+    rgba(8, 145, 178, 0.32) 0%,
+    rgba(34, 211, 238, 0.38) 38%,
+    rgba(207, 250, 254, 0.98) 100%
+  );
+  box-shadow: 0 10px 24px rgba(8, 145, 178, 0.16);
+}
+
+.wm-planner-commandPanel--employer .wm-planner-commandTile__label {
+  font-size: 14px;
+}
+
+/* Employer primary MUST beat soft-fill specificity (otherwise New Plan looks hollow) */
+.wm-planner-commandPanel--employer .wm-planner-commandGrid > button.wm-planner-commandTile--primary,
+.wm-planner-commandPanel--employer button.wm-planner-commandTile--primary {
+  border: none;
+  background: var(--wm-planner-accent, #0891b2);
+  color: #fff;
+  box-shadow: 0 12px 26px rgba(8, 145, 178, 0.3);
+}
+
+.wm-planner-commandPanel--employer
+  .wm-planner-commandGrid
+  > button.wm-planner-commandTile--primary:hover,
+.wm-planner-commandPanel--employer button.wm-planner-commandTile--primary:hover {
+  border: none;
+  filter: brightness(1.05);
+  box-shadow: 0 14px 28px rgba(8, 145, 178, 0.36);
+}
+
+.wm-planner-commandPanel--employer .wm-planner-commandTile--primary .wm-planner-commandTile__label {
+  color: #ffffff;
+}
+
+.wm-planner-commandPanel--employer .wm-planner-commandTile--primary .wm-planner-commandTile__desc {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.wm-planner-commandPanel--employer .wm-planner-commandTile--primary .wm-planner-commandTile__sep {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.55),
+    rgba(255, 255, 255, 0.12) 70%,
+    transparent
+  );
+}
+
+/* Employer agency hero + metrics — compact mobile polish (no giant totals / %) */
+.wm-er-vPlanner .wm-domainHero--agencyDense {
+  padding: 14px 14px 12px;
+  border-radius: 20px;
+}
+
+.wm-er-vPlanner .wm-domainHero--agencyDense .wm-domainHeroEyebrow {
+  margin: 0;
+}
+
+.wm-er-vPlanner .wm-domainHero--agencyDense .wm-domainHeroTitle {
+  margin-top: 2px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+.wm-er-vPlanner .wm-domainHero--agencyDense .wm-domainHeroSubtitle {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.35;
+  max-width: 36ch;
+}
+
+.wm-er-vPlanner .wm-domainHero--agencyDense .wm-domainHeroBody {
+  margin-top: 12px;
+}
+
+.wm-er-vPlanner .wm-planner-kpiStrip--agency {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 0;
+}
+
+.wm-er-vPlanner .wm-planner-kpiStrip--agency .wm-planner-kpiTile {
+  padding: 9px 10px 8px 12px;
+  border-radius: 14px;
+  min-height: 0;
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.98) 0%, rgba(236, 254, 255, 0.88) 100%);
+  border: 1px solid rgba(8, 145, 178, 0.2);
+  box-shadow:
+    0 6px 16px rgba(8, 145, 178, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.wm-er-vPlanner .wm-planner-kpiStrip--agency .wm-planner-kpiTile::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  border-radius: 0 3px 3px 0;
+  background: linear-gradient(180deg, #0891b2, #22d3ee);
+  pointer-events: none;
+}
+
+.wm-er-vPlanner .wm-planner-kpiStrip--agency .wm-planner-kpiLabel {
+  color: rgba(14, 116, 144, 0.7);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.wm-er-vPlanner .wm-planner-kpiStrip--agency .wm-planner-kpiValue {
+  margin-top: 3px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--wm-planner-accent-strong, #0e7490);
+  font-variant-numeric: tabular-nums;
+}
+
+.wm-er-vPlanner .wm-planner-kpiStrip--agency .wm-planner-kpiTile--fill {
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+}
+
+.wm-er-vPlanner .wm-planner-kpiStrip--agency .wm-planner-kpiMeter {
+  width: 100%;
+  max-width: none;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(8, 145, 178, 0.12);
+  overflow: hidden;
+  box-shadow: inset 0 1px 1px rgba(15, 23, 42, 0.05);
+}
+
+.wm-er-vPlanner .wm-planner-kpiMeterFill {
+  height: 100%;
+  min-width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #0891b2 0%, #22d3ee 100%);
+  transition: width 280ms var(--wm-motion-spring, ease);
+}
+
+.wm-er-vPlanner .wm-planner-kpiMeterFill[data-empty="true"] {
+  width: 0% !important;
+  box-shadow: none;
+}
+
+.wm-er-vPlanner .wm-planner-kpiStrip--agency.wm-planner-kpiStrip--counts {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.wm-er-vPlanner .wm-planner-kpiStrip--agency.wm-planner-kpiStrip--counts .wm-planner-kpiTile--fill {
+  grid-column: auto;
+}
+
+@media (max-width: 360px) {
+  .wm-er-vPlanner .wm-planner-kpiStrip--agency:not(.wm-planner-kpiStrip--counts) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .wm-er-vPlanner
+    .wm-planner-kpiStrip--agency:not(.wm-planner-kpiStrip--counts)
+    .wm-planner-kpiTile--fill {
+    grid-column: span 2;
+  }
+}
+
+/* Employer status buckets — cohesive teal surface */
+.wm-er-vPlanner .wm-planner-statusBucket {
+  border: 1px solid rgba(8, 145, 178, 0.28);
+  background:
+    linear-gradient(165deg, rgba(8, 145, 178, 0.07) 0%, rgba(255, 255, 255, 0.96) 48%),
+    rgba(255, 255, 255, 0.95);
+  box-shadow: 0 8px 22px rgba(8, 145, 178, 0.08);
+}
+
+.wm-er-vPlanner .wm-planner-statusBucket--empty {
+  padding: 10px 12px;
+}
+
+.wm-planner-empty__idle {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(14, 116, 144, 0.75);
+  background: rgba(8, 145, 178, 0.1);
+  border: 1px solid rgba(8, 145, 178, 0.2);
+}
+
+/* Ensure last planner cards clear FAB + bottom nav when scrolling */
+.wm-er-vPlanner.wm-planner-page {
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+}
+
+.wm-planner-commandTile--primary .wm-planner-commandTile__desc {
+  color: rgba(255, 255, 255, 0.9);
+  opacity: 0.9;
+}
+
+.wm-planner-commandGridIntro {
+  font-size: 11px;
+  color: var(--wm-neutral-500);
+  margin: 0 0 12px;
+  line-height: 1.45;
+}
+
+.wm-planner-sectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--wm-neutral-500);
+  margin-bottom: 4px;
+}
+
+.wm-planner-sectionTitle {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--wm-neutral-900);
+  margin-bottom: 10px;
 }
 
 .wm-er-vPlanner .wm-planner-card {
@@ -362,21 +846,27 @@
   pointer-events: none;
   background: linear-gradient(
     105deg,
-    transparent 40%,
-    rgba(255, 255, 255, 0.55) 50%,
-    transparent 60%
+    transparent 42%,
+    rgba(255, 255, 255, 0.28) 50%,
+    transparent 58%
   );
   transform: translateX(-120%);
-  animation: wmPlannerMegaShimmer 4.5s ease-in-out infinite;
+  animation: wmPlannerMegaShimmer 8s ease-in-out infinite;
 }
 
 @keyframes wmPlannerMegaShimmer {
   0%,
-  70% {
+  78% {
     transform: translateX(-120%);
   }
   100% {
     transform: translateX(120%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wm-planner-megaCard--shimmer::after {
+    animation: none;
   }
 }
 
@@ -533,9 +1023,7 @@
 .wm-ee-vPlanner.wm-planner-page {
   min-height: 0;
   padding-bottom: 4px;
-  background:
-    radial-gradient(circle at 8% -2%, rgba(8, 145, 178, 0.14), transparent 34%),
-    linear-gradient(180deg, #f4fbfd 0%, #edf4f8 50%, #f8fafc 100%);
+  background: transparent;
 }
 
 .wm-planner-gigSection.wm-ee-vPlanner.wm-planner-page {
@@ -609,6 +1097,84 @@
   color: var(--wm-neutral-500);
 }
 
+/* Compact empty — mobile-friendly; no tall hollow cards */
+.wm-planner-empty--compact {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  text-align: left;
+  gap: 12px;
+  padding: 2px 0 0;
+}
+
+.wm-planner-empty--compact .wm-planner-empty__icon {
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.wm-planner-empty--compact .wm-planner-empty__copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.wm-planner-empty--compact .wm-planner-empty__title {
+  margin-top: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--wm-planner-accent-strong, #0e7490);
+}
+
+.wm-planner-empty--compact .wm-planner-empty__sub {
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.wm-planner-empty--compact .wm-planner-btnPrimary {
+  margin-top: 0;
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 8px 12px;
+  font-size: 12px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.wm-planner-empty--slim {
+  padding: 4px 0 0;
+}
+
+.wm-planner-empty--slim .wm-planner-empty__title {
+  margin-top: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--wm-neutral-600, #475569);
+}
+
+.wm-planner-empty--slim .wm-planner-empty__sub {
+  display: none;
+}
+
+@media (max-width: 420px) {
+  .wm-planner-empty--compact {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .wm-planner-empty--compact .wm-planner-empty__sub {
+    display: none;
+  }
+
+  .wm-planner-empty--compact .wm-planner-btnPrimary {
+    width: auto;
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+}
+
 .wm-planner-fab {
   position: fixed;
   right: 16px;
@@ -668,4 +1234,299 @@
 
 .wm-planner-slots-table tr:nth-child(even) td {
   background: rgba(8, 145, 178, 0.04);
+}
+
+/* Phase 3 calling keyframes live in shift-premium.css (employee shell).
+   Planner keeps roster glass micro-interactions below. */
+.wm-planner-rosterWorkerCard {
+  transition:
+    box-shadow 120ms ease,
+    transform 120ms ease;
+}
+
+.wm-planner-rosterWorkerCard:hover {
+  box-shadow: 0 6px 16px rgba(8, 145, 178, 0.15);
+  transform: translateY(-1px);
+}
+
+.wm-planner-rosterColumn {
+  transition:
+    border-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    background 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ---------- Executive Obsidian glass (employer / ShiftOps manager) ---------- */
+.wm-planner-obsidianShell {
+  color: #e2e8f0;
+  min-height: 100%;
+  box-sizing: border-box;
+  padding: 14px 16px 28px;
+  border-radius: 18px;
+  background:
+    radial-gradient(ellipse 80% 50% at 12% -10%, rgba(34, 211, 238, 0.16), transparent 55%),
+    radial-gradient(ellipse 70% 40% at 100% 0%, rgba(56, 189, 248, 0.08), transparent 50%),
+    linear-gradient(165deg, #0f172a 0%, #020617 58%, #020617 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 24px 48px rgba(2, 6, 23, 0.35);
+}
+
+.wm-planner-card--obsidian,
+.wm-planner-obsidianShell .wm-planner-card--obsidian {
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 22px 48px rgba(2, 6, 23, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  color: #e2e8f0;
+}
+
+.wm-planner-card--obsidian::after {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 42%);
+  opacity: 1;
+}
+
+.wm-planner-card--obsidian .wm-planner-sectionLabel {
+  color: #67e8f9;
+}
+
+.wm-planner-card--obsidian .wm-planner-sectionTitle,
+.wm-planner-card--obsidian h1,
+.wm-planner-card--obsidian h2 {
+  color: #f8fafc;
+}
+
+.wm-planner-card--obsidian p,
+.wm-planner-card--obsidian .wm-pageSub {
+  color: rgba(148, 163, 184, 0.92);
+}
+
+.wm-planner-btnPrimary--glow {
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.35),
+    0 0 28px rgba(8, 145, 178, 0.42),
+    0 10px 22px rgba(8, 145, 178, 0.28);
+}
+
+.wm-planner-btnPrimary--glow:hover {
+  filter: brightness(1.06);
+  box-shadow:
+    0 0 0 1px rgba(103, 232, 249, 0.45),
+    0 0 34px rgba(8, 145, 178, 0.55),
+    0 12px 26px rgba(8, 145, 178, 0.32);
+}
+
+.wm-planner-btnGhost--obsidian {
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #e2e8f0;
+}
+
+.wm-planner-btnGhost--obsidian:hover {
+  background: rgba(30, 41, 59, 0.85);
+  border-color: rgba(103, 232, 249, 0.35);
+}
+
+.wm-planner-errorBox--obsidian {
+  background: rgba(127, 29, 29, 0.28);
+  border-color: rgba(248, 113, 113, 0.35);
+  color: #fecaca;
+}
+
+/* ---------- Employer ShiftOps executive header + stats (Step 1) ---------- */
+.wm-shiftOpsManagerHeader {
+  display: grid;
+  gap: 16px;
+  padding: 16px 16px 4px;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(145deg, rgba(30, 41, 59, 0.72), rgba(15, 23, 42, 0.55)), rgba(15, 23, 42, 0.45);
+  box-shadow:
+    0 18px 40px rgba(2, 6, 23, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+}
+
+.wm-shiftOpsManagerHeaderTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.wm-shiftOpsManagerHeaderText {
+  min-width: 0;
+  flex: 1 1 220px;
+}
+
+.wm-shiftOpsManagerTitle {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.25;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+}
+
+.wm-shiftOpsManagerSubtitle {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(148, 163, 184, 0.95);
+  max-width: 42ch;
+}
+
+.wm-shiftOpsManagerCreateBtn {
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-size: 12px;
+  padding: 10px 14px;
+}
+
+/* grid-cols-3 gap-3 — collapses to 1 col on narrow phones */
+.wm-shiftOpsManagerStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 0 0 12px;
+}
+
+@media (max-width: 640px) {
+  .wm-shiftOpsManagerStatsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .wm-shiftOpsManagerCreateBtn {
+    width: 100%;
+  }
+}
+
+/* Obsidian slate metric cards — rounded-2xl border-slate-200/80 */
+.wm-shiftOpsManagerStatCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  padding: 16px 12px;
+  border-radius: 1rem;
+  border: 1px solid rgba(226, 232, 240, 0.22);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.12), transparent 58%),
+    linear-gradient(165deg, rgba(51, 65, 85, 0.88), rgba(15, 23, 42, 0.92));
+  box-shadow:
+    0 1px 2px rgba(2, 6, 23, 0.4),
+    0 14px 28px rgba(2, 6, 23, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+}
+
+.wm-shiftOpsManagerStatLabel {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: rgba(148, 163, 184, 0.95);
+}
+
+.wm-shiftOpsManagerStatValue {
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: #f8fafc;
+}
+
+.wm-shiftOpsManagerStatBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+}
+
+.wm-shiftOpsManagerStatBadge--live {
+  color: #67e8f9;
+  background: rgba(8, 145, 178, 0.18);
+  border-color: rgba(34, 211, 238, 0.28);
+}
+
+.wm-shiftOpsManagerStatBadge--action {
+  color: #fcd34d;
+  background: rgba(180, 83, 9, 0.22);
+  border-color: rgba(251, 191, 36, 0.35);
+}
+
+.wm-shiftOpsManagerStatBadge--muted {
+  color: rgba(148, 163, 184, 0.95);
+  background: rgba(51, 65, 85, 0.45);
+  border-color: rgba(148, 163, 184, 0.22);
+}
+
+.wm-ent-slide-backdrop--obsidian {
+  background: rgba(2, 6, 23, 0.62);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.wm-ent-slide-panel--obsidian {
+  background: rgba(15, 23, 42, 0.96);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: -18px 0 48px rgba(2, 6, 23, 0.55);
+  color: #e2e8f0;
+}
+
+.wm-ent-slide-panel--obsidian .wm-ent-slide-header,
+.wm-ent-slide-panel--obsidian .wm-ent-slide-footer {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(2, 6, 23, 0.35);
+}
+
+.wm-ent-slide-panel--obsidian .wm-ent-slide-title {
+  color: #f8fafc;
+}
+
+.wm-ent-slide-panel--obsidian .wm-ent-slide-subtitle {
+  color: #94a3b8;
+}
+
+/* Wave 3 P2-3 — broaden prefers-reduced-motion beyond shimmer */
+@media (prefers-reduced-motion: reduce) {
+  .wm-planner-btnPrimary,
+  .wm-planner-btnGhost,
+  .wm-planner-commandTile,
+  .wm-planner-morphShell,
+  .wm-planner-morphPanel,
+  .wm-planner-odometer,
+  .wm-planner-odometerDigit,
+  .wm-planner-fab,
+  .wm-planner-rosterWorkerCard,
+  .wm-planner-rosterColumn,
+  .wm-planner-megaCard--shimmer::after {
+    transition: none;
+    animation: none;
+  }
+
+  .wm-planner-btnPrimary:active:not(:disabled),
+  .wm-planner-btnGhost:active,
+  .wm-planner-commandTile:hover,
+  .wm-planner-commandTile:active,
+  .wm-planner-fab:active,
+  .wm-planner-rosterWorkerCard:hover,
+  .wm-planner-odometerDigit[data-settled="true"],
+  .wm-planner-odometer--bump {
+    transform: none;
+    animation: none;
+    filter: none;
+  }
 }

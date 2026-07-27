@@ -12,7 +12,7 @@ import {
   getVaultPlannerHistoryForWorker,
   type VaultPlannerHistoryEntry,
 } from "../storage/vaultPlannerHistory.storage";
-import type { VaultReference } from "../types/vaultProfileTypes";
+import type { VaultPlannerTimelineEntry, VaultReference } from "../types/vaultProfileTypes";
 
 function getCurrentWorkerMlId(): string {
   return employeeProfileStorage.get().uniqueId?.trim() || "";
@@ -154,6 +154,41 @@ export function aggregatePlannerReliabilityScore(): number | null {
   if (history.length === 0) return null;
   const sum = history.reduce((acc, entry) => acc + entry.reliabilityScore, 0);
   return Math.round(sum / history.length);
+}
+
+/** Newest-first epoch timeline for Profile Planner Growth section. */
+export function aggregatePlannerTimeline(): VaultPlannerTimelineEntry[] {
+  const workerMlId = getCurrentWorkerMlId();
+  if (!workerMlId) return [];
+
+  return getVaultPlannerHistoryForWorker(workerMlId)
+    .slice()
+    .sort((a, b) => b.completedAt - a.completedAt)
+    .map((entry) => {
+      const rating =
+        typeof entry.employerRating === "number" && entry.employerRating > 0
+          ? entry.employerRating
+          : typeof entry.employeeRating === "number" && entry.employeeRating > 0
+            ? entry.employeeRating
+            : null;
+
+      return {
+        id: entry.id,
+        planId: entry.planId,
+        planName: entry.planName,
+        companyName: entry.companyName,
+        epochIndex: entry.epochIndex,
+        epochStart: entry.epochStart,
+        epochEnd: entry.epochEnd,
+        daysScheduled: entry.daysScheduled,
+        daysCompleted: entry.daysCompleted,
+        attendanceRate: entry.attendanceRate,
+        reliabilityScore: entry.reliabilityScore,
+        vaultFinalized: entry.vaultFinalized,
+        rating,
+        completedAt: entry.completedAt,
+      };
+    });
 }
 
 export type { VaultPlannerHistoryEntry };

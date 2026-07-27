@@ -1,8 +1,12 @@
 // src/features/employer/workVault/components/EmployerVaultFolderView.tsx
 
 import { useState } from "react";
-import type { VaultFolder, VaultDocument } from "../../../employee/workVault/types/vaultTypes";
-import { VAULT_ACCENT } from "../../../employee/workVault/constants/vaultConstants";
+import {
+  VAULT_ACCENT,
+  vaultAccentMix,
+  type VaultDocument,
+  type VaultFolder,
+} from "../../../shared/workVault/vaultPublic";
 import { FullscreenDocViewer } from "../../../../shared/components/FullscreenDocViewer";
 
 /* ------------------------------------------------ */
@@ -37,7 +41,7 @@ function ReadOnlyDocRow({
         alignItems: "center",
         gap: 10,
         padding: "10px 12px",
-        borderRadius: 10,
+        borderRadius: "var(--wm-radius-10)",
         border: "1px solid var(--wm-er-divider, rgba(15, 23, 42, 0.08))",
         background: "#fff",
         cursor: "pointer",
@@ -48,17 +52,21 @@ function ReadOnlyDocRow({
         style={{
           width: 40,
           height: 40,
-          borderRadius: 8,
+          borderRadius: "var(--wm-radius-8)",
           overflow: "hidden",
           flexShrink: 0,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: doc.fileType === "pdf" ? "rgba(220, 38, 38, 0.08)" : `${VAULT_ACCENT}10`,
+          background: doc.fileType === "pdf" ? "rgba(220, 38, 38, 0.08)" : `${vaultAccentMix(6)}`,
         }}
       >
         {doc.thumbnailBase64 && doc.fileType === "image" ? (
-          <img src={doc.thumbnailBase64} alt={doc.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <img
+            src={doc.thumbnailBase64}
+            alt={doc.name}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
         ) : (
           <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
             <path
@@ -71,7 +79,16 @@ function ReadOnlyDocRow({
 
       {/* Info */}
       <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={{ fontWeight: 700, fontSize: 13, color: "var(--wm-er-text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <div
+          style={{
+            fontWeight: 700,
+            fontSize: 13,
+            color: "var(--wm-er-text)",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
           {doc.name}
         </div>
         <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginTop: 2 }}>
@@ -110,7 +127,14 @@ export function EmployerVaultFolderView({ folders, documents }: EmployerVaultFol
 
   if (folders.length === 0) {
     return (
-      <div style={{ padding: "32px 16px", textAlign: "center", color: "var(--wm-er-muted)", fontSize: 13 }}>
+      <div
+        style={{
+          padding: "32px 16px",
+          textAlign: "center",
+          color: "var(--wm-er-muted)",
+          fontSize: 13,
+        }}
+      >
         No visible folders. The employee has not shared any documents.
       </div>
     );
@@ -130,17 +154,20 @@ export function EmployerVaultFolderView({ folders, documents }: EmployerVaultFol
                   style={{
                     width: 32,
                     height: 32,
-                    borderRadius: 10,
+                    borderRadius: "var(--wm-radius-10)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    background: `${VAULT_ACCENT}10`,
+                    background: `${vaultAccentMix(6)}`,
                     color: VAULT_ACCENT,
                     flexShrink: 0,
                   }}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-                    <path fill="currentColor" d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2Z" />
+                    <path
+                      fill="currentColor"
+                      d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2Z"
+                    />
                   </svg>
                 </div>
                 <div>
@@ -155,7 +182,14 @@ export function EmployerVaultFolderView({ folders, documents }: EmployerVaultFol
 
               {/* Documents */}
               {folderDocs.length === 0 ? (
-                <div style={{ padding: "12px 16px", fontSize: 12, color: "var(--wm-er-muted)", fontStyle: "italic" }}>
+                <div
+                  style={{
+                    padding: "12px 16px",
+                    fontSize: 12,
+                    color: "var(--wm-er-muted)",
+                    fontStyle: "italic",
+                  }}
+                >
                   No documents in this folder.
                 </div>
               ) : (

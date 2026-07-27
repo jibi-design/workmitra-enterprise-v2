@@ -3,6 +3,14 @@
 import { AUTH_BACKEND_ENABLED } from "../config/authConfig";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "";
+const CSRF_STORAGE_KEY = "wm_csrf_token";
+
+/** One-time scrub of legacy plaintext bearer tokens. */
+try {
+  localStorage.removeItem("wm_auth_token");
+} catch {
+  /* ignore */
+}
 
 interface RequestOptions extends RequestInit {
   params?: Record<string, string>;
@@ -11,6 +19,73 @@ interface RequestOptions extends RequestInit {
 interface ApiErrorBody {
   error?: { code?: string; message?: string };
   message?: string;
+}
+
+/** HTTP-aware API failure — preserves status/code for CONFLICT (409) UX. */
+export class ApiRequestError extends Error {
+  readonly status: number;
+  readonly code?: string;
+
+  constructor(message: string, status: number, code?: string) {
+    super(message);
+    this.name = "ApiRequestError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
+function isConflictStatus(status: number, code?: string): boolean {
+  return status === 409 || String(code ?? "").toUpperCase() === "CONFLICT";
+}
+
+export function isApiConflictError(error: unknown): boolean {
+  if (error instanceof ApiRequestError) {
+    return isConflictStatus(error.status, error.code);
+  }
+  if (error instanceof Error) {
+    const msg = error.message.toLowerCase();
+    return msg.includes("already applied") || msg.includes("conflict") || msg.includes("409");
+  }
+  return false;
+}
+
+function readCsrfCookie(): string | null {
+  try {
+    const match = document.cookie.match(/(?:^|;\s*)wm_csrf=([^;]*)/);
+    if (!match?.[1]) return null;
+    return decodeURIComponent(match[1]);
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredCsrfToken(token: string | null): void {
+  try {
+    if (!token) {
+      sessionStorage.removeItem(CSRF_STORAGE_KEY);
+      return;
+    }
+    sessionStorage.setItem(CSRF_STORAGE_KEY, token);
+  } catch {
+    // demo-safe
+  }
+}
+
+export function getStoredCsrfToken(): string | null {
+  try {
+    const fromStorage = sessionStorage.getItem(CSRF_STORAGE_KEY)?.trim();
+    if (fromStorage) return fromStorage;
+  } catch {
+    // ignore
+  }
+  return readCsrfCookie();
+}
+
+function captureCsrfFromResponse(response: Response): void {
+  const headerToken = response.headers.get("X-CSRF-Token")?.trim();
+  if (headerToken) {
+    setStoredCsrfToken(headerToken);
+  }
 }
 
 export const apiService = {
@@ -27,9 +102,14 @@ export const apiService = {
       configHeaders.set("Content-Type", "application/json");
     }
 
-    const legacyToken = localStorage.getItem("wm_auth_token");
-    if (legacyToken && !AUTH_BACKEND_ENABLED) {
-      configHeaders.set("Authorization", `Bearer ${legacyToken}`);
+    const method = (rest.method ?? "GET").toUpperCase();
+    const mutating =
+      method === "POST" || method === "PATCH" || method === "PUT" || method === "DELETE";
+    if (AUTH_BACKEND_ENABLED && mutating && !configHeaders.has("X-CSRF-Token")) {
+      const csrf = getStoredCsrfToken();
+      if (csrf) {
+        configHeaders.set("X-CSRF-Token", csrf);
+      }
     }
 
     const response = await fetch(url.toString(), {
@@ -38,11 +118,15 @@ export const apiService = {
       credentials: AUTH_BACKEND_ENABLED ? "include" : "same-origin",
     });
 
+    if (AUTH_BACKEND_ENABLED) {
+      captureCsrfFromResponse(response);
+    }
+
     if (!response.ok) {
       const errorData = (await response.json().catch(() => ({}))) as ApiErrorBody;
       const message =
         errorData.error?.message ?? errorData.message ?? `API Error: ${response.status}`;
-      throw new Error(message);
+      throw new ApiRequestError(message, response.status, errorData.error?.code);
     }
 
     if (response.status === 204) {
@@ -52,19 +136,35 @@ export const apiService = {
     return (await response.json()) as T;
   },
 
-  get<T>(endpoint: string, params?: Record<string, string>) {
-    return this.request<T>(endpoint, { method: "GET", params });
+  get<T>(endpoint: string, params?: Record<string, string>, headers?: HeadersInit) {
+    return this.request<T>(endpoint, { method: "GET", params, headers });
   },
 
-  post<T>(endpoint: string, body: unknown) {
-    return this.request<T>(endpoint, { method: "POST", body: JSON.stringify(body) });
+  post<T>(endpoint: string, body: unknown, headers?: HeadersInit) {
+    return this.request<T>(endpoint, {
+      method: "POST",
+      body: JSON.stringify(body),
+      headers,
+    });
   },
 
-  put<T>(endpoint: string, body: unknown) {
-    return this.request<T>(endpoint, { method: "PUT", body: JSON.stringify(body) });
+  put<T>(endpoint: string, body: unknown, headers?: HeadersInit) {
+    return this.request<T>(endpoint, {
+      method: "PUT",
+      body: JSON.stringify(body),
+      headers,
+    });
   },
 
-  delete<T>(endpoint: string) {
-    return this.request<T>(endpoint, { method: "DELETE" });
+  patch<T>(endpoint: string, body: unknown, headers?: HeadersInit) {
+    return this.request<T>(endpoint, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+      headers,
+    });
+  },
+
+  delete<T>(endpoint: string, headers?: HeadersInit) {
+    return this.request<T>(endpoint, { method: "DELETE", headers });
   },
 };

@@ -10,10 +10,6 @@ import { OwnershipAccessSection } from "../components/employerProfile/OwnershipA
 import { PublicProfilePreview } from "../components/PublicProfilePreview";
 import { IconEdit } from "../helpers/settingsIcons";
 
-const PURPLE = "#7c3aed";
-const PURPLE_LIGHT = "rgba(124,58,237,0.08)";
-const PURPLE_BORDER = "rgba(124,58,237,0.15)";
-
 export function EmployerProfilePage() {
   const [profile, setProfile] = useState<EmployerProfile>(() => employerSettingsStorage.get());
   const [editMode, setEditMode] = useState(false);
@@ -97,81 +93,101 @@ export function EmployerProfilePage() {
 
   return (
     <div>
-      <div className="wm-pageHead">
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1 }}>
-          <div
-            style={{
-              width: 38,
-              height: 38,
-              borderRadius: 10,
-              background: PURPLE_LIGHT,
-              border: `1px solid ${PURPLE_BORDER}`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: PURPLE,
-              flexShrink: 0,
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-              <path
-                fill="currentColor"
-                d="M12 7V3H2v18h20V7H12ZM6 19H4v-2h2v2Zm0-4H4v-2h2v2Zm0-4H4V9h2v2Zm0-4H4V5h2v2Zm4 12H8v-2h2v2Zm0-4H8v-2h2v2Zm0-4H8V9h2v2Zm0-4H8V5h2v2Zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10Zm-2-8h-2v2h2v-2Zm0 4h-2v2h2v-2Z"
-              />
-            </svg>
-          </div>
-          <div>
-            <div className="wm-pageTitle">Employer Profile</div>
-            <div className="wm-pageSub">Your account and business identity</div>
-          </div>
-        </div>
-
-        {!editMode ? (
-          <button
-            type="button"
-            onClick={handleEdit}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              height: 36,
-              borderRadius: 8,
-              border: "none",
-              background: PURPLE_LIGHT,
-              padding: "8px 16px",
-              fontWeight: 700,
-              fontSize: 13,
-              color: PURPLE,
-              cursor: "pointer",
-            }}
-          >
-            <IconEdit />
-            Edit
-          </button>
-        ) : (
-          <div style={{ display: "flex", gap: 8 }}>
-            <button className="wm-outlineBtn" type="button" onClick={handleCancel}>
-              Cancel
-            </button>
+      <div className="wm-profileHero">
+        <div className="wm-profileHero__avatar wm-profileHero__avatar--employer" aria-hidden="true">
+          {d.companyLogo ? (
+            <img
+              src={d.companyLogo}
+              alt=""
+              style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
+            />
+          ) : (
+            (d.companyName || "E")
+              .trim()
+              .split(/\s+/)
+              .filter(Boolean)
+              .slice(0, 2)
+              .map((p) => p[0]?.toUpperCase() ?? "")
+              .join("") || "E"
+          )}
+          {!editMode ? (
             <button
               type="button"
-              onClick={handleSave}
+              className="wm-profileHero__edit"
+              aria-label="Edit company profile"
+              onClick={handleEdit}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm8-2h-2.17l-1.24-1.35A2 2 0 0 0 15.12 5H8.88a2 2 0 0 0-1.47.65L6.17 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Zm-8 11a5 5 0 1 1 0-10 5 5 0 0 1 0 10Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+          ) : null}
+        </div>
+
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div className="wm-profileHero__name">{d.companyName?.trim() || "Company profile"}</div>
+          <span className="wm-profileHero__role">Employer</span>
+          <div style={{ marginTop: 6, fontSize: 13, color: "var(--wm-emp-muted, #64748b)" }}>
+            {[d.industryType, d.companySize].filter(Boolean).join(" · ") ||
+              "Industry / size not set"}
+          </div>
+          {d.uniqueId ? (
+            <div
+              className="wm-profileHero__id"
+              role="button"
+              tabIndex={0}
+              onClick={() => {
+                void navigator.clipboard.writeText(d.uniqueId ?? "");
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  void navigator.clipboard.writeText(d.uniqueId ?? "");
+                }
+              }}
+            >
+              {d.uniqueId}
+            </div>
+          ) : null}
+        </div>
+
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
+          {!editMode ? (
+            <button
+              type="button"
+              onClick={handleEdit}
               style={{
-                height: 40,
-                borderRadius: 8,
-                border: 0,
-                background: PURPLE,
-                padding: "8px 18px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                minHeight: 44,
+                borderRadius: "var(--wm-radius-button)",
+                border: "1px solid rgba(148,163,184,0.28)",
+                background: "rgba(255,255,255,0.9)",
+                padding: "0 16px",
                 fontWeight: 700,
                 fontSize: 13,
-                color: "#fff",
+                color: "var(--wm-emp-text, #0f172a)",
                 cursor: "pointer",
               }}
             >
-              Save
+              <IconEdit />
+              Edit
             </button>
-          </div>
-        )}
+          ) : (
+            <button
+              className="wm-outlineBtn"
+              type="button"
+              onClick={handleCancel}
+              style={{ minHeight: 44 }}
+            >
+              Cancel
+            </button>
+          )}
+        </div>
       </div>
 
       <YourAccountSection data={d} editMode={editMode} onFieldChange={updateDraft} />
@@ -199,6 +215,14 @@ export function EmployerProfilePage() {
       />
 
       <PublicProfilePreview profile={d} />
+
+      {editMode ? (
+        <div className="wm-profileSaveBar">
+          <button type="button" className="wm-profileSaveBar__btn" onClick={handleSave}>
+            Save profile
+          </button>
+        </div>
+      ) : null}
 
       <NoticeModal notice={notice} onClose={() => setNotice(null)} />
     </div>

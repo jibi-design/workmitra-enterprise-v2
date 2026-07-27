@@ -31,8 +31,8 @@ export const EMPLOYEE_SLIDES: readonly OnboardingSlide[] = [
   },
   {
     icon: "wmid",
-    title: "Step 2: Get your JM ID",
-    message: "Your unique work identity. Employers verify you using this ID.",
+    title: "Step 2: Get your ML ID",
+    message: "Your unique Mitra Labs identity. Employers verify you using this ID.",
   },
   {
     icon: "ready",
@@ -50,7 +50,7 @@ export const EMPLOYER_SLIDES: readonly OnboardingSlide[] = [
   {
     icon: "company",
     title: "Step 1: Set up your company",
-    message: "Add your company name and details. Workers verify you using your JM ID.",
+    message: "Add your company name and details. Workers verify you using your ML ID.",
   },
   {
     icon: "postjob",

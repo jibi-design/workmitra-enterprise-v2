@@ -1,45 +1,36 @@
-// App name: Job Mitra
-// File name: WhatWeProvideSection.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\components\shiftPostDetails\WhatWeProvideSection.tsx
+// App name: Job Mitra | WhatWeProvideSection.tsx — surface-glass (post-details polish)
 
 import { PROVIDE_MAP } from "../../helpers/shiftPostDetailHelpers";
-import { CARD_STYLE, SECTION_TITLE_STYLE, SHIFT_GREEN } from "./shiftPostDetail.styles";
+import { SECTION_PAD, SECTION_TITLE_STYLE } from "./shiftPostDetail.styles";
 
 export function WhatWeProvideSection({ items }: { readonly items: readonly string[] }) {
   if (items.length === 0) return null;
 
   return (
-    <div className="wm-ee-card" style={CARD_STYLE}>
+    <section
+      className="wm-shift-surface-glass wm-shift-surface-glass--shift wm-animateIn"
+      data-testid="shift-post-provide"
+      style={{ ...SECTION_PAD, animationDelay: "80ms" }}
+    >
       <div style={SECTION_TITLE_STYLE}>What we provide</div>
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
         {items.map((provideId) => {
           const item = PROVIDE_MAP[provideId];
-
           if (!item) return null;
 
           return (
             <span
               key={provideId}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "6px 10px",
-                borderRadius: 999,
-                fontSize: 12,
-                fontWeight: 800,
-                background: "rgba(22,163,74,0.08)",
-                color: SHIFT_GREEN,
-                border: "1px solid rgba(22,163,74,0.2)",
-              }}
+              className="wm-shift-pill"
+              style={{ fontSize: 12, fontWeight: 800 }}
             >
-              <span>{item.icon}</span>
+              <span aria-hidden="true">{item.icon}</span>
               {item.label}
             </span>
           );
         })}
       </div>
-    </div>
+    </section>
   );
 }

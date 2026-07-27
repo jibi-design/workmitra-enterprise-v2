@@ -32,7 +32,8 @@ function countByStatus(storageKey: string, statuses: string[]): number {
 
 export function getEmployerRatingDisplay(): string {
   try {
-    const raw = localStorage.getItem("wm_employer_ratings_v1");
+    // MIG-004: canonical writer key is wm_ratings_worker_to_employer_v1 (stars)
+    const raw = localStorage.getItem("wm_ratings_worker_to_employer_v1");
     if (!raw) return "\u2014";
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed) || parsed.length === 0) return "\u2014";
@@ -42,9 +43,9 @@ export function getEmployerRatingDisplay(): string {
 
     for (const item of parsed) {
       if (typeof item !== "object" || item === null) continue;
-      const rating = (item as Record<string, unknown>)["rating"];
-      if (typeof rating === "number" && rating > 0) {
-        total += rating;
+      const stars = (item as Record<string, unknown>)["stars"];
+      if (typeof stars === "number" && stars > 0) {
+        total += stars;
         count += 1;
       }
     }
@@ -75,8 +76,8 @@ export function getHRStats() {
 
 export function getConsoleStats() {
   return {
-    tasks: readArrayCount("wm_hr_task_assignments_v1"),
+    tasks: readArrayCount("wm_task_assignment_v1"),
     leave: readArrayCount("wm_hr_leave_requests_v1"),
-    incidents: readArrayCount("wm_hr_incident_reports_v1"),
+    incidents: readArrayCount("wm_incident_reports_v1"),
   };
 }

@@ -17,7 +17,7 @@ export function buildStep1FromDraft(
     workingDays: draft.workingDays,
     description: draft.description ?? "",
     defaultWorkers: draft.slots[0]?.workers || 2,
-    waitingBuffer: 2,
+    waitingBuffer: Math.max(0, Math.floor(draft.waitingBuffer ?? 0)),
     shiftTiming: "",
     mapsLink: "",
   };

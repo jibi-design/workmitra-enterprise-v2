@@ -1,7 +1,41 @@
 import { getPool } from "../../../db/pool.js";
-import type { CareerApplicationRow, CareerOfferRow } from "../../career/types.js";
+import type {
+  CareerApplicationRow,
+  CareerEmploymentRow,
+  CareerOfferRow,
+  CareerPostRow,
+} from "../../career/types.js";
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export function isCareerUuid(value: string): boolean {
+  return UUID_RE.test(value.trim());
+}
 
 export const employeeCareerRepository = {
+  async findPublishedPostById(postId: string): Promise<CareerPostRow | null> {
+    const result = await getPool().query<CareerPostRow>(
+      `SELECT id, employer_user_id, title, description, location, status,
+              COALESCE(details, '{}'::jsonb) AS details, created_at, updated_at
+       FROM career_posts
+       WHERE id = $1 AND status = 'published'`,
+      [postId],
+    );
+    return result.rows[0] ?? null;
+  },
+
+  async listPublishedPosts(): Promise<CareerPostRow[]> {
+    const result = await getPool().query<CareerPostRow>(
+      `SELECT id, employer_user_id, title, description, location, status,
+              COALESCE(details, '{}'::jsonb) AS details, created_at, updated_at
+       FROM career_posts
+       WHERE status = 'published'
+       ORDER BY updated_at DESC
+       LIMIT 200`,
+    );
+    return result.rows;
+  },
+
   async findApplicationById(applicationId: string): Promise<CareerApplicationRow | null> {
     const result = await getPool().query<CareerApplicationRow>(
       `SELECT id, post_id, applicant_user_id, status, cover_note, applied_at, updated_at
@@ -10,6 +44,44 @@ export const employeeCareerRepository = {
       [applicationId],
     );
     return result.rows[0] ?? null;
+  },
+
+  async findApplicationByPostAndApplicant(
+    postId: string,
+    applicantUserId: string,
+  ): Promise<CareerApplicationRow | null> {
+    const result = await getPool().query<CareerApplicationRow>(
+      `SELECT id, post_id, applicant_user_id, status, cover_note, applied_at, updated_at
+       FROM career_applications
+       WHERE post_id = $1 AND applicant_user_id = $2`,
+      [postId, applicantUserId],
+    );
+    return result.rows[0] ?? null;
+  },
+
+  async listApplicationsByApplicant(applicantUserId: string): Promise<CareerApplicationRow[]> {
+    const result = await getPool().query<CareerApplicationRow>(
+      `SELECT id, post_id, applicant_user_id, status, cover_note, applied_at, updated_at
+       FROM career_applications
+       WHERE applicant_user_id = $1
+       ORDER BY applied_at DESC`,
+      [applicantUserId],
+    );
+    return result.rows;
+  },
+
+  async createApplication(params: {
+    postId: string;
+    applicantUserId: string;
+    coverNote: string | null;
+  }): Promise<CareerApplicationRow> {
+    const result = await getPool().query<CareerApplicationRow>(
+      `INSERT INTO career_applications (post_id, applicant_user_id, status, cover_note)
+       VALUES ($1, $2, 'pending', $3)
+       RETURNING id, post_id, applicant_user_id, status, cover_note, applied_at, updated_at`,
+      [params.postId, params.applicantUserId, params.coverNote],
+    );
+    return result.rows[0];
   },
 
   async findPendingOfferByApplicationId(applicationId: string): Promise<CareerOfferRow | null> {
@@ -23,17 +95,11 @@ export const employeeCareerRepository = {
     return result.rows[0] ?? null;
   },
 
-  /**
-   * Atomically accepts the offer.
-   * Updates offer status to 'accepted' and application status to 'offer_accepted'.
-   * Uses SELECT FOR UPDATE to prevent concurrent accept + decline race.
-   */
   async acceptOfferTransaction(applicationId: string, offerId: string): Promise<void> {
     const client = await getPool().connect();
     try {
       await client.query("BEGIN");
 
-      // Lock offer row to prevent concurrent accept/decline
       const lockResult = await client.query<{ status: string }>(
         `SELECT status FROM career_offers WHERE id = $1 FOR UPDATE`,
         [offerId],
@@ -70,10 +136,6 @@ export const employeeCareerRepository = {
     }
   },
 
-  /**
-   * Atomically declines the offer.
-   * Updates offer status to 'declined' and application status to 'offer_declined'.
-   */
   async declineOfferTransaction(applicationId: string, offerId: string): Promise<void> {
     const client = await getPool().connect();
     try {
@@ -138,5 +200,57 @@ export const employeeCareerRepository = {
         JSON.stringify(params.metadata ?? {}),
       ],
     );
+  },
+
+  async listEmploymentsByEmployee(employeeUserId: string): Promise<CareerEmploymentRow[]> {
+    const result = await getPool().query<CareerEmploymentRow>(
+      `SELECT id, application_id, post_id, employee_user_id, employer_user_id,
+              status, COALESCE(details, '{}'::jsonb) AS details,
+              confirmed_at, created_at, updated_at
+       FROM career_employments
+       WHERE employee_user_id = $1
+       ORDER BY confirmed_at DESC
+       LIMIT 200`,
+      [employeeUserId],
+    );
+    return result.rows;
+  },
+
+  async updateEmploymentByEmployee(
+    employmentId: string,
+    employeeUserId: string,
+    patch: { status?: string; details?: Record<string, unknown> },
+  ): Promise<CareerEmploymentRow | null> {
+    const existing = await getPool().query<CareerEmploymentRow>(
+      `SELECT id, application_id, post_id, employee_user_id, employer_user_id,
+              status, COALESCE(details, '{}'::jsonb) AS details,
+              confirmed_at, created_at, updated_at
+       FROM career_employments
+       WHERE id = $1 AND employee_user_id = $2`,
+      [employmentId, employeeUserId],
+    );
+    const row = existing.rows[0];
+    if (!row) return null;
+
+    const nextStatus = patch.status?.trim() || row.status;
+    const nextDetails = {
+      ...(typeof row.details === "object" && row.details && !Array.isArray(row.details)
+        ? row.details
+        : {}),
+      ...(patch.details ?? {}),
+    };
+
+    const result = await getPool().query<CareerEmploymentRow>(
+      `UPDATE career_employments
+       SET status = $3,
+           details = $4::jsonb,
+           updated_at = now()
+       WHERE id = $1 AND employee_user_id = $2
+       RETURNING id, application_id, post_id, employee_user_id, employer_user_id,
+                 status, COALESCE(details, '{}'::jsonb) AS details,
+                 confirmed_at, created_at, updated_at`,
+      [employmentId, employeeUserId, nextStatus, JSON.stringify(nextDetails)],
+    );
+    return result.rows[0] ?? null;
   },
 };

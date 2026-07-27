@@ -5,8 +5,8 @@
 
 import { useState } from "react";
 import { CenterModal } from "../../../../shared/components/CenterModal";
-import { staffAvailabilityStorage } from "../../../employer/hrManagement/storage/staffAvailability.storage";
-import type { StaffAvailabilityRequest } from "../../../employer/hrManagement/types/staffAvailability.types";
+import { staffAvailabilityStorage } from "../../../shared/hr/hrPublic";
+import type { StaffAvailabilityRequest } from "../../../shared/hr/hrPublic";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -31,7 +31,12 @@ type Props = {
   onClose: () => void;
 };
 
-export function EmployeeAvailabilityResponseModal({ request, hrCandidateId, open, onClose }: Props) {
+export function EmployeeAvailabilityResponseModal({
+  request,
+  hrCandidateId,
+  open,
+  onClose,
+}: Props) {
   const [note, setNote] = useState("");
   const [responded, setResponded] = useState(false);
   const [responseType, setResponseType] = useState<"accepted" | "declined" | null>(null);
@@ -50,7 +55,12 @@ export function EmployeeAvailabilityResponseModal({ request, hrCandidateId, open
   };
 
   return (
-    <CenterModal open={open} onBackdropClose={handleClose} ariaLabel="Availability Request" maxWidth={440}>
+    <CenterModal
+      open={open}
+      onBackdropClose={handleClose}
+      ariaLabel="Availability Request"
+      maxWidth={440}
+    >
       <div style={{ padding: 20 }}>
         {/* Success State */}
         {responded && (
@@ -58,10 +68,22 @@ export function EmployeeAvailabilityResponseModal({ request, hrCandidateId, open
             <div style={{ fontSize: 36, marginBottom: 10 }}>
               {responseType === "accepted" ? "✅" : "❌"}
             </div>
-            <div style={{ fontWeight: 900, fontSize: 16, color: "var(--wm-emp-text, var(--wm-er-text))" }}>
+            <div
+              style={{
+                fontWeight: 900,
+                fontSize: 16,
+                color: "var(--wm-emp-text, var(--wm-er-text))",
+              }}
+            >
               {responseType === "accepted" ? "You accepted!" : "You declined"}
             </div>
-            <div style={{ fontSize: 12, color: "var(--wm-emp-muted, var(--wm-er-muted))", marginTop: 4 }}>
+            <div
+              style={{
+                fontSize: 12,
+                color: "var(--wm-emp-muted, var(--wm-er-muted))",
+                marginTop: 4,
+              }}
+            >
               {responseType === "accepted"
                 ? "Your employer has been notified. Please be available on the requested date."
                 : "Your employer has been notified of your response."}
@@ -80,35 +102,60 @@ export function EmployeeAvailabilityResponseModal({ request, hrCandidateId, open
         {/* Request Details + Response */}
         {!responded && (
           <>
-            <div style={{ fontWeight: 900, fontSize: 16, color: "var(--wm-emp-text, var(--wm-er-text))", marginBottom: 4 }}>
+            <div
+              style={{
+                fontWeight: 900,
+                fontSize: 16,
+                color: "var(--wm-emp-text, var(--wm-er-text))",
+                marginBottom: 4,
+              }}
+            >
               {request.title}
             </div>
-            <div style={{ fontSize: 12, color: "var(--wm-emp-muted, var(--wm-er-muted))", marginBottom: 14 }}>
+            <div
+              style={{
+                fontSize: 12,
+                color: "var(--wm-emp-muted, var(--wm-er-muted))",
+                marginBottom: 14,
+              }}
+            >
               Your employer is checking if you are available.
             </div>
 
             {/* Info Card */}
-            <div style={{
-              padding: "12px 14px",
-              borderRadius: 10,
-              background: "#f9fafb",
-              border: "1px solid var(--wm-emp-border, var(--wm-er-border, #e5e7eb))",
-              marginBottom: 14,
-            }}>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, fontSize: 12, color: "var(--wm-emp-text, var(--wm-er-text))" }}>
+            <div
+              style={{
+                padding: "12px 14px",
+                borderRadius: 10,
+                background: "#f9fafb",
+                border: "1px solid var(--wm-emp-border, var(--wm-er-border, #e5e7eb))",
+                marginBottom: 14,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 10,
+                  fontSize: 12,
+                  color: "var(--wm-emp-text, var(--wm-er-text))",
+                }}
+              >
                 <span>📅 {formatDate(request.dateNeeded)}</span>
                 {request.timeNeeded && <span>🕐 {request.timeNeeded}</span>}
                 {request.location && <span>📍 {request.location}</span>}
               </div>
               {request.description && (
-                <div style={{
-                  fontSize: 13,
-                  color: "var(--wm-emp-text, var(--wm-er-text))",
-                  lineHeight: 1.6,
-                  marginTop: 10,
-                  paddingTop: 10,
-                  borderTop: "1px solid var(--wm-emp-border, var(--wm-er-border, #e5e7eb))",
-                }}>
+                <div
+                  style={{
+                    fontSize: 13,
+                    color: "var(--wm-emp-text, var(--wm-er-text))",
+                    lineHeight: 1.6,
+                    marginTop: 10,
+                    paddingTop: 10,
+                    borderTop: "1px solid var(--wm-emp-border, var(--wm-er-border, #e5e7eb))",
+                  }}
+                >
                   {request.description}
                 </div>
               )}
@@ -116,13 +163,15 @@ export function EmployeeAvailabilityResponseModal({ request, hrCandidateId, open
 
             {/* Note */}
             <div style={{ marginBottom: 16 }}>
-              <label style={{
-                fontSize: 12,
-                fontWeight: 800,
-                color: "var(--wm-emp-text, var(--wm-er-text))",
-                display: "block",
-                marginBottom: 4,
-              }}>
+              <label
+                style={{
+                  fontSize: 12,
+                  fontWeight: 800,
+                  color: "var(--wm-emp-text, var(--wm-er-text))",
+                  display: "block",
+                  marginBottom: 4,
+                }}
+              >
                 Add a note (optional)
               </label>
               <textarea

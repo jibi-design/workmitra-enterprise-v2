@@ -1,4 +1,5 @@
 // Job Mitra | planBroadcast.service.ts | BCC crew broadcast — no worker-to-worker visibility
+// Track T1-3 — failed deliveries enqueue to wm_retry_queue_v1
 
 import {
   findWorkspaceIdForPostAndWorker,
@@ -10,8 +11,13 @@ import {
 import { planBroadcastGroupStorage } from "../storage/planBroadcastGroup.storage";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { plannerEmployeeNotifications } from "../../../shared/planner/plannerEmployeeBridge";
+import { enqueueShiftRetry } from "../../../../shared/shift/shiftRetryQueue";
 import { appendPlannerAudit } from "../storage/plannerAuditLog.storage";
 import { demandPlannerStorage } from "../storage/demandPlannerStorage";
+
+function retryErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
 
 /**
  * BCC MODEL:
@@ -87,6 +93,9 @@ export function broadcastToPlanCrew(
     readEmployeeWorkspaces().map((workspace) => [workspace.id, workspace]),
   );
 
+  const safeTitle = title.trim() || "Project update";
+  const safeBody = body.trim();
+
   const posts = new Map<string, string>();
   for (const workspaceId of group.memberWorkspaceIds) {
     const workspace = workspaceById.get(workspaceId);
@@ -95,7 +104,18 @@ export function broadcastToPlanCrew(
         planId,
         workspaceId,
       });
-      // TODO: enqueue to wm_retry_queue_v1 when retry infrastructure exists.
+      enqueueShiftRetry(
+        "planner_crew_broadcast",
+        {
+          domain: "planner",
+          step: "missing_post",
+          planId,
+          workspaceId,
+          title: safeTitle,
+          body: safeBody,
+        },
+        "workspace_or_postId_missing",
+      );
       continue;
     }
 
@@ -114,7 +134,19 @@ export function broadcastToPlanCrew(
         postId,
         error,
       });
-      // TODO: enqueue to wm_retry_queue_v1 with workspaceId context when retry infrastructure exists.
+      enqueueShiftRetry(
+        "planner_crew_broadcast",
+        {
+          domain: "planner",
+          step: "delivery_failed",
+          planId,
+          workspaceId,
+          postId,
+          title: safeTitle,
+          body: safeBody,
+        },
+        retryErrorMessage(error),
+      );
     }
   }
 
@@ -131,8 +163,105 @@ export function broadcastToPlanCrew(
     actorMlId: plan?.legalEntityMlId,
     siteManagerId: plan?.siteManagerId,
     action: "crew_broadcast",
-    summary: `Crew broadcast · ${delivered} workspace(s) · ${title.trim() || "Project update"}`,
-    meta: { delivered, title: title.trim() || "Project update" },
+    summary: `Crew broadcast · ${delivered} workspace(s) · ${safeTitle}`,
+    meta: { delivered, title: safeTitle },
+  });
+
+  return { ok: true, delivered };
+}
+
+/**
+ * Targeted BCC — filter crew by role group workerMlIds.
+ * roleGroupId === "all" → full crew broadcast.
+ */
+export function broadcastToPlanCrewByRoleGroup(
+  planId: string,
+  roleGroupId: string,
+  title: string,
+  body: string,
+): PlanBroadcastResult {
+  if (roleGroupId === "all" || !roleGroupId.trim()) {
+    return broadcastToPlanCrew(planId, title, body);
+  }
+
+  const plan = demandPlannerStorage.getById(planId);
+  const group = planBroadcastGroupStorage.getByPlanId(planId);
+  if (!group) return { ok: false, reason: "no_group" };
+
+  const role = (plan?.roleGroups ?? []).find((g) => g.id === roleGroupId);
+  if (!role) return { ok: false, reason: "role_group_not_found" };
+
+  const allowed = new Set(role.workerMlIds.map((w) => w.trim().toUpperCase()).filter(Boolean));
+  if (allowed.size === 0) return { ok: false, reason: "no_members" };
+
+  const workspaceById = new Map(
+    readEmployeeWorkspaces().map((workspace) => [workspace.id, workspace]),
+  );
+
+  const safeTitle = title.trim() || "Project update";
+  const safeBody = body.trim();
+  const posts = new Map<string, string>();
+
+  for (let i = 0; i < group.memberWorkspaceIds.length; i += 1) {
+    const workspaceId = group.memberWorkspaceIds[i]!;
+    const workerMlId = (group.memberWorkerMlIds[i] ?? "").trim().toUpperCase();
+    if (!allowed.has(workerMlId)) continue;
+    const workspace = workspaceById.get(workspaceId);
+    if (!workspace?.postId) {
+      enqueueShiftRetry(
+        "planner_crew_broadcast",
+        {
+          domain: "planner",
+          step: "missing_post_role",
+          planId,
+          workspaceId,
+          roleGroupId,
+          title: safeTitle,
+          body: safeBody,
+        },
+        "workspace_or_postId_missing",
+      );
+      continue;
+    }
+    posts.set(workspaceId, workspace.postId);
+  }
+
+  if (posts.size === 0) return { ok: false, reason: "no_members" };
+
+  let delivered = 0;
+  for (const [workspaceId, postId] of posts) {
+    try {
+      broadcastToEmployeeWorkspace(postId, title, body);
+      delivered += 1;
+    } catch (error) {
+      enqueueShiftRetry(
+        "planner_crew_broadcast",
+        {
+          domain: "planner",
+          step: "delivery_failed_role",
+          planId,
+          workspaceId,
+          postId,
+          roleGroupId,
+          title: safeTitle,
+          body: safeBody,
+        },
+        retryErrorMessage(error),
+      );
+    }
+  }
+
+  if (delivered === 0) return { ok: false, reason: "delivery_failed" };
+
+  plannerEmployeeNotifications.crewBroadcast(group.planName, ROUTE_PATHS.employeePlannerWorkspaces);
+  appendPlannerAudit({
+    planId,
+    actor: "employer",
+    actorMlId: plan?.legalEntityMlId,
+    siteManagerId: plan?.siteManagerId,
+    action: "crew_broadcast",
+    summary: `Role broadcast · ${role.label} · ${delivered} workspace(s) · ${safeTitle}`,
+    meta: { delivered, title: safeTitle, roleGroupId, roleLabel: role.label },
   });
 
   return { ok: true, delivered };

@@ -18,6 +18,8 @@ export type EmployerWorkspaceLite = {
   endAt: number;
   status: EmployerWorkspaceStatus;
   lastActivityAt: number;
+  workerMlId?: string;
+  workerName?: string;
 };
 
 export type EmployerWorkspaceCounts = Record<EmployerWorkspaceFilter, number>;

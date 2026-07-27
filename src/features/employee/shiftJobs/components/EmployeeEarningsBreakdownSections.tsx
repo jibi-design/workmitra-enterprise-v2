@@ -102,11 +102,13 @@ function BreakdownRow({
         <span style={{ fontWeight: 700, color: EARNINGS_GREEN }}>{earned.toLocaleString()}</span>
       </div>
 
-      <div style={{ height: 6, borderRadius: 999, background: "var(--wm-er-bg)" }}>
+      <div
+        style={{ height: 6, borderRadius: "var(--wm-radius-pill)", background: "var(--wm-er-bg)" }}
+      >
         <div
           style={{
             height: "100%",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             width: `${percent}%`,
             background: EARNINGS_GREEN,
             transition: "width 0.3s ease",

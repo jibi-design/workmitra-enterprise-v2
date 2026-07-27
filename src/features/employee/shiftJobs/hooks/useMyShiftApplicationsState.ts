@@ -134,6 +134,19 @@ export function useMyShiftApplicationsState(domain: ApplicationsDomain = "shift"
 
   const requestWithdrawApplication = useCallback(
     (application: ShiftApplicationData) => {
+      if (application.status === "confirmed") {
+        setPendingWithdrawApplication(application);
+        setWithdrawConfirm({
+          title: "Cancel confirmed shift?",
+          message:
+            "This releases your confirmed slot. The employer will be notified to find a replacement. Use only if you cannot attend.",
+          tone: "danger",
+          confirmLabel: "Cancel confirmation",
+          cancelLabel: "Keep confirmation",
+        });
+        return;
+      }
+
       if (!isWithdrawableStatus(application.status)) {
         showToast(`${statusLabel(application.status)} applications cannot be withdrawn here.`);
         return;
@@ -167,8 +180,9 @@ export function useMyShiftApplicationsState(domain: ApplicationsDomain = "shift"
       setPendingAttendanceApplication(application);
 
       setWithdrawConfirm({
-        title: "Confirm shift attendance?",
-        message: "Confirm only if you are available and will attend this shift on time.",
+        title: "Confirm you will attend?",
+        message:
+          "This confirms your intention only. It is not QR check-in, a live timer, or payroll punch-in.",
         tone: "warn",
         confirmLabel: "I will attend",
         cancelLabel: "Not now",
@@ -199,12 +213,12 @@ export function useMyShiftApplicationsState(domain: ApplicationsDomain = "shift"
           sectionId: PulseSectionId.EMPLOYEE_SHIFT_CONFIRMATION_CARD,
         });
 
-        showToast("Attendance confirmed.");
+        showToast("Attendance intent confirmed.");
         return;
       }
 
       if (result.reason === "already_confirmed") {
-        showToast("Attendance is already confirmed.");
+        showToast("Attendance intent is already confirmed.");
         return;
       }
 
@@ -224,6 +238,34 @@ export function useMyShiftApplicationsState(domain: ApplicationsDomain = "shift"
 
     if (!pendingWithdrawApplication) {
       setWithdrawConfirm(null);
+      return;
+    }
+
+    if (pendingWithdrawApplication.status === "confirmed") {
+      const result = shiftApplicationsStorage.cancelConfirmedAssignment(
+        pendingWithdrawApplication.id,
+      );
+
+      setWithdrawConfirm(null);
+      setPendingWithdrawApplication(null);
+      setPendingAttendanceApplication(null);
+
+      if (result.ok) {
+        showToast("Confirmation cancelled. Employer was notified.");
+        return;
+      }
+
+      if (result.reason === "not_confirmed") {
+        showToast("This shift is no longer confirmed.");
+        return;
+      }
+
+      if (result.reason === "not_found") {
+        showToast("Application not found. Please refresh and try again.");
+        return;
+      }
+
+      showToast("Unable to cancel confirmation. Please try again.");
       return;
     }
 

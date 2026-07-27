@@ -2,7 +2,7 @@
 // File: EmployerVaultSessionControls.tsx
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\workVault\components\vaultView\EmployerVaultSessionControls.tsx
 
-import type { VaultSession } from "../../../../employee/workVault/types/vaultTypes";
+import type { VaultSession } from "../../../../shared/workVault/vaultPublic";
 import { EmployerVaultSessionTimer } from "./EmployerVaultSessionTimer";
 
 type Props = {
@@ -30,7 +30,7 @@ export function EmployerVaultSessionControls({ session, onEndSession }: Props) {
         style={{
           height: 32,
           padding: "0 14px",
-          borderRadius: 8,
+          borderRadius: "var(--wm-radius-8)",
           border: "1px solid rgba(220, 38, 38, 0.25)",
           background: "rgba(220, 38, 38, 0.08)",
           color: "#dc2626",

@@ -1,7 +1,7 @@
 /** Admin — review employer registration for verified badge (Level 3). */
 
 import { useCallback, useState, useSyncExternalStore } from "react";
-import { employerSettingsStorage } from "../../../employer/company/storage/employerSettings.storage";
+import { employerSettingsStorage } from "../../../../shared/employerProfile/employerSettingsPublic";
 import {
   approveEmployerVerification,
   getEmployerVerificationQueue,

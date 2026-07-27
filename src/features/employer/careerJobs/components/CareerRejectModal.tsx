@@ -19,15 +19,19 @@ type Props = {
   open: boolean;
   candidateName: string;
   currentStage: CareerApplicationStage;
+  mode?: "single" | "bulk";
   onClose: () => void;
   onSubmit: (reason: string) => void;
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Component
-// ─────────────────────────────────────────────────────────────────────────────
-
-export function CareerRejectModal({ open, candidateName, currentStage, onClose, onSubmit }: Props) {
+export function CareerRejectModal({
+  open,
+  candidateName,
+  currentStage,
+  mode = "single",
+  onClose,
+  onSubmit,
+}: Props) {
   const [reason, setReason] = useState("");
 
   const requiresReason =
@@ -56,10 +60,15 @@ export function CareerRejectModal({ open, candidateName, currentStage, onClose, 
         ? "after sending offer"
         : "";
 
+  const isBulk = mode === "bulk";
+
   return (
-    <CenterModal open={open} onBackdropClose={resetAndClose} ariaLabel="Reject Candidate">
+    <CenterModal
+      open={open}
+      onBackdropClose={resetAndClose}
+      ariaLabel={isBulk ? "Reject candidates" : "Reject Candidate"}
+    >
       <div style={{ padding: 20 }}>
-        {/* Header */}
         <div
           style={{
             fontSize: 15,
@@ -68,7 +77,7 @@ export function CareerRejectModal({ open, candidateName, currentStage, onClose, 
             marginBottom: 4,
           }}
         >
-          Reject Candidate
+          {isBulk ? "Reject candidates" : "Reject Candidate"}
         </div>
         <div style={{ fontSize: 12, color: "var(--wm-er-muted)", marginBottom: 16 }}>
           {candidateName}
@@ -81,7 +90,7 @@ export function CareerRejectModal({ open, candidateName, currentStage, onClose, 
             style={{
               marginBottom: 14,
               padding: "10px 12px",
-              borderRadius: 10,
+              borderRadius: "var(--wm-radius-10)",
               background: "rgba(220,38,38,0.04)",
               border: "1px solid rgba(220,38,38,0.15)",
               fontSize: 12,
@@ -116,7 +125,7 @@ export function CareerRejectModal({ open, candidateName, currentStage, onClose, 
               fontSize: 13,
               fontWeight: 700,
               padding: "10px 12px",
-              borderRadius: 10,
+              borderRadius: "var(--wm-radius-10)",
               border:
                 requiresReason && reason.trim().length === 0
                   ? "1.5px solid var(--wm-error, #dc2626)"
@@ -142,7 +151,14 @@ export function CareerRejectModal({ open, candidateName, currentStage, onClose, 
         </div>
 
         {/* Actions */}
-        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 16 }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "var(--wm-space-10)",
+            justifyContent: "flex-end",
+            marginTop: "var(--wm-stack-gap)",
+          }}
+        >
           <button
             className="wm-outlineBtn"
             type="button"

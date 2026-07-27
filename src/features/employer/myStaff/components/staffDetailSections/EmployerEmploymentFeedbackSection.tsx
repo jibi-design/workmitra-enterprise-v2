@@ -137,7 +137,7 @@ export function EmploymentFeedbackSection({ record }: Props) {
                 style={{
                   marginTop: 12,
                   padding: "10px 11px",
-                  borderRadius: 15,
+                  borderRadius: "var(--wm-radius-chip)",
                   background:
                     task.state === "dismissed"
                       ? "rgba(248,250,252,0.92)"

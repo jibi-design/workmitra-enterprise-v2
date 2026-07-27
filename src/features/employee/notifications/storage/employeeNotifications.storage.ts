@@ -110,6 +110,10 @@ function write(list: EmployeeNotification[]) {
   notify();
 }
 
+function writeForHydrate(list: EmployeeNotification[]) {
+  write(list);
+}
+
 function push(domain: EmployeeNotificationDomain, title: string, body?: string, route?: string) {
   const cleanTitle = cleanNotificationText(title, DEFAULT_NOTIFICATION_TEXT_LIMITS.title);
   if (!cleanTitle) return;
@@ -156,15 +160,56 @@ export const employeeNotificationsStorage = {
     };
   },
 
+  /** Auth on: hydrate from DB then merge LS cache. Auth off: no-op. */
+  async hydrateFromDb(): Promise<EmployeeNotification[]> {
+    const { hydrateEmployeeNotificationsFromDb } =
+      await import("../services/notificationsDbTruth.service");
+    return hydrateEmployeeNotificationsFromDb(writeForHydrate, readCached);
+  },
+
   markRead(id: string) {
     const cleanId = cleanNotificationText(id, 120);
     if (!cleanId) return;
 
-    write(readCached().map((n) => (n.id === cleanId ? { ...n, isRead: true } : n)));
+    const before = readCached();
+    write(before.map((n) => (n.id === cleanId ? { ...n, isRead: true } : n)));
+
+    void (async () => {
+      const { isNotificationsApiSyncEnabled, notificationsGateApi } =
+        await import("../services/notificationsGateApi.service");
+      if (!isNotificationsApiSyncEnabled()) return;
+
+      const isUuid =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(cleanId);
+      if (!isUuid) return;
+
+      try {
+        const server = await notificationsGateApi.markRead(cleanId);
+        const { mapServerNotificationToLocal } =
+          await import("../services/notificationsDbTruth.service");
+        const mapped = mapServerNotificationToLocal(server);
+        write(readCached().map((n) => (n.id === cleanId ? { ...n, ...mapped, isRead: true } : n)));
+      } catch {
+        // Rollback optimistic LS update when API fails (auth on + server id).
+        write(before);
+      }
+    })();
   },
 
   markAllRead() {
-    write(readCached().map((n) => (n.isRead ? n : { ...n, isRead: true })));
+    const before = readCached();
+    write(before.map((n) => (n.isRead ? n : { ...n, isRead: true })));
+
+    void (async () => {
+      const { isNotificationsApiSyncEnabled, notificationsGateApi } =
+        await import("../services/notificationsGateApi.service");
+      if (!isNotificationsApiSyncEnabled()) return;
+      try {
+        await notificationsGateApi.markAllRead();
+      } catch {
+        write(before);
+      }
+    })();
   },
 
   deleteOne(id: string) {

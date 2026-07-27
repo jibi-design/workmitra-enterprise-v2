@@ -11,15 +11,19 @@ import {
   plannerReadJson,
   plannerWriteJson,
 } from "../../../employer/planner/storage/plannerSafeStorage";
+import {
+  PLANNER_CONCURRENCY_CHANGED as CHANNEL_EVENT,
+  postPlannerConcurrencyMessage,
+  subscribePlannerConcurrencyChannel,
+} from "./plannerConcurrency.channel";
 
 export const PLANNER_PUBLISH_LOCK_KEY = "wm_planner_publish_lock_v1";
 export const PLANNER_BATCH_ACTION_LOCK_KEY = "wm_planner_batch_action_lock_v1";
 export const PLANNER_BATCH_APPLIED_KEY = "wm_planner_batch_applied_v1";
-export const PLANNER_CONCURRENCY_CHANGED = "wm:planner-concurrency-changed";
+export const PLANNER_CONCURRENCY_CHANGED = CHANNEL_EVENT;
 
 const PUBLISH_LOCK_TTL_MS = 60_000;
 const BATCH_LOCK_TTL_MS = 30_000;
-const CHANNEL_NAME = "wm_planner_concurrency_v1";
 
 type PublishLockRecord = {
   planId: string;
@@ -72,15 +76,7 @@ export function getPlannerTabId(): string {
 
 function notifyConcurrency(detail?: Record<string, string>): void {
   plannerDispatchChanged(PLANNER_CONCURRENCY_CHANGED);
-  try {
-    if (typeof BroadcastChannel !== "undefined") {
-      const ch = new BroadcastChannel(CHANNEL_NAME);
-      ch.postMessage({ type: "planner_concurrency", at: now(), ...detail });
-      ch.close();
-    }
-  } catch {
-    /* ignore */
-  }
+  postPlannerConcurrencyMessage(detail);
 }
 
 function readPublishLocks(): PublishLockRecord[] {
@@ -103,6 +99,12 @@ function writePublishLocks(locks: PublishLockRecord[]): void {
   notifyConcurrency({ kind: "publish_lock" });
 }
 
+function verifyPublishLockHeld(planId: string, token: string, tabId: string): boolean {
+  const t = now();
+  const existing = readPublishLocks().find((l) => l.planId === planId && l.expiresAt > t);
+  return Boolean(existing && existing.token === token && existing.holderTabId === tabId);
+}
+
 export function acquirePublishLock(
   planId: string,
 ): { ok: true; token: string } | { ok: false; reason: "locked" | "invalid" } {
@@ -123,6 +125,10 @@ export function acquirePublishLock(
     expiresAt: t + PUBLISH_LOCK_TTL_MS,
   };
   writePublishLocks([...locks.filter((l) => l.planId !== id), next]);
+  // P0-1 — verify after write (last-writer wins; loser fails)
+  if (!verifyPublishLockHeld(id, token, tabId)) {
+    return { ok: false, reason: "locked" };
+  }
   return { ok: true, token };
 }
 
@@ -163,6 +169,19 @@ function writeBatchLocks(locks: BatchActionLockRecord[]): void {
   notifyConcurrency({ kind: "batch_lock" });
 }
 
+function verifyBatchLockHeld(
+  batchId: string,
+  action: BatchActionLockRecord["action"],
+  token: string,
+  tabId: string,
+): boolean {
+  const t = now();
+  const existing = readBatchLocks().find(
+    (l) => l.planApplyBatchId === batchId && l.action === action && l.expiresAt > t,
+  );
+  return Boolean(existing && existing.token === token && existing.holderTabId === tabId);
+}
+
 export function claimBatchActionLock(
   planApplyBatchId: string,
   action: "approve" | "reject" | "apply",
@@ -188,6 +207,10 @@ export function claimBatchActionLock(
     ...locks.filter((l) => !(l.planApplyBatchId === batchId && l.action === action)),
     next,
   ]);
+  // P0-1 — verify after write
+  if (!verifyBatchLockHeld(batchId, action, token, tabId)) {
+    return { ok: false, reason: "locked" };
+  }
   return { ok: true, token };
 }
 
@@ -244,25 +267,5 @@ export function applicationsContainBatchId(planApplyBatchId: string): boolean {
 }
 
 export function subscribePlannerConcurrency(cb: () => void): () => void {
-  const handler = () => cb();
-  window.addEventListener(PLANNER_CONCURRENCY_CHANGED, handler);
-  window.addEventListener("storage", handler);
-  let channel: BroadcastChannel | null = null;
-  try {
-    if (typeof BroadcastChannel !== "undefined") {
-      channel = new BroadcastChannel(CHANNEL_NAME);
-      channel.onmessage = () => cb();
-    }
-  } catch {
-    channel = null;
-  }
-  return () => {
-    window.removeEventListener(PLANNER_CONCURRENCY_CHANGED, handler);
-    window.removeEventListener("storage", handler);
-    try {
-      channel?.close();
-    } catch {
-      /* ignore */
-    }
-  };
+  return subscribePlannerConcurrencyChannel(cb);
 }

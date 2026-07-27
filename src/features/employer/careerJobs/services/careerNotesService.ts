@@ -1,6 +1,5 @@
 // App name: Job Mitra
 // File name: careerNotesService.ts
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\careerJobs\services\careerNotesService.ts
 
 import { readCareerApps, writeCareerApps } from "../helpers/careerNormalizers";
 
@@ -15,11 +14,11 @@ export function updateEmployerNotes(postId: string, appId: string, notes: string
   const app = apps.find((item) => item.id === appId && item.jobId === postId);
   if (!app) return false;
 
-  writeCareerApps(
+  const writeResult = writeCareerApps(
     apps.map((item) =>
       item.id === appId ? { ...item, employerNotes: cleanNotes, updatedAt: Date.now() } : item,
     ),
   );
 
-  return true;
+  return writeResult.ok;
 }

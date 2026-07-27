@@ -1,6 +1,7 @@
 // Job Mitra | usePlannerPickChooseState.ts
+// Wave 1 P0-4 — stable batchId + apply lock + dedupe
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { PlannerPublicIndexEntry } from "../../../shared/planner/plannerPublic";
 import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
 import { employeeAvailabilityService } from "../services/employeeAvailability.service";
@@ -8,6 +9,13 @@ import { smartEarningsPredictorService } from "../services/smartEarningsPredicto
 import { multiApplyGroup } from "../../../shared/planner/ports/plannerLegacyShiftBridge";
 import { plannerCommitmentStreakService } from "../services/plannerCommitmentStreak.service";
 import { plannerEmployeeNotifications } from "../services/plannerEmployeeNotifications.service";
+import {
+  applicationsContainBatchId,
+  claimBatchActionLock,
+  hasSeenApplyBatchId,
+  markApplyBatchIdSeen,
+  releaseBatchActionLock,
+} from "../../../shared/planner/services/plannerConcurrency.service";
 
 type Args = {
   entry: PlannerPublicIndexEntry;
@@ -15,6 +23,16 @@ type Args = {
   onNeedProfile: () => void;
   isProfileComplete: boolean;
 };
+
+function buildStableApplyBatchId(
+  planId: string,
+  workerMlId: string,
+  selectedDates: string[],
+): string {
+  const worker = workerMlId.trim().toUpperCase() || "anon";
+  const dates = [...selectedDates].sort().join(".");
+  return `pb_${planId.trim()}_${worker}_${dates}`;
+}
 
 export function usePlannerPickChooseState({
   entry,
@@ -25,6 +43,7 @@ export function usePlannerPickChooseState({
   const workerMlId = employeeProfileStorage.get().uniqueId ?? "local-worker";
   const [selectionByPlan, setSelectionByPlan] = useState<Record<string, string[]>>({});
   const planDateKeys = selectionByPlan[entry.planId];
+  const submitInFlightRef = useRef(false);
 
   const availability = useMemo(
     () =>
@@ -77,6 +96,7 @@ export function usePlannerPickChooseState({
   }
 
   function submit() {
+    if (submitInFlightRef.current) return;
     if (!isProfileComplete) {
       onNeedProfile();
       return;
@@ -87,24 +107,45 @@ export function usePlannerPickChooseState({
       .filter((id): id is string => Boolean(id));
     if (postIds.length === 0) return;
 
-    const batchId = `pb_${entry.planId}_${Date.now().toString(36)}`;
     const selectedDates = selectedOpenDays.map((d) => d.dateKey);
+    const batchId = buildStableApplyBatchId(entry.planId, workerMlId, selectedDates);
 
-    const count = multiApplyGroup(postIds, {
-      planId: entry.planId,
-      planApplyBatchId: batchId,
-      selectedDates,
-    });
+    // P0-4 — same plan+worker+dates must not create a second batch
+    if (hasSeenApplyBatchId(batchId) || applicationsContainBatchId(batchId)) {
+      onApplied(0);
+      return;
+    }
 
-    if (count > 0) {
-      plannerCommitmentStreakService.recordFromApply(
-        workerMlId,
-        entry.planId,
-        batchId,
+    const claim = claimBatchActionLock(batchId, "apply");
+    if (!claim.ok) return;
+
+    submitInFlightRef.current = true;
+    try {
+      if (hasSeenApplyBatchId(batchId) || applicationsContainBatchId(batchId)) {
+        onApplied(0);
+        return;
+      }
+
+      const count = multiApplyGroup(postIds, {
+        planId: entry.planId,
+        planApplyBatchId: batchId,
         selectedDates,
-      );
-      plannerEmployeeNotifications.batchApplied(entry.planName, count, entry.planId);
-      onApplied(count);
+      });
+
+      if (count > 0) {
+        markApplyBatchIdSeen(batchId);
+        plannerCommitmentStreakService.recordFromApply(
+          workerMlId,
+          entry.planId,
+          batchId,
+          selectedDates,
+        );
+        plannerEmployeeNotifications.batchApplied(entry.planName, count, entry.planId);
+        onApplied(count);
+      }
+    } finally {
+      releaseBatchActionLock(batchId, "apply", claim.token);
+      submitInFlightRef.current = false;
     }
   }
 

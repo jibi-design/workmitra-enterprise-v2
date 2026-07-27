@@ -27,10 +27,10 @@ export function createOrUpdateEmployeeWorkspace(
 ): WorkspaceCreateResult {
   const existing = readEmployeeWorkspaces();
   const appId = application.id;
-  const workerWmId = application.profileSnapshot?.uniqueId?.trim() || undefined;
+  const workerMlId = application.profileSnapshot?.uniqueId?.trim() || undefined;
   const workerName = application.profileSnapshot?.fullName?.trim() || "Worker";
 
-  if (!workerWmId) return { ok: false, reason: "missing_muid" };
+  if (!workerMlId) return { ok: false, reason: "missing_muid" };
 
   const now = Date.now();
 
@@ -38,8 +38,8 @@ export function createOrUpdateEmployeeWorkspace(
     existing.find(
       (workspace) =>
         workspace.postId === post.id &&
-        workerWmId &&
-        workspace.workerWmId?.trim().toUpperCase() === workerWmId.toUpperCase(),
+        workerMlId &&
+        workspace.workerMlId?.trim().toUpperCase() === workerMlId.toUpperCase(),
     ) ??
     existing.find((workspace) => workspace.postId === post.id && workspace.appId === appId) ??
     null;
@@ -57,7 +57,7 @@ export function createOrUpdateEmployeeWorkspace(
       return {
         ...workspace,
         appId,
-        workerWmId: workerWmId ?? workspace.workerWmId,
+        workerMlId: workerMlId ?? workspace.workerMlId,
         workerName: workerName || workspace.workerName,
         locationName: post.locationName,
         locationAddress: post.locationAddress,
@@ -79,7 +79,7 @@ export function createOrUpdateEmployeeWorkspace(
     id: createLocalId("ws"),
     postId: post.id,
     appId,
-    workerWmId,
+    workerMlId,
     workerName,
     companyName: post.companyName,
     jobName: post.jobName,

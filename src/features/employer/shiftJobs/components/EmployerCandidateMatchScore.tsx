@@ -33,7 +33,7 @@ export function EmployerCandidateMatchScore({
     <div
       style={{
         padding: "14px 16px",
-        borderRadius: 14,
+        borderRadius: "var(--wm-radius-chip)",
         background: "var(--wm-er-surface)",
         border: "1px solid var(--wm-er-border)",
         marginTop: 12,
@@ -55,7 +55,7 @@ export function EmployerCandidateMatchScore({
       <div
         style={{
           height: 6,
-          borderRadius: 999,
+          borderRadius: "var(--wm-radius-pill)",
           background: "var(--wm-er-divider)",
           overflow: "hidden",
         }}
@@ -65,7 +65,7 @@ export function EmployerCandidateMatchScore({
             height: "100%",
             width: `${percent}%`,
             background: color,
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             transition: "width 0.4s",
           }}
         />

@@ -45,7 +45,7 @@ export function useEmployerFavoritesPageState() {
     return favorites.filter(
       (favorite) =>
         favorite.workerName.toLowerCase().includes(query) ||
-        favorite.workerWmId.toLowerCase().includes(query) ||
+        favorite.workerMlId.toLowerCase().includes(query) ||
         (favorite.jobTitle ?? "").toLowerCase().includes(query),
     );
   }, [favorites, search]);
@@ -61,11 +61,11 @@ export function useEmployerFavoritesPageState() {
   }
 
   function handleAddManual() {
-    const workerWmId = addInput.trim().toUpperCase();
+    const workerMlId = addInput.trim().toUpperCase();
     const workerName = addName.trim();
 
-    if (!workerWmId) {
-      setAddError("Enter a Job Mitra ID.");
+    if (!workerMlId) {
+      setAddError("Enter a Mitra Labs ID.");
       return;
     }
 
@@ -74,12 +74,12 @@ export function useEmployerFavoritesPageState() {
       return;
     }
 
-    if (favoritesStorage.isFavorite(workerWmId)) {
+    if (favoritesStorage.isFavorite(workerMlId)) {
       setAddError("This worker is already in your Favorites.");
       return;
     }
 
-    favoritesStorage.addManual({ workerWmId, workerName });
+    favoritesStorage.addManual({ workerMlId, workerName });
     setAddInput("");
     setAddName("");
     setAddError("");
@@ -87,13 +87,13 @@ export function useEmployerFavoritesPageState() {
     setTimeout(() => setAddSuccess(""), 2500);
   }
 
-  function handleRemove(workerWmId: string) {
-    favoritesStorage.remove(workerWmId);
+  function handleRemove(workerMlId: string) {
+    favoritesStorage.remove(workerMlId);
     setRemovingId(null);
   }
 
-  function startEditNotes(workerWmId: string, currentNotes?: string) {
-    setEditNotesId(workerWmId);
+  function startEditNotes(workerMlId: string, currentNotes?: string) {
+    setEditNotesId(workerMlId);
     setNotesValue(currentNotes ?? "");
   }
 

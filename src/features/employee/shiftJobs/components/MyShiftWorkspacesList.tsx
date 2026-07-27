@@ -1,7 +1,6 @@
-// App name: Job Mitra
-// File name: MyShiftWorkspacesList.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\components\MyShiftWorkspacesList.tsx
+// App name: Job Mitra | MyShiftWorkspacesList.tsx — glass + pressable cards (Step 3)
 
+import { EnterpriseEmpty } from "../../../../shared/components/enterprise";
 import type { ShiftWorkspace } from "../../shiftJobs/storage/shiftWorkspaces.storage";
 import {
   formatWorkspaceDateRange,
@@ -13,9 +12,6 @@ import {
 import type { MyShiftWorkspaceTab } from "../types/myShiftWorkspaces.types";
 
 type WorkspacesDomain = "shift" | "planner";
-
-const SHIFT_ACCENT = "var(--wm-er-accent-shift, #16a34a)";
-const PLANNER_ACCENT = "var(--wm-planner-accent, #0891b2)";
 
 type MyShiftWorkspacesListProps = {
   tab: MyShiftWorkspaceTab;
@@ -31,8 +27,12 @@ export function MyShiftWorkspacesList({
   domain = "shift",
 }: MyShiftWorkspacesListProps) {
   return (
-    <div style={{ marginTop: 12, display: "grid", gap: 12, minHeight: 240 }}>
-      {workspaces.length === 0 && <WorkspaceEmptyState tab={tab} domain={domain} />}
+    <div
+      className="wm-shiftWorkspacesList"
+      style={{ display: "grid", gap: 12, minHeight: 240 }}
+      data-testid="shift-workspaces-list"
+    >
+      {workspaces.length === 0 ? <WorkspaceEmptyState tab={tab} domain={domain} /> : null}
 
       {workspaces.map((workspace) => (
         <WorkspaceCard
@@ -55,24 +55,12 @@ function WorkspaceEmptyState({
 }) {
   const isPlanner = domain === "planner";
   return (
-    <section
-      className="wm-ee-card"
-      style={{
-        padding: "24px 18px",
-        borderRadius: 22,
-        textAlign: "center",
-        background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
-        boxShadow: "0 10px 24px rgba(15,23,42,0.045)",
-      }}
-    >
-      <div style={{ fontWeight: 950, fontSize: 15, color: "var(--wm-er-text)" }}>
-        {isPlanner ? getPlannerWorkspaceEmptyTitle(tab) : getWorkspaceEmptyTitle(tab)}
-      </div>
-
-      <div style={{ marginTop: 7, fontSize: 12, color: "var(--wm-er-muted)", lineHeight: 1.5 }}>
-        {isPlanner ? getPlannerWorkspaceEmptyBody(tab) : getWorkspaceEmptyBody(tab)}
-      </div>
-    </section>
+    <EnterpriseEmpty
+      domain={isPlanner ? "planner" : "shift"}
+      title={isPlanner ? getPlannerWorkspaceEmptyTitle(tab) : getWorkspaceEmptyTitle(tab)}
+      subtitle={isPlanner ? getPlannerWorkspaceEmptyBody(tab) : getWorkspaceEmptyBody(tab)}
+      testId="shift-workspaces-empty"
+    />
   );
 }
 
@@ -102,10 +90,6 @@ function WorkspaceCard({
   domain: WorkspacesDomain;
 }) {
   const isPlanner = domain === "planner";
-  const accent = isPlanner ? PLANNER_ACCENT : SHIFT_ACCENT;
-  const accentSoftBg = isPlanner ? "rgba(8,145,178,0.08)" : "rgba(22,163,74,0.08)";
-  const accentSoftBorder = isPlanner ? "rgba(8,145,178,0.16)" : "rgba(22,163,74,0.16)";
-
   const title = `${workspace.companyName} - ${workspace.jobName}`;
   const range = formatWorkspaceDateRange(workspace.startAt, workspace.endAt);
   const status = getWorkspaceStatusLabel(workspace.status);
@@ -114,17 +98,21 @@ function WorkspaceCard({
   return (
     <button
       type="button"
+      className={
+        isPlanner
+          ? "wm-shift-surface-glass wm-press-card wm-shiftWorkspaceCard"
+          : "wm-shift-card wm-shift-pressable wm-shiftWorkspaceCard"
+      }
       onClick={() => onOpenWorkspace(workspace.id)}
       aria-label={`Open work group ${workspace.jobName} at ${workspace.companyName}`}
+      data-testid={`shift-workspace-card-${workspace.id}`}
       style={{
         width: "100%",
         textAlign: "left",
         padding: 14,
-        borderRadius: 20,
-        border: "1px solid rgba(226,232,240,0.95)",
-        borderLeft: `4px solid ${accent}`,
-        background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
-        boxShadow: "0 10px 24px rgba(15,23,42,0.045)",
+        borderLeft: isPlanner
+          ? "4px solid var(--wm-planner-accent, #0891b2)"
+          : "4px solid var(--wm-shift-accent, #16a34a)",
         cursor: "pointer",
       }}
     >
@@ -150,46 +138,32 @@ function WorkspaceCard({
           >
             {title}
           </div>
-
           <div
             style={{ marginTop: 4, fontSize: 12, color: "var(--wm-er-muted)", lineHeight: 1.45 }}
           >
             {workspace.locationName} · {range}
           </div>
         </div>
-
-        <span
-          style={{
-            padding: "5px 9px",
-            borderRadius: 999,
-            background: accentSoftBg,
-            border: `1px solid ${accentSoftBorder}`,
-            color: accent,
-            fontSize: 10,
-            fontWeight: 950,
-            whiteSpace: "nowrap",
-          }}
-        >
+        <span className="wm-shift-pill wm-shift-pill--outline" style={{ fontSize: 10 }}>
           {status}
         </span>
       </div>
 
       <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-        <MiniInfo
-          label="Category"
-          value={getWorkspaceCategoryLabel(workspace.category)}
-          accent={accent}
-        />
-        <MiniInfo
-          label="Updates"
-          value={unreadText}
-          highlight={workspace.unreadCount > 0}
-          accent={accent}
-        />
+        <MiniInfo label="Category" value={getWorkspaceCategoryLabel(workspace.category)} />
+        <MiniInfo label="Updates" value={unreadText} highlight={workspace.unreadCount > 0} />
       </div>
 
       <div style={{ marginTop: 11, display: "flex", justifyContent: "flex-end" }}>
-        <span style={{ fontSize: 12, fontWeight: 950, color: accent }}>
+        <span
+          style={{
+            fontSize: 12,
+            fontWeight: 950,
+            color: isPlanner
+              ? "var(--wm-planner-accent, #0891b2)"
+              : "var(--wm-shift-accent, #16a34a)",
+          }}
+        >
           {isPlanner ? "Open Workspace" : "Open Group"}
         </span>
       </div>
@@ -201,23 +175,13 @@ function MiniInfo({
   label,
   value,
   highlight = false,
-  accent = SHIFT_ACCENT,
 }: {
   label: string;
   value: string;
   highlight?: boolean;
-  accent?: string;
 }) {
   return (
-    <div
-      style={{
-        padding: "8px 8px",
-        borderRadius: 12,
-        background: "rgba(248,250,252,0.96)",
-        border: "1px solid rgba(226,232,240,0.9)",
-        minWidth: 0,
-      }}
-    >
+    <div className="wm-shift-surface-glass" style={{ padding: "8px", minWidth: 0 }}>
       <div
         style={{
           fontSize: 9,
@@ -229,13 +193,12 @@ function MiniInfo({
       >
         {label}
       </div>
-
       <div
         style={{
           marginTop: 3,
           fontSize: 11,
           fontWeight: 900,
-          color: highlight ? accent : "var(--wm-er-text)",
+          color: highlight ? "var(--wm-shift-accent, #16a34a)" : "var(--wm-er-text)",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",

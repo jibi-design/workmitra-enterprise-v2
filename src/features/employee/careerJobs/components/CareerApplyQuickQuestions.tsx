@@ -37,7 +37,7 @@ export function CareerApplyQuickQuestions({
       style={{
         marginTop: 12,
         padding: 16,
-        borderRadius: 24,
+        borderRadius: "var(--wm-radius-employer-card)",
         border: "1px solid rgba(29,78,216,0.16)",
         background: "linear-gradient(135deg, rgba(255,255,255,1), rgba(248,250,252,0.98))",
         boxShadow: "0 14px 30px rgba(15,23,42,0.06)",
@@ -65,7 +65,7 @@ export function CareerApplyQuickQuestions({
             fontSize: 11,
             fontWeight: 950,
             padding: "5px 9px",
-            borderRadius: 999,
+            borderRadius: "var(--wm-radius-pill)",
             background: allAnswered ? "rgba(29,78,216,0.10)" : "rgba(255,251,235,0.95)",
             color: allAnswered ? CAREER_BLUE : "#92400e",
             border: allAnswered
@@ -78,7 +78,7 @@ export function CareerApplyQuickQuestions({
         </span>
       </div>
 
-      <div style={{ marginTop: 13, display: "grid", gap: 10 }}>
+      <div style={{ marginTop: "var(--wm-space-12)", display: "grid", gap: "var(--wm-space-10)" }}>
         {questions.map((question, index) => {
           const answer = answers[question.id];
           const answered = answer !== undefined;
@@ -88,7 +88,7 @@ export function CareerApplyQuickQuestions({
               key={question.id}
               style={{
                 padding: "11px 12px",
-                borderRadius: 16,
+                borderRadius: "var(--wm-radius-chip)",
                 background: answered ? "rgba(239,246,255,0.75)" : "rgba(248,250,252,0.95)",
                 border: answered
                   ? "1px solid rgba(29,78,216,0.18)"
@@ -143,7 +143,7 @@ function QuestionAnswerButton({
       style={{
         minWidth: 74,
         padding: "7px 14px",
-        borderRadius: 999,
+        borderRadius: "var(--wm-radius-pill)",
         border: active ? "1.5px solid rgba(67,56,202,0.9)" : "1px solid rgba(148,163,184,0.24)",
         background: active
           ? "linear-gradient(135deg, rgba(239,246,255,1), rgba(238,242,255,0.96))"

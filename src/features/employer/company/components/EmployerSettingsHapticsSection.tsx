@@ -61,7 +61,7 @@ export function EmployerSettingsHapticsSection({ data, editMode, onFieldChange }
           style={{
             marginTop: 6,
             padding: "8px 12px",
-            borderRadius: 8,
+            borderRadius: "var(--wm-radius-8)",
             border: "1.5px solid #d1d5db",
             background: "var(--wm-er-bg)",
             display: "flex",
@@ -73,7 +73,7 @@ export function EmployerSettingsHapticsSection({ data, editMode, onFieldChange }
           <span
             style={{
               padding: "2px 8px",
-              borderRadius: 6,
+              borderRadius: "var(--wm-radius-8)",
               fontSize: 11,
               fontWeight: 800,
               background: "rgba(100,116,139,0.08)",

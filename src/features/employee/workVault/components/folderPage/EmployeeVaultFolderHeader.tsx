@@ -1,8 +1,6 @@
-// App: Job Mitra / WorkMitra_Enterprise_v2
-// File: EmployeeVaultFolderHeader.tsx
-// Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\workVault\components\folderPage\EmployeeVaultFolderHeader.tsx
+// App name: Job Mitra | EmployeeVaultFolderHeader.tsx — DomainHero (Wave 5)
 
-import { VAULT_ACCENT } from "../../constants/vaultConstants";
+import { DomainHero } from "../../../../../shared/components/layout/DomainHero";
 import type { VaultFolder } from "../../types/vaultTypes";
 
 type Props = {
@@ -13,24 +11,14 @@ type Props = {
 
 export function EmployeeVaultFolderHeader({ folder, documentCount, onBackToDocuments }: Props) {
   return (
-    <div className="wm-pageHead">
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <DomainHero
+      variant="settings"
+      audience="employee"
+      icon={
         <button
           type="button"
+          className="wm-domainHeroIconBtn"
           onClick={onBackToDocuments}
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 12,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: `${VAULT_ACCENT}12`,
-            color: VAULT_ACCENT,
-            flexShrink: 0,
-            border: "none",
-            cursor: "pointer",
-          }}
           aria-label="Back to vault documents"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
@@ -40,23 +28,17 @@ export function EmployeeVaultFolderHeader({ folder, documentCount, onBackToDocum
             />
           </svg>
         </button>
-
-        <div>
-          <div className="wm-pageTitle">{folder.name}</div>
-
-          <div className="wm-pageSub">
-            {documentCount} {documentCount === 1 ? "document" : "documents"} ·{" "}
-            <span
-              style={{
-                color: folder.visibility === "visible" ? "#15803d" : "#dc2626",
-                fontWeight: 700,
-              }}
-            >
-              {folder.visibility === "visible" ? "Visible" : "Hidden"}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
+      }
+      title={folder.name}
+      subtitle={`${documentCount} ${documentCount === 1 ? "document" : "documents"} · ${
+        folder.visibility === "visible" ? "Visible" : "Hidden"
+      }`}
+      description="Folder documents and visibility controls for your Work Vault."
+      trailing={
+        <span className="wm-domainHeroBadge">
+          {folder.visibility === "visible" ? "Visible" : "Hidden"}
+        </span>
+      }
+    />
   );
 }

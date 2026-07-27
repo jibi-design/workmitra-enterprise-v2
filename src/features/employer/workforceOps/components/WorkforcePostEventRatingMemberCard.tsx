@@ -65,7 +65,7 @@ export function WorkforcePostEventRatingMemberCard({
             style={{
               width: 34,
               height: 34,
-              borderRadius: 8,
+              borderRadius: "var(--wm-radius-8)",
               border:
                 currentRating >= value
                   ? "2px solid var(--wm-er-accent-workforce, #b45309)"

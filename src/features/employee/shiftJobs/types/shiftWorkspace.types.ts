@@ -19,7 +19,7 @@ export type ShiftWorkspace = {
   id: string;
   postId: string;
   appId?: string;
-  workerWmId?: string;
+  workerMlId?: string;
   workerName?: string;
   companyName: string;
   jobName: string;

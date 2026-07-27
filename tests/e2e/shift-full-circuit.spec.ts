@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import {
   SHIFT_CIRCUIT_BROADCAST,
   SHIFT_CIRCUIT_IDS,
+  assertPulseArrivalLock,
   ensureCircuitWorkerIdentity,
   gotoEmployeePostApply,
   gotoEmployerPostDashboard,
@@ -30,7 +31,7 @@ test.describe.configure({ mode: "serial" });
 
 test.describe("Shift Jobs — Full Circuit Handshake", () => {
   test("Shift chain — confirm nav, broadcast, complete, rating, vault", async ({ browser }) => {
-    test.setTimeout(180_000);
+    test.setTimeout(240_000);
 
     const employerContext = await browser.newContext();
     const employeeContext = await browser.newContext();
@@ -253,6 +254,19 @@ test.describe("Shift Jobs — Full Circuit Handshake", () => {
           { timeout: 5_000, message: "8-EMPLOYER: Employer rating prompt notification" },
         )
         .toBe(true);
+    });
+
+    await test.step("8b. Pulse arrival lock — 2.5s solid success then auto-dim", async () => {
+      await syncShiftCircuitStorage(employerPage, employeePage);
+      await employerPage.goto("/#/employer");
+      await expect(employerPage.getByTestId("pending-actions-hub")).toBeVisible({
+        timeout: 15_000,
+      });
+      await expect(employerPage.getByTestId("pending-action-row-shift-worker-review")).toBeVisible({
+        timeout: 15_000,
+      });
+
+      await assertPulseArrivalLock(employerPage);
     });
 
     await test.step("9. S-DE4 — employer rates worker → vault history finalized", async () => {

@@ -4,6 +4,7 @@
 
 import { useSyncExternalStore } from "react";
 import { leaveManagementStorage } from "../storage/leaveManagement.storage";
+import { hrEmployerScopedKey } from "../storage/hrStorageKeys";
 import type { LeaveRequest } from "../types/leaveManagement.types";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -14,7 +15,7 @@ let cachedRaw = "";
 let cachedRequests: LeaveRequest[] = [];
 
 function getSnapshot(): LeaveRequest[] {
-  const raw = localStorage.getItem("wm_hr_leave_requests_v1") ?? "";
+  const raw = localStorage.getItem(hrEmployerScopedKey("leave_requests_v1")) ?? "";
   if (raw === cachedRaw) return cachedRequests;
   cachedRaw = raw;
   cachedRequests = leaveManagementStorage.getAllRequests();

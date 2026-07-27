@@ -1,25 +1,20 @@
-/** Job Mitra | EmployeeHomeMainSections.tsx | src/features/employee/home/components/EmployeeHomeMainSections.tsx */
+/** Job Mitra | EmployeeHomeMainSections.tsx | Domain stack with shared stagger motion */
 
-import type { HRCandidateRecord } from "../../../employer/hrManagement/types/hrManagement.types";
+import type { ReactNode } from "react";
+import type { HRCandidateRecord } from "../../../shared/hr/hrPublic";
 import { OfferResponseCard } from "../../employment/components/OfferResponseCard";
 import {
   CareerJobsCard,
   GigProjectsCard,
   CurrentEmploymentCard,
-  InsightsCard,
   ShiftJobsCard,
   WorkforceCard,
   WorkVaultCard,
 } from "./EmployeeHomeCards";
 import { LAUNCH_VISIBILITY } from "../../../../shared/launch/launchVisibility";
 import { EmployeeHomeGetStartedCard } from "./EmployeeHomeGetStartedCard";
+import { HomeSectionPanel } from "../../../../shared/components/layout/HomeSectionPanel";
 
-/**
- * AUDIT NOTE:
- * Removed waitingList, confirmed, activeJobs, careerApplied,
- * careerInterviews, careerOffered, vaultFolders, vaultDocuments,
- * and earningsMonth as they are no longer needed for navigation-only cards.
- */
 type Props = {
   anyDomain: boolean;
   showShift: boolean;
@@ -27,8 +22,20 @@ type Props = {
   pendingOffers: HRCandidateRecord[];
   onFindShifts: () => void;
   onCareerSearch: () => void;
-  onViewHistory: () => void;
 };
+
+const STAGGER = [
+  "wm-homeCardEnter--1",
+  "wm-homeCardEnter--2",
+  "wm-homeCardEnter--3",
+  "wm-homeCardEnter--4",
+  "wm-homeCardEnter--5",
+] as const;
+
+function StaggerItem({ index, children }: { index: number; children: ReactNode }) {
+  const delayClass = STAGGER[Math.min(index, STAGGER.length - 1)];
+  return <div className={`wm-homeCardEnter ${delayClass}`}>{children}</div>;
+}
 
 export function EmployeeHomeMainSections({
   anyDomain,
@@ -37,32 +44,70 @@ export function EmployeeHomeMainSections({
   pendingOffers,
   onFindShifts,
   onCareerSearch,
-  onViewHistory,
 }: Props) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      {!anyDomain && (
+  const items: ReactNode[] = [];
+  let index = 0;
+
+  if (!anyDomain) {
+    items.push(
+      <StaggerItem key="get-started" index={index++}>
         <EmployeeHomeGetStartedCard onFindShifts={onFindShifts} onCareerSearch={onCareerSearch} />
-      )}
+      </StaggerItem>,
+    );
+  }
 
-      {/* Navigation Cards — PulseNode is already inside ShiftJobsCard / CareerJobsCard */}
-      {showShift && <ShiftJobsCard />}
+  if (showShift) {
+    items.push(
+      <StaggerItem key="shift-jobs" index={index++}>
+        <ShiftJobsCard />
+      </StaggerItem>,
+    );
+    items.push(
+      <StaggerItem key="gig-projects" index={index++}>
+        <GigProjectsCard />
+      </StaggerItem>,
+    );
+  }
 
-      {showShift && <GigProjectsCard />}
+  if (showCareer) {
+    items.push(
+      <StaggerItem key="career-jobs" index={index++}>
+        <CareerJobsCard />
+      </StaggerItem>,
+    );
+  }
 
-      {showCareer && <CareerJobsCard />}
+  for (const offer of pendingOffers) {
+    items.push(
+      <StaggerItem key={offer.id} index={index++}>
+        <OfferResponseCard record={offer} />
+      </StaggerItem>,
+    );
+  }
 
-      {pendingOffers.map((offer) => (
-        <OfferResponseCard key={offer.id} record={offer} />
-      ))}
-
+  items.push(
+    <StaggerItem key="current-employment" index={index++}>
       <CurrentEmploymentCard />
+    </StaggerItem>,
+  );
 
-      {LAUNCH_VISIBILITY.workforceOps && <WorkforceCard />}
+  if (LAUNCH_VISIBILITY.workforceOps) {
+    items.push(
+      <StaggerItem key="workforce" index={index++}>
+        <WorkforceCard />
+      </StaggerItem>,
+    );
+  }
 
+  items.push(
+    <StaggerItem key="work-vault" index={index++}>
       <WorkVaultCard />
+    </StaggerItem>,
+  );
 
-      <InsightsCard onViewHistory={onViewHistory} />
-    </div>
+  return (
+    <HomeSectionPanel eyebrow="Workspace" title="Your work tools">
+      {items}
+    </HomeSectionPanel>
   );
 }

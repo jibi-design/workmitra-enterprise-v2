@@ -255,7 +255,7 @@
   border-color: rgba(22, 163, 74, 0.35) !important;
   opacity: 1 !important;
   cursor: default !important;
-  box-shadow: 0 8px 18px rgba(22, 163, 74, 0.22) !important;
+  box-shadow: none !important;
 }
 
 /* Section/card success shimmer (600ms) */
@@ -310,7 +310,7 @@
     border-radius: 999px;
     background: linear-gradient(180deg, #22c55e, #16a34a);
     border-color: rgba(22, 163, 74, 0.35);
-    box-shadow: 0 8px 18px rgba(22, 163, 74, 0.24);
+    box-shadow: none;
   }
 
   72% {

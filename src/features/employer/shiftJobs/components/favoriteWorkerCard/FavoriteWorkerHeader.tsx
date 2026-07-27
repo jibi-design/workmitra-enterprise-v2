@@ -35,7 +35,7 @@ export function FavoriteWorkerHeader({ favorite }: Props) {
             marginTop: 2,
           }}
         >
-          {favorite.workerWmId}
+          {favorite.workerMlId}
         </div>
       </div>
 
@@ -53,7 +53,7 @@ function FavoriteSourceBadge({ favorite }: { favorite: FavoriteWorker }) {
         fontSize: 10,
         fontWeight: 700,
         padding: "2px 8px",
-        borderRadius: 999,
+        borderRadius: "var(--wm-radius-pill)",
         flexShrink: 0,
         background: isHireAgain ? "rgba(22,163,74,0.08)" : "rgba(148,163,184,0.08)",
         color: isHireAgain ? "var(--wm-er-accent-shift, #16a34a)" : "var(--wm-er-muted)",

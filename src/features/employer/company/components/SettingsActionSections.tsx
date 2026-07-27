@@ -11,7 +11,6 @@ import {
   sectionIconStyle,
   sectionTitleStyle,
   comingSoonBadgeStyle,
-  dangerBtnStyle,
 } from "../helpers/settingsStyles";
 
 /* ------------------------------------------------ */
@@ -28,12 +27,13 @@ interface PreferencesSectionProps {
 /* ------------------------------------------------ */
 export function PreferencesSection({ data, editMode, onFieldChange }: PreferencesSectionProps) {
   return (
-    <div className="wm-er-card" style={{ marginTop: 12 }}>
+    <div className="wm-settingsGroup">
+      <div className="wm-settingsGroup__title">Preferences</div>
       <div style={sectionHeadStyle}>
         <div style={sectionIconStyle}>
           <IconPreferences />
         </div>
-        <h2 style={sectionTitleStyle}>Preferences</h2>
+        <h2 style={sectionTitleStyle}>Language</h2>
       </div>
 
       {/* Language */}
@@ -90,41 +90,41 @@ interface DangerZoneSectionProps {
 
 export function DangerZoneSection({ onDeleteAccount }: DangerZoneSectionProps) {
   return (
-    <div
-      className="wm-er-card"
-      style={{ marginTop: 12, marginBottom: 32, borderColor: "rgba(220, 38, 38, 0.18)" }}
-    >
-      <div style={sectionHeadStyle}>
-        <div
-          style={{
-            ...sectionIconStyle,
-            border: "1px solid rgba(220, 38, 38, 0.18)",
-            color: "var(--wm-error)",
-          }}
-        >
-          <IconDanger />
+    <>
+      <div className="wm-settingsGroup wm-settingsGroup--danger">
+        <div className="wm-settingsGroup__title">Danger zone</div>
+        <div style={sectionHeadStyle}>
+          <div
+            style={{
+              ...sectionIconStyle,
+              border: "1px solid rgba(220, 38, 38, 0.18)",
+              color: "var(--wm-error)",
+            }}
+          >
+            <IconDanger />
+          </div>
+          <h2 style={{ ...sectionTitleStyle, color: "var(--wm-error)" }}>Account deletion</h2>
         </div>
-        <h2 style={{ ...sectionTitleStyle, color: "var(--wm-error)" }}>Danger Zone</h2>
-      </div>
 
-      <button
-        type="button"
-        style={{
-          ...dangerBtnStyle,
-          background: "rgba(220, 38, 38, 0.10)",
-          borderColor: "rgba(220, 38, 38, 0.30)",
-        }}
-        onClick={onDeleteAccount}
-      >
-        <IconDelete />
-        Delete Account
-      </button>
+        <button
+          type="button"
+          className="wm-settingsRow wm-settingsRow--danger"
+          onClick={onDeleteAccount}
+        >
+          <span className="wm-settingsRow__icon" style={{ color: "#b91c1c" }}>
+            <IconDelete />
+          </span>
+          <span className="wm-settingsRow__label">Delete Account</span>
+          <span className="wm-settingsRow__chevron">→</span>
+        </button>
 
-      <div style={dangerHintStyle}>
-        Delete Account will permanently remove all your data including company profile, employee
-        records, and settings. This action cannot be undone.
+        <div style={dangerHintStyle}>
+          Delete Account will permanently remove all your data including company profile, employee
+          records, and settings. This action cannot be undone.
+        </div>
       </div>
-    </div>
+      <div className="wm-settingsVersion">WorkMitra v1.0 · Beta</div>
+    </>
   );
 }
 

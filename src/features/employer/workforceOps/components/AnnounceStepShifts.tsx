@@ -165,7 +165,13 @@ export function AnnounceStepShifts({ shifts, onChange, onNext }: Props) {
       </button>
 
       {errors.length > 0 && (
-        <div style={{ padding: 10, borderRadius: 8, background: "rgba(220,38,38,0.06)" }}>
+        <div
+          style={{
+            padding: 10,
+            borderRadius: "var(--wm-radius-8)",
+            background: "rgba(220,38,38,0.06)",
+          }}
+        >
           {errors.map((error, index) => (
             <div key={index} style={{ fontSize: 12, color: "var(--wm-error)" }}>
               {error}

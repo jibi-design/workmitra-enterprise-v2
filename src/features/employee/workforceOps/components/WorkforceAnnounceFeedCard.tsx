@@ -84,7 +84,7 @@ export function WorkforceAnnounceFeedCard({
               key={i}
               style={{
                 padding: "2px 8px",
-                borderRadius: 999,
+                borderRadius: "var(--wm-radius-pill)",
                 background: AMBER_BG,
                 color: AMBER,
                 fontSize: 10,

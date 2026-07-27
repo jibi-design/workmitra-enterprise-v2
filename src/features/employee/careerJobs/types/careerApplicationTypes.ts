@@ -2,7 +2,7 @@
 //
 // Types for My Career Applications page.
 
-import type { CareerApplicationStage } from "../../../employer/careerJobs/types/careerTypes";
+import type { CareerApplicationStage } from "../../../career/types/careerDomainTypes";
 
 export type Tab = "active" | "interview" | "offers" | "closed" | "all";
 export type BadgeTone = "neutral" | "good" | "info" | "warn" | "bad";

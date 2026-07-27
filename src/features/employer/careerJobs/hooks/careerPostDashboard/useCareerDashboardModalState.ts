@@ -26,9 +26,11 @@ export function useCareerDashboardModalState() {
   const [notesTarget, setNotesTarget] = useState<CareerNotesTarget | null>(null);
   const [notesValue, setNotesValue] = useState("");
 
-  function openConfirm(data: ConfirmData, fn: () => void) {
+  function openConfirm(data: ConfirmData, fn: () => void | Promise<void>) {
     setConfirmData(data);
-    setConfirmFn(() => fn);
+    setConfirmFn(() => () => {
+      void Promise.resolve(fn());
+    });
   }
 
   function closeConfirm() {

@@ -2,13 +2,13 @@
 // File: EmployerVaultOtpSection.tsx
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\workVault\components\vaultView\EmployerVaultOtpSection.tsx
 
-import { VAULT_ACCENT } from "../../../../employee/workVault/constants/vaultConstants";
+import { vaultAccentMix } from "../../../../shared/workVault/vaultPublic";
 import { EmployerVaultOtpInput } from "../EmployerVaultOtpInput";
 
 type Props = {
   employeeName: string;
   error: string;
-  onSubmit: (code: string) => void;
+  onSubmit: (code: string) => void | Promise<void>;
   onCancel: () => void;
 };
 
@@ -19,9 +19,9 @@ export function EmployerVaultOtpSection({ employeeName, error, onSubmit, onCance
       style={{
         marginTop: 16,
         padding: "24px 16px",
-        borderRadius: 16,
-        border: `1px solid ${VAULT_ACCENT}18`,
-        background: `${VAULT_ACCENT}04`,
+        borderRadius: "var(--wm-radius-chip)",
+        border: `1px solid ${vaultAccentMix(10)}`,
+        background: `${vaultAccentMix(2)}`,
       }}
     >
       <EmployerVaultOtpInput

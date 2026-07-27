@@ -5,9 +5,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { demandPlannerStorage } from "../storage/demandPlannerStorage";
 import { plannerPublicIndex } from "../storage/plannerPublicIndex.storage";
-import { employerShiftStorage } from "../../../shared/planner/ports/plannerLegacyShiftBridge";
+import { computePlanFillMetrics } from "../../../shared/planner/services/plannerFillMetrics.helpers";
 import { broadcastToPlanCrew } from "../services/planBroadcast.service";
 import { cancelActivePlan } from "../services/plannerCancel.service";
+import { markPlanCompletedSaga } from "../services/plannerComplete.service";
 import { planBroadcastGroupStorage } from "../storage/planBroadcastGroup.storage";
 import {
   PlannerDetailBroadcastSection,
@@ -15,7 +16,11 @@ import {
   PlannerDetailDaysSection,
 } from "./EmployerPlannerDetailPage.parts";
 import { PlannerDetailActivitySection } from "../components/PlannerDetailActivitySection";
+import { PlannerCrewBroadcastPanel } from "../components/PlannerCrewBroadcastPanel";
+import { PlannerRosterSlotEditor } from "../components/PlannerRosterSlotEditor";
 import { EnterpriseResponsiveGrid, SlideOver } from "../../../../shared/components/enterprise";
+
+type ConfirmKind = "cancel" | "complete" | null;
 
 export function EmployerPlannerDetailPage() {
   const { planId = "" } = useParams();
@@ -24,6 +29,8 @@ export function EmployerPlannerDetailPage() {
   const [broadcastBody, setBroadcastBody] = useState("");
   const [broadcastMsg, setBroadcastMsg] = useState("");
   const [auditOpen, setAuditOpen] = useState(false);
+  const [confirmKind, setConfirmKind] = useState<ConfirmKind>(null);
+  const [confirmBusy, setConfirmBusy] = useState(false);
 
   const subscribe = useMemo(
     () => (cb: () => void) => {
@@ -46,26 +53,16 @@ export function EmployerPlannerDetailPage() {
   const crewCount = planBroadcastGroupStorage.getByPlanId(planId)?.memberWorkerMlIds.length ?? 0;
   const publicEntry = plannerPublicIndex.getByPlanId(planId);
   const estBudget = plan?.slots.reduce((sum, s) => sum + s.workers * s.payPerDay, 0) ?? 0;
-  const firstOpenPostId = plan?.slots.find((s) => s.postId)?.postId;
 
   const fill = useMemo(() => {
     if (!plan) return { confirmed: 0, needed: 0, pct: 0 };
-    let confirmed = 0;
-    let needed = 0;
-    for (const slot of plan.slots) {
-      if (!slot.postId) continue;
-      const post = employerShiftStorage.getPosts().find((p) => p.id === slot.postId);
-      if (!post) continue;
-      needed += post.vacancies;
-      confirmed += post.confirmedIds.length;
-    }
-    return { confirmed, needed, pct: needed > 0 ? Math.round((confirmed / needed) * 100) : 0 };
+    return computePlanFillMetrics(plan);
   }, [plan]);
 
   if (!plan) {
     return (
       <div className="wm-er-vPlanner wm-planner-page">
-        <div className="wm-planner-card">
+        <div className="wm-planner-card wm-planner-errorBox">
           <div style={{ fontWeight: 800 }}>Plan not found</div>
           <button
             type="button"
@@ -80,16 +77,29 @@ export function EmployerPlannerDetailPage() {
     );
   }
 
-  function handleCancel() {
-    if (
-      !window.confirm(
-        "Cancel this plan? Unfilled days will close and pending applications will be rejected.",
-      )
-    ) {
+  function runCancelConfirmed() {
+    setConfirmBusy(true);
+    const result = cancelActivePlan(planId, "Cancelled by employer");
+    setConfirmBusy(false);
+    setConfirmKind(null);
+    if (!result.ok) return;
+    nav(ROUTE_PATHS.employerPlannerHome);
+  }
+
+  function runCompleteConfirmed() {
+    setConfirmBusy(true);
+    const result = markPlanCompletedSaga(planId);
+    setConfirmBusy(false);
+    setConfirmKind(null);
+    if (!result.ok) {
+      setBroadcastMsg(
+        result.reason === "not_active"
+          ? "Only active plans can be marked completed."
+          : "Could not complete this plan. Try again.",
+      );
       return;
     }
-    const result = cancelActivePlan(planId, "Cancelled by employer");
-    if (!result.ok) return;
+    setBroadcastMsg("Plan marked completed. Review Center updated.");
     nav(ROUTE_PATHS.employerPlannerHome);
   }
 
@@ -132,7 +142,10 @@ export function EmployerPlannerDetailPage() {
             Workers see this as 1 Mega Project Card · {publicEntry.openDayCount} open days
           </div>
         ) : plan.status === "active" ? (
-          <div style={{ marginTop: 8, fontSize: 11, color: "#dc2626", fontWeight: 700 }}>
+          <div
+            className="wm-planner-errorBox"
+            style={{ marginTop: 8, fontSize: 11, fontWeight: 700 }}
+          >
             Public index missing — republish or contact support
           </div>
         ) : null}
@@ -143,58 +156,57 @@ export function EmployerPlannerDetailPage() {
         <EnterpriseResponsiveGrid minItemWidth={140} gap={8} testId="planner-detail-actions-grid">
           <button
             type="button"
-            className="wm-planner-btnGhost"
-            onClick={() => nav(ROUTE_PATHS.employerShiftPosts)}
+            className="wm-planner-commandTile wm-planner-commandTile--primary"
+            onClick={() => nav(ROUTE_PATHS.employerPlannerApplications)}
           >
-            My Posts
+            <span className="wm-planner-commandTile__body">
+              <span className="wm-planner-commandTile__label">Applications</span>
+              <span className="wm-planner-commandTile__sep" />
+              <span className="wm-planner-commandTile__desc">Review &amp; confirm crew</span>
+            </span>
           </button>
           <button
             type="button"
-            className="wm-planner-btnGhost"
-            onClick={() => nav(ROUTE_PATHS.employerShiftFavorites)}
+            className="wm-planner-commandTile wm-planner-commandTile--primary"
+            onClick={() => nav(ROUTE_PATHS.employerPlannerRosterDetail.replace(":planId", plan.id))}
           >
-            Invite favorites
+            <span className="wm-planner-commandTile__body">
+              <span className="wm-planner-commandTile__label">Roster</span>
+              <span className="wm-planner-commandTile__sep" />
+              <span className="wm-planner-commandTile__desc">Assign roles &amp; days</span>
+            </span>
           </button>
           <button
             type="button"
-            className="wm-planner-btnGhost"
-            disabled={!firstOpenPostId}
-            onClick={() =>
-              firstOpenPostId
-                ? nav(ROUTE_PATHS.employerShiftPostDashboard.replace(":postId", firstOpenPostId))
-                : undefined
-            }
-          >
-            Review applicants
-          </button>
-          <button
-            type="button"
-            className="wm-planner-btnGhost"
-            onClick={() => nav(ROUTE_PATHS.employerShiftWorkspaces)}
-          >
-            Workspaces
-          </button>
-          <button
-            type="button"
-            className="wm-planner-btnGhost"
+            className="wm-planner-commandTile"
             data-testid="planner-detail-audit-drawer-open"
             onClick={() => setAuditOpen(true)}
           >
-            Activity drawer
+            <span className="wm-planner-commandTile__body">
+              <span className="wm-planner-commandTile__label">Activity drawer</span>
+              <span className="wm-planner-commandTile__sep" />
+              <span className="wm-planner-commandTile__desc">Audit trail</span>
+            </span>
           </button>
           <button
             type="button"
-            className="wm-planner-btnGhost"
+            className="wm-planner-commandTile"
             onClick={() => nav(ROUTE_PATHS.employerPlannerFinance.replace(":planId", plan.id))}
           >
-            Finance (preview)
+            <span className="wm-planner-commandTile__body">
+              <span className="wm-planner-commandTile__label">Finance</span>
+              <span className="wm-planner-commandTile__sep" />
+              <span className="wm-planner-commandTile__desc">Preview costs</span>
+            </span>
           </button>
         </EnterpriseResponsiveGrid>
       </div>
 
       <PlannerDetailBudgetSection estBudget={estBudget} />
       <PlannerDetailDaysSection plan={plan} onNavigate={nav} />
+      <PlannerRosterSlotEditor plan={plan} />
       <PlannerDetailActivitySection planId={plan.id} />
+      <PlannerCrewBroadcastPanel planId={plan.id} />
       <PlannerDetailBroadcastSection
         broadcastTitle={broadcastTitle}
         broadcastBody={broadcastBody}
@@ -213,7 +225,21 @@ export function EmployerPlannerDetailPage() {
           Finance
         </button>
         {plan.status === "active" && (
-          <button type="button" className="wm-planner-btnGhost" onClick={handleCancel}>
+          <button
+            type="button"
+            className="wm-planner-btnPrimary"
+            data-testid="planner-detail-mark-completed"
+            onClick={() => setConfirmKind("complete")}
+          >
+            Mark as Completed
+          </button>
+        )}
+        {plan.status === "active" && (
+          <button
+            type="button"
+            className="wm-planner-btnGhost"
+            onClick={() => setConfirmKind("cancel")}
+          >
             Cancel plan
           </button>
         )}
@@ -232,6 +258,7 @@ export function EmployerPlannerDetailPage() {
         title="Plan activity"
         subtitle={plan.name}
         testId="planner-audit-slideover"
+        variant="obsidian"
         footer={
           <button type="button" className="wm-outlineBtn" onClick={() => setAuditOpen(false)}>
             Close
@@ -239,6 +266,73 @@ export function EmployerPlannerDetailPage() {
         }
       >
         <PlannerDetailActivitySection planId={plan.id} />
+      </SlideOver>
+
+      <SlideOver
+        open={confirmKind === "cancel"}
+        onClose={() => (confirmBusy ? undefined : setConfirmKind(null))}
+        title="Cancel Plan?"
+        subtitle="This action cannot be undone."
+        testId="planner-cancel-confirm-slideover"
+        variant="obsidian"
+        footer={
+          <>
+            <button
+              type="button"
+              className="wm-dangerBtn"
+              disabled={confirmBusy}
+              onClick={runCancelConfirmed}
+            >
+              Confirm Cancel
+            </button>
+            <button
+              type="button"
+              className="wm-outlineBtn"
+              disabled={confirmBusy}
+              onClick={() => setConfirmKind(null)}
+            >
+              Keep Plan
+            </button>
+          </>
+        }
+      >
+        <p style={{ fontSize: 13, color: "var(--wm-er-muted)", lineHeight: 1.5 }}>
+          All unfilled days will close. Pending applications will be rejected. Confirmed workers
+          will be notified.
+        </p>
+      </SlideOver>
+
+      <SlideOver
+        open={confirmKind === "complete"}
+        onClose={() => (confirmBusy ? undefined : setConfirmKind(null))}
+        title="Mark plan completed?"
+        subtitle={plan.name}
+        testId="planner-complete-confirm-slideover"
+        variant="obsidian"
+        footer={
+          <>
+            <button
+              type="button"
+              className="wm-planner-btnPrimary"
+              disabled={confirmBusy}
+              onClick={runCompleteConfirmed}
+            >
+              Confirm Completed
+            </button>
+            <button
+              type="button"
+              className="wm-outlineBtn"
+              disabled={confirmBusy}
+              onClick={() => setConfirmKind(null)}
+            >
+              Keep Active
+            </button>
+          </>
+        }
+      >
+        <p style={{ fontSize: 13, color: "var(--wm-er-muted)", lineHeight: 1.5 }}>
+          Confirmed workers will get review requests and vault history will close for this plan.
+        </p>
       </SlideOver>
     </div>
   );

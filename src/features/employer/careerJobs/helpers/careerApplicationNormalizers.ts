@@ -5,6 +5,7 @@
 import type {
   CareerApplication,
   CareerApplicationProfileSnapshot,
+  CareerOfferInput,
   RoundResult,
 } from "../types/careerTypes";
 import { getNumber, getString, getStringArray, isRecord } from "./careerStorageUtils";
@@ -95,6 +96,7 @@ export function normalizeCareerApplication(raw: unknown): CareerApplication | nu
     rejectedAt: getNumber(raw, "rejectedAt"),
     offeredAt: getNumber(raw, "offeredAt"),
     offerAcceptedAt: getNumber(raw, "offerAcceptedAt"),
+    offerDetails: normalizeCareerOfferInput(raw["offerDetails"]),
     hiredAt: getNumber(raw, "hiredAt"),
     withdrawnAt: getNumber(raw, "withdrawnAt"),
     screeningAnswers: normalizeScreeningAnswers(raw["screeningAnswers"]),
@@ -113,4 +115,34 @@ function normalizeScreeningAnswers(raw: unknown): Record<string, ScreeningAnswer
   });
 
   return Object.keys(answers).length > 0 ? answers : undefined;
+}
+
+function normalizeCareerOfferInput(raw: unknown): CareerOfferInput | undefined {
+  if (!isRecord(raw)) return undefined;
+
+  const jobTitle = getString(raw, "jobTitle");
+  const salary = getNumber(raw, "salary");
+  const salaryPeriod = raw["salaryPeriod"];
+  const startDate = getString(raw, "startDate");
+  const noticePeriodDays = getNumber(raw, "noticePeriodDays");
+
+  if (!jobTitle || salary === undefined || !startDate) return undefined;
+  if (salaryPeriod !== "monthly" && salaryPeriod !== "yearly") return undefined;
+  if (
+    noticePeriodDays !== 0 &&
+    noticePeriodDays !== 7 &&
+    noticePeriodDays !== 14 &&
+    noticePeriodDays !== 30
+  ) {
+    return undefined;
+  }
+
+  return {
+    jobTitle,
+    salary,
+    salaryPeriod,
+    startDate,
+    noticePeriodDays,
+    message: getString(raw, "message"),
+  };
 }

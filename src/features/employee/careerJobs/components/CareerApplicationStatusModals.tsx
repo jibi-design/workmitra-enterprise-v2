@@ -31,7 +31,11 @@ export function CareerApplicationStatusModals({
     <>
       <CenterModal open={successOpen} ariaLabel="Success">
         <div style={{ padding: 24, textAlign: "center" }}>
-          <div style={{ fontSize: 18, fontWeight: 800, color: "#16a34a" }}>Done</div>
+          <div
+            style={{ fontSize: 18, fontWeight: 800, color: "var(--wm-career-success, #16a34a)" }}
+          >
+            Done
+          </div>
           <div style={{ fontSize: 14, color: CAREER_MUTED, marginTop: 8 }}>Redirecting...</div>
         </div>
       </CenterModal>

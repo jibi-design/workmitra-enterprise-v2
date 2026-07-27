@@ -6,7 +6,7 @@ export type ShiftDirectInviteStatus = "pending" | "accepted" | "declined" | "exp
 export type ShiftDirectInvite = {
   id: string;
   postId: string;
-  workerWmId: string;
+  workerMlId: string;
   workerName: string;
   companyName: string;
   jobName: string;
@@ -19,12 +19,27 @@ export type ShiftDirectInvite = {
 const KEY = "wm_shift_direct_invites_v1";
 const CHANGED = "wm:shift-direct-invites-changed";
 
+function normalizeInvite(raw: unknown): ShiftDirectInvite | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const rec = raw as Record<string, unknown>;
+  // Dual-read: prefer workerMlId; accept legacy workerWmId from older localStorage JSON.
+  const workerMlId =
+    typeof rec.workerMlId === "string"
+      ? rec.workerMlId
+      : typeof rec.workerWmId === "string"
+        ? rec.workerWmId
+        : "";
+  if (!workerMlId) return null;
+  return { ...(raw as ShiftDirectInvite), workerMlId };
+}
+
 function read(): ShiftDirectInvite[] {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as ShiftDirectInvite[]) : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map(normalizeInvite).filter((i): i is ShiftDirectInvite => i !== null);
   } catch {
     return [];
   }
@@ -48,21 +63,21 @@ export const shiftDirectInviteStorage = {
     return read().sort((a, b) => b.sentAt - a.sentAt);
   },
 
-  getPendingForWorker(workerWmId: string): ShiftDirectInvite[] {
-    const key = workerWmId.trim().toUpperCase();
+  getPendingForWorker(workerMlId: string): ShiftDirectInvite[] {
+    const key = workerMlId.trim().toUpperCase();
     if (!key) return [];
 
     return read().filter(
-      (item) => item.workerWmId.trim().toUpperCase() === key && item.status === "pending",
+      (item) => item.workerMlId.trim().toUpperCase() === key && item.status === "pending",
     );
   },
 
-  getPendingForWorkerPost(workerWmId: string, postId: string): ShiftDirectInvite | null {
-    const key = workerWmId.trim().toUpperCase();
+  getPendingForWorkerPost(workerMlId: string, postId: string): ShiftDirectInvite | null {
+    const key = workerMlId.trim().toUpperCase();
     return (
       read().find(
         (item) =>
-          item.workerWmId.trim().toUpperCase() === key &&
+          item.workerMlId.trim().toUpperCase() === key &&
           item.postId === postId &&
           item.status === "pending",
       ) ?? null
@@ -71,11 +86,11 @@ export const shiftDirectInviteStorage = {
 
   createPending(input: Omit<ShiftDirectInvite, "id" | "sentAt" | "status">): ShiftDirectInvite {
     const now = Date.now();
-    const workerKey = input.workerWmId.trim().toUpperCase();
+    const workerKey = input.workerMlId.trim().toUpperCase();
 
     const withoutStale = read().map((item) => {
       if (
-        item.workerWmId.trim().toUpperCase() === workerKey &&
+        item.workerMlId.trim().toUpperCase() === workerKey &&
         item.postId === input.postId &&
         item.status === "pending"
       ) {
@@ -86,7 +101,7 @@ export const shiftDirectInviteStorage = {
 
     const invite: ShiftDirectInvite = {
       ...input,
-      workerWmId: workerKey,
+      workerMlId: workerKey,
       id: genId(),
       sentAt: now,
       status: "pending",

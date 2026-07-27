@@ -39,7 +39,7 @@ function TimelineActionButton({ action }: { readonly action: ShiftTimelineAction
   const baseStyle: CSSProperties = {
     ...getActionStyle(action.variant, disabled),
     minHeight: 38,
-    borderRadius: 999,
+    borderRadius: "var(--wm-radius-pill)",
     padding: "9px 13px",
     display: "inline-flex",
     alignItems: "center",

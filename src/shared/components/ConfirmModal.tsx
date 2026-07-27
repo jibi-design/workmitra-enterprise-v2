@@ -16,6 +16,8 @@ interface ConfirmModalProps {
   confirm: ConfirmData | null;
   onConfirm: () => void;
   onCancel: () => void;
+  /** Executive Obsidian glass surface for employer flows */
+  variant?: "default" | "obsidian";
 }
 
 const TONE_LABEL: Record<ConfirmTone, string> = {
@@ -24,10 +26,16 @@ const TONE_LABEL: Record<ConfirmTone, string> = {
   neutral: "Final approval required",
 };
 
-export function ConfirmModal({ confirm, onConfirm, onCancel }: ConfirmModalProps) {
+export function ConfirmModal({
+  confirm,
+  onConfirm,
+  onCancel,
+  variant = "default",
+}: ConfirmModalProps) {
   if (!confirm) return null;
 
   const tone = confirm.tone ?? "neutral";
+  const obsidian = variant === "obsidian" ? " wm-confirmModal--obsidian" : "";
 
   return (
     <CenterModal
@@ -36,7 +44,7 @@ export function ConfirmModal({ confirm, onConfirm, onCancel }: ConfirmModalProps
       ariaLabel={confirm.title}
       surface="bare"
     >
-      <div className={`wm-confirmModal wm-confirmModal-${tone}`}>
+      <div className={`wm-confirmModal wm-confirmModal-${tone}${obsidian}`}>
         <div className="wm-confirmModalHeader">
           <div className="wm-confirmModalIcon">
             <ConfirmIcon tone={tone} />

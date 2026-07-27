@@ -77,7 +77,7 @@ function isReviewCenterRequest(value: unknown): value is ReviewCenterRequest {
 
   return (
     typeof item.id === "string" &&
-    (item.domain === "shift" || item.domain === "career") &&
+    (item.domain === "shift" || item.domain === "career" || item.domain === "planner") &&
     typeof item.sourceId === "string" &&
     typeof item.sourceTitle === "string" &&
     (item.fromRole === "employee" || item.fromRole === "employer") &&
@@ -114,9 +114,12 @@ function notifyReviewRequestCreated(request: ReviewCenterRequest): void {
       ? `An employee requested your rating for ${request.sourceTitle}.`
       : `Your employer requested your review for ${request.sourceTitle}.`;
 
+  // Pulse domains do not include "planner" — map to system for bridge compatibility.
+  const pulseDomain = request.domain === "planner" ? "system" : request.domain;
+
   handleIncomingNotification({
     type: "REVIEW_RECEIVED",
-    domain: request.domain,
+    domain: pulseDomain,
     affectedUserRole: request.toRole,
     targetId: request.sourceId,
     title,

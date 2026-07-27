@@ -58,8 +58,8 @@ function DeleteAccountInner({ onCancel, onConfirm }: InnerProps) {
 
         {/* Warning message */}
         <p style={messageStyle}>
-          This will permanently remove all your employer data including job posts,
-          applications, staff records, and workspaces.
+          This will permanently remove all your employer data including job posts, applications,
+          staff records, and workspaces.
         </p>
         <p style={{ ...messageStyle, fontWeight: 700, color: "var(--wm-error)" }}>
           This action cannot be undone.
@@ -119,7 +119,7 @@ const overlayStyle: React.CSSProperties = {
 const cardStyle: React.CSSProperties = {
   width: "100%",
   maxWidth: 380,
-  borderRadius: 16,
+  borderRadius: "var(--wm-radius-chip)",
   background: "var(--wm-er-card)",
   padding: "28px 24px 24px",
   textAlign: "center",

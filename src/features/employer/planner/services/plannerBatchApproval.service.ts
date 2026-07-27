@@ -14,7 +14,6 @@ import {
   type EmployeeShiftApplication,
 } from "../../../shared/planner/ports/plannerLegacyShiftBridge";
 import {
-  confirmPlannerApplicationNative,
   hasRealShiftPost,
   rejectPlannerApplicationNative,
 } from "../../../shared/planner/services/plannerNativeApplication.helpers";
@@ -23,6 +22,17 @@ import {
   claimBatchActionLock,
   releaseBatchActionLock,
 } from "../../../shared/planner/services/plannerConcurrency.service";
+import {
+  probeAppsCapacitySoftWarn,
+  type CapacitySoftWarn,
+} from "../helpers/plannerBatchCapacity.helpers";
+import {
+  isSoSiteUuid,
+  provisionSiteMembership,
+} from "../../../shared/planner/ports/plannerMembershipBridge";
+import { filterPendingApps, runApproveConfirmLoop } from "./plannerBatchApproval.approveLoop";
+
+export type { CapacitySoftWarn };
 
 export type PlannerBatchReviewStatus = "pending" | "partial" | "confirmed" | "rejected" | "closed";
 
@@ -122,8 +132,20 @@ export type BatchActionResult = {
   reason?: string;
 };
 
+export function getBatchCapacitySoftWarn(planApplyBatchId: string): CapacitySoftWarn | null {
+  const batch = listPlannerApplicationBatches().find(
+    (b) => b.planApplyBatchId === planApplyBatchId,
+  );
+  if (!batch) return null;
+  const plan = demandPlannerStorage.getById(batch.planId);
+  if (!plan) return null;
+  const pending = batch.applications.filter((a) => PENDING.has(a.status));
+  return probeAppsCapacitySoftWarn(plan, pending);
+}
+
 export async function approvePlannerApplicationBatch(
   planApplyBatchId: string,
+  options?: { softCapacityOverride?: boolean },
 ): Promise<BatchActionResult> {
   const batch = listPlannerApplicationBatches().find(
     (b) => b.planApplyBatchId === planApplyBatchId,
@@ -135,6 +157,25 @@ export async function approvePlannerApplicationBatch(
     return { ok: false, processed: 0, failed: 0, reason: "nothing_pending" };
   }
 
+  const plan = demandPlannerStorage.getById(batch.planId);
+  const softWarn = plan ? probeAppsCapacitySoftWarn(plan, pending) : null;
+  if (softWarn?.needsConfirm && options?.softCapacityOverride) {
+    appendPlannerAudit({
+      planId: batch.planId,
+      actor: "employer",
+      actorMlId: plan?.legalEntityMlId,
+      siteManagerId: plan?.siteManagerId,
+      action: "capacity_soft_override",
+      summary: softWarn.message,
+      meta: {
+        planApplyBatchId,
+        confirmed: softWarn.confirmed,
+        allowed: softWarn.allowed,
+        slotDate: softWarn.slotDate,
+      },
+    });
+  }
+
   const claim = claimBatchActionLock(planApplyBatchId, "approve");
   if (!claim.ok) {
     return { ok: false, processed: 0, failed: 0, reason: "locked" };
@@ -144,41 +185,40 @@ export async function approvePlannerApplicationBatch(
   let failed = 0;
 
   try {
-    for (const app of pending) {
-      try {
-        if (hasRealShiftPost(app.postId)) {
-          const workspaceId = await employerShiftStorage.confirmCandidate(app.postId, app.id);
-          if (workspaceId) processed += 1;
-          else failed += 1;
-        } else if (confirmPlannerApplicationNative(app.id)) {
-          processed += 1;
-        } else {
-          failed += 1;
-        }
-      } catch {
-        failed += 1;
-      }
+    const siteId = plan?.siteId?.trim() ?? "";
+    const workerMlId = batch.workerMlId.trim();
+    if (!siteId || !isSoSiteUuid(siteId) || !workerMlId) {
+      return { ok: false, processed: 0, failed: 0, reason: "site_membership_required" };
     }
 
-    if (processed > 0) {
-      plannerPublicIndex.refreshOpenCounts(batch.planId);
-      const plan = demandPlannerStorage.getById(batch.planId);
-      appendPlannerAudit({
-        planId: batch.planId,
-        actor: "employer",
-        actorMlId: plan?.legalEntityMlId,
-        siteManagerId: plan?.siteManagerId,
-        action: "batch_approved",
-        summary: `Batch approved · ${processed} day(s) · ${batch.workerName}`,
-        meta: {
-          planApplyBatchId,
-          processed,
-          failed,
-          workerMlId: batch.workerMlId,
-          nativePath: batch.applications.some((a) => !hasRealShiftPost(a.postId)),
-        },
-      });
+    const provision = await provisionSiteMembership({
+      siteId,
+      workerMlId,
+      planId: batch.planId,
+      context: "planner_batch_approve",
+    });
+    if (!provision.ok) {
+      return { ok: false, processed: 0, failed: 0, reason: "site_membership_provision_failed" };
     }
+
+    const liveBatch = listPlannerApplicationBatches().find(
+      (b) => b.planApplyBatchId === planApplyBatchId,
+    );
+    const livePending = filterPendingApps(liveBatch?.applications ?? []);
+    if (livePending.length === 0) {
+      return { ok: false, processed: 0, failed: 0, reason: "nothing_pending" };
+    }
+
+    const loop = await runApproveConfirmLoop({
+      planApplyBatchId,
+      batch,
+      softCapacityOverride: Boolean(options?.softCapacityOverride),
+      softWarnNeedsConfirm: Boolean(softWarn?.needsConfirm),
+      membershipId: provision.membershipId,
+      livePending,
+    });
+    processed = loop.processed;
+    failed = loop.failed;
 
     return {
       ok: failed === 0 && processed > 0,

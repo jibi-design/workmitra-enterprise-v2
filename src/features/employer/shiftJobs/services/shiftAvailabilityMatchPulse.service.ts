@@ -1,11 +1,14 @@
 // App name: Job Mitra
 // Platform Lock — enqueue date-match pulses for free workers when a shift is published.
 
-import { shiftAvailabilityPulseQueueStorage } from "../../../employee/shiftJobs/storage/shiftAvailabilityPulseQueue.storage";
-import { availabilityStorage } from "../../../employee/shiftJobs/storage/availabilityStorage";
+import { shiftAvailabilityPulseQueueStorage } from "../../../shared/shift/shiftEmployeeBridge";
+import { availabilityStorage } from "../../../shared/shift/availability.reader";
 import { toDateStr } from "../helpers/shiftCreateHelpers";
 
-/** Blind match — worker WM IDs only; never expose in employer create UI. */
+/** Cap fan-out so a single publish cannot enqueue unbounded pulses (SC-4). */
+export const MAX_NOTIFY_WORKERS = 200;
+
+/** Blind match — worker Mitra Labs IDs only; never expose in employer create UI. */
 export function enqueueAvailabilityMatchPulsesForShift(params: {
   postId: string;
   startAt: number;
@@ -16,17 +19,19 @@ export function enqueueAvailabilityMatchPulsesForShift(params: {
 
   const matchedIds = new Set<string>();
 
-  for (const workerWmId of availabilityStorage.getWorkerIdsFreeOnIsoDate(startIso)) {
-    matchedIds.add(workerWmId);
+  for (const workerMlId of availabilityStorage.getWorkerIdsFreeOnIsoDate(startIso)) {
+    matchedIds.add(workerMlId);
+    if (matchedIds.size >= MAX_NOTIFY_WORKERS) break;
   }
 
-  if (endIso !== startIso) {
-    for (const workerWmId of availabilityStorage.getWorkerIdsFreeOnIsoDate(endIso)) {
-      matchedIds.add(workerWmId);
+  if (endIso !== startIso && matchedIds.size < MAX_NOTIFY_WORKERS) {
+    for (const workerMlId of availabilityStorage.getWorkerIdsFreeOnIsoDate(endIso)) {
+      matchedIds.add(workerMlId);
+      if (matchedIds.size >= MAX_NOTIFY_WORKERS) break;
     }
   }
 
-  const ids = [...matchedIds];
+  const ids = [...matchedIds].slice(0, MAX_NOTIFY_WORKERS);
   if (ids.length === 0) return 0;
 
   shiftAvailabilityPulseQueueStorage.enqueueForWorkers(ids, params.postId);

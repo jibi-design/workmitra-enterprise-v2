@@ -54,10 +54,10 @@ export const employmentStorage = {
     careerPostId: string;
     employeeId: string;
     employeeName: string;
-    employeeWmId: string;
+    employeeMlId: string;
     employerId: string;
     companyName: string;
-    employerWmId: string;
+    employerMlId: string;
     jobTitle: string;
     department: string;
     salaryMin: number;
@@ -79,10 +79,10 @@ export const employmentStorage = {
       careerPostId: params.careerPostId,
       employeeId: params.employeeId,
       employeeName: params.employeeName,
-      employeeWmId: params.employeeWmId,
+      employeeMlId: params.employeeMlId,
       employerId: params.employerId,
       companyName: params.companyName,
-      employerWmId: params.employerWmId,
+      employerMlId: params.employerMlId,
       jobTitle: params.jobTitle,
       department: params.department,
       salaryMin: params.salaryMin,

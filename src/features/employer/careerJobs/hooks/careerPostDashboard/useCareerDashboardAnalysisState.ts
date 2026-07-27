@@ -1,6 +1,5 @@
 // App name: Job Mitra
 // File name: useCareerDashboardAnalysisState.ts
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\careerJobs\hooks\careerPostDashboard\useCareerDashboardAnalysisState.ts
 
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -11,14 +10,17 @@ import {
 } from "../../components/candidateAnalysis/careerCandidateAnalysis.logic";
 import type { CareerTab } from "../../components/CareerPipelineTabs";
 import type { CareerApplication, CareerJobPost } from "../../types/careerTypes";
-
-type StoredAnalysisState = {
-  analysisOpen: boolean;
-  analysisDone: boolean;
-  shortlistTarget: number;
-  backupTarget: number;
-  selectedShortlistIds: string[];
-};
+import {
+  clearStoredAnalysisLock,
+  clearStoredAnalysisState,
+  clearStoredBackupSuggestionIds,
+  readStoredAnalysisLock,
+  readStoredAnalysisState,
+  readStoredBackupSuggestionIds,
+  writeStoredAnalysisLock,
+  writeStoredAnalysisState,
+  writeStoredBackupSuggestionIds,
+} from "./useCareerDashboardAnalysisState.storage.helpers";
 
 type UseCareerDashboardAnalysisStateArgs = {
   post: CareerJobPost | null;
@@ -27,12 +29,8 @@ type UseCareerDashboardAnalysisStateArgs = {
   tabCounts: Record<CareerTab, number>;
   tabApps: Record<CareerTab, CareerApplication[]>;
   setTab: (tab: CareerTab) => void;
-  handleShortlist: (appId: string) => void;
+  handleBulkShortlist: (appIds: readonly string[]) => void;
 };
-
-const ANALYSIS_STATE_KEY_PREFIX = "jm_employer_career_analysis_state_";
-const ANALYSIS_LOCK_KEY_PREFIX = "jm_employer_career_analysis_lock_";
-const BACKUP_SUGGESTION_KEY_PREFIX = "jm_employer_career_backup_suggestions_";
 
 export function useCareerDashboardAnalysisState({
   post,
@@ -41,7 +39,7 @@ export function useCareerDashboardAnalysisState({
   tabCounts,
   tabApps,
   setTab,
-  handleShortlist,
+  handleBulkShortlist,
 }: UseCareerDashboardAnalysisStateArgs) {
   const navigate = useNavigate();
   const appliedCount = appliedApps.length;
@@ -128,10 +126,10 @@ export function useCareerDashboardAnalysisState({
 
   function moveSelectedToShortlist() {
     const finalBackupIds = new Set(analysis.backup.map((item) => item.app.id));
+    const selectedIds = Array.from(selectedShortlistIds);
 
-    for (const appId of selectedShortlistIds) {
-      handleShortlist(appId);
-    }
+    // Single busy + atomic bulk write — never N concurrent shortlistCandidate races (SC-1).
+    handleBulkShortlist(selectedIds);
 
     writeStoredBackupSuggestionIds(post?.id, Array.from(finalBackupIds));
     writeStoredAnalysisLock(post?.id, true);
@@ -232,134 +230,4 @@ export function useCareerDashboardAnalysisState({
     reviewApplication,
     moveSelectedToShortlist,
   };
-}
-
-function getAnalysisStorageKey(postId?: string): string | null {
-  if (!postId) return null;
-  return `${ANALYSIS_STATE_KEY_PREFIX}${postId}`;
-}
-
-function getAnalysisLockStorageKey(postId?: string): string | null {
-  if (!postId) return null;
-  return `${ANALYSIS_LOCK_KEY_PREFIX}${postId}`;
-}
-
-function getBackupSuggestionStorageKey(postId?: string): string | null {
-  if (!postId) return null;
-  return `${BACKUP_SUGGESTION_KEY_PREFIX}${postId}`;
-}
-
-function readStoredAnalysisState(postId?: string): StoredAnalysisState | null {
-  const key = getAnalysisStorageKey(postId);
-  if (!key) return null;
-
-  try {
-    const parsed = JSON.parse(
-      sessionStorage.getItem(key) || "null",
-    ) as Partial<StoredAnalysisState> | null;
-    if (!parsed) return null;
-
-    return {
-      analysisOpen: parsed.analysisOpen === true,
-      analysisDone: parsed.analysisDone === true,
-      shortlistTarget: Number.isFinite(parsed.shortlistTarget) ? Number(parsed.shortlistTarget) : 0,
-      backupTarget: Number.isFinite(parsed.backupTarget) ? Number(parsed.backupTarget) : 0,
-      selectedShortlistIds: Array.isArray(parsed.selectedShortlistIds)
-        ? parsed.selectedShortlistIds.filter((item): item is string => typeof item === "string")
-        : [],
-    };
-  } catch {
-    return null;
-  }
-}
-
-function readStoredAnalysisLock(postId?: string): boolean {
-  const key = getAnalysisLockStorageKey(postId);
-  if (!key) return false;
-
-  try {
-    return sessionStorage.getItem(key) === "true";
-  } catch {
-    return false;
-  }
-}
-
-function readStoredBackupSuggestionIds(postId?: string): string[] {
-  const key = getBackupSuggestionStorageKey(postId);
-  if (!key) return [];
-
-  try {
-    const parsed = JSON.parse(sessionStorage.getItem(key) || "[]") as unknown;
-    if (!Array.isArray(parsed)) return [];
-
-    return parsed.filter((item): item is string => typeof item === "string");
-  } catch {
-    return [];
-  }
-}
-
-function writeStoredAnalysisState(postId: string, value: StoredAnalysisState): void {
-  const key = getAnalysisStorageKey(postId);
-  if (!key) return;
-
-  try {
-    sessionStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // Demo-safe: ignore storage failure.
-  }
-}
-
-function writeStoredAnalysisLock(postId: string | undefined, value: boolean): void {
-  const key = getAnalysisLockStorageKey(postId);
-  if (!key) return;
-
-  try {
-    sessionStorage.setItem(key, value ? "true" : "false");
-  } catch {
-    // Demo-safe: ignore storage failure.
-  }
-}
-
-function writeStoredBackupSuggestionIds(postId: string | undefined, value: string[]): void {
-  const key = getBackupSuggestionStorageKey(postId);
-  if (!key) return;
-
-  try {
-    sessionStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // Demo-safe: ignore storage failure.
-  }
-}
-
-function clearStoredAnalysisState(postId?: string): void {
-  const key = getAnalysisStorageKey(postId);
-  if (!key) return;
-
-  try {
-    sessionStorage.removeItem(key);
-  } catch {
-    // Demo-safe: ignore storage failure.
-  }
-}
-
-function clearStoredAnalysisLock(postId?: string): void {
-  const key = getAnalysisLockStorageKey(postId);
-  if (!key) return;
-
-  try {
-    sessionStorage.removeItem(key);
-  } catch {
-    // Demo-safe: ignore storage failure.
-  }
-}
-
-function clearStoredBackupSuggestionIds(postId?: string): void {
-  const key = getBackupSuggestionStorageKey(postId);
-  if (!key) return;
-
-  try {
-    sessionStorage.removeItem(key);
-  } catch {
-    // Demo-safe: ignore storage failure.
-  }
 }

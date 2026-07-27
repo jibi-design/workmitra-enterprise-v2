@@ -77,7 +77,7 @@ export function getCandidateWorkerName(app: CareerApplication): string {
   return app.profileSnapshot?.fullName ?? app.employeeName ?? getCandidateTitle(app);
 }
 
-export function getCandidateWorkerWmId(app: CareerApplication): string {
+export function getCandidateWorkerMlId(app: CareerApplication): string {
   return app.profileSnapshot?.uniqueId ?? app.id;
 }
 

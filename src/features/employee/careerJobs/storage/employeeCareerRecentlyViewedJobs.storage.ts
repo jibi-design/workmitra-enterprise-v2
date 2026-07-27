@@ -8,7 +8,7 @@ import {
   notifyEmployeeCareerRecentJobsChanged,
   safeRead,
   safeWrite,
-} from "../../../employer/careerJobs/helpers/careerStorageUtils";
+} from "../../../career/helpers/careerStoragePublic";
 
 const MAX_RECENT_JOBS = 3;
 const MAX_POST_ID_LENGTH = 120;

@@ -54,7 +54,7 @@ export function AcceptResignationStepTwo({
             padding: "9px 12px",
             background: "rgba(29,78,216,0.05)",
             border: "1px solid rgba(29,78,216,0.14)",
-            borderRadius: 10,
+            borderRadius: "var(--wm-radius-10)",
           }}
         >
           Optional feedback for this completed employment record. This helps maintain a fair work
@@ -95,7 +95,7 @@ export function AcceptResignationStepTwo({
           style={{
             width: "100%",
             padding: "10px 12px",
-            borderRadius: 10,
+            borderRadius: "var(--wm-radius-10)",
             border: "1.5px solid rgba(0,0,0,0.12)",
             fontSize: 13,
             fontWeight: 600,

@@ -4,13 +4,14 @@ File name: GAP-001-db-session-cleanup-job.md
 
 # GAP-001 — DB Session Cleanup Cron
 
-**Status:** OPEN — **PLANNING** — staging/dev retention **LOCKED** (implementation not approved)  
+**Status:** OPEN — **IMPLEMENTATION STARTED (T3-1)** — DRY_RUN default in repo; live DELETE not approved  
 **Phase:** 2.1 Production Readiness — Operational Hardening  
 **Priority:** P1 (blocking operational readiness, not auth contract change)  
 **Opened:** 2026-07-06  
 **Planning started:** 2026-07-07  
 **Retention locked (staging/dev):** 2026-07-07  
-**Staging dry-run evidence:** **PASS / CLEARED** (2026-07-07) — see [`evidence/PHASE_2_1_GAP_001_002_DRY_RUN_RECORD.md`](../evidence/PHASE_2_1_GAP_001_002_DRY_RUN_RECORD.md)
+**Staging dry-run evidence:** **PASS / CLEARED** (2026-07-07) — see [`evidence/PHASE_2_1_GAP_001_002_DRY_RUN_RECORD.md`](../evidence/PHASE_2_1_GAP_001_002_DRY_RUN_RECORD.md)  
+**Job code (T3-1):** `server/jobs/gap001SessionCleanup.job.ts` · CLI `npm run job:gap-retention`
 
 ---
 

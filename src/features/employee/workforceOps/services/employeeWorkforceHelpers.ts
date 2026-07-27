@@ -11,7 +11,6 @@ import type {
   WorkforceGroup,
   WorkforceGroupMember,
   WorkforceCategory,
-  EmployeeWorkforcePreferences,
 } from "../../../../shared/domains/workforce/types/workforceTypes";
 
 import {
@@ -21,12 +20,9 @@ import {
   WF_GROUPS_KEY,
   WF_MEMBERS_KEY,
   WF_CATEGORIES_KEY,
-  WF_EMPLOYEE_PREFS_KEY,
-  WF_ATTENDANCE_KEY,
-  safeWrite,
-  safeRead,
-  safeDispatch,
   WF_APPLICATIONS_CHANGED,
+  safeWrite,
+  safeDispatch,
   uid,
 } from "../../../../shared/domains/workforce/storage/workforceStorageUtils";
 
@@ -37,67 +33,24 @@ import {
   readGroups,
   readMembers,
   readCategories,
-  readAttendance,
 } from "../../../../shared/domains/workforce/helpers/workforceNormalizers";
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Employee Profile Helper
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-function getEmployeeUniqueId(): string {
-  try {
-    const raw = localStorage.getItem("wm_employee_profile_v1");
-    if (!raw) return "";
-    const profile = JSON.parse(raw) as Record<string, unknown>;
-    return typeof profile["uniqueId"] === "string" ? profile["uniqueId"] : "";
-  } catch {
-    return "";
-  }
-}
-
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Company Detection (which employers added this employee as staff)
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+import {
+  getEmployeeUniqueId,
+  readPrefs,
+  writePrefs,
+} from "./employeeWorkforceHelpers.internal.helpers";
+import { getMyTimesheet } from "./employeeWorkforceHelpers.timesheet";
 
 export type EmployeeCompany = {
   staffRecord: WorkforceStaff;
   categories: WorkforceCategory[];
 };
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Preferences (IMP-5)
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-function readPrefs(): EmployeeWorkforcePreferences {
-  try {
-    const raw = safeRead(WF_EMPLOYEE_PREFS_KEY);
-    if (!raw) return { preferredCompanyIds: [] };
-    const parsed = JSON.parse(raw) as Record<string, unknown>;
-    const ids = parsed["preferredCompanyIds"];
-    return {
-      preferredCompanyIds: Array.isArray(ids)
-        ? ids.filter((x): x is string => typeof x === "string")
-        : [],
-    };
-  } catch {
-    return { preferredCompanyIds: [] };
-  }
-}
-
-function writePrefs(prefs: EmployeeWorkforcePreferences): void {
-  safeWrite(WF_EMPLOYEE_PREFS_KEY, prefs);
-}
-
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Public API
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
 export const employeeWorkforceHelpers = {
   getMyUniqueId(): string {
     return getEmployeeUniqueId();
   },
-
-  // â”€â”€ Staff Record â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   getMyStaffRecord(): WorkforceStaff | null {
     const myId = getEmployeeUniqueId();
@@ -112,8 +65,6 @@ export const employeeWorkforceHelpers = {
     return this.getMyStaffRecord() !== null;
   },
 
-  // â”€â”€ Categories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
   getAllCategories(): WorkforceCategory[] {
     return readCategories(WF_CATEGORIES_KEY);
   },
@@ -126,8 +77,6 @@ export const employeeWorkforceHelpers = {
     for (const c of cats) catMap.set(c.id, c.name);
     return staff.categories.map((id) => catMap.get(id) ?? id);
   },
-
-  // â”€â”€ Announcements (visible to employee) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   getVisibleAnnouncements(): WorkforceAnnouncement[] {
     const staff = this.getMyStaffRecord();
@@ -148,8 +97,6 @@ export const employeeWorkforceHelpers = {
     );
   },
 
-  // â”€â”€ Applications â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
   getMyApplications(): WorkforceApplication[] {
     const myId = getEmployeeUniqueId();
     if (!myId) return [];
@@ -169,8 +116,6 @@ export const employeeWorkforceHelpers = {
   hasApplied(announcementId: string): boolean {
     return this.getApplicationForAnnouncement(announcementId) !== null;
   },
-
-  // â”€â”€ Apply to Announcement â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   apply(
     announcementId: string,
@@ -224,8 +169,6 @@ export const employeeWorkforceHelpers = {
     return { success: true };
   },
 
-  // â”€â”€ Groups (employee is member of) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
   getMyGroups(): Array<{ group: WorkforceGroup; member: WorkforceGroupMember }> {
     const myId = getEmployeeUniqueId();
     if (!myId) return [];
@@ -250,8 +193,6 @@ export const employeeWorkforceHelpers = {
     return this.getMyGroups().filter((g) => g.group.status === "active");
   },
 
-  // â”€â”€ Preferred Companies (IMP-5) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
   getPreferredCompanyIds(): string[] {
     return readPrefs().preferredCompanyIds;
   },
@@ -268,8 +209,6 @@ export const employeeWorkforceHelpers = {
   isPreferred(companyId: string): boolean {
     return readPrefs().preferredCompanyIds.includes(companyId);
   },
-
-  // â”€â”€ Summary (for home page KPIs) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   getHomeSummary(): {
     isStaff: boolean;
@@ -288,78 +227,5 @@ export const employeeWorkforceHelpers = {
     };
   },
 
-  // â”€â”€ Timesheet (Monthly attendance summary) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-  getMyTimesheet(
-    year: number,
-    month: number,
-  ): {
-    totalDays: number;
-    totalHours: number;
-    avgHoursPerDay: number;
-    entries: Array<{
-      groupId: string;
-      groupName: string;
-      date: string;
-      shiftName: string;
-      signInAt: number;
-      signOutAt: number | null;
-      hoursWorked: number | null;
-    }>;
-  } {
-    const myId = getEmployeeUniqueId();
-    if (!myId) return { totalDays: 0, totalHours: 0, avgHoursPerDay: 0, entries: [] };
-
-    const allAttendance = readAttendance(WF_ATTENDANCE_KEY);
-    const allMembers = readMembers(WF_MEMBERS_KEY);
-    const allGroups = readGroups(WF_GROUPS_KEY);
-
-    const myMemberIds = new Set(
-      allMembers.filter((m) => m.employeeUniqueId === myId).map((m) => m.id),
-    );
-
-    const monthStart = new Date(year, month, 1).getTime();
-    const monthEnd = new Date(year, month + 1, 0, 23, 59, 59, 999).getTime();
-
-    const myRecords = allAttendance.filter(
-      (a) => myMemberIds.has(a.memberId) && a.signInAt >= monthStart && a.signInAt <= monthEnd,
-    );
-
-    const groupMap = new Map<string, string>();
-    for (const g of allGroups) groupMap.set(g.id, g.name);
-
-    const shiftMap = new Map<string, string>();
-    for (const g of allGroups) {
-      for (const s of g.shifts) shiftMap.set(`${g.id}__${s.id}`, s.name);
-    }
-
-    const entries = myRecords
-      .map((rec) => ({
-        groupId: rec.groupId,
-        groupName: groupMap.get(rec.groupId) ?? "Unknown",
-        date: new Date(rec.signInAt).toLocaleDateString(undefined, {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        }),
-        shiftName: shiftMap.get(`${rec.groupId}__${rec.shiftId}`) ?? "Shift",
-        signInAt: rec.signInAt,
-        signOutAt: rec.signOutAt,
-        hoursWorked: rec.hoursWorked,
-      }))
-      .sort((a, b) => b.signInAt - a.signInAt);
-
-    let totalHours = 0;
-    const uniqueDays = new Set<string>();
-    for (const e of entries) {
-      if (e.hoursWorked !== null) totalHours += e.hoursWorked;
-      uniqueDays.add(new Date(e.signInAt).toDateString());
-    }
-
-    const totalDays = uniqueDays.size;
-    const avgHoursPerDay = totalDays > 0 ? Math.round((totalHours / totalDays) * 10) / 10 : 0;
-    totalHours = Math.round(totalHours * 10) / 10;
-
-    return { totalDays, totalHours, avgHoursPerDay, entries };
-  },
+  getMyTimesheet,
 } as const;

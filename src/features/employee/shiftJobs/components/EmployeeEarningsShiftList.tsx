@@ -1,6 +1,4 @@
-// App name: Job Mitra
-// File name: EmployeeEarningsShiftList.tsx
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\components\EmployeeEarningsShiftList.tsx
+// App name: Job Mitra | EmployeeEarningsShiftList.tsx — pressable cards (Wave B)
 
 import type { EarningsSummary } from "../storage/earningsStorage";
 import { EARNINGS_GREEN, formatEarningsDateRange } from "../helpers/employeeEarnings.helpers";
@@ -13,7 +11,7 @@ export function EmployeeEarningsShiftList({ entries }: EmployeeEarningsShiftList
   if (entries.length === 0) return null;
 
   return (
-    <div style={{ marginTop: 14, marginBottom: 32 }}>
+    <div className="wm-animateIn" style={{ animationDelay: "120ms", marginBottom: 32 }}>
       <div
         style={{
           fontSize: 13,
@@ -27,7 +25,12 @@ export function EmployeeEarningsShiftList({ entries }: EmployeeEarningsShiftList
 
       <div style={{ display: "grid", gap: 8 }}>
         {entries.map((entry) => (
-          <div key={entry.appId} className="wm-ee-card" style={{ padding: 14 }}>
+          <div
+            key={entry.appId}
+            className="wm-shift-card wm-shift-pressable"
+            data-testid={`shift-earnings-entry-${entry.appId}`}
+            style={{ padding: 14 }}
+          >
             <div
               style={{
                 display: "flex",

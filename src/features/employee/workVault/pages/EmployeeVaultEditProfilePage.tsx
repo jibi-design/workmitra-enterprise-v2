@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { DomainHero } from "../../../../shared/components/layout/DomainHero";
 import { vaultProfileService } from "../services/vaultProfileService";
 import type {
   VaultProfessionalSummary,
@@ -16,7 +17,10 @@ import type {
 import { employeeProfileStorage } from "../../../employee/profile/storage/employeeProfile.storage";
 import { NoticeModal, type NoticeData } from "../../../../shared/components/NoticeModal";
 import { EditProfileSummarySection } from "../components/EditProfileSummarySection";
-import { EditProfileEducationSection, EditProfileSkillsSection } from "../components/EditProfileEducationSection";
+import {
+  EditProfileEducationSection,
+  EditProfileSkillsSection,
+} from "../components/EditProfileEducationSection";
 
 /* ------------------------------------------------ */
 /* Helpers                                          */
@@ -37,11 +41,19 @@ export function EmployeeVaultEditProfilePage() {
 
   /* ---- Section 2: Professional Summary ---- */
   const [headline, setHeadline] = useState(initial.professionalSummary.headline);
-  const [empStatus, setEmpStatus] = useState<EmploymentStatus>(initial.professionalSummary.employmentStatus);
-  const [empStatusAuto, setEmpStatusAuto] = useState(initial.professionalSummary.employmentStatusAuto);
+  const [empStatus, setEmpStatus] = useState<EmploymentStatus>(
+    initial.professionalSummary.employmentStatus,
+  );
+  const [empStatusAuto, setEmpStatusAuto] = useState(
+    initial.professionalSummary.employmentStatusAuto,
+  );
   const [currentCompany, setCurrentCompany] = useState(initial.professionalSummary.currentCompany);
-  const [roleType, setRoleType] = useState<ExpectedRoleType>(initial.professionalSummary.expectedRoleType);
-  const [noticePeriod, setNoticePeriod] = useState<NoticePeriod>(initial.professionalSummary.noticePeriod);
+  const [roleType, setRoleType] = useState<ExpectedRoleType>(
+    initial.professionalSummary.expectedRoleType,
+  );
+  const [noticePeriod, setNoticePeriod] = useState<NoticePeriod>(
+    initial.professionalSummary.noticePeriod,
+  );
 
   /* ---- Section 5: Education ---- */
   const [eduLevel, setEduLevel] = useState<EducationLevel>(initial.education.level);
@@ -108,46 +120,58 @@ export function EmployeeVaultEditProfilePage() {
       vaultProfileService.setSkillProficiency(skill, level);
     }
 
-    setNotice({ title: "Profile Updated", message: "Your vault profile has been saved.", tone: "success" });
+    setNotice({
+      title: "Profile Updated",
+      message: "Your vault profile has been saved.",
+      tone: "success",
+    });
   }
 
   return (
-    <div>
-      {/* Header */}
-      <div className="wm-pageHead">
-        <div>
-          <div className="wm-pageTitle" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <button
-              type="button"
-              onClick={() => nav(-1)}
-              style={{
-                border: "none", background: "transparent", cursor: "pointer",
-                fontSize: 18, color: "var(--wm-emp-muted)", padding: 0,
-              }}
-            >
-              {"\u2190"}
-            </button>
-            Edit Vault Profile
-          </div>
-          <div className="wm-pageSub">Update your professional summary, education, and skills</div>
-        </div>
-      </div>
+    <div className="wm-stackGrid">
+      <DomainHero
+        variant="settings"
+        audience="employee"
+        icon={
+          <button
+            type="button"
+            className="wm-domainHeroIconBtn"
+            onClick={() => nav(-1)}
+            aria-label="Back"
+          >
+            ←
+          </button>
+        }
+        title="Edit Vault Profile"
+        subtitle="Update your professional summary, education, and skills"
+        description="Keep your Work Vault profile current for employer trust checks."
+      />
 
       <EditProfileSummarySection
-        headline={headline} onHeadlineChange={setHeadline}
-        empStatus={empStatus} onEmpStatusChange={setEmpStatus}
-        empStatusAuto={empStatusAuto} onEmpStatusAutoChange={setEmpStatusAuto}
-        currentCompany={currentCompany} onCurrentCompanyChange={setCurrentCompany}
-        roleType={roleType} onRoleTypeChange={setRoleType}
-        noticePeriod={noticePeriod} onNoticePeriodChange={setNoticePeriod}
+        headline={headline}
+        onHeadlineChange={setHeadline}
+        empStatus={empStatus}
+        onEmpStatusChange={setEmpStatus}
+        empStatusAuto={empStatusAuto}
+        onEmpStatusAutoChange={setEmpStatusAuto}
+        currentCompany={currentCompany}
+        onCurrentCompanyChange={setCurrentCompany}
+        roleType={roleType}
+        onRoleTypeChange={setRoleType}
+        noticePeriod={noticePeriod}
+        onNoticePeriodChange={setNoticePeriod}
       />
 
       <EditProfileEducationSection
-        eduLevel={eduLevel} onEduLevelChange={setEduLevel}
+        eduLevel={eduLevel}
+        onEduLevelChange={setEduLevel}
         certs={certs}
-        newCertName={newCertName} onNewCertNameChange={setNewCertName}
-        newCertIssuer={newCertIssuer} onNewCertIssuerChange={setNewCertIssuer}
-        onAddCert={addCert} onRemoveCert={removeCert}
+        newCertName={newCertName}
+        onNewCertNameChange={setNewCertName}
+        newCertIssuer={newCertIssuer}
+        onNewCertIssuerChange={setNewCertIssuer}
+        onAddCert={addCert}
+        onRemoveCert={removeCert}
       />
 
       <EditProfileSkillsSection
@@ -161,8 +185,12 @@ export function EmployeeVaultEditProfilePage() {
       {/* Save Bar */}
       <div className="wm-stickySaveBar" role="region" aria-label="Save bar">
         <div className="wm-stickyInner">
-          <button className="wm-outlineBtn" type="button" onClick={() => nav(-1)}>Cancel</button>
-          <button className="wm-primarybtn" type="button" onClick={handleSave}>Save Changes</button>
+          <button className="wm-outlineBtn" type="button" onClick={() => nav(-1)}>
+            Cancel
+          </button>
+          <button className="wm-primarybtn" type="button" onClick={handleSave}>
+            Save Changes
+          </button>
         </div>
       </div>
 

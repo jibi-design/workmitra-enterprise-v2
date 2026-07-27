@@ -10,7 +10,7 @@ export function EmployerFutureVerificationPanel() {
       style={{
         marginTop: 14,
         padding: 14,
-        borderRadius: 22,
+        borderRadius: "var(--wm-radius-employee-card)",
         border: "1px solid rgba(124,58,237,0.15)",
         background:
           "linear-gradient(135deg, rgba(124,58,237,0.08), rgba(255,255,255,0.98) 54%, rgba(245,243,255,0.68))",
@@ -22,7 +22,7 @@ export function EmployerFutureVerificationPanel() {
           display: "inline-flex",
           alignItems: "center",
           padding: "5px 9px",
-          borderRadius: 999,
+          borderRadius: "var(--wm-radius-pill)",
           background: "rgba(124,58,237,0.08)",
           border: "1px solid rgba(124,58,237,0.14)",
           color: VAULT_PURPLE,
@@ -56,7 +56,7 @@ export function EmployerFutureVerificationPanel() {
         style={{
           marginTop: 11,
           padding: "9px 10px",
-          borderRadius: 15,
+          borderRadius: "var(--wm-radius-chip)",
           background: "rgba(255,255,255,0.78)",
           border: "1px solid rgba(226,232,240,0.9)",
           color: "var(--wm-er-muted)",

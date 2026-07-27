@@ -4,7 +4,7 @@
 
 // Employer employment lifecycle actions for hired Career candidates.
 
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import type { NoticeData } from "../../../../shared/components/NoticeModal";
 import { ConfirmModal, type ConfirmData } from "../../../../shared/components/ConfirmModal";
 import { employmentStorage } from "../../../../shared/employment/employmentStorage";
@@ -23,7 +23,9 @@ import {
   syncCareerSideRecordsAfterConfirmResignation,
   syncCareerSideRecordsAfterMarkJoined,
   syncCareerSideRecordsAfterTerminate,
-} from "../../../employee/careerJobs/services/careerEmploymentSideSyncService";
+} from "../../../career/services/careerEmploymentPublic";
+import { hydrateEmploymentsFromDb } from "../../../career/services/employmentDbTruth.service";
+import { isCareerApiSyncEnabled } from "../../../career/services/careerGateApi.service";
 
 let cached: EmploymentRecord[] = [];
 
@@ -47,8 +49,13 @@ export function CareerCandidateEmploymentActions({ careerPostId, employeeName, o
   const [terminateOpen, setTerminateOpen] = useState(false);
   const [confirmResign, setConfirmResign] = useState<ConfirmData | null>(null);
 
-  function handleMarkJoined(joinedAt: number): void {
-    const result = employmentActions.markAsJoined(careerPostId, joinedAt);
+  useEffect(() => {
+    if (!isCareerApiSyncEnabled()) return;
+    void hydrateEmploymentsFromDb("employer");
+  }, []);
+
+  async function handleMarkJoined(joinedAt: number): Promise<void> {
+    const result = await employmentActions.markAsJoined(careerPostId, joinedAt);
     setJoinedOpen(false);
 
     if (result) {
@@ -67,8 +74,8 @@ export function CareerCandidateEmploymentActions({ careerPostId, employeeName, o
     onNotice({ title: "Cannot update", message: "Please try again.", tone: "warn" });
   }
 
-  function handleConfirmResign(): void {
-    const result = employmentActions.confirmResignation(careerPostId);
+  async function handleConfirmResign(): Promise<void> {
+    const result = await employmentActions.confirmResignation(careerPostId);
     setConfirmResign(null);
 
     if (result) {
@@ -87,11 +94,11 @@ export function CareerCandidateEmploymentActions({ careerPostId, employeeName, o
     onNotice({ title: "Cannot confirm", message: "Please try again.", tone: "warn" });
   }
 
-  function handleTerminate(
+  async function handleTerminate(
     reason: Parameters<typeof employmentActions.terminate>[1],
     notes: string,
-  ): void {
-    const result = employmentActions.terminate(careerPostId, reason, notes);
+  ): Promise<void> {
+    const result = await employmentActions.terminate(careerPostId, reason, notes);
     setTerminateOpen(false);
 
     if (result) {
@@ -122,7 +129,7 @@ export function CareerCandidateEmploymentActions({ careerPostId, employeeName, o
         style={{
           marginTop: 10,
           padding: "10px 12px",
-          borderRadius: 10,
+          borderRadius: "var(--wm-radius-10)",
           background: "rgba(29,78,216,0.04)",
           border: "1px solid rgba(29,78,216,0.12)",
         }}
@@ -214,7 +221,7 @@ export function CareerCandidateEmploymentActions({ careerPostId, employeeName, o
                 fontWeight: 600,
                 height: 32,
                 padding: "0 12px",
-                borderRadius: 8,
+                borderRadius: "var(--wm-radius-8)",
                 border: "1px solid rgba(220,38,38,0.3)",
                 background: "rgba(220,38,38,0.06)",
                 color: "var(--wm-error, #dc2626)",

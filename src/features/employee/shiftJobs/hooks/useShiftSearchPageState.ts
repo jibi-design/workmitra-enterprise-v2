@@ -38,9 +38,13 @@ import {
   subscribeShiftSearchWorkspaces,
 } from "../storage/shiftSearch.storage";
 import type { DurOpt, ExpOpt, ShiftPostDemo, TimeOpt } from "../types/shiftSearch.types";
+import { useShiftSearchFeedStatus } from "./useShiftSearchFeedStatus";
+import { SHIFT_APPLY_CONFLICT_MESSAGE } from "./shiftPostApply/shiftPostApply.submit";
+import type { ToastTone } from "../../../../shared/components/feedback/GlobalToast";
 
 export function useShiftSearchPageState() {
   const nav = useNavigate();
+  const { feedStatus, feedErrorMessage, retryFeed } = useShiftSearchFeedStatus();
 
   useEffect(() => {
     purgeDemoShiftSearchSeeds();
@@ -69,6 +73,7 @@ export function useShiftSearchPageState() {
   const [exp, setExp] = useState<ExpOpt>("any");
   const [dur, setDur] = useState<DurOpt>("any");
   const [toast, setToast] = useState("");
+  const [toastTone, setToastTone] = useState<ToastTone>("success");
   const [multiAppliedIds, setMultiAppliedIds] = useState<Set<string>>(() => new Set());
   const [catFilter, setCatFilter] = useState("any");
   const [appliedIds, setAppliedIds] = useState<Set<string>>(() => new Set());
@@ -79,10 +84,14 @@ export function useShiftSearchPageState() {
   const hasProfileSkills = Array.isArray(profile.skills) && profile.skills.length > 0;
   const isDiscoveryProfileReady = Boolean(profileCity) && hasProfileSkills;
 
-  const showToast = useCallback((message: string, durationMs = 2500) => {
-    setToast(message);
-    window.setTimeout(() => setToast(""), durationMs);
-  }, []);
+  const showToast = useCallback(
+    (message: string, durationMs = 2500, tone: ToastTone = "success") => {
+      setToastTone(tone);
+      setToast(message);
+      window.setTimeout(() => setToast(""), durationMs);
+    },
+    [],
+  );
 
   const blockedPostIds = useMemo(() => {
     return getBlockedPostIds(applications, workspaces);
@@ -196,15 +205,22 @@ export function useShiftSearchPageState() {
     (event: MouseEvent, postId: string) => {
       event.stopPropagation();
 
-      if (appliedIds.has(postId) || isAlreadyApplied(postId)) return;
+      if (appliedIds.has(postId) || isAlreadyApplied(postId)) {
+        showToast(SHIFT_APPLY_CONFLICT_MESSAGE, 3200, "warn");
+        return;
+      }
 
       const ok = quickApply(postId);
 
       if (ok) {
         setAppliedIds((prev) => new Set(prev).add(postId));
+        showToast("Application submitted!");
+        return;
       }
+
+      showToast(SHIFT_APPLY_CONFLICT_MESSAGE, 3200, "warn");
     },
-    [appliedIds],
+    [appliedIds, showToast],
   );
 
   return {
@@ -219,6 +235,10 @@ export function useShiftSearchPageState() {
     catFilter,
     setCatFilter,
     toast,
+    toastTone,
+    feedStatus,
+    feedErrorMessage,
+    retryFeed,
     categories,
     filteredPosts,
     discoverablePosts,

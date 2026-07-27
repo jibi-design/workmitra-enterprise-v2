@@ -3,12 +3,15 @@
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\workVault\components\EmployerVaultProfileView.tsx
 
 import { useMemo, useSyncExternalStore } from "react";
-import type { VaultSectionData } from "../../../employee/workVault/services/vaultDataAggregator";
-import type { VaultFolder, VaultDocument } from "../../../employee/workVault/types/vaultTypes";
-import { VAULT_FEATURE_FLAGS } from "../../../employee/workVault/constants/vaultFeatureFlags";
-import { VaultIdentityCard } from "../../../employee/workVault/components/VaultIdentityCard";
-import { VaultWorkStatsCard } from "../../../employee/workVault/components/VaultWorkStatsCard";
-import { VaultPerformanceCard } from "../../../employee/workVault/components/VaultPerformanceCard";
+import {
+  VAULT_FEATURE_FLAGS,
+  VaultIdentityCard,
+  VaultPerformanceCard,
+  VaultWorkStatsCard,
+  type VaultDocument,
+  type VaultFolder,
+  type VaultSectionData,
+} from "../../../shared/workVault/vaultPublic";
 import {
   careerEmploymentFeedbackStorage,
   type CareerEmploymentFeedbackApprovedSummarySnapshot,

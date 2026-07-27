@@ -1,0 +1,46 @@
+---
+description: Super-Board AI Guard + Universal Visual Inspection Standards (geometry-first)
+alwaysApply: true
+---
+
+# Super-Board AI Guard (Permanent)
+
+Enforce on every UI/domain edit in this repository.
+
+## RULE 1 — STRICT 4-STATE UI
+- Surfaces must cover Loading, Empty, Active, Error via enterprise primitives.
+- Never leave primary interactions as unstyled HTML.
+
+## RULE 2 — DOMAIN ISOLATION
+- No new Shift UI/imports inside Planner pages/components (teal stays teal).
+- No Planner mega-UI embedded in Shift Search / Shift chrome (green stays green).
+- Career remains separate from Shift and Planner state.
+
+## RULE 3 — DEBUG TEXT PURGE + DEV SANDBOX
+- Ban smashed production copy (`Gig HomeKPIs`, etc.).
+- DEV overlays must use `data-audit-sandbox="dev"` / `.wm-dev-audit-sandbox` or full enterprise classes.
+
+## RULE 4 — AUTONOMOUS AUDIT
+- Before completing a UI refactor, run:
+  `npx playwright test --project=chromium tests/e2e/visual-inspection-planner-home.spec.ts`
+- Critical/high inspector findings = not done.
+- Inspector: `tests/e2e/helpers/visual-assertion-inspector.ts`
+
+---
+
+# Universal Visual Inspection Standards
+
+## VIS-1 Geometry + STRICT string smash
+- Use `getBoundingClientRect()`; overlap or missing gap = CRITICAL.
+- Contiguous label+description join (`Gig HomeKPIs`, etc.) is ALWAYS CRITICAL — never soften to INFO.
+
+## VIS-2 Enterprise primitives mandatory
+- Interactive / primary surfaces need `wm-planner-*` / `wm-ent-*` / domain shell classes.
+- Raw unstyled controls never pass (HIGH/MEDIUM).
+
+## VIS-3 Dev noise purge
+- Debug text leaks = HIGH.
+- Sandbox DEV widgets so they cannot corrupt production audits.
+
+## VIS-4 4-state probe
+- Prefer enterprise Loading/Empty/Active/Error primitives; raw fallbacks = HIGH.

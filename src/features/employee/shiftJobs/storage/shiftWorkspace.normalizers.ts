@@ -35,7 +35,8 @@ export function normalizeShiftWorkspaces(list: unknown[]): ShiftWorkspace[] {
       id,
       postId,
       appId: getString(raw, "appId"),
-      workerWmId: getString(raw, "workerWmId"),
+      // Dual-read: prefer workerMlId; accept legacy workerWmId from older localStorage JSON.
+      workerMlId: getString(raw, "workerMlId") ?? getString(raw, "workerWmId"),
       workerName: getString(raw, "workerName"),
       companyName,
       jobName,

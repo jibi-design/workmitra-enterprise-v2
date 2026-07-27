@@ -1,6 +1,10 @@
-// App: Job Mitra / WorkMitra_Enterprise_v2
-// File: EmployerVaultViewHeader.tsx
-// Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\workVault\components\vaultView\EmployerVaultViewHeader.tsx
+// WARNING DEC-012 / MIG-008: Client-side OTP path (plaintext)
+// Server OTP path (Argon2 hashed) exists at server/modules/vault/
+// This client path MUST BE REMOVED before production cutover
+// See architecture-audits/Phase-DB-Migration-Readiness-Audit-001.md
+// App name: Job Mitra | EmployerVaultViewHeader.tsx — DomainHero (Wave 5)
+
+import { DomainHero } from "../../../../../shared/components/layout/DomainHero";
 
 type Props = {
   isActive: boolean;
@@ -17,37 +21,17 @@ function IconBack() {
 
 export function EmployerVaultViewHeader({ isActive, onBack }: Props) {
   return (
-    <div className="wm-pageHead">
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <button
-          type="button"
-          onClick={onBack}
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
-            border: "1px solid var(--wm-er-divider, rgba(15, 23, 42, 0.08))",
-            background: "#fff",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "var(--wm-er-text)",
-            flexShrink: 0,
-          }}
-          aria-label="Back"
-        >
+    <DomainHero
+      variant="settings"
+      audience="employer"
+      icon={
+        <button type="button" className="wm-domainHeroIconBtn" onClick={onBack} aria-label="Back">
           <IconBack />
         </button>
-
-        <div>
-          <div className="wm-pageTitle">Employee Profile</div>
-
-          <div className="wm-pageSub">
-            {isActive ? "Full access · session active" : "OTP verification required to unlock"}
-          </div>
-        </div>
-      </div>
-    </div>
+      }
+      title="Employee Profile"
+      subtitle={isActive ? "Full access · session active" : "OTP verification required to unlock"}
+      description="Trust Vault profile view with session-gated document access."
+    />
   );
 }

@@ -14,6 +14,7 @@ import {
   hrUpdate,
   hrFindByApplication,
 } from "./hrStorage.core";
+import { assertValidHrEmployeeUniqueId } from "./hrStorageKeys";
 
 /* ------------------------------------------------ */
 /* Move to HR (from Career pipeline)                */
@@ -27,6 +28,7 @@ export function hrMoveToHR(data: {
   department: string;
   location: string;
 }): string {
+  const employeeUniqueId = assertValidHrEmployeeUniqueId(data.employeeUniqueId);
   const existing = hrFindByApplication(data.careerPostId, data.applicationId);
   if (existing) return existing.id;
 
@@ -35,7 +37,7 @@ export function hrMoveToHR(data: {
     id: genId(),
     careerPostId: data.careerPostId,
     applicationId: data.applicationId,
-    employeeUniqueId: data.employeeUniqueId,
+    employeeUniqueId,
     employeeName: data.employeeName,
     jobTitle: data.jobTitle,
     department: data.department,
@@ -73,6 +75,7 @@ export function hrActivateFromCareerHire(data: {
   department: string;
   location: string;
 }): string {
+  const employeeUniqueId = assertValidHrEmployeeUniqueId(data.employeeUniqueId);
   const existing = hrFindByApplication(data.careerPostId, data.applicationId);
   const now = Date.now();
 
@@ -110,7 +113,7 @@ export function hrActivateFromCareerHire(data: {
     id: genId(),
     careerPostId: data.careerPostId,
     applicationId: data.applicationId,
-    employeeUniqueId: data.employeeUniqueId,
+    employeeUniqueId,
     employeeName: data.employeeName,
     jobTitle: data.jobTitle,
     department: data.department,

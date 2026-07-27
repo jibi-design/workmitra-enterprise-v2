@@ -95,7 +95,7 @@ export function EditableLocationList({
     <div
       style={{
         padding: "14px 16px",
-        borderRadius: 12,
+        borderRadius: "var(--wm-radius-button)",
         border: `1px solid ${BORDER_COLOR}`,
         background: "#fff",
       }}
@@ -105,7 +105,7 @@ export function EditableLocationList({
           style={{
             width: 28,
             height: 28,
-            borderRadius: 8,
+            borderRadius: "var(--wm-radius-8)",
             background: "rgba(3, 105, 161, 0.08)",
             display: "flex",
             alignItems: "center",

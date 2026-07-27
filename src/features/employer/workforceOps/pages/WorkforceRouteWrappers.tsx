@@ -10,10 +10,10 @@ import { EmployerWorkforceAnnounceDashPage } from "./EmployerWorkforceAnnounceDa
 import { EmployerWorkforceGroupsPage } from "./EmployerWorkforceGroupsPage";
 import { EmployerWorkforceGroupPage } from "./EmployerWorkforceGroupPage";
 import { EmployerWorkforceStaffDetailPage } from "./EmployerWorkforceStaffDetailPage";
-import { EmployeeWorkforceCompanyPage } from "../../../employee/workforceOps/pages/EmployeeWorkforceCompanyPage";
-import { EmployeeWorkforceAnnounceDetailPage } from "../../../employee/workforceOps/pages/EmployeeWorkforceAnnounceDetailPage";
-import { EmployeeWorkforceGroupPage } from "../../../employee/workforceOps/pages/EmployeeWorkforceGroupPage";
-import { EmployeeWorkforceTimesheetPage } from "../../../employee/workforceOps/pages/EmployeeWorkforceTimesheetPage";
+import { EmployeeWorkforceCompanyPage } from "../../../shared/workforce/workforcePublic";
+import { EmployeeWorkforceAnnounceDetailPage } from "../../../shared/workforce/workforcePublic";
+import { EmployeeWorkforceGroupPage } from "../../../shared/workforce/workforcePublic";
+import { EmployeeWorkforceTimesheetPage } from "../../../shared/workforce/workforcePublic";
 
 /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Employer Wrappers                                                          */

@@ -1,6 +1,6 @@
 // src/features/employer/workVault/components/EmployerVaultSummaryView.tsx
 
-import type { VaultSectionData } from "../../../employee/workVault/services/vaultDataAggregator";
+import type { VaultSectionData } from "../../../shared/workVault/vaultPublic";
 
 /* ------------------------------------------------------------------ */
 /* Shared: Info Row                                                   */
@@ -56,13 +56,21 @@ export function EmployerVaultSummaryView({ data }: Props) {
     <div
       style={{
         padding: "14px 16px",
-        borderRadius: 12,
+        borderRadius: "var(--wm-radius-button)",
         background: "var(--wm-er-bg, #fff)",
         border: "1px solid var(--wm-er-divider, rgba(15, 23, 42, 0.08))",
       }}
     >
       {data.headline && (
-        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--wm-er-text)", marginBottom: 10, lineHeight: 1.5 }}>
+        <div
+          style={{
+            fontSize: 13,
+            fontWeight: 700,
+            color: "var(--wm-er-text)",
+            marginBottom: 10,
+            lineHeight: 1.5,
+          }}
+        >
           {data.headline}
         </div>
       )}
@@ -74,7 +82,7 @@ export function EmployerVaultSummaryView({ data }: Props) {
               fontSize: 11,
               fontWeight: 900,
               padding: "2px 10px",
-              borderRadius: 999,
+              borderRadius: "var(--wm-radius-pill)",
               background: `${statusColor}10`,
               border: `1px solid ${statusColor}22`,
               color: statusColor,

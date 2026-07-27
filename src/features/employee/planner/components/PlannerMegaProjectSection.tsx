@@ -68,7 +68,7 @@ function MegaCard({
       style={{ cursor: "pointer" }}
     >
       <div className="wm-planner-megaCardHeader">
-        <div className="wm-planner-badge">📋 Gig Project · {entry.openDayCount} shifts open</div>
+        <div className="wm-planner-badge">Gig Project · {entry.openDayCount} days open</div>
         <div style={{ fontSize: 15, fontWeight: 800, marginTop: 6 }}>{headline}</div>
         <div style={{ fontSize: 12, color: "var(--wm-neutral-500)", marginTop: 4 }}>
           {entry.companyName} · {entry.locationName} · {entry.category}
@@ -179,6 +179,7 @@ export function PlannerMegaProjectSection({ onToast, onNeedProfile, isProfileCom
       {entries.length === 0 ? (
         <div
           className="wm-planner-card"
+          data-testid="planner-browse-mega-empty"
           style={{ fontSize: 12, color: "var(--wm-neutral-500)", lineHeight: 1.5, fontWeight: 600 }}
         >
           No project plans near you yet. When employers publish multi-day plans, Mega Cards appear

@@ -25,6 +25,7 @@ export interface CareerPostRow {
   description: string;
   location: string | null;
   status: string;
+  details: Record<string, unknown>;
   created_at: Date;
   updated_at: Date;
 }
@@ -59,6 +60,7 @@ export interface CareerEmploymentRow {
   employee_user_id: string;
   employer_user_id: string;
   status: CareerEmploymentStatus;
+  details: Record<string, unknown>;
   confirmed_at: Date;
   created_at: Date;
   updated_at: Date;

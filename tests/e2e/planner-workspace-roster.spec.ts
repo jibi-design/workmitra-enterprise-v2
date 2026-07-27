@@ -54,6 +54,11 @@ test.describe("Planner Workspace + Roster — Hybrid A2 S7", () => {
 
     await page.goto("/#/employer/planner/roster/e2e-plan-s7", { waitUntil: "domcontentloaded" });
     await expect(page.getByTestId("planner-employer-roster-detail")).toBeVisible();
-    await expect(page.getByTestId("planner-employer-roster-detail-stub-back")).toBeVisible();
+    await expect(page.getByTestId("planner-employer-roster-detail")).toHaveAttribute(
+      "data-plan-found",
+      "0",
+    );
+    await expect(page.getByTestId("planner-employer-roster-detail-missing")).toBeVisible();
+    await expect(page.getByTestId("planner-employer-roster-detail-back")).toBeVisible();
   });
 });

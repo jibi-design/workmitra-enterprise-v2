@@ -19,7 +19,7 @@ export function CandidateProfileSummary({ profile }: CandidateProfileSummaryProp
       style={{
         marginTop: 10,
         padding: "10px 11px",
-        borderRadius: 16,
+        borderRadius: "var(--wm-radius-chip)",
         background: "linear-gradient(180deg, rgba(248,250,252,0.98), rgba(255,255,255,0.96))",
         border: "1px solid rgba(203,213,225,0.86)",
       }}
@@ -42,7 +42,7 @@ function MiniProfileBox({ label, value }: { label: string; value: string }) {
     <div
       style={{
         padding: "8px 9px",
-        borderRadius: 13,
+        borderRadius: "var(--wm-radius-chip)",
         background: "rgba(255,255,255,0.9)",
         border: "1px solid rgba(226,232,240,0.9)",
         minWidth: 0,
