@@ -100,6 +100,7 @@ export function normalizeCareerApplication(raw: unknown): CareerApplication | nu
     hiredAt: getNumber(raw, "hiredAt"),
     withdrawnAt: getNumber(raw, "withdrawnAt"),
     screeningAnswers: normalizeScreeningAnswers(raw["screeningAnswers"]),
+    backupReserved: raw["backupReserved"] === true ? true : undefined,
   };
 }
 

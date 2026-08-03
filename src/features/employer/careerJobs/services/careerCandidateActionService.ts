@@ -53,7 +53,14 @@ export async function shortlistCandidate(postId: string, appId: string): Promise
 
   const writeResult = writeCareerApps(
     apps.map((item) =>
-      item.id === appId ? { ...item, stage: "shortlisted" as const, updatedAt: now } : item,
+      item.id === appId
+        ? {
+            ...item,
+            stage: "shortlisted" as const,
+            backupReserved: undefined,
+            updatedAt: now,
+          }
+        : item,
     ),
   );
 

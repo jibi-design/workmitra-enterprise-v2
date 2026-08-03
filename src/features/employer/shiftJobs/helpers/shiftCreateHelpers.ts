@@ -15,6 +15,8 @@ export {
   tomorrowEpoch,
   clampInt,
   normalizeLines,
+  DEFAULT_SHIFT_DURATION_MS,
+  ensureEndAfterStart,
 } from "./shiftCreateHelpers.dates";
 
 export {

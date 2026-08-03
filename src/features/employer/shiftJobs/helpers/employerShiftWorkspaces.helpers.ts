@@ -8,11 +8,17 @@ import type {
   EmployerWorkspaceLite,
   EmployerWorkspaceStatus,
 } from "../types/employerShiftWorkspaces.types";
+import { getEmployerWorkspacesKey } from "../storage/employerShift.keys";
 
 type UnknownRecord = Record<string, unknown>;
 
+/** @deprecated Prefer getEmployerWorkspacesKey() — legacy global marketplace key. */
 export const EMPLOYER_WORKSPACE_KEY = "wm_employee_shift_workspaces_v1";
 export const EMPLOYER_WORKSPACE_CHANGED = "wm:employee-shift-workspaces-changed";
+
+export function getEmployerWorkspaceStorageKey(): string {
+  return getEmployerWorkspacesKey();
+}
 
 export const EMPLOYER_WORKSPACE_FILTERS: EmployerWorkspaceFilter[] = [
   "all",

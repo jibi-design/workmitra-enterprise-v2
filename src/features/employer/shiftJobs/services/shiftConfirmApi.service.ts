@@ -20,6 +20,12 @@ export function canSyncShiftConfirmIds(postId: string, appId: string): boolean {
   );
 }
 
+export function buildShiftConfirmIdempotencyKey(postId: string, appId: string): string {
+  const serverPostId = shiftPostIdBridge.resolveServerId(postId) ?? postId;
+  const serverAppId = shiftAppIdBridge.resolveServerId(appId) ?? appId;
+  return `shift-confirm:${serverPostId}:${serverAppId}`;
+}
+
 export type ShiftConfirmApiResult = {
   workspace: unknown;
   events: unknown[];
@@ -33,6 +39,24 @@ export const shiftConfirmApi = {
   ): Promise<ShiftConfirmApiResult> {
     const serverPostId = shiftPostIdBridge.resolveServerId(postId) ?? postId;
     const serverAppId = shiftAppIdBridge.resolveServerId(appId) ?? appId;
-    return shiftGateApi.confirm(serverPostId, serverAppId, workerMlId);
+    return shiftGateApi.confirm(serverPostId, serverAppId, workerMlId, {
+      idempotencyKey: buildShiftConfirmIdempotencyKey(postId, appId),
+    });
+  },
+
+  /** Wave-4 heal: verify server workspace after timeout / ALREADY_CONFIRMED */
+  async getWorkspace(
+    postId: string,
+    appId: string,
+  ): Promise<{
+    id: string;
+    post_id: string;
+    app_id: string;
+    worker_wm_id: string;
+    status: string;
+  }> {
+    const serverPostId = shiftPostIdBridge.resolveServerId(postId) ?? postId;
+    const serverAppId = shiftAppIdBridge.resolveServerId(appId) ?? appId;
+    return shiftGateApi.getWorkspace(serverPostId, serverAppId);
   },
 };

@@ -1,6 +1,6 @@
-/** Indexed shift application counts — O(1) lookup by postId */
+/** Indexed shift application counts — O(1) lookup by postId (active employer scope). */
 
-import { EMPLOYEE_APPS_KEY } from "./dashboardHelpers.apps";
+import { getEmployerApplicationsKey } from "../storage/employerShift.keys";
 
 export type AppsByPostCounts = {
   total: number;
@@ -9,12 +9,13 @@ export type AppsByPostCounts = {
 
 type AppsIndexCache = {
   raw: string | null;
+  key: string;
   byPostId: Map<string, AppsByPostCounts>;
 };
 
 const EMPTY_COUNTS: AppsByPostCounts = { total: 0, byStatus: {} };
 
-let cache: AppsIndexCache = { raw: "__init__", byPostId: new Map() };
+let cache: AppsIndexCache = { raw: "__init__", key: "", byPostId: new Map() };
 
 function emptyCounts(): AppsByPostCounts {
   return { total: 0, byStatus: {} };
@@ -50,15 +51,16 @@ function rebuildIndex(raw: string | null): Map<string, AppsByPostCounts> {
 }
 
 function ensureIndex(): Map<string, AppsByPostCounts> {
-  const raw = localStorage.getItem(EMPLOYEE_APPS_KEY);
-  if (raw === cache.raw) return cache.byPostId;
-  cache = { raw, byPostId: rebuildIndex(raw) };
+  const key = getEmployerApplicationsKey();
+  const raw = localStorage.getItem(key);
+  if (raw === cache.raw && key === cache.key) return cache.byPostId;
+  cache = { raw, key, byPostId: rebuildIndex(raw) };
   return cache.byPostId;
 }
 
 /** Invalidate when apps blob changes outside normal localStorage reads. */
 export function invalidateAppsByPostIndex(): void {
-  cache = { raw: "__init__", byPostId: new Map() };
+  cache = { raw: "__init__", key: "", byPostId: new Map() };
 }
 
 export function getAppsCountsForPost(postId: string): AppsByPostCounts {

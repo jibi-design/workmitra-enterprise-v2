@@ -67,7 +67,32 @@ export function useEmployerShiftDashboardCandidateActions({
           return;
         }
 
-        const workspaceId = await employerShiftStorage.confirm(postId, id);
+        const result = await employerShiftStorage.confirmWithResult(postId, id);
+
+        if (!result.ok) {
+          const message =
+            result.reason === "vacancy_full"
+              ? "All confirmed slots are already filled. Replace a confirmed worker first, then confirm a backup candidate manually."
+              : result.reason === "already_confirmed"
+                ? "This candidate is already confirmed for the shift."
+                : result.reason === "membership_failed"
+                  ? "Unable to provision Shift Ops group membership. Confirm was not completed."
+                  : result.reason === "missing_site_or_worker"
+                    ? "This shift is missing a Shift Ops group link or worker Mitra Lab ID."
+                    : result.reason === "api_sync_failed" || result.reason === "api_ids_unavailable"
+                      ? "Server confirm failed. Local changes were rolled back — try again."
+                      : result.reason === "confirm_locked"
+                        ? "Another tab is confirming a candidate for this shift. Try again in a moment."
+                        : "Unable to confirm this candidate right now.";
+
+          setNotice({
+            title: result.reason === "vacancy_full" ? "Vacancy full" : "Confirm failed",
+            message,
+            tone: "warn",
+          });
+          setTab("selected");
+          return;
+        }
 
         setNotice({
           title: "Candidate confirmed",
@@ -77,9 +102,7 @@ export function useEmployerShiftDashboardCandidateActions({
 
         setTab("selected");
 
-        if (workspaceId) {
-          navigate(ROUTE_PATHS.employerShiftWorkspace.replace(":workspaceId", workspaceId));
-        }
+        navigate(ROUTE_PATHS.employerShiftWorkspace.replace(":workspaceId", result.workspaceId));
       }),
     onOpenGroup,
     onRemove: (id: string) =>

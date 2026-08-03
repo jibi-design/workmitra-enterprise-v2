@@ -90,16 +90,18 @@ export function createTimelineActions({
       attendanceConfirmedAt === undefined
         ? {
             id: "confirm-attendance",
-            label: "I will attend",
-            helper: "Confirm intent only — not QR check-in or payroll punch-in.",
+            label: "Confirm attendance intent",
+            helper:
+              "Attendance Intent / Check-in Signal only — not a legal timecard, QR punch-in, or payroll.",
             variant: "success",
             onClick: onConfirmAttendance,
             disabled: !onConfirmAttendance,
           }
         : {
             id: "attendance-confirmed",
-            label: "Intent confirmed",
-            helper: "You confirmed you plan to attend (not live check-in).",
+            label: "Attendance intent saved",
+            helper:
+              "Check-in signal recorded (plan to attend) — not live punch-in or a legal timecard.",
             variant: "muted",
             disabled: true,
           };

@@ -127,8 +127,10 @@ export function finalizeIdentity(
   const now = Date.now();
   let ownerUniqueId = existing.ownerUniqueId ?? existing.ownerUserId;
   let ownerUserId = existing.ownerUserId ?? existing.ownerUniqueId;
-  let employerOrgId = existing.employerOrgId;
-  let companyUniqueId = existing.companyUniqueId ?? existing.uniqueId;
+  // Prefer explicitly provided ids (QA assume / transfer) over regenerating.
+  let employerOrgId = profile.employerOrgId?.trim() || existing.employerOrgId;
+  let companyUniqueId =
+    profile.companyUniqueId?.trim() || existing.companyUniqueId || existing.uniqueId;
   let publicHandle = profile.publicHandle?.trim() || existing.publicHandle?.trim();
   let previousHandles = [...(existing.previousHandles ?? [])];
 

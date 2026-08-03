@@ -102,10 +102,12 @@ function WorkspaceCard({
   const receiverMl = workspace.workerMlId?.trim() ?? "";
   const post = getEmployerShiftPost(workspace.postId);
   const groupId = resolveShiftOpsSiteIdForPost(post ?? {});
-  const membership = useSyncExternalStore(
+  // Primitives only — object snapshots from getSiteMembershipTruth() are new refs each
+  // read and would infinite-loop useSyncExternalStore (Maximum update depth exceeded).
+  const membershipStatus = useSyncExternalStore(
     subscribeSiteMembershipTruth,
-    () => getSiteMembershipTruth(groupId, receiverMl),
-    () => getSiteMembershipTruth(groupId, receiverMl),
+    () => getSiteMembershipTruth(groupId, receiverMl)?.status ?? "",
+    () => getSiteMembershipTruth(groupId, receiverMl)?.status ?? "",
   );
 
   return (
@@ -218,7 +220,7 @@ function WorkspaceCard({
         {receiverMl ? (
           <GatedCallButton
             groupId={groupId}
-            membershipStatus={membership?.status}
+            membershipStatus={membershipStatus || null}
             workerMlId={receiverMl}
             initiatorMl={initiatorMl}
             peerLabel={workspace.workerName}

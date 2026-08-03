@@ -47,7 +47,9 @@ export function EmployerCandidateMatchScore({
           marginBottom: 8,
         }}
       >
-        <div style={{ fontSize: 12, fontWeight: 900, color: "var(--wm-er-text)" }}>Match Score</div>
+        <div style={{ fontSize: 12, fontWeight: 900, color: "var(--wm-er-text)" }}>
+          Profile Fit Score
+        </div>
 
         <div style={{ fontSize: 20, fontWeight: 1000, color }}>{percent}%</div>
       </div>

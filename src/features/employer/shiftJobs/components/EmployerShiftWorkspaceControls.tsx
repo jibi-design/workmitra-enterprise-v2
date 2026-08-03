@@ -51,10 +51,12 @@ export function EmployerShiftWorkspaceControls({
   const receiverMl = workspace.workerMlId?.trim() ?? "";
   const post = getEmployerShiftPost(workspace.postId);
   const groupId = resolveShiftOpsSiteIdForPost(post ?? {});
-  const membership = useSyncExternalStore(
+  // Primitives only — object snapshots from getSiteMembershipTruth() are new refs each
+  // readMap()/JSON.parse and would infinite-loop useSyncExternalStore.
+  const membershipStatus = useSyncExternalStore(
     subscribeSiteMembershipTruth,
-    () => getSiteMembershipTruth(groupId, receiverMl),
-    () => getSiteMembershipTruth(groupId, receiverMl),
+    () => getSiteMembershipTruth(groupId, receiverMl)?.status ?? "",
+    () => getSiteMembershipTruth(groupId, receiverMl)?.status ?? "",
   );
 
   return (
@@ -89,7 +91,7 @@ export function EmployerShiftWorkspaceControls({
         <div style={{ marginTop: 12 }}>
           <GatedCallButton
             groupId={groupId}
-            membershipStatus={membership?.status}
+            membershipStatus={membershipStatus || null}
             workerMlId={receiverMl}
             initiatorMl={initiatorMl}
             peerLabel={workspace.workerName ?? receiverMl}

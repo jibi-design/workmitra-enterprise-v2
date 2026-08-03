@@ -3,9 +3,25 @@
  * Path: server/modules/calling/agoraToken.service.ts
  */
 
-import { RtcRole, RtcTokenBuilder } from "agora-token";
+import { createRequire } from "node:module";
 import { requireAgoraEnv } from "./calling.env.js";
 import type { AgoraRtcRole } from "./calling.types.js";
+
+// agora-token is CJS; named ESM import fails on Node 24
+const require = createRequire(import.meta.url);
+const { RtcRole, RtcTokenBuilder } = require("agora-token") as {
+  RtcRole: { PUBLISHER: 1; SUBSCRIBER: 2 };
+  RtcTokenBuilder: {
+    buildTokenWithUid: (
+      appId: string,
+      appCertificate: string,
+      channel: string,
+      uid: number,
+      role: 1 | 2,
+      privilegeExpireTs: number,
+    ) => string;
+  };
+};
 
 const DEFAULT_TTL_SECONDS = 3600;
 

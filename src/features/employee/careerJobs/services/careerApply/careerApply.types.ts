@@ -14,5 +14,10 @@ export type AcceptCareerOfferResult =
   | {
       ok: false;
       reason:
-        "not_found" | "post_inactive" | "invalid_offer" | "application_write_error" | "api_error";
+        | "not_found"
+        | "invalid_stage"
+        | "post_inactive"
+        | "invalid_offer"
+        | "application_write_error"
+        | "api_error";
     };

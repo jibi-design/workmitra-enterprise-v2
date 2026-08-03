@@ -1,14 +1,17 @@
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 
 /**
- * Phase 18 — Tenant isolation E2E
+ * Phase 18 + P1 — Tenant isolation E2E
  *
  * Covers:
  * 1) LS employer-scoped HR / career isolation (always runs; auth-off demo path)
- * 2) API RBAC + cross-tenant denial (runs when API is reachable on :3001 / Vite proxy)
+ * 2) API RBAC + cross-tenant denial for HR / career / shift (when API up)
  *
  * Run: npm run test:e2e:headless -- tests/e2e/tenant-isolation.spec.ts
+ * CI release gate: TENANT_ISOLATION_REQUIRE_API=1 (fail if :3001 unreachable)
  */
+
+const REQUIRE_API = process.env.TENANT_ISOLATION_REQUIRE_API === "1";
 
 const EMPLOYER_A = {
   uniqueId: "ML-TENANT-A-EMP-0001",
@@ -44,11 +47,18 @@ async function setEmployerUniqueId(page: Page, uniqueId: string): Promise<void> 
 async function apiReachable(request: APIRequestContext): Promise<boolean> {
   try {
     const res = await request.get("http://localhost:3001/v1/jobmitra/auth/me");
-    // 401/200 both mean the API process is up
     return res.status() === 200 || res.status() === 401;
   } catch {
     return false;
   }
+}
+
+async function requireApiOrSkip(request: APIRequestContext): Promise<void> {
+  const up = await apiReachable(request);
+  if (!up && REQUIRE_API) {
+    throw new Error("TENANT_ISOLATION_REQUIRE_API=1 but Job Mitra API is not reachable on :3001");
+  }
+  test.skip(!up, "API not running on :3001");
 }
 
 async function loginAs(
@@ -59,7 +69,15 @@ async function loginAs(
   const res = await request.post("http://localhost:3001/v1/jobmitra/auth/login", {
     data: { email, password },
   });
-  expect(res.ok(), `login ${email} should succeed`).toBeTruthy();
+  if (!res.ok()) {
+    const bodyText = await res.text();
+    const hint =
+      "Demo login failed — seed users (npm run db:seed) or AUTH_USER_SOURCE=memory with WM_ALLOW_DEMO_AUTH.";
+    if (REQUIRE_API) {
+      throw new Error(`login ${email} → HTTP ${res.status()} ${bodyText}. ${hint}`);
+    }
+    test.skip(true, `${hint} (status=${res.status()})`);
+  }
   const cookies = res
     .headersArray()
     .filter((h) => h.name.toLowerCase() === "set-cookie")
@@ -233,7 +251,7 @@ test.describe("Phase 18 — Tenant isolation", () => {
   });
 
   test("API: employee role cannot list employer HR leave (403)", async ({ request }) => {
-    test.skip(!(await apiReachable(request)), "API not running on :3001");
+    await requireApiOrSkip(request);
 
     const session = await loginAs(request, "employee@demo.jobmitra.app");
     const res = await request.get("http://localhost:3001/v1/jobmitra/employer/hr/leave-requests", {
@@ -243,7 +261,7 @@ test.describe("Phase 18 — Tenant isolation", () => {
   });
 
   test("API: employer A leave is not returned to employer B", async ({ request }) => {
-    test.skip(!(await apiReachable(request)), "API not running on :3001");
+    await requireApiOrSkip(request);
 
     const sessionA = await loginAs(request, "employer@demo.jobmitra.app");
     const createRes = await request.post(
@@ -293,12 +311,124 @@ test.describe("Phase 18 — Tenant isolation", () => {
   });
 
   test("API: employee cannot list employer career staff (403)", async ({ request }) => {
-    test.skip(!(await apiReachable(request)), "API not running on :3001");
+    await requireApiOrSkip(request);
 
     const session = await loginAs(request, "employee@demo.jobmitra.app");
     const res = await request.get("http://localhost:3001/v1/jobmitra/employer/career/staff", {
       headers: authHeaders(session),
     });
     expect(res.status()).toBe(403);
+  });
+
+  test("API: employee cannot create employer career job (403)", async ({ request }) => {
+    await requireApiOrSkip(request);
+
+    const session = await loginAs(request, "employee@demo.jobmitra.app");
+    const res = await request.post("http://localhost:3001/v1/jobmitra/employer/career/jobs", {
+      headers: authHeaders(session, true),
+      data: {
+        title: "P1 deny",
+        description: "Employee must not create employer career posts",
+        status: "published",
+      },
+    });
+    expect(res.status()).toBe(403);
+  });
+
+  test("API: employee cannot create employer shift post (403)", async ({ request }) => {
+    await requireApiOrSkip(request);
+
+    const session = await loginAs(request, "employee@demo.jobmitra.app");
+    const start = Date.now() + 3_600_000;
+    const res = await request.post("http://localhost:3001/v1/jobmitra/employer/shift/posts", {
+      headers: authHeaders(session, true),
+      data: {
+        job_name: "P1 deny shift",
+        vacancies: 1,
+        start_at: new Date(start).toISOString(),
+        end_at: new Date(start + 3_600_000).toISOString(),
+      },
+    });
+    expect(res.status()).toBe(403);
+  });
+
+  test("API: employer A career post is not returned to employer B", async ({ request }) => {
+    await requireApiOrSkip(request);
+
+    const sessionA = await loginAs(request, "employer@demo.jobmitra.app");
+    const createRes = await request.post("http://localhost:3001/v1/jobmitra/employer/career/jobs", {
+      headers: authHeaders(sessionA, true),
+      data: {
+        title: `P1 tenant career ${Date.now().toString(36)}`,
+        description: "Cross-tenant isolation probe",
+        status: "published",
+        location: "Kochi",
+      },
+    });
+    expect(createRes.ok(), `career create ${createRes.status()}`).toBeTruthy();
+    const created = (await createRes.json()) as { data?: { post?: { id?: string } } };
+    const postId = created.data?.post?.id;
+    expect(postId).toBeTruthy();
+
+    const sessionB = await loginAs(request, "employer-b@demo.jobmitra.app");
+    const listB = await request.get("http://localhost:3001/v1/jobmitra/employer/career/jobs", {
+      headers: authHeaders(sessionB),
+    });
+    expect(listB.ok()).toBeTruthy();
+    const bodyB = (await listB.json()) as { data?: { posts?: Array<{ id: string }> } };
+    const idsB = (bodyB.data?.posts ?? []).map((p) => p.id);
+    expect(idsB).not.toContain(postId);
+
+    const patchB = await request.patch(
+      `http://localhost:3001/v1/jobmitra/employer/career/jobs/${postId}`,
+      {
+        headers: authHeaders(sessionB, true),
+        data: {
+          title: "hijack",
+          description: "should fail",
+          status: "closed",
+        },
+      },
+    );
+    expect([403, 404]).toContain(patchB.status());
+  });
+
+  test("API: employer A shift post is not returned to employer B", async ({ request }) => {
+    await requireApiOrSkip(request);
+
+    const sessionA = await loginAs(request, "employer@demo.jobmitra.app");
+    const start = Date.now() + 3_600_000;
+    const createRes = await request.post("http://localhost:3001/v1/jobmitra/employer/shift/posts", {
+      headers: authHeaders(sessionA, true),
+      data: {
+        job_name: `P1 tenant shift ${Date.now().toString(36)}`,
+        vacancies: 1,
+        start_at: new Date(start).toISOString(),
+        end_at: new Date(start + 3_600_000).toISOString(),
+        category: "general",
+      },
+    });
+    expect(createRes.ok(), `shift create ${createRes.status()}`).toBeTruthy();
+    const created = (await createRes.json()) as { data?: { post?: { id?: string } } };
+    const postId = created.data?.post?.id;
+    expect(postId).toBeTruthy();
+
+    const sessionB = await loginAs(request, "employer-b@demo.jobmitra.app");
+    const listB = await request.get("http://localhost:3001/v1/jobmitra/employer/shift/posts", {
+      headers: authHeaders(sessionB),
+    });
+    expect(listB.ok()).toBeTruthy();
+    const bodyB = (await listB.json()) as { data?: { posts?: Array<{ id: string }> } };
+    const idsB = (bodyB.data?.posts ?? []).map((p) => p.id);
+    expect(idsB).not.toContain(postId);
+
+    const patchB = await request.patch(
+      `http://localhost:3001/v1/jobmitra/employer/shift/posts/${postId}`,
+      {
+        headers: authHeaders(sessionB, true),
+        data: { job_name: "hijack", vacancies: 2 },
+      },
+    );
+    expect([403, 404]).toContain(patchB.status());
   });
 });

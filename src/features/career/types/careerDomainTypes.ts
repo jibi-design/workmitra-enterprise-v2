@@ -160,6 +160,8 @@ export type CareerApplication = {
   hiredAt?: number;
   withdrawnAt?: number;
   screeningAnswers?: Record<string, "yes" | "no">;
+  /** Local durable backup reserve (C-PIPE-1). Not an AUTH pipeline stage. */
+  backupReserved?: boolean;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -202,6 +204,7 @@ export type EmployerCareerActivityKind =
   | "post_resumed"
   | "post_closed"
   | "post_filled"
+  | "post_updated"
   | "candidate_shortlisted"
   | "candidate_unshortlisted"
   | "candidate_returned_to_shortlist"

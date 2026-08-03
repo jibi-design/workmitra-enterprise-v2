@@ -136,6 +136,52 @@ export async function closeCareerPost(postId: string): Promise<boolean> {
   return true;
 }
 
+/** Close an active/paused post whose closing date has passed (C-POST-1). */
+export async function expireCareerPost(postId: string): Promise<boolean> {
+  const posts = readCareerPosts();
+  const post = posts.find((p) => p.id === postId);
+  const now = Date.now();
+  if (!post || (post.status !== "active" && post.status !== "paused")) return false;
+  if (!(post.closingDate > 0 && post.closingDate < now)) return false;
+  return closeCareerPost(postId);
+}
+
+/** Minimal post edit: extend closing date by N days from max(now, current). */
+export async function extendCareerPostClosingDate(postId: string, days = 30): Promise<boolean> {
+  const posts = readCareerPosts();
+  const post = posts.find((p) => p.id === postId);
+  if (!post || (post.status !== "active" && post.status !== "paused")) return false;
+  if (!Number.isFinite(days) || days <= 0) return false;
+
+  const now = Date.now();
+  const base = Math.max(now, post.closingDate > 0 ? post.closingDate : now);
+  const prior = posts;
+  const updated: CareerJobPost = {
+    ...post,
+    closingDate: base + days * 24 * 60 * 60 * 1000,
+    updatedAt: now,
+  };
+  const next = posts.map((p) => (p.id === postId ? updated : p));
+  writeCareerPosts(next);
+  syncToEmployeeCareerSearch(next);
+
+  const ok = await dualWritePostUpdate(updated, prior);
+  if (!ok) {
+    syncToEmployeeCareerSearch(prior);
+    return false;
+  }
+
+  pushCareerActivity({
+    postId,
+    kind: "post_updated",
+    title: "Closing date extended",
+    body: `${post.jobTitle} closing date extended by ${days} day(s).`,
+    route: ROUTE_PATHS.employerCareerPostDashboard.replace(":postId", postId),
+  });
+
+  return true;
+}
+
 export async function deleteCareerPost(postId: string): Promise<boolean> {
   const posts = readCareerPosts();
   const post = posts.find((p) => p.id === postId);

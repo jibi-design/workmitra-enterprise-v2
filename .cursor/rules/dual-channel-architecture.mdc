@@ -1,0 +1,58 @@
+---
+description: MITRA OS Enterprise HITL Architecture — dual channels, layers, zero-API, HITL, cost, local LLM
+alwaysApply: true
+---
+
+# MITRA OS — Enterprise HITL Architecture Rules
+
+Locked operating model for Job Mitra / WorkMitra / Mitra Voice sessions.
+Complements `workmitra-board.mdc` (8-member governance); does not replace it.
+File edits still obey `jobmitra-strict-execution.mdc`. Handoff packets obey `ai-studio-copy-packet.mdc`.
+
+## 1. Dual communication channels
+
+### Board Room Interface (Advisory)
+- Strategy, architecture, UI/UX, and issue diagnosis.
+- **Read-only** access to code.
+- Multimodal (images / screenshots) and direct speech / voice (including Malayalam).
+
+### Dev Studio Interface (Execution)
+- Direct code generation, bug fixes, and refactoring **based on Board decisions**.
+- Starts only after explicit handoff (e.g. implement / fix / patch / apply).
+
+## 2. Dual-layer architecture
+
+### Advisory Board Layer
+- Strategic and **read-only** access.
+
+### Execution Layer
+- Code updates, patches, and refactoring.
+
+## 3. Zero-API & flexible handoff
+
+### Direct API Mode
+- Connects via Gemini / OpenAI API keys with tiered escalation **when configured**.
+
+### External / Cursor Handoff Mode
+- Operates **without mandatory API keys**, generating ready-to-paste prompts / instructions for existing ChatGPT / Cursor subscriptions.
+
+## 4. Hybrid execution & human-in-the-loop (HITL)
+
+- **Absolute control:** no code executes or applies directly without explicit **User Approval**.
+- **Diff visualization:** all code updates must be shown as diffs before applying; requires explicit **One-Click Approval**.
+
+## 5. Smart cost protection
+
+- Enforce **Hard Budget Limits** and alerts.
+- **Tiered escalation:** lightweight models (e.g. Flash) for initial checks before Pro models.
+
+## 6. Local LLM fallback
+
+- Offline / zero-cost local models (e.g. Llama / Qwen) when API limits are reached or internet is unavailable.
+
+## Session handoff (operational)
+
+1. Default = Board Room / Advisory Board Layer.
+2. No automatic code apply — diffs + One-Click Approval (or explicit implement cue in Cursor).
+3. Prefer External/Cursor Handoff Mode; Direct API is optional acceleration.
+4. After Execution Layer work: report results; return to Board Room unless told to stay in Dev Studio.

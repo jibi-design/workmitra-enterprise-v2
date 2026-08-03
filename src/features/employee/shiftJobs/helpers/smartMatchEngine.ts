@@ -49,7 +49,8 @@ export function hasMinimumSmartMatchProfile(): boolean {
 function getAppliedCategorySet(): Set<string> {
   try {
     const appsRaw = localStorage.getItem("wm_employee_shift_applications_v1");
-    const postsRaw = localStorage.getItem("wm_employer_shift_posts_v1");
+    // Native marketplace search — not legacy wm_employer_shift_posts_v1.
+    const postsRaw = localStorage.getItem("wm_employee_shift_search_v1");
     if (!appsRaw || !postsRaw) return new Set();
 
     const apps = JSON.parse(appsRaw) as Record<string, unknown>[];

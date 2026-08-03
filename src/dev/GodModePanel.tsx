@@ -12,6 +12,16 @@ import { roleStorage } from "../app/storage/roleStorage";
 import { usePulseStore } from "../features/pulse/pulseStore";
 import { PulseEvent } from "../features/pulse/pulseEvents";
 import { requestSplashReplay } from "../shared/components/SplashScreen";
+import {
+  applyQaBulkCandidateSeed,
+  assumeQaBulkWorkerProfile,
+} from "../features/shared/shift/qaBulkCandidates.seed";
+import {
+  applyQaMultiEmployerSeed,
+  assumeQaMultiEmployer,
+  QA_MULTI_EMPLOYER_COUNT,
+} from "../features/shared/shift/qaMultiEmployer.seed";
+import { applyUltraHeavySuiteSeed } from "../features/shared/shift/qaUltraHeavySuite.seed";
 
 /* ------------------------------------------------ */
 /* Public shell — hard production guard             */
@@ -27,6 +37,7 @@ export function GodModePanel() {
 function GodModePanelInner() {
   const [open, setOpen] = useState(false);
   const [log, setLog] = useState<string | null>(null);
+  const [assumeEmpIndex, setAssumeEmpIndex] = useState("50");
 
   function flash(msg: string) {
     setLog(msg);
@@ -62,9 +73,71 @@ function GodModePanelInner() {
     flash("✨ Replaying PRODUCTION LOCK intro (5.0s)…");
   }
 
+  function handleSeed50Candidates() {
+    const result = applyQaBulkCandidateSeed(100);
+    flash(
+      `🧪 Seeded ${result.favoriteCount} favorites / pool=${result.poolCount}. #25=${result.worker25} #50=${result.worker50}`,
+    );
+    window.setTimeout(() => {
+      if (!location.hash.includes("/employer/shift")) {
+        location.hash = "#/employer/shift/favorites";
+      } else {
+        location.reload();
+      }
+    }, 400);
+  }
+
+  function handleSeedMultiEmployers() {
+    const result = applyQaMultiEmployerSeed(QA_MULTI_EMPLOYER_COUNT);
+    flash(`🏢 Seeded ${result.employerCount} employers. Samples: ${result.sampleIds.join(", ")}`);
+    window.setTimeout(() => {
+      location.hash = "#/employer/shift/favorites";
+      location.reload();
+    }, 500);
+  }
+
+  function handleUltraHeavySuite() {
+    const result = applyUltraHeavySuiteSeed();
+    flash(
+      `🚀 UltraHeavy: emp=${result.employers} cand=${result.candidates} minFav=${result.minFavoritesPerEmployer} vault=${result.vaultEntries} apps=${result.confirmedApps}`,
+    );
+    window.setTimeout(() => {
+      location.hash = "#/employer/shift/favorites";
+      location.reload();
+    }, 600);
+  }
+
+  function handleAssumeEmployer(index1Based: number) {
+    roleStorage.set("employer");
+    const result = assumeQaMultiEmployer(index1Based);
+    flash(`🏢 Assumed ${result.employerId} (${result.companyName}) · favs=${result.favoriteCount}`);
+    window.setTimeout(() => {
+      location.hash = "#/employer/shift/favorites";
+      location.reload();
+    }, 400);
+  }
+
+  function handleAssumeEmployerFromInput() {
+    const n = Number.parseInt(assumeEmpIndex, 10);
+    if (!Number.isFinite(n) || n < 1 || n > QA_MULTI_EMPLOYER_COUNT) {
+      flash(`⚠ Enter employer index 1–${QA_MULTI_EMPLOYER_COUNT}`);
+      return;
+    }
+    handleAssumeEmployer(n);
+  }
+
+  function handleAssumeWorker25() {
+    roleStorage.set("employee");
+    const result = assumeQaBulkWorkerProfile(25);
+    flash(`🪪 Sealed employee → ${result.workerMlId}. Opening invite post…`);
+    window.setTimeout(() => {
+      location.hash = `#/employee/shift/post/qa_bulk_stress_post_1`;
+      location.reload();
+    }, 400);
+  }
+
   return (
     <div className="wm-dev-audit-sandbox" data-audit-sandbox="dev" data-wm-audit-ignore="true">
-      {/* Floating trigger button — sandboxed so production-grade audits ignore DEV noise */}
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -97,7 +170,6 @@ function GodModePanelInner() {
         ⚡
       </button>
 
-      {/* Panel sheet */}
       {open && (
         <div
           style={{
@@ -105,7 +177,7 @@ function GodModePanelInner() {
             bottom: 140,
             left: 14,
             zIndex: 999998,
-            width: 240,
+            width: 260,
             borderRadius: 16,
             background: "rgba(15,23,42,0.95)",
             border: "1px solid rgba(148,163,184,0.15)",
@@ -114,11 +186,12 @@ function GodModePanelInner() {
             WebkitBackdropFilter: "blur(16px)",
             padding: "14px 0 10px",
             overflow: "hidden",
+            maxHeight: "70vh",
+            overflowY: "auto",
           }}
           role="dialog"
           aria-label="God Mode Dev Panel"
         >
-          {/* Header */}
           <div
             style={{
               padding: "0 16px 12px",
@@ -142,7 +215,6 @@ function GodModePanelInner() {
             </div>
           </div>
 
-          {/* Action buttons */}
           <div style={{ padding: "0 10px", display: "flex", flexDirection: "column", gap: 4 }}>
             <PanelButton
               label="Wipe Storage & Reload"
@@ -163,9 +235,98 @@ function GodModePanelInner() {
               color="#0891b2"
               onClick={handleReplayIntro}
             />
+            <PanelButton
+              label="Seed 100 QA Candidates"
+              icon="🧪"
+              color="#16a34a"
+              onClick={handleSeed50Candidates}
+            />
+            <PanelButton
+              label="Seed Multi-Employers (105)"
+              icon="🏢"
+              color="#059669"
+              onClick={handleSeedMultiEmployers}
+            />
+            <PanelButton
+              label="Ultra-Heavy Full Suite"
+              icon="🚀"
+              color="#dc2626"
+              onClick={handleUltraHeavySuite}
+            />
+            <PanelButton
+              label="Assume Employer #1"
+              icon="1️⃣"
+              color="#7c3aed"
+              onClick={() => handleAssumeEmployer(1)}
+            />
+            <PanelButton
+              label="Assume Employer #50"
+              icon="5️⃣"
+              color="#7c3aed"
+              onClick={() => handleAssumeEmployer(50)}
+            />
+            <PanelButton
+              label="Assume Employer #100"
+              icon="💯"
+              color="#7c3aed"
+              onClick={() => handleAssumeEmployer(100)}
+            />
+
+            <div
+              style={{
+                display: "flex",
+                gap: 6,
+                alignItems: "center",
+                padding: "6px 4px 2px",
+              }}
+            >
+              <input
+                type="number"
+                min={1}
+                max={QA_MULTI_EMPLOYER_COUNT}
+                value={assumeEmpIndex}
+                onChange={(e) => setAssumeEmpIndex(e.target.value)}
+                aria-label="Assume employer index"
+                style={{
+                  flex: 1,
+                  height: 32,
+                  borderRadius: 8,
+                  border: "1px solid rgba(148,163,184,0.25)",
+                  background: "rgba(15,23,42,0.8)",
+                  color: "#e2e8f0",
+                  padding: "0 8px",
+                  fontSize: 12,
+                  fontWeight: 600,
+                }}
+              />
+              <button
+                type="button"
+                onClick={handleAssumeEmployerFromInput}
+                style={{
+                  height: 32,
+                  padding: "0 10px",
+                  borderRadius: 8,
+                  border: "none",
+                  background: "#7c3aed",
+                  color: "#fff",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Assume Emp #
+              </button>
+            </div>
+
+            <PanelButton
+              label="Assume QA Worker #25"
+              icon="🪪"
+              color="#f59e0b"
+              onClick={handleAssumeWorker25}
+            />
           </div>
 
-          {/* Status log */}
           {log && (
             <div
               style={{
@@ -188,9 +349,6 @@ function GodModePanelInner() {
   );
 }
 
-/* ------------------------------------------------ */
-/* Reusable panel button                            */
-/* ------------------------------------------------ */
 type PanelButtonProps = {
   label: string;
   icon: string;

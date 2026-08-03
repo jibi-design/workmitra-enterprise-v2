@@ -1,24 +1,28 @@
 // src/features/employee/workVault/services/vaultDocumentService.ts
 
 import type { VaultDocument, VaultFileType } from "../types/vaultTypes";
-import { VAULT_STORAGE_KEYS } from "../constants/vaultConstants";
 import { readStorage, writeStorage, generateVaultEntityId } from "../helpers/vaultStorageUtils";
 import { normalizeDocuments } from "../helpers/vaultNormalizers";
 import { estimateDataUrlBytes, validateVaultStorageQuota } from "../helpers/vaultValidation";
 import { withVaultDocumentsLock } from "../helpers/vaultWriteLock";
+import { resolveVaultWorkerScopedKey } from "../../../shared/workVault/vaultWorkerScope";
+
+function documentsKey(workerScopeId?: string): string {
+  return resolveVaultWorkerScopedKey("documents_v1", workerScopeId);
+}
 
 /**
- * Reads all documents from storage.
+ * Reads all documents from storage (current worker unless workerScopeId passed).
  */
-export function getAllDocuments(): VaultDocument[] {
-  return normalizeDocuments(readStorage(VAULT_STORAGE_KEYS.documents));
+export function getAllDocuments(workerScopeId?: string): VaultDocument[] {
+  return normalizeDocuments(readStorage(documentsKey(workerScopeId)));
 }
 
 /**
  * Writes all documents to storage. Throws when browser storage write fails.
  */
-function saveDocuments(docs: VaultDocument[]): void {
-  const result = writeStorage(VAULT_STORAGE_KEYS.documents, docs);
+function saveDocuments(docs: VaultDocument[], workerScopeId?: string): void {
+  const result = writeStorage(documentsKey(workerScopeId), docs);
   if (!result.ok) {
     throw new Error(
       "Browser storage is full or unavailable. The document was not saved. Free space and try again.",

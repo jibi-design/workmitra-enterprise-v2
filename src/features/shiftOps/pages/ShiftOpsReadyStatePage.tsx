@@ -143,6 +143,7 @@ export function ShiftOpsReadyStatePage() {
           data-testid="shift-ops-set-availability"
           disabled={busy}
           onClick={() => void onToggleAvailability()}
+          className={available ? "wm-shiftOpsReadyToggle isOn" : "wm-shiftOpsReadyToggle"}
           style={{
             width: 48,
             height: 28,
@@ -150,22 +151,23 @@ export function ShiftOpsReadyStatePage() {
             border: "none",
             padding: 2,
             cursor: busy ? "wait" : "pointer",
-            background: available ? "#16a34a" : "rgba(100,116,139,0.35)",
-            transition: "background 160ms ease",
+            background: available
+              ? "var(--wm-green-600)"
+              : "color-mix(in srgb, var(--wm-neutral-500) 35%, transparent)",
             flexShrink: 0,
           }}
         >
           <span
             aria-hidden
+            className="wm-shiftOpsReadyToggleKnob"
             style={{
               display: "block",
               width: 24,
               height: 24,
               borderRadius: "50%",
-              background: "#fff",
-              boxShadow: "0 1px 4px rgba(15,23,42,0.2)",
+              background: "var(--wm-career-bg, #fff)",
+              boxShadow: "0 1px 4px color-mix(in srgb, var(--wm-neutral-900) 20%, transparent)",
               transform: available ? "translateX(20px)" : "translateX(0)",
-              transition: "transform 160ms ease",
             }}
           />
         </button>

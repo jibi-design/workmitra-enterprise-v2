@@ -44,7 +44,7 @@ export function recordCareerClosureInVault(
   });
 
   syncVaultCareerRatingsForPost(careerPostId, record);
-  finalizeVaultCareerHistoryOnClosure(careerPostId);
+  finalizeVaultCareerHistoryOnClosure(careerPostId, employeeMlId);
   return entry;
 }
 
@@ -68,15 +68,19 @@ export function syncVaultCareerRatingsForPost(
     workerMlId,
   )?.stars;
 
-  updateVaultCareerHistoryRatings(careerPostId, {
-    employeeRating: workerRating,
-    employerRating: employerRating,
-  });
+  updateVaultCareerHistoryRatings(
+    careerPostId,
+    {
+      employeeRating: workerRating,
+      employerRating: employerRating,
+    },
+    workerMlId,
+  );
 
   const hasWorkerRating = typeof workerRating === "number" && workerRating > 0;
   const hasEmployerRating = typeof employerRating === "number" && employerRating > 0;
 
   if (hasWorkerRating || hasEmployerRating) {
-    finalizeVaultCareerHistory(careerPostId);
+    finalizeVaultCareerHistory(careerPostId, workerMlId);
   }
 }

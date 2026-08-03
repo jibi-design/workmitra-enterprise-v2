@@ -2,7 +2,7 @@
 // File name: employerShift.activityStorage.ts
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\storage\employerShift.activityStorage.ts
 
-import { EMPLOYER_SHIFT_ACTIVITY_KEY } from "./employerShift.keys";
+import { getEmployerShiftActivityKey } from "./employerShift.keys";
 import type { EmployerShiftActivityEntry, EmployerShiftActivityKind } from "./employerShift.types";
 import {
   createLocalId,
@@ -43,7 +43,7 @@ export function normalizeActivity(raw: unknown): EmployerShiftActivityEntry | nu
 }
 
 export function readEmployerActivityAll(): EmployerShiftActivityEntry[] {
-  const raw = localStorage.getItem(EMPLOYER_SHIFT_ACTIVITY_KEY);
+  const raw = localStorage.getItem(getEmployerShiftActivityKey());
 
   return safeParse<unknown>(raw)
     .map(normalizeActivity)
@@ -52,7 +52,7 @@ export function readEmployerActivityAll(): EmployerShiftActivityEntry[] {
 }
 
 export function writeEmployerActivityAll(list: EmployerShiftActivityEntry[]): void {
-  safeWrite(EMPLOYER_SHIFT_ACTIVITY_KEY, list);
+  safeWrite(getEmployerShiftActivityKey(), list);
   notifyEmployerShiftActivityChanged();
 }
 

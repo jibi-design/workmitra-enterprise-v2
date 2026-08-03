@@ -8,6 +8,7 @@ import type {
   ShiftApplicationStatus,
   WorkspaceRecord,
 } from "../types/shiftPostApply.types";
+import { upsertAppIntoEmployerScope } from "../../../shared/shift/shiftTenantProjection";
 
 export const WORKSPACES_KEY = "wm_employee_shift_workspaces_v1";
 export const APPS_CHANGED_EVENT = "wm:employee-shift-applications-changed";
@@ -44,6 +45,9 @@ export function safeWriteAllShiftApplications(
 ): ShiftApplicationWriteResult {
   try {
     localStorage.setItem(APPS_KEY, JSON.stringify(list));
+    for (const app of list) {
+      upsertAppIntoEmployerScope(app as unknown as Record<string, unknown>);
+    }
     window.dispatchEvent(new Event(APPS_CHANGED_EVENT));
     return { ok: true };
   } catch {

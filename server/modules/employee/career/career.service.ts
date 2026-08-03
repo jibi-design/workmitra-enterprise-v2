@@ -14,6 +14,10 @@ export type DeclineOfferResult =
   | { ok: true; application: CareerApplicationRow }
   | { ok: false; code: string; message: string; httpStatus: number };
 
+export type WithdrawApplicationResult =
+  | { ok: true; application: CareerApplicationRow }
+  | { ok: false; code: string; message: string; httpStatus: number };
+
 export type ApplyToJobResult =
   | { ok: true; application: CareerApplicationRow }
   | { ok: false; code: string; message: string; httpStatus: number };
@@ -263,6 +267,62 @@ export const employeeCareerService = {
       previousStatus: "offer_issued",
       newStatus: "offer_declined",
     });
+
+    const updated = await employeeCareerRepository.findApplicationById(applicationId);
+    return { ok: true, application: updated! };
+  },
+
+  async withdrawApplication(
+    applicationId: string,
+    employee: AuthUser,
+  ): Promise<WithdrawApplicationResult> {
+    if (!isCareerUuid(applicationId)) {
+      return {
+        ok: false,
+        code: "VALIDATION_ERROR",
+        message: "applicationId must be a valid UUID",
+        httpStatus: 400,
+      };
+    }
+
+    const application = await employeeCareerRepository.findApplicationById(applicationId);
+    if (!application) {
+      return { ok: false, code: "NOT_FOUND", message: "Application not found", httpStatus: 404 };
+    }
+
+    if (application.applicant_user_id !== employee.id) {
+      return {
+        ok: false,
+        code: "FORBIDDEN",
+        message: "You are not the applicant for this application",
+        httpStatus: 403,
+      };
+    }
+
+    try {
+      const { previousStatus } =
+        await employeeCareerRepository.withdrawApplicationTransaction(applicationId);
+
+      await employeeCareerRepository.logLifecycleEvent({
+        applicationId,
+        actorUserId: employee.id,
+        actorRole: "employee",
+        eventType: "application_withdrawn",
+        previousStatus,
+        newStatus: "withdrawn",
+      });
+    } catch (err) {
+      const typed = err as { code?: string; httpStatus?: number; message?: string };
+      if (typed.code === "CONFLICT") {
+        return {
+          ok: false,
+          code: typed.code,
+          message: typed.message ?? "Application cannot be withdrawn from its current status",
+          httpStatus: typed.httpStatus ?? 409,
+        };
+      }
+      throw err;
+    }
 
     const updated = await employeeCareerRepository.findApplicationById(applicationId);
     return { ok: true, application: updated! };

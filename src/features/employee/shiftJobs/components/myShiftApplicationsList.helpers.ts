@@ -24,10 +24,10 @@ export function getNextStepText(application: ShiftApplicationData): string {
     }
 
     if (application.attendanceConfirmedAt !== undefined) {
-      return "Attendance confirmed. Check your shift workspace and attend on time.";
+      return "Attendance intent saved (check-in signal). This is not a legal timecard — open your workspace and attend on time.";
     }
 
-    return "Confirmed. Please confirm that you will attend this shift.";
+    return "Confirmed. Please confirm Attendance Intent / Check-in Signal for this shift.";
   }
 
   if (application.status === "withdrawn") return "Application withdrawn.";

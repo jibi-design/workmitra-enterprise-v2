@@ -2,11 +2,15 @@
 export type AppRole = "employee" | "employer" | "admin";
 
 /**
- * Phase-0 testing requirement:
+ * Phase-0 testing requirement (lab harness — NOT multi-tenant security):
  * - Role MUST be per-tab (so Employer + Employee can be opened in two tabs/windows)
  * - Data stores remain in localStorage (shared) for interaction testing
  *
  * Therefore role is stored in sessionStorage (tab-specific).
+ *
+ * Wave-3 clarity: dual-tab Employer+Employee sharing one localStorage plane is a
+ * Phase-0 demo/lab mode. It is not account isolation. Production AUTH-on collapses
+ * peer tabs to one session via authSessionSync — do not treat shared LS as RBAC.
  *
  * SECURITY: Not authorization when AUTH backend is off.
  * Wave 2: legacy localStorage role keys are purged — never re-imported into session.

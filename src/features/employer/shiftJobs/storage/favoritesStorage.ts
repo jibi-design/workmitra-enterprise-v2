@@ -4,6 +4,8 @@
 // Workers saved by Mitra Labs ID. Auto-added when employer selects "Hire Again = Yes".
 // Employer can also manually add by Mitra Labs ID or remove.
 
+import { resolveShiftEmployerScopedKey } from "../../../shared/shift/shiftEmployerScope";
+
 /* ------------------------------------------------ */
 /* Types                                            */
 /* ------------------------------------------------ */
@@ -28,15 +30,18 @@ export type FavoriteWorker = {
 /* ------------------------------------------------ */
 /* Constants                                        */
 /* ------------------------------------------------ */
-const KEY = "wm_employer_shift_favorites_v1";
 const CHANGED = "wm:employer-shift-favorites-changed";
+
+function storageKey(): string {
+  return resolveShiftEmployerScopedKey("shift_favorites_v1");
+}
 
 /* ------------------------------------------------ */
 /* Internal helpers                                 */
 /* ------------------------------------------------ */
 function read(): FavoriteWorker[] {
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = localStorage.getItem(storageKey());
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
@@ -82,7 +87,7 @@ function read(): FavoriteWorker[] {
 
 function write(list: FavoriteWorker[]): void {
   try {
-    localStorage.setItem(KEY, JSON.stringify(list));
+    localStorage.setItem(storageKey(), JSON.stringify(list));
     window.dispatchEvent(new Event(CHANGED));
   } catch {
     /* safe */
@@ -195,9 +200,11 @@ export const favoritesStorage = {
     const h = () => cb();
     window.addEventListener(CHANGED, h);
     window.addEventListener("storage", h);
+    window.addEventListener("wm:shift-employer-scope-changed", h);
     return () => {
       window.removeEventListener(CHANGED, h);
       window.removeEventListener("storage", h);
+      window.removeEventListener("wm:shift-employer-scope-changed", h);
     };
   },
 

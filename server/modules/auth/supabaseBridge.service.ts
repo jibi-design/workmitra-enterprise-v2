@@ -117,3 +117,45 @@ export async function mintSupabaseSessionForJobMitraUser(
     },
   };
 }
+
+/**
+ * CRIT-1 — Invalidate bridged Supabase Auth sessions on Job Mitra logout.
+ * Uses service_role only. Non-blocking callers should `.catch(() => {})`.
+ */
+export async function revokeSupabaseSessionForUser(user: AuthUser): Promise<void> {
+  if (!bridgeConfigured()) return;
+
+  const url = process.env.SUPABASE_URL!.trim();
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!.trim();
+  const email = bridgeEmailForUser(user);
+
+  const admin = createClient(url, serviceKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+
+  let supabaseUserId: string | null = null;
+  const perPage = 200;
+  for (let page = 1; page <= 5; page += 1) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage });
+    if (error || !data?.users?.length) break;
+
+    const match = data.users.find((u) => {
+      const meta = u.user_metadata as Record<string, unknown> | undefined;
+      const metaJmId = typeof meta?.jobmitra_user_id === "string" ? meta.jobmitra_user_id : "";
+      return u.email?.toLowerCase() === email || metaJmId === user.id;
+    });
+    if (match) {
+      supabaseUserId = match.id;
+      break;
+    }
+    if (data.users.length < perPage) break;
+  }
+
+  if (!supabaseUserId) return;
+
+  // Global sign-out invalidates refresh tokens for this Auth user.
+  const { error: signOutError } = await admin.auth.admin.signOut(supabaseUserId, "global");
+  if (signOutError) {
+    throw new Error(signOutError.message);
+  }
+}

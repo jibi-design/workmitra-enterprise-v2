@@ -67,16 +67,22 @@ export const employerRouteTree = (
   <>
     <Route index element={<EmployerHomePage />} />
     <Route path={ER.shift} element={<EmployerShiftHomePage />} />
-    <Route path={ER.career} element={<EmployerCareerHomePage />} />
-    <Route path={ER.careerPosts} element={<EmployerCareerPostsPage />} />
-    <Route path={ER.careerCompletedRecords} element={<EmployerCareerCompletedRecordsPage />} />
-    <Route path={ER.careerCreate} element={<EmployerCareerCreatePage />} />
-    <Route path={ER.careerPostDashboard} element={<EmployerCareerPostDashboardPage />} />
-    <Route path={ER.careerCandidateDetail} element={<EmployerCareerCandidateDetailPage />} />
     <Route
-      path={ER.careerCandidateWorkVaultReview}
-      element={<EmployerCareerCandidateWorkVaultReviewPage />}
-    />
+      element={
+        <LaunchModuleBoundary enabled runtimeKill="career" fallback={ROUTE_PATHS.employerHome} />
+      }
+    >
+      <Route path={ER.career} element={<EmployerCareerHomePage />} />
+      <Route path={ER.careerPosts} element={<EmployerCareerPostsPage />} />
+      <Route path={ER.careerCompletedRecords} element={<EmployerCareerCompletedRecordsPage />} />
+      <Route path={ER.careerCreate} element={<EmployerCareerCreatePage />} />
+      <Route path={ER.careerPostDashboard} element={<EmployerCareerPostDashboardPage />} />
+      <Route path={ER.careerCandidateDetail} element={<EmployerCareerCandidateDetailPage />} />
+      <Route
+        path={ER.careerCandidateWorkVaultReview}
+        element={<EmployerCareerCandidateWorkVaultReviewPage />}
+      />
+    </Route>
     <Route
       element={
         <LaunchModuleBoundary enabled={showPhase2Features} fallback={ROUTE_PATHS.employerHome} />
@@ -123,36 +129,52 @@ export const employerRouteTree = (
       <Route path={ER.consoleRoster} element={<RosterPlannerPage />} />
       <Route path={ER.consoleIncidents} element={<ConsoleIncidentReportsPage />} />
     </Route>
-    <Route path={ER.shiftPosts} element={<EmployerShiftPostsPage />} />
-    <Route path={ER.shiftFavorites} element={<EmployerFavoritesPage />} />
-    <Route path={ER.shiftTemplates} element={<EmployerShiftTemplatesPage />} />
     <Route
-      path={ER.shiftDemandPlanner}
-      element={<Navigate to={ROUTE_PATHS.employerPlannerHome} replace />}
-    />
-    <Route path={ER.plannerHome} element={<EmployerPlannerHomePage />} />
-    <Route path={ER.plannerPlans} element={<EmployerPlannerPlansListPage />} />
+      element={
+        <LaunchModuleBoundary enabled runtimeKill="shift" fallback={ROUTE_PATHS.employerHome} />
+      }
+    >
+      <Route path={ER.shiftPosts} element={<EmployerShiftPostsPage />} />
+      <Route path={ER.shiftFavorites} element={<EmployerFavoritesPage />} />
+      <Route path={ER.shiftTemplates} element={<EmployerShiftTemplatesPage />} />
+      <Route
+        path={ER.shiftDemandPlanner}
+        element={<Navigate to={ROUTE_PATHS.employerPlannerHome} replace />}
+      />
+      <Route path={ER.shiftCreate} element={<EmployerShiftCreatePage />} />
+      <Route path={ER.shiftPostDashboard} element={<EmployerShiftPostDashboardPage />} />
+      <Route path={ER.shiftWorkspaces} element={<EmployerShiftWorkspacesPage />} />
+      <Route path={ER.shiftShortlist} element={<EmployerShiftPostDashboardPage />} />
+      <Route path={ER.shiftCandidateDetail} element={<EmployerCandidateDetailPage />} />
+      <Route path={ER.candidateDocumentAccess} element={<EmployerCandidateDocumentAccessPage />} />
+      <Route path={ER.shiftWorkspace} element={<EmployerShiftWorkspacePage />} />
+    </Route>
     <Route
-      path={ER.plannerCreate}
-      element={<Navigate to={ROUTE_PATHS.employerPlannerNew} replace />}
-    />
-    <Route path={ER.plannerNew} element={<EmployerDemandPlannerPage />} />
-    <Route path={ER.plannerDetail} element={<EmployerPlannerDetailPage />} />
-    <Route path={ER.plannerFinance} element={<EmployerPlannerFinancePlaceholderPage />} />
-    <Route path={ER.plannerApplications} element={<EmployerPlannerApplicationsPage />} />
-    <Route path={ER.plannerRoster} element={<EmployerPlannerRosterPage />} />
-    <Route path={ER.plannerRosterDetail} element={<EmployerPlannerRosterDetailPage />} />
-    <Route path={ER.shiftCreate} element={<EmployerShiftCreatePage />} />
-    <Route path={ER.shiftPostDashboard} element={<EmployerShiftPostDashboardPage />} />
-    <Route path={ER.shiftWorkspaces} element={<EmployerShiftWorkspacesPage />} />
-    <Route path={ER.shiftShortlist} element={<EmployerShiftPostDashboardPage />} />
-    <Route path={ER.shiftCandidateDetail} element={<EmployerCandidateDetailPage />} />
-    <Route path={ER.candidateDocumentAccess} element={<EmployerCandidateDocumentAccessPage />} />
-    <Route path={ER.shiftWorkspace} element={<EmployerShiftWorkspacePage />} />
+      element={
+        <LaunchModuleBoundary enabled runtimeKill="planner" fallback={ROUTE_PATHS.employerHome} />
+      }
+    >
+      <Route path={ER.plannerHome} element={<EmployerPlannerHomePage />} />
+      <Route path={ER.plannerPlans} element={<EmployerPlannerPlansListPage />} />
+      <Route
+        path={ER.plannerCreate}
+        element={<Navigate to={ROUTE_PATHS.employerPlannerNew} replace />}
+      />
+      <Route path={ER.plannerNew} element={<EmployerDemandPlannerPage />} />
+      <Route path={ER.plannerDetail} element={<EmployerPlannerDetailPage />} />
+      <Route path={ER.plannerFinance} element={<EmployerPlannerFinancePlaceholderPage />} />
+      <Route path={ER.plannerApplications} element={<EmployerPlannerApplicationsPage />} />
+      <Route path={ER.plannerRoster} element={<EmployerPlannerRosterPage />} />
+      <Route path={ER.plannerRosterDetail} element={<EmployerPlannerRosterDetailPage />} />
+    </Route>
     <Route path="help" element={<HelpSupportPage />} />
     <Route
       element={
-        <LaunchModuleBoundary enabled={showShiftOpsFeatures} fallback={ROUTE_PATHS.employerHome} />
+        <LaunchModuleBoundary
+          enabled={showShiftOpsFeatures}
+          runtimeKill="shift"
+          fallback={ROUTE_PATHS.employerHome}
+        />
       }
     >
       <Route path={ER.shiftOpsApprovals} element={<ShiftOpsManagerApprovalsPage />} />

@@ -14,7 +14,7 @@ export function EmployeeEarningsSummaryTiles({ summary }: EmployeeEarningsSummar
         data-testid="shift-earnings-total"
         style={{ padding: "16px 14px", textAlign: "center" }}
       >
-        <div className="wm-shift-kpi-tile__label">Total earned (estimate)</div>
+        <div className="wm-shift-kpi-tile__label">Estimated Earnings (total)</div>
         <div
           className="wm-shift-kpi-tile__value isPositive"
           style={{ fontSize: 32, marginTop: 8, color: "var(--wm-shift-accent, #16a34a)" }}

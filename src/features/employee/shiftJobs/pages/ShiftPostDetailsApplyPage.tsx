@@ -55,6 +55,7 @@ export function ShiftPostDetailsApplyPage() {
     isClosedOrExpired,
     canSubmit,
     submitBlockReason,
+    isSubmitting,
     cardStatus,
     isSavedShift,
     setQuickAnswers,
@@ -162,6 +163,7 @@ export function ShiftPostDetailsApplyPage() {
       <ShiftPostSubmitSection
         show={!shouldBlockReapply}
         canSubmit={canSubmit}
+        isSubmitting={isSubmitting}
         isClosedOrExpired={isClosedOrExpired}
         allQuestionsAnswered={allQuestionsAnswered}
         quickQuestionCount={quickQuestions.length}

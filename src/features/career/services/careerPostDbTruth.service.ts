@@ -6,12 +6,12 @@
  */
 
 import {
-  CAREER_POSTS_KEY,
   notifyCareerPostsChanged,
   safeParse,
   safeRead,
   safeWrite,
 } from "../helpers/careerStoragePublic";
+import { resolveCareerEmployerScopedKey } from "../../shared/career/careerEmployerScope";
 import type { CareerJobPost, CareerPostStatus } from "../types/careerDomainTypes";
 import { careerPostIdBridge } from "../utils/careerPostIdBridge";
 import { isCareerServerUuid } from "../utils/careerAppIdBridge";
@@ -21,16 +21,20 @@ import {
   type ServerCareerPostDto,
 } from "./careerGateApi.service";
 
+function careerPostsStorageKey(): string {
+  return resolveCareerEmployerScopedKey("career_posts_v1");
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function readLocalPosts(): CareerJobPost[] {
-  return safeParse<CareerJobPost>(safeRead(CAREER_POSTS_KEY));
+  return safeParse<CareerJobPost>(safeRead(careerPostsStorageKey()));
 }
 
 function writeLocalPosts(posts: CareerJobPost[]): boolean {
-  const result = safeWrite(CAREER_POSTS_KEY, posts);
+  const result = safeWrite(careerPostsStorageKey(), posts);
   if (!result.ok) return false;
   notifyCareerPostsChanged();
   return true;

@@ -46,6 +46,9 @@ export function EmployerCareerPostDashboardPage() {
         onResume={state.handleResume}
         onClose={state.handleClose}
         onRepost={state.handleRepost}
+        onExpire={state.handleExpire}
+        onExtendClosing={state.handleExtendClosing}
+        onDelete={state.handleDelete}
       />
 
       <EmploymentTermsSection post={state.post} />

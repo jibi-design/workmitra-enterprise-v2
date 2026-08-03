@@ -9,6 +9,9 @@ import type { NoticeData } from "../../../../../shared/components/NoticeModal";
 import {
   cloneCareerPost,
   closeCareerPost,
+  deleteCareerPost,
+  expireCareerPost,
+  extendCareerPostClosingDate,
   pauseCareerPost,
   resumeCareerPost,
 } from "../../services/careerPostService";
@@ -128,11 +131,94 @@ export function useCareerDashboardPostActions({
     );
   }
 
+  function handleExpire() {
+    openConfirm(
+      {
+        title: "Mark this post expired?",
+        message:
+          "Closing date has passed. The post will be closed and open applications will be rejected.",
+        tone: "danger",
+        confirmLabel: "Mark Expired",
+      },
+      async () => {
+        const ok = await expireCareerPost(postId);
+
+        setNotice(
+          ok
+            ? {
+                title: "Post expired",
+                message: "This Career Job is closed because the closing date has passed.",
+                tone: "success",
+              }
+            : {
+                title: "Cannot expire post",
+                message: "Only active or paused posts past their closing date can be expired.",
+              },
+        );
+      },
+    );
+  }
+
+  function handleExtendClosing() {
+    openConfirm(
+      {
+        title: "Extend closing date?",
+        message: "Add 30 days to this post's closing date so applicants can still apply.",
+        tone: "neutral",
+        confirmLabel: "Extend 30 Days",
+      },
+      async () => {
+        const ok = await extendCareerPostClosingDate(postId, 30);
+
+        setNotice(
+          ok
+            ? {
+                title: "Closing date extended",
+                message: "Applicants can apply until the new closing date.",
+                tone: "success",
+              }
+            : {
+                title: "Cannot extend closing date",
+                message: "Only active or paused posts can have their closing date extended.",
+              },
+        );
+      },
+    );
+  }
+
+  function handleDelete() {
+    openConfirm(
+      {
+        title: "Delete this post?",
+        message:
+          "This removes the job post from your Career board. Application history may remain in records.",
+        tone: "danger",
+        confirmLabel: "Delete Post",
+      },
+      async () => {
+        const ok = await deleteCareerPost(postId);
+
+        if (ok) {
+          nav(ROUTE_PATHS.employerCareerHome);
+          return;
+        }
+
+        setNotice({
+          title: "Cannot delete post",
+          message: "The post could not be deleted. Try again or close the post first.",
+        });
+      },
+    );
+  }
+
   return {
     goToCareerHome,
     handlePause,
     handleResume,
     handleRepost,
     handleClose,
+    handleExpire,
+    handleExtendClosing,
+    handleDelete,
   };
 }

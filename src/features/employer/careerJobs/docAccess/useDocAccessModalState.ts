@@ -31,9 +31,9 @@ type AccessState = {
   sessionActive: boolean;
 };
 
-function getVisibleSharedDocuments() {
-  const folders = getVisibleFolders();
-  const allDocuments = getAllDocuments();
+function getVisibleSharedDocuments(workerMlId: string) {
+  const folders = getVisibleFolders(workerMlId);
+  const allDocuments = getAllDocuments(workerMlId);
   const visibleFolderIds = new Set(folders.map((folder) => folder.id));
 
   return {
@@ -46,7 +46,7 @@ function getInitialAccessState(workerMlId: string, domain: DocAccessDomain): Acc
   const activeSession = docAccessSessionStorage.getActiveSession();
 
   if (activeSession && activeSession.workerMlId === workerMlId && activeSession.domain === domain) {
-    const visible = getVisibleSharedDocuments();
+    const visible = getVisibleSharedDocuments(workerMlId);
 
     return {
       step: "viewing",
@@ -120,7 +120,7 @@ export function useDocAccessModalState({
       domain,
     });
 
-    const visible = getVisibleSharedDocuments();
+    const visible = getVisibleSharedDocuments(workerMlId);
 
     setAccess({
       step: "viewing",

@@ -34,6 +34,8 @@ export function EmployerVaultViewPage() {
   const { employeeId } = useParams<{ employeeId: string }>();
   const nav = useNavigate();
 
+  const workerScopeId = employeeId?.trim() || undefined;
+
   const [session, setSession] = useState<VaultSession | null>(() => {
     expireOldSessions();
     return getActiveSession();
@@ -52,7 +54,7 @@ export function EmployerVaultViewPage() {
 
   const [folders, setFolders] = useState<VaultFolder[]>(() => {
     if (session && isSessionValid(session.id)) {
-      return getVisibleFolders();
+      return getVisibleFolders(workerScopeId);
     }
 
     return [];
@@ -60,29 +62,34 @@ export function EmployerVaultViewPage() {
 
   const [documents, setDocuments] = useState<VaultDocument[]>(() => {
     if (session && isSessionValid(session.id)) {
-      const visibleFolders = getVisibleFolders();
+      const visibleFolders = getVisibleFolders(workerScopeId);
       const visibleIds = visibleFolders.map((folder) => folder.id);
 
-      return getAllDocuments().filter((document) => visibleIds.includes(document.folderId));
+      return getAllDocuments(workerScopeId).filter((document) =>
+        visibleIds.includes(document.folderId),
+      );
     }
 
     return [];
   });
 
-  const loadVaultData = useCallback((visibleFolderIds?: string[]) => {
-    setSectionData(getVaultSectionData());
+  const loadVaultData = useCallback(
+    (visibleFolderIds?: string[]) => {
+      setSectionData(getVaultSectionData());
 
-    const visibleFolders = getVisibleFolders();
-    const scoped =
-      visibleFolderIds && visibleFolderIds.length > 0
-        ? visibleFolders.filter((f) => visibleFolderIds.includes(f.id))
-        : visibleFolders;
-    const allDocs = getAllDocuments();
-    const visibleIds = scoped.map((folder) => folder.id);
+      const visibleFolders = getVisibleFolders(workerScopeId);
+      const scoped =
+        visibleFolderIds && visibleFolderIds.length > 0
+          ? visibleFolders.filter((f) => visibleFolderIds.includes(f.id))
+          : visibleFolders;
+      const allDocs = getAllDocuments(workerScopeId);
+      const visibleIds = scoped.map((folder) => folder.id);
 
-    setFolders(scoped);
-    setDocuments(allDocs.filter((document) => visibleIds.includes(document.folderId)));
-  }, []);
+      setFolders(scoped);
+      setDocuments(allDocs.filter((document) => visibleIds.includes(document.folderId)));
+    },
+    [workerScopeId],
+  );
 
   useEffect(() => {
     if (!session) return;

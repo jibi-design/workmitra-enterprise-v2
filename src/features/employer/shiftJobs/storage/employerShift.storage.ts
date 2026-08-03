@@ -157,30 +157,33 @@ export const employerShiftStorage = {
 
   async confirmCandidate(postId: string, appId: string): Promise<string | null> {
     const result = await confirmEmployerShiftCandidate(postId, appId);
-    return result?.workspaceId ?? null;
+    return result.ok ? result.workspaceId : null;
   },
 
   async confirm(postId: string, appId: string): Promise<string | null> {
     const result = await confirmEmployerShiftCandidate(postId, appId);
-    return result?.workspaceId ?? null;
+    return result.ok ? result.workspaceId : null;
+  },
+
+  /** Wave-1: rich confirm result for UI error surfacing */
+  async confirmWithResult(postId: string, appId: string) {
+    return confirmEmployerShiftCandidate(postId, appId);
   },
 
   replaceConfirmed(
     postId: string,
     appId: string,
     reason: EmployeeShiftApplication["replacedReason"] = "other",
-  ): boolean {
-    const result = replaceEmployerShiftCandidate(postId, appId, reason);
-    return result !== null;
+  ): Promise<boolean> {
+    return replaceEmployerShiftCandidate(postId, appId, reason).then((result) => result !== null);
   },
 
   replaceCandidate(
     postId: string,
     appId: string,
     reason: EmployeeShiftApplication["replacedReason"] = "other",
-  ): boolean {
-    const result = replaceEmployerShiftCandidate(postId, appId, reason);
-    return result !== null;
+  ): Promise<boolean> {
+    return replaceEmployerShiftCandidate(postId, appId, reason).then((result) => result !== null);
   },
 
   broadcastToWorkspace(postId: string, title: string, body: string): void {

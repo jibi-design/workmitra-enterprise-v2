@@ -2,20 +2,21 @@
 //
 // Shared constants for Team Calendar / Roster Planner (Root Map Section 7.4.15).
 // Site color palette for visual distinction in grid cells.
+// Wave-3: --wm-* tokens only (no raw hex in palette).
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Site Color Palette (auto-assigned by site name hash)
 // ─────────────────────────────────────────────────────────────────────────────
 
 const SITE_COLORS: { bg: string; color: string }[] = [
-  { bg: "#eff6ff", color: "#0369a1" },
-  { bg: "#f0fdf4", color: "#15803d" },
-  { bg: "#fffbeb", color: "#d97706" },
-  { bg: "#fef2f2", color: "#dc2626" },
-  { bg: "#f5f3ff", color: "#7c3aed" },
-  { bg: "#ecfeff", color: "#0891b2" },
-  { bg: "#fdf4ff", color: "#a21caf" },
-  { bg: "#fff7ed", color: "#c2410c" },
+  { bg: "var(--wm-blue-50)", color: "var(--wm-ocean-600)" },
+  { bg: "var(--wm-green-50)", color: "var(--wm-green-700)" },
+  { bg: "var(--wm-amber-50)", color: "var(--wm-amber-600)" },
+  { bg: "var(--wm-red-50)", color: "var(--wm-red-600)" },
+  { bg: "var(--wm-purple-50)", color: "var(--wm-purple-600)" },
+  { bg: "var(--wm-cyan-50)", color: "var(--wm-cyan-600)" },
+  { bg: "var(--wm-purple-50)", color: "var(--wm-purple-700)" },
+  { bg: "var(--wm-amber-50)", color: "var(--wm-amber-700)" },
 ];
 
 export function getSiteColor(site: string): { bg: string; color: string } {
@@ -27,6 +28,15 @@ export function getSiteColor(site: string): { bg: string; color: string } {
   return SITE_COLORS[Math.abs(hash) % SITE_COLORS.length];
 }
 
+/** Wave-3 shared roster accent tokens for today / surface */
+export const ROSTER_TODAY_BORDER = "var(--wm-ocean-600)";
+export const ROSTER_TODAY_BG = "var(--wm-blue-50)";
+export const ROSTER_TODAY_FG = "var(--wm-ocean-600)";
+export const ROSTER_SURFACE = "var(--wm-career-bg, #fff)";
+export const ROSTER_MUTED_BG = "var(--wm-neutral-100)";
+export const ROSTER_OFF_BG = "var(--wm-neutral-100)";
+export const ROSTER_MUTED_FG = "var(--wm-neutral-400)";
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Day Abbreviations (for grid headers)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -34,5 +44,11 @@ export function getSiteColor(site: string): { bg: string; color: string } {
 export const DAY_SHORT_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 
 export const DAY_FULL_LABELS = [
-  "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
 ] as const;

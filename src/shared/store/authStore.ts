@@ -13,6 +13,16 @@ import {
 } from "../../features/shiftOps/services/authBridge.service";
 import { publishAuthSessionEpoch } from "../auth/authSessionSync";
 
+const SHIFT_AUTH_TENANT_BIND_KEY = "wm_shift_auth_tenant_bind_v1";
+
+function clearShiftAuthTenantBindLocal(): void {
+  try {
+    sessionStorage.removeItem(SHIFT_AUTH_TENANT_BIND_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
 const AUTH_STORAGE_KEY = "wm-auth-storage";
 
 const safeStorage: StateStorage = {
@@ -80,6 +90,8 @@ const createAuthSlice: AuthStoreSlice = (set, get) => ({
   setAuth: (user, token) => {
     void token;
     syncRoleBridge(user);
+    // Re-bind Shift tenant on auth change (blocks stale dual-tab scope tokens).
+    clearShiftAuthTenantBindLocal();
     // Never keep bearer tokens in client memory/persist (Phase-0 demo uses role bridge only).
     set({
       user,
@@ -92,6 +104,7 @@ const createAuthSlice: AuthStoreSlice = (set, get) => ({
 
   clearAuth: () => {
     syncRoleBridge(null);
+    clearShiftAuthTenantBindLocal();
     set({
       user: null,
       token: null,

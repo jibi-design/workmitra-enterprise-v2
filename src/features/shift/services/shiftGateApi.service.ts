@@ -134,13 +134,58 @@ export const shiftGateApi = {
     postId: string,
     appId: string,
     workerMlId?: string,
+    options?: { idempotencyKey?: string },
   ): Promise<{ workspace: unknown; events: unknown[] }> {
     const body = workerMlId?.trim() ? { worker_wm_id: workerMlId.trim() } : {};
+    const headers: HeadersInit = {};
+    const idempotencyKey = options?.idempotencyKey?.trim();
+    if (idempotencyKey) {
+      headers["Idempotency-Key"] = idempotencyKey;
+    }
     const res = await apiService.post<ApiEnvelope<{ workspace: unknown; events: unknown[] }>>(
       `${EMPLOYER_SHIFT}/posts/${postId}/applications/${appId}/confirm`,
       body,
+      headers,
     );
     return res.data;
+  },
+
+  /** Wave-1: employee direct-invite accept under server vacancy CAS */
+  async acceptDirectInvite(
+    postId: string,
+    body: Record<string, unknown>,
+  ): Promise<{
+    workspace: unknown;
+    application: ServerShiftApplicationDto;
+    events: unknown[];
+  }> {
+    const res = await apiService.post<
+      ApiEnvelope<{ workspace: unknown; application: unknown; events: unknown[] }>
+    >(`${EMPLOYEE_SHIFT}/posts/${postId}/direct-accept`, body);
+    const application = asServerApp(res.data.application);
+    if (!application) throw new Error("Invalid direct-accept application response");
+    return {
+      workspace: res.data.workspace,
+      application,
+      events: Array.isArray(res.data.events) ? res.data.events : [],
+    };
+  },
+
+  /** Wave-5: create server invite proof before employee can direct-accept */
+  async createDirectInvite(
+    postId: string,
+    workerWmId: string,
+  ): Promise<{ id: string; token: string; worker_wm_id: string; expires_at: number }> {
+    const res = await apiService.post<
+      ApiEnvelope<{
+        invite: { id: string; token: string; worker_wm_id: string; expires_at: number };
+      }>
+    >(`${EMPLOYER_SHIFT}/posts/${encodeURIComponent(postId)}/direct-invites`, {
+      worker_wm_id: workerWmId.trim(),
+    });
+    const invite = res.data.invite;
+    if (!invite?.id || !invite.token) throw new Error("Invalid direct-invite create response");
+    return invite;
   },
 
   async updatePost(postId: string, body: Record<string, unknown>): Promise<ServerShiftPostDto> {

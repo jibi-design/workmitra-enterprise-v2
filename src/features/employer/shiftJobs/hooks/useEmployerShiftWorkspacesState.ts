@@ -7,25 +7,29 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import {
   EMPLOYER_WORKSPACE_CHANGED,
-  EMPLOYER_WORKSPACE_KEY,
   createWorkspaceCounts,
   filterEmployerWorkspaces,
+  getEmployerWorkspaceStorageKey,
   parseEmployerWorkspaces,
 } from "../helpers/employerShiftWorkspaces.helpers";
 import type {
   EmployerWorkspaceFilter,
   EmployerWorkspaceMode,
 } from "../types/employerShiftWorkspaces.types";
+import { SHIFT_EMPLOYER_SCOPE_CHANGED_EVENT } from "../../../shared/shift/shiftEmployerScope";
 
 let cachedRaw: string | null = null;
+let cachedKey = "";
 let cachedWorkspaces = parseEmployerWorkspaces(null);
 
 function getWorkspaceSnapshot() {
-  const raw = localStorage.getItem(EMPLOYER_WORKSPACE_KEY);
+  const key = getEmployerWorkspaceStorageKey();
+  const raw = localStorage.getItem(key);
 
-  if (raw === cachedRaw) return cachedWorkspaces;
+  if (raw === cachedRaw && key === cachedKey) return cachedWorkspaces;
 
   cachedRaw = raw;
+  cachedKey = key;
   cachedWorkspaces = parseEmployerWorkspaces(raw);
   return cachedWorkspaces;
 }
@@ -36,12 +40,14 @@ function subscribeWorkspaceSnapshot(callback: () => void): () => void {
   window.addEventListener("storage", handler);
   window.addEventListener("focus", handler);
   window.addEventListener(EMPLOYER_WORKSPACE_CHANGED, handler);
+  window.addEventListener(SHIFT_EMPLOYER_SCOPE_CHANGED_EVENT, handler);
   document.addEventListener("visibilitychange", handler);
 
   return () => {
     window.removeEventListener("storage", handler);
     window.removeEventListener("focus", handler);
     window.removeEventListener(EMPLOYER_WORKSPACE_CHANGED, handler);
+    window.removeEventListener(SHIFT_EMPLOYER_SCOPE_CHANGED_EVENT, handler);
     document.removeEventListener("visibilitychange", handler);
   };
 }

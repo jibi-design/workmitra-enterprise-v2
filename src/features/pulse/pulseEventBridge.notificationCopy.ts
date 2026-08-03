@@ -39,8 +39,8 @@ const NOTIFICATION_COPY_BY_TYPE: Partial<Record<PulseBackendEventType, BellNotif
     route: ROUTE_PATHS.employeeShiftApplications,
   },
   SHIFT_CONFIRMATION_REQUIRED: {
-    title: "Attendance confirmation required",
-    body: "Please confirm whether you can attend this shift.",
+    title: "Attendance Intent / Check-in Signal required",
+    body: "Please save attendance intent for this shift (check-in signal only — not a legal timecard).",
     route: ROUTE_PATHS.employeeShiftApplications,
   },
   SHIFT_EMPLOYEE_SELECTED: {
@@ -141,8 +141,8 @@ const NOTIFICATION_COPY_BY_TYPE: Partial<Record<PulseBackendEventType, BellNotif
   },
 
   SHIFT_WORKER_CONFIRMED: {
-    title: "Worker confirmed attendance intent",
-    body: "A confirmed worker marked that they plan to attend your shift (intent only — not QR check-in).",
+    title: "Worker saved Attendance Intent / Check-in Signal",
+    body: "A confirmed worker marked plan-to-attend (intent only — not QR punch-in or a legal timecard).",
     route: ROUTE_PATHS.employerShiftHome,
   },
   SHIFT_WORKER_CANCELLED: {

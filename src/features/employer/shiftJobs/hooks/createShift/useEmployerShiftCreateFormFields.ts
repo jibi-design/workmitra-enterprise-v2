@@ -4,6 +4,7 @@ import {
   findDuplicateShiftWarnings,
   getAutoFillData,
   normalizeLines,
+  DEFAULT_SHIFT_DURATION_MS,
   toDateStr,
   tomorrowEpoch,
   validateShiftForm,
@@ -57,8 +58,11 @@ export function useEmployerShiftCreateFormFields(requestedDraftId: string) {
   );
   const [locationAddress, setLocationAddress] = useState(initialDraftForm?.locationAddress ?? "");
   const [mapsLink, setMapsLink] = useState(initialDraftForm?.mapsLink ?? "");
-  const [startAt, setStartAt] = useState<number>(initialDraftForm?.startAt ?? tomorrowEpoch);
-  const [endAt, setEndAt] = useState<number>(initialDraftForm?.endAt ?? tomorrowEpoch);
+  const defaultStart = tomorrowEpoch();
+  const [startAt, setStartAt] = useState<number>(initialDraftForm?.startAt ?? defaultStart);
+  const [endAt, setEndAt] = useState<number>(
+    initialDraftForm?.endAt ?? defaultStart + DEFAULT_SHIFT_DURATION_MS,
+  );
   const [mustHave, setMustHave] = useState(
     initialDraftForm?.mustHave ?? (tpl?.mustHave?.length ? tpl.mustHave.join("\n") : ""),
   );

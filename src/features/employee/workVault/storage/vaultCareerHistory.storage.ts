@@ -1,11 +1,21 @@
 // App name: Job Mitra
 // File name: vaultCareerHistory.storage.ts
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\workVault\storage\vaultCareerHistory.storage.ts
+//
+// C-HIST-1: per-worker FIFO (200). Key: wm_employee_{id}_vault_career_history_v1
+// Legacy global wm_vault_career_history_v1 partitions once by employeeMlId.
 
+import {
+  getCurrentVaultWorkerScopeId,
+  sanitizeVaultWorkerScopeId,
+} from "../../../shared/workVault/vaultWorkerScope";
 import type { VaultStorageWriteResult } from "../helpers/vaultStorageUtils";
 
 export const VAULT_CAREER_HISTORY_KEY = "wm_vault_career_history_v1";
 export const VAULT_CAREER_HISTORY_CHANGED = "wm:vault-career-history-changed";
+
+const PARTITION_FLAG = "wm_vault_career_history_v1__partitioned_v1";
+const MAX_PER_WORKER = 200;
 
 export type VaultCareerHistoryEntry = {
   id: string;
@@ -46,6 +56,10 @@ function bool(record: Rec, key: string): boolean {
 
 function makeId(): string {
   return `vch_${Math.random().toString(16).slice(2)}_${Date.now().toString(16)}`;
+}
+
+function scopedHistoryKey(workerScopeId: string): string {
+  return `wm_employee_${sanitizeVaultWorkerScopeId(workerScopeId)}_vault_career_history_v1`;
 }
 
 function normalizeExitType(value: unknown): VaultCareerHistoryEntry["exitType"] | null {
@@ -105,11 +119,10 @@ function normalizeEntry(raw: unknown): VaultCareerHistoryEntry | null {
   };
 }
 
-function readAll(): VaultCareerHistoryEntry[] {
-  try {
-    const raw = localStorage.getItem(VAULT_CAREER_HISTORY_KEY);
-    if (!raw) return [];
+function parseEntries(raw: string | null): VaultCareerHistoryEntry[] {
+  if (!raw) return [];
 
+  try {
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
 
@@ -122,9 +135,73 @@ function readAll(): VaultCareerHistoryEntry[] {
   }
 }
 
-function writeAllChecked(entries: VaultCareerHistoryEntry[]): VaultStorageWriteResult {
+/** One-shot: split legacy global FIFO into per-worker buckets. */
+function partitionLegacyGlobalOnce(): void {
+  if (typeof localStorage === "undefined") return;
+
   try {
-    localStorage.setItem(VAULT_CAREER_HISTORY_KEY, JSON.stringify(entries.slice(0, 200)));
+    if (localStorage.getItem(PARTITION_FLAG) === "1") return;
+
+    const legacyEntries = parseEntries(localStorage.getItem(VAULT_CAREER_HISTORY_KEY));
+    if (legacyEntries.length === 0) {
+      localStorage.setItem(PARTITION_FLAG, "1");
+      return;
+    }
+
+    const byWorker = new Map<string, VaultCareerHistoryEntry[]>();
+    for (const entry of legacyEntries) {
+      const key = sanitizeVaultWorkerScopeId(entry.employeeMlId);
+      const list = byWorker.get(key) ?? [];
+      list.push(entry);
+      byWorker.set(key, list);
+    }
+
+    for (const [workerId, entries] of byWorker) {
+      const scoped = scopedHistoryKey(workerId);
+      const existing = parseEntries(localStorage.getItem(scoped));
+      const byPost = new Map<string, VaultCareerHistoryEntry>();
+      for (const entry of existing) byPost.set(entry.careerPostId, entry);
+      for (const entry of entries) {
+        const prior = byPost.get(entry.careerPostId);
+        if (!prior || entry.completedAt >= prior.completedAt) {
+          byPost.set(entry.careerPostId, entry);
+        }
+      }
+      const merged = Array.from(byPost.values()).sort((a, b) => b.completedAt - a.completedAt);
+      localStorage.setItem(scoped, JSON.stringify(merged.slice(0, MAX_PER_WORKER)));
+    }
+
+    localStorage.setItem(PARTITION_FLAG, "1");
+  } catch {
+    /* demo-safe */
+  }
+}
+
+function resolveWorkerId(workerScopeId?: string): string {
+  partitionLegacyGlobalOnce();
+  if (workerScopeId?.trim()) return sanitizeVaultWorkerScopeId(workerScopeId);
+  return getCurrentVaultWorkerScopeId();
+}
+
+function readAll(workerScopeId?: string): VaultCareerHistoryEntry[] {
+  try {
+    const workerId = resolveWorkerId(workerScopeId);
+    return parseEntries(localStorage.getItem(scopedHistoryKey(workerId)));
+  } catch {
+    return [];
+  }
+}
+
+function writeAllChecked(
+  entries: VaultCareerHistoryEntry[],
+  workerScopeId: string,
+): VaultStorageWriteResult {
+  try {
+    const workerId = sanitizeVaultWorkerScopeId(workerScopeId);
+    localStorage.setItem(
+      scopedHistoryKey(workerId),
+      JSON.stringify(entries.slice(0, MAX_PER_WORKER)),
+    );
     window.dispatchEvent(new Event(VAULT_CAREER_HISTORY_CHANGED));
     return { ok: true };
   } catch {
@@ -132,13 +209,13 @@ function writeAllChecked(entries: VaultCareerHistoryEntry[]): VaultStorageWriteR
   }
 }
 
-function writeAll(entries: VaultCareerHistoryEntry[]): void {
-  writeAllChecked(entries);
-  // Phase-0 localStorage-safe fallback for non-critical callers.
+function writeAll(entries: VaultCareerHistoryEntry[], workerScopeId: string): void {
+  writeAllChecked(entries, workerScopeId);
 }
 
-export function getVaultCareerHistory(): VaultCareerHistoryEntry[] {
-  return readAll();
+/** Current worker bucket (or explicit worker id). */
+export function getVaultCareerHistory(workerScopeId?: string): VaultCareerHistoryEntry[] {
+  return readAll(workerScopeId);
 }
 
 export function upsertVaultCareerHistoryOnClosure(input: {
@@ -152,7 +229,8 @@ export function upsertVaultCareerHistoryOnClosure(input: {
   completedAt: number;
   exitType: VaultCareerHistoryEntry["exitType"];
 }): VaultCareerHistoryEntry {
-  const existing = readAll();
+  const workerId = resolveWorkerId(input.employeeMlId);
+  const existing = readAll(workerId);
   const prior = existing.find((entry) => entry.careerPostId === input.careerPostId);
 
   const nextEntry: VaultCareerHistoryEntry = {
@@ -173,15 +251,17 @@ export function upsertVaultCareerHistoryOnClosure(input: {
   };
 
   const without = existing.filter((entry) => entry.careerPostId !== input.careerPostId);
-  writeAll([nextEntry, ...without]);
+  writeAll([nextEntry, ...without], workerId);
   return nextEntry;
 }
 
 export function updateVaultCareerHistoryRatings(
   careerPostId: string,
   ratings: { employeeRating?: number; employerRating?: number },
+  employeeMlId?: string,
 ): VaultCareerHistoryEntry | null {
-  const existing = readAll();
+  const workerId = resolveWorkerId(employeeMlId);
+  const existing = readAll(workerId);
   const index = existing.findIndex((entry) => entry.careerPostId === careerPostId);
   if (index < 0) return null;
 
@@ -194,28 +274,33 @@ export function updateVaultCareerHistoryRatings(
 
   const updated = [...existing];
   updated[index] = next;
-  writeAll(updated);
+  writeAll(updated, workerId);
   return next;
 }
 
 export type FinalizeVaultCareerHistoryResult =
   { ok: true; entry: VaultCareerHistoryEntry | null } | { ok: false; reason: "storage_error" };
 
-export function finalizeVaultCareerHistory(careerPostId: string): FinalizeVaultCareerHistoryResult {
-  return applyVaultCareerFinalize(careerPostId, { requireRatings: true });
+export function finalizeVaultCareerHistory(
+  careerPostId: string,
+  employeeMlId?: string,
+): FinalizeVaultCareerHistoryResult {
+  return applyVaultCareerFinalize(careerPostId, { requireRatings: true, employeeMlId });
 }
 
 export function finalizeVaultCareerHistoryOnClosure(
   careerPostId: string,
+  employeeMlId?: string,
 ): FinalizeVaultCareerHistoryResult {
-  return applyVaultCareerFinalize(careerPostId, { requireRatings: false });
+  return applyVaultCareerFinalize(careerPostId, { requireRatings: false, employeeMlId });
 }
 
 function applyVaultCareerFinalize(
   careerPostId: string,
-  options: { requireRatings: boolean },
+  options: { requireRatings: boolean; employeeMlId?: string },
 ): FinalizeVaultCareerHistoryResult {
-  const existing = readAll();
+  const workerId = resolveWorkerId(options.employeeMlId);
+  const existing = readAll(workerId);
   const index = existing.findIndex((entry) => entry.careerPostId === careerPostId);
   if (index < 0) return { ok: true, entry: null };
 
@@ -242,7 +327,7 @@ function applyVaultCareerFinalize(
 
   const updated = [...existing];
   updated[index] = next;
-  const write = writeAllChecked(updated);
+  const write = writeAllChecked(updated, workerId);
   if (!write.ok) return { ok: false, reason: "storage_error" };
 
   return { ok: true, entry: next };

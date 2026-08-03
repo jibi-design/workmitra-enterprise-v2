@@ -1,10 +1,24 @@
+/** Local calendar midnight for YYYY-MM-DD (avoids UTC same-day collapse). */
 export function toEpoch(dateStr: string): number {
   try {
-    const d = new Date(dateStr);
-    return Number.isFinite(d.getTime()) ? d.getTime() : Date.now();
+    const parts = dateStr.trim().split("-").map(Number);
+    const y = parts[0];
+    const m = parts[1];
+    const d = parts[2];
+    if (!y || !m || !d) return Date.now();
+    const local = new Date(y, m - 1, d, 0, 0, 0, 0);
+    return Number.isFinite(local.getTime()) ? local.getTime() : Date.now();
   } catch {
     return Date.now();
   }
+}
+
+/** Same-day shifts need end after start — default to an 8h window. */
+export const DEFAULT_SHIFT_DURATION_MS = 8 * 3_600_000;
+
+export function ensureEndAfterStart(startAt: number, endAt: number): number {
+  if (endAt > startAt) return endAt;
+  return startAt + DEFAULT_SHIFT_DURATION_MS;
 }
 
 export function toDateStr(epoch: number): string {

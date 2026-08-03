@@ -15,10 +15,10 @@ import {
   CAREER_APPS_CHANGED,
   CAREER_APPS_KEY,
   CAREER_POSTS_CHANGED,
-  CAREER_POSTS_KEY,
   safeParse,
   safeRead,
 } from "../helpers/careerStorageUtils";
+import { resolveCareerEmployerScopedKey } from "../../../shared/career/careerEmployerScope";
 import type { CareerApplication, CareerJobPost } from "../types/careerTypes";
 import {
   buildCareerEmployerVaultData,
@@ -47,7 +47,7 @@ function subscribeCareerReviewStores(onStoreChange: () => void): () => void {
 }
 
 function getCareerPostsRawSnapshot(): string | null {
-  return safeRead(CAREER_POSTS_KEY);
+  return safeRead(resolveCareerEmployerScopedKey("career_posts_v1"));
 }
 
 function getCareerAppsRawSnapshot(): string | null {

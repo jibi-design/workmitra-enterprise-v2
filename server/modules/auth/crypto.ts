@@ -1,9 +1,10 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { resolveSessionPepper } from "./failCloseEnv.js";
 
 function getSessionPepper(): string {
-  const pepper = process.env.WM_SESSION_HASH_PEPPER;
+  const pepper = resolveSessionPepper();
   if (!pepper && process.env.NODE_ENV === "production") {
-    throw new Error("WM_SESSION_HASH_PEPPER is required in production");
+    throw new Error("WM_SESSION_HASH_PEPPER (or JWT_SECRET) is required in production");
   }
   return pepper ?? "wm-dev-session-pepper-not-for-production";
 }

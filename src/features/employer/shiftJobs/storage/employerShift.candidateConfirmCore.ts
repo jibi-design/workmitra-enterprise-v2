@@ -23,6 +23,7 @@ import type { ApplicantStatus, EmployeeShiftApplication, ShiftPost } from "./emp
 import type { ConfirmCandidateSagaResult } from "./employerShift.candidateConfirm.types";
 import { uniq } from "./employerShift.utils";
 import { enqueueShiftRetry } from "../../../../shared/shift/shiftRetryQueue";
+import { appendSelectionAuditEvent } from "../../../shared/shift/selectionAudit.storage";
 
 export function confirmCandidate(post: ShiftPost, appId: string): ConfirmCandidateSagaResult {
   // Re-read for vacancy integrity if caller passed a stale snapshot
@@ -126,6 +127,13 @@ export function confirmCandidate(post: ShiftPost, appId: string): ConfirmCandida
 
   // P0: formal Shift Ops membership MUST be provisioned by caller BEFORE this saga.
   // Do not best-effort provision here (orphan confirmed workspaces forbidden).
+
+  appendSelectionAuditEvent({
+    action: "confirm",
+    postId: livePost.id,
+    candidateId: resolvedWorkerMlId || appId,
+    appId,
+  });
 
   return {
     ok: true,

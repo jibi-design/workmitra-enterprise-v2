@@ -4,51 +4,68 @@ import {
   type EmployerShiftActivityEntry,
   type ShiftPost,
 } from "../../shiftJobs/storage/employerShift.storage";
-import { ACTIVITY_KEY, normalizeActivity } from "./dashboardHelpers.activity";
-import { EMPLOYEE_APPS_KEY, safeParseEmployeeApps } from "./dashboardHelpers.apps";
+import { activityKey, normalizeActivity } from "./dashboardHelpers.activity";
+import { safeParseEmployeeApps } from "./dashboardHelpers.apps";
 import { safeParseArray } from "./dashboardHelpers.parsing";
 import type { WorkspaceLite } from "./dashboardHelpers.types";
-import { WORKSPACES_KEY, normalizeWorkspacesLite } from "./dashboardHelpers.workspace";
+import { normalizeWorkspacesLite } from "./dashboardHelpers.workspace";
+import {
+  getEmpPostsKey,
+  getEmployerApplicationsKey,
+  getEmployerWorkspacesKey,
+} from "../storage/employerShift.keys";
+import { SHIFT_EMPLOYER_SCOPE_CHANGED_EVENT } from "../../../shared/shift/shiftEmployerScope";
 
-const EMP_POSTS_KEY = "wm_employer_shift_posts_v1";
 const WORKSPACES_CHANGED = "wm:employee-shift-workspaces-changed";
 
 let pCacheRaw: string | null = null;
+let pCacheKey = "";
 let pCacheList: ShiftPost[] = [];
 export function getPostsSnapshot(): ShiftPost[] {
-  const raw = localStorage.getItem(EMP_POSTS_KEY);
-  if (raw === pCacheRaw) return pCacheList;
+  const key = getEmpPostsKey();
+  const raw = localStorage.getItem(key);
+  if (raw === pCacheRaw && key === pCacheKey) return pCacheList;
   pCacheRaw = raw;
+  pCacheKey = key;
   pCacheList = employerShiftStorage.getPosts();
   return pCacheList;
 }
 
 let aCacheRaw: string | null = null;
+let aCacheKey = "";
 let aCacheList: EmployeeShiftApplication[] = [];
 export function getAppsSnapshot(): EmployeeShiftApplication[] {
-  const raw = localStorage.getItem(EMPLOYEE_APPS_KEY);
-  if (raw === aCacheRaw) return aCacheList;
+  const key = getEmployerApplicationsKey();
+  const raw = localStorage.getItem(key);
+  if (raw === aCacheRaw && key === aCacheKey) return aCacheList;
   aCacheRaw = raw;
+  aCacheKey = key;
   aCacheList = safeParseEmployeeApps(raw);
   return aCacheList;
 }
 
 let actCacheRaw: string | null = null;
+let actCacheKey = "";
 let actCacheList: EmployerShiftActivityEntry[] = [];
 export function getActivitySnapshot(): EmployerShiftActivityEntry[] {
-  const raw = localStorage.getItem(ACTIVITY_KEY);
-  if (raw === actCacheRaw) return actCacheList;
+  const key = activityKey();
+  const raw = localStorage.getItem(key);
+  if (raw === actCacheRaw && key === actCacheKey) return actCacheList;
   actCacheRaw = raw;
+  actCacheKey = key;
   actCacheList = normalizeActivity(safeParseArray(raw));
   return actCacheList;
 }
 
 let wsCacheRaw: string | null = null;
+let wsCacheKey = "";
 let wsCacheList: WorkspaceLite[] = [];
 export function getWorkspacesSnapshot(): WorkspaceLite[] {
-  const raw = localStorage.getItem(WORKSPACES_KEY);
-  if (raw === wsCacheRaw) return wsCacheList;
+  const key = getEmployerWorkspacesKey();
+  const raw = localStorage.getItem(key);
+  if (raw === wsCacheRaw && key === wsCacheKey) return wsCacheList;
   wsCacheRaw = raw;
+  wsCacheKey = key;
   wsCacheList = normalizeWorkspacesLite(safeParseArray(raw));
   return wsCacheList;
 }
@@ -83,6 +100,7 @@ export function subscribeDashboard(cb: () => void): () => void {
     employerShiftStorage._events?.employerShiftActivityChanged ??
       "wm:employer-shift-activity-changed",
     WORKSPACES_CHANGED,
+    SHIFT_EMPLOYER_SCOPE_CHANGED_EVENT,
   ];
   for (const ev of evs) window.addEventListener(ev, h);
   document.addEventListener("visibilitychange", h);

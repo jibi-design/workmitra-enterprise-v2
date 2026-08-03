@@ -14,6 +14,7 @@ const CAREER_PREFIX = "/v1/jobmitra/employee/career";
  * Priority 3 targets (Career Employment gate):
  *   - offer/accept  → step 2 of gate (employee accepts)
  *   - offer/decline → employee rejects offer
+ *   - withdraw      → employee withdraws pre-offer application
  *
  * Apply / list are implemented to populate client app-id bridges for gate calls.
  */
@@ -137,6 +138,28 @@ export async function handleEmployeeCareerRoutes(
     const applicationId = offerDeclineMatch[1];
 
     const result = await employeeCareerService.declineOffer(applicationId, req.authenticatedUser);
+
+    if (!result.ok) {
+      sendJson(res, result.httpStatus, {
+        error: { code: result.code, message: result.message, requestId },
+      });
+      return true;
+    }
+
+    sendJson(res, 200, envelope({ application: result.application }, requestId));
+    return true;
+  }
+
+  // POST /v1/jobmitra/employee/career/applications/:applicationId/withdraw
+  // Employee withdraws application (pending | shortlisted | interview_scheduled only).
+  const withdrawMatch = subpath.match(/^\/applications\/([^/]+)\/withdraw$/);
+  if (method === "POST" && withdrawMatch) {
+    const applicationId = withdrawMatch[1];
+
+    const result = await employeeCareerService.withdrawApplication(
+      applicationId,
+      req.authenticatedUser,
+    );
 
     if (!result.ok) {
       sendJson(res, result.httpStatus, {

@@ -17,6 +17,7 @@ import {
   parseNotificationJson,
   uniqueLatestNotifications,
 } from "../../../../shared/notifications/guards";
+import { resolveShiftEmployerScopedKey } from "../../../shared/shift/shiftEmployerScope";
 
 export type EmployerNotificationDomain =
   "shift" | "career" | "hr" | "console" | "workforce" | "employment";
@@ -31,9 +32,12 @@ export type EmployerNotification = {
   route?: string;
 };
 
-const KEY = "wm_employer_notifications_v1";
 const CHANGED_EVENT = "wm:employer-notifications-changed";
 const MAX_NOTIFICATIONS = DEFAULT_NOTIFICATION_MAX_ITEMS;
+
+function storageKey(): string {
+  return resolveShiftEmployerScopedKey("shift_notifications_v1");
+}
 
 const VALID_DOMAINS: readonly EmployerNotificationDomain[] = [
   "shift",
@@ -50,7 +54,7 @@ let cacheUnread = 0;
 
 function safeRead(): string | null {
   try {
-    return localStorage.getItem(KEY);
+    return localStorage.getItem(storageKey());
   } catch {
     return null;
   }
@@ -58,7 +62,10 @@ function safeRead(): string | null {
 
 function safeWrite(list: EmployerNotification[]) {
   try {
-    localStorage.setItem(KEY, JSON.stringify(uniqueLatestNotifications(list, MAX_NOTIFICATIONS)));
+    localStorage.setItem(
+      storageKey(),
+      JSON.stringify(uniqueLatestNotifications(list, MAX_NOTIFICATIONS)),
+    );
   } catch {
     // demo-safe
   }
@@ -141,16 +148,21 @@ function pushNotification(
 
 export const employerNotificationsStorage = {
   subscribe(onStoreChange: () => void): () => void {
-    const handler = () => onStoreChange();
+    const handler = () => {
+      cacheRaw = null;
+      onStoreChange();
+    };
 
     window.addEventListener("storage", handler);
     window.addEventListener(CHANGED_EVENT, handler);
+    window.addEventListener("wm:shift-employer-scope-changed", handler);
     window.addEventListener("focus", handler);
     document.addEventListener("visibilitychange", handler);
 
     return () => {
       window.removeEventListener("storage", handler);
       window.removeEventListener(CHANGED_EVENT, handler);
+      window.removeEventListener("wm:shift-employer-scope-changed", handler);
       window.removeEventListener("focus", handler);
       document.removeEventListener("visibilitychange", handler);
     };
@@ -210,7 +222,7 @@ export const employerNotificationsStorage = {
 
   clearAll() {
     try {
-      localStorage.removeItem(KEY);
+      localStorage.removeItem(storageKey());
     } catch {
       // demo-safe
     }
@@ -243,5 +255,7 @@ export const employerNotificationsStorage = {
   },
 
   _eventName: CHANGED_EVENT,
-  _key: KEY,
+  get _key() {
+    return storageKey();
+  },
 } as const;

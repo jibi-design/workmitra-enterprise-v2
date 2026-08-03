@@ -21,6 +21,7 @@ import type { EmployeeShiftApplication, ShiftPost } from "./employerShift.types"
 import type { ConfirmDirectInviteSagaResult } from "./employerShift.candidateConfirm.types";
 import { uniq } from "./employerShift.utils";
 import { enqueueShiftRetry } from "../../../../shared/shift/shiftRetryQueue";
+import { appendSelectionAuditEvent } from "../../../shared/shift/selectionAudit.storage";
 
 export function confirmDirectInviteCandidate(
   post: ShiftPost,
@@ -158,6 +159,13 @@ export function confirmDirectInviteCandidate(
       step: "invite_selected_notify",
     });
   }
+
+  appendSelectionAuditEvent({
+    action: "confirm",
+    postId: livePost.id,
+    candidateId: workerMlId,
+    appId,
+  });
 
   return {
     ok: true,

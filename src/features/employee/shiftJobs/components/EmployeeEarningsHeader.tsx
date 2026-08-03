@@ -8,10 +8,10 @@ export function EmployeeEarningsHeader() {
       variant="shift"
       audience="employee"
       icon={<EarningsIcon />}
-      title="Earnings Tracker"
-      subtitle="Estimated totals from confirmed shifts — not a payout or settlement"
-      description="Track estimated pay from confirmed single-day shifts. Direct payout and settlement are planned for a later release."
-      trailing={<span className="wm-domainHeroBadge">Estimates</span>}
+      title="Estimated Earnings"
+      subtitle="Estimated totals from confirmed shifts — not confirmed payroll, payout, or settlement"
+      description="Track estimated pay from confirmed single-day shifts. Figures are planning estimates only. Direct payout and settlement are planned for a later release."
+      trailing={<span className="wm-domainHeroBadge">Estimated Earnings</span>}
     />
   );
 }

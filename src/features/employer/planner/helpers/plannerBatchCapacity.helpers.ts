@@ -1,11 +1,13 @@
-/** Job Mitra | plannerBatchCapacity.helpers.ts | Soft capacity probe (never hard-block) */
+/** Job Mitra | plannerBatchCapacity.helpers.ts | Capacity probe + Wave-3 hard-cap messaging */
 
 import type { DaySlot, DemandPlan } from "../storage/demandPlanner.schema";
-import { countConfirmedPlannerAppsForTarget } from "../../../shared/planner/services/plannerNativeApplication.helpers";
+import { getNativeSlotCapacityAllowed } from "../../../shared/planner/services/plannerNativeApplication.helpers";
 import type { EmployeeShiftApplication } from "../../../shared/planner/ports/plannerLegacyShiftBridge";
 
 export type CapacitySoftWarn = {
   needsConfirm: boolean;
+  /** Wave-3: native confirm hard-fails when true (override cannot overfill). */
+  hardBlocked: boolean;
   message: string;
   confirmed: number;
   allowed: number;
@@ -29,25 +31,21 @@ export function probeAppsCapacitySoftWarn(
   plan: DemandPlan,
   pendingApps: EmployeeShiftApplication[],
 ): CapacitySoftWarn | null {
-  const buffer = Math.max(0, Math.floor(plan.waitingBuffer ?? 0));
   let worst: CapacitySoftWarn | null = null;
 
   for (const app of pendingApps) {
     const slot = resolvePlanSlotForApp(plan, app);
     if (!slot) continue;
-    const confirmed = countConfirmedPlannerAppsForTarget({
-      planId: plan.id,
-      targetId: app.postId,
-    });
-    const allowed = Math.max(0, Math.floor(slot.workers ?? 0)) + buffer;
-    if (confirmed < allowed) continue;
+    const { confirmed, allowed, atCapacity } = getNativeSlotCapacityAllowed(plan, app);
+    if (!atCapacity) continue;
 
     const candidate: CapacitySoftWarn = {
       needsConfirm: true,
+      hardBlocked: true,
       confirmed,
       allowed,
       slotDate: slot.date,
-      message: `This slot (${slot.date}) has ${confirmed} confirmed (allowed ${allowed} incl. waiting buffer). Add anyway?`,
+      message: `This slot (${slot.date}) is full (${confirmed}/${allowed} incl. waiting buffer). Confirm is hard-blocked until a slot opens.`,
     };
     if (!worst || candidate.confirmed - candidate.allowed > worst.confirmed - worst.allowed) {
       worst = candidate;

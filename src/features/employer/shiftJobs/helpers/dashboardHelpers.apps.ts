@@ -1,7 +1,9 @@
 import type { EmployeeShiftApplication } from "../../shiftJobs/storage/employerShift.storage";
 import { isRec, num, readAnswerMap, readNotesMap, str } from "./dashboardHelpers.parsing";
+import { WORKER_APPS_PROJECTION_KEY } from "../../../shared/shift/shiftTenantProjection";
 
-export const EMPLOYEE_APPS_KEY = "wm_employee_shift_applications_v1";
+/** @deprecated Use getEmployerApplicationsKey() for employer reads. */
+export const EMPLOYEE_APPS_KEY = WORKER_APPS_PROJECTION_KEY;
 
 export function safeParseEmployeeApps(raw: string | null): EmployeeShiftApplication[] {
   if (!raw) return [];

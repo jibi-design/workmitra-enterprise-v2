@@ -6,23 +6,37 @@ import type {
   EmployerShiftDraftQuickQuestion,
   EmployerShiftPostDraft,
 } from "./employerShiftDraft.storage.types";
+import { sanitizeUserText } from "../../../../shared/security/sanitizeUserText";
+import { getEmployerDraftsKey, LEGACY_DRAFTS_KEY } from "./employerShift.keys";
 
-export const DRAFTS_KEY = "wm_employer_shift_post_drafts_v1";
+/** @deprecated Legacy unscoped — prefer getEmployerDraftsKey(). */
+export const DRAFTS_KEY = LEGACY_DRAFTS_KEY;
 export const DRAFTS_CHANGED_EVENT = "wm:employer-shift-post-drafts-changed";
 
 type UnknownRecord = Record<string, unknown>;
 
 let draftsCacheRaw: string | null = "__init__";
+let draftsCacheKey: string | null = null;
 let draftsCacheList: EmployerShiftPostDraft[] = [];
 
-export function readDrafts(): EmployerShiftPostDraft[] {
-  const raw = localStorage.getItem(DRAFTS_KEY);
+function t(value: string, max: number): string {
+  return sanitizeUserText(value, max);
+}
 
-  if (raw === draftsCacheRaw) {
+function draftsStorageKey(): string {
+  return getEmployerDraftsKey();
+}
+
+export function readDrafts(): EmployerShiftPostDraft[] {
+  const key = draftsStorageKey();
+  const raw = localStorage.getItem(key);
+
+  if (raw === draftsCacheRaw && key === draftsCacheKey) {
     return draftsCacheList;
   }
 
   draftsCacheRaw = raw;
+  draftsCacheKey = key;
   draftsCacheList = safeParseArray(raw)
     .map(normalizeDraft)
     .filter((draft): draft is EmployerShiftPostDraft => draft !== null)
@@ -33,8 +47,15 @@ export function readDrafts(): EmployerShiftPostDraft[] {
 
 export function writeDrafts(drafts: readonly EmployerShiftPostDraft[]): boolean {
   try {
-    localStorage.setItem(DRAFTS_KEY, JSON.stringify(drafts));
+    localStorage.setItem(draftsStorageKey(), JSON.stringify(drafts));
+    // Stop using unscoped drafts as employer SoT.
+    try {
+      localStorage.removeItem(LEGACY_DRAFTS_KEY);
+    } catch {
+      /* safe */
+    }
     draftsCacheRaw = "__dirty__";
+    draftsCacheKey = null;
     window.dispatchEvent(new Event(DRAFTS_CHANGED_EVENT));
     return true;
   } catch {
@@ -46,26 +67,29 @@ export function normalizeDraftForm(
   form: EmployerShiftCreateDraftForm,
 ): EmployerShiftCreateDraftForm {
   return {
-    companyName: form.companyName,
-    jobName: form.jobName,
-    category: form.category,
-    description: form.description,
+    companyName: t(form.companyName, 200),
+    jobName: t(form.jobName, 200),
+    category: t(form.category, 80),
+    description: t(form.description, 4000),
     experience: clampExperience(form.experience),
-    vacanciesStr: form.vacanciesStr,
-    backupSlotsStr: form.backupSlotsStr,
-    payPerDayStr: form.payPerDayStr,
+    vacanciesStr: t(form.vacanciesStr, 16),
+    backupSlotsStr: t(form.backupSlotsStr, 16),
+    payPerDayStr: t(form.payPerDayStr, 32),
     payBasis: clampPayBasis(form.payBasis),
-    shiftTiming: form.shiftTiming,
-    locationName: form.locationName,
-    locationAddress: form.locationAddress,
-    mapsLink: form.mapsLink,
+    shiftTiming: t(form.shiftTiming, 80),
+    locationName: t(form.locationName, 200),
+    locationAddress: t(form.locationAddress, 500),
+    mapsLink: t(form.mapsLink, 500),
     startAt: Number.isFinite(form.startAt) ? form.startAt : 0,
     endAt: Number.isFinite(form.endAt) ? form.endAt : 0,
-    mustHave: form.mustHave,
-    goodToHave: form.goodToHave,
-    whatWeProvide: normalizeStringArray(form.whatWeProvide),
-    quickQuestions: normalizeQuickQuestions(form.quickQuestions),
-    dressCode: form.dressCode,
+    mustHave: t(form.mustHave, 2000),
+    goodToHave: t(form.goodToHave, 2000),
+    whatWeProvide: normalizeStringArray(form.whatWeProvide).map((s) => t(s, 200)),
+    quickQuestions: normalizeQuickQuestions(form.quickQuestions).map((q) => ({
+      ...q,
+      text: t(q.text, 500),
+    })),
+    dressCode: t(form.dressCode, 200),
     jobType: clampJobType(form.jobType),
   };
 }

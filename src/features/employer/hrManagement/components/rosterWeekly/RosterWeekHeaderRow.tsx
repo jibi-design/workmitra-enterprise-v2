@@ -2,7 +2,14 @@
 // File: RosterWeekHeaderRow.tsx
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\hrManagement\components\rosterWeekly\RosterWeekHeaderRow.tsx
 
-import { DAY_SHORT_LABELS } from "../../helpers/rosterPlannerConstants";
+import {
+  DAY_SHORT_LABELS,
+  ROSTER_MUTED_BG,
+  ROSTER_MUTED_FG,
+  ROSTER_OFF_BG,
+  ROSTER_TODAY_BG,
+  ROSTER_TODAY_FG,
+} from "../../helpers/rosterPlannerConstants";
 import { formatDayNumber, fromDateKey, isToday } from "../../helpers/rosterPlannerUtils";
 
 type Props = {
@@ -30,8 +37,9 @@ export function RosterWeekHeaderRow({ weekDates, getAssignmentCount, isOffDay }:
               textAlign: "center",
               padding: "8px 4px 6px",
               borderRadius: 10,
-              background: today ? "#0369a1" : offDay ? "#f3f4f6" : "#f9fafb",
-              color: today ? "#fff" : offDay ? "#9ca3af" : "var(--wm-er-text)",
+              background: today ? ROSTER_TODAY_BG : offDay ? ROSTER_OFF_BG : ROSTER_MUTED_BG,
+              color: today ? ROSTER_TODAY_FG : offDay ? ROSTER_MUTED_FG : "var(--wm-er-text)",
+              border: today ? `1px solid ${ROSTER_TODAY_FG}` : "1px solid transparent",
             }}
           >
             <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase" }}>

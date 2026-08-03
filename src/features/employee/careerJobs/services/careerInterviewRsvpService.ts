@@ -4,22 +4,13 @@
 
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { queuePulseEventForAffectedUser } from "../../../pulse/pulseEventBridge";
-import { pushCareerActivity } from "../../../career/services/careerEmployerPublic";
+import { pushCareerActivity, getCareerPost } from "../../../career/services/careerEmployerPublic";
 import { readCareerApps, writeCareerApps } from "../../../career/helpers/careerStoragePublic";
 import type { CareerApplication, RoundResult } from "../../../career/types/careerDomainTypes";
-import { getCurrentActorId, identityBridge } from "../../../../app/identity/identity.adapter";
-import { getCareerPost } from "../../../career/services/careerEmployerPublic";
-import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
+import { resolveActorStorageId } from "../../../../app/identity/identity.adapter";
 
 function getCurrentEmployeeId(): string {
-  const profile = employeeProfileStorage.get();
-  const legacyId = profile.uniqueId?.trim() || "employee_demo";
-  const actor = getCurrentActorId("employee");
-  const realLegacy = profile.uniqueId?.trim();
-  if (actor.source === "auth" && actor.authUserId && realLegacy) {
-    identityBridge.upsert("employee", realLegacy, actor.authUserId);
-  }
-  return legacyId;
+  return resolveActorStorageId("employee", "employee_demo");
 }
 
 function findPendingScheduledRound(app: CareerApplication): RoundResult | null {

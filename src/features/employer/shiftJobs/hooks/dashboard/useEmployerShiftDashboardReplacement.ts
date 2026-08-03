@@ -15,7 +15,7 @@ type UseEmployerShiftDashboardReplacementInput = {
   readonly postId: string;
   readonly backupApps: readonly EmployeeShiftApplication[];
   readonly selectedApps: readonly EmployeeShiftApplication[];
-  readonly busy: (fn: () => void) => void;
+  readonly busy: (fn: () => void | Promise<void>) => void;
   readonly setTab: Dispatch<SetStateAction<DashboardTab>>;
   readonly setNotice: Dispatch<SetStateAction<NoticeData | null>>;
 };
@@ -47,8 +47,12 @@ export function useEmployerShiftDashboardReplacement({
       return;
     }
 
-    busy(() => {
-      const replaced = employerShiftStorage.replaceConfirmed(postId, replaceCandidateId, reason);
+    busy(async () => {
+      const replaced = await employerShiftStorage.replaceConfirmed(
+        postId,
+        replaceCandidateId,
+        reason,
+      );
 
       setReplaceCandidateId(null);
 

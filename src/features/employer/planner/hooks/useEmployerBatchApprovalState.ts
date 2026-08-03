@@ -113,6 +113,10 @@ export function useEmployerBatchApprovalState() {
   const approveBatch = useCallback(
     async (batchId: string) => {
       const softWarn = getBatchCapacitySoftWarn(batchId);
+      if (softWarn?.hardBlocked) {
+        showToast(softWarn.message);
+        return;
+      }
       let softCapacityOverride = false;
       if (softWarn?.needsConfirm) {
         const ok = await askConfirm({
@@ -134,6 +138,10 @@ export function useEmployerBatchApprovalState() {
         if (result.ok) {
           showToast(`Batch approved · ${result.processed} day(s) confirmed`);
           nav(ROUTE_PATHS.employerPlannerRoster);
+          return;
+        }
+        if (result.reason === "capacity_full") {
+          showToast("Slot is full — confirm is hard-blocked until a vacancy opens.");
           return;
         }
         if (result.reason === "nothing_pending") {

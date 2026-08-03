@@ -24,6 +24,15 @@ export type IdentityBridgeMap = {
 
 const BRIDGE_KEY = "wm_identity_bridge_v1";
 
+/** Thrown when AUTH is on but no real actor id exists (P1 fail-closed). */
+export class AuthIdentityRequiredError extends Error {
+  readonly code = "AUTH_IDENTITY_REQUIRED";
+  constructor(role: ActorRole) {
+    super(`Authenticated ${role} identity required — demo fallbacks are disabled when AUTH is on.`);
+    this.name = "AuthIdentityRequiredError";
+  }
+}
+
 function emptyBridge(): IdentityBridgeMap {
   return { employee: {}, employer: {} };
 }
@@ -125,3 +134,45 @@ export const identityBridge = {
     }
   },
 };
+
+/**
+ * P1 — resolve a storage/API actor id without silent employee_demo / employer_demo when AUTH on.
+ * Prefer auth UUID; else real legacy uniqueId; AUTH off may use demo fallback.
+ */
+export function resolveActorStorageId(
+  role: ActorRole,
+  demoFallback: "employee_demo" | "employer_demo",
+): string {
+  const actor = getCurrentActorId(role);
+  const legacy = actor.legacyId?.trim() || readLegacyUniqueId(role);
+
+  if (actor.source === "auth" && actor.authUserId && legacy) {
+    identityBridge.upsert(role, legacy, actor.authUserId);
+  }
+
+  if (AUTH_BACKEND_ENABLED) {
+    if (actor.authUserId?.trim()) return actor.authUserId.trim();
+    if (legacy) return legacy;
+    throw new AuthIdentityRequiredError(role);
+  }
+
+  return legacy || demoFallback;
+}
+
+/**
+ * Prefer auth UUID for API-facing worker/employer keys when AUTH on.
+ * Never returns demo_* when AUTH on.
+ */
+export function resolveActorApiId(role: ActorRole): string {
+  return resolveActorStorageId(role, role === "employee" ? "employee_demo" : "employer_demo");
+}
+
+/** Match keys for invites / LS filters: auth UUID + legacy uniqueId (uppercased). */
+export function actorMatchKeys(role: ActorRole): string[] {
+  const actor = getCurrentActorId(role);
+  const keys = new Set<string>();
+  if (actor.authUserId?.trim()) keys.add(actor.authUserId.trim().toUpperCase());
+  const legacy = actor.legacyId?.trim() || readLegacyUniqueId(role);
+  if (legacy) keys.add(legacy.toUpperCase());
+  return [...keys];
+}

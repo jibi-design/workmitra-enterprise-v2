@@ -2,11 +2,10 @@
 // File name: careerSearchApplicationHelpers.ts
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\careerJobs\helpers\careerSearchApplicationHelpers.ts
 
-import { getCurrentActorId, identityBridge } from "../../../../app/identity/identity.adapter";
+import { resolveActorStorageId } from "../../../../app/identity/identity.adapter";
 import { hydrateCareerApplicationsFromServer } from "../../../career/services/careerDbTruth.service";
 import { isCareerApiSyncEnabled } from "../../../career/services/careerGateApi.service";
 import { CAREER_APPS_KEY, safeRead } from "../../../career/helpers/careerStoragePublic";
-import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
 import { cleanText, clampNumber, isRec, num, str } from "./careerSearchSanitizers";
 import type { CareerApplicationStageLite, CareerSearchApplicationState } from "./careerSearchTypes";
 
@@ -44,14 +43,7 @@ function isSearchBlockingCareerStage(stage: CareerApplicationStageLite): boolean
 }
 
 function getCurrentEmployeeId(): string {
-  const profile = employeeProfileStorage.get();
-  const legacyId = profile.uniqueId?.trim() || "employee_demo";
-  const actor = getCurrentActorId("employee");
-  const realLegacy = profile.uniqueId?.trim();
-  if (actor.source === "auth" && actor.authUserId && realLegacy) {
-    identityBridge.upsert("employee", realLegacy, actor.authUserId);
-  }
-  return legacyId;
+  return resolveActorStorageId("employee", "employee_demo");
 }
 
 export function getBlockedCareerPostIds(): Set<string> {

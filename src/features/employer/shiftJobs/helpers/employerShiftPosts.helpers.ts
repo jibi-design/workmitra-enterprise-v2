@@ -7,8 +7,11 @@ import {
   type ShiftPost,
 } from "../../shiftJobs/storage/employerShift.storage";
 import { countApplicationsForPostIndexed } from "./appsByPostIndex";
+import { getEmpPostsKey } from "../storage/employerShift.keys";
+import { SHIFT_EMPLOYER_SCOPE_CHANGED_EVENT } from "../../../shared/shift/shiftEmployerScope";
 
 let postsRawCache: string | null = null;
+let postsKeyCache = "";
 let postsListCache: ShiftPost[] = [];
 
 export function formatShiftPostDateRange(startAt: number, endAt: number): string {
@@ -55,11 +58,13 @@ export function countAppliedAppsForPost(postId: string): number {
 }
 
 export function getEmployerShiftPostsSnapshot(): ShiftPost[] {
-  const raw = localStorage.getItem("wm_employer_shift_posts_v1");
+  const key = getEmpPostsKey();
+  const raw = localStorage.getItem(key);
 
-  if (raw === postsRawCache) return postsListCache;
+  if (raw === postsRawCache && key === postsKeyCache) return postsListCache;
 
   postsRawCache = raw;
+  postsKeyCache = key;
   postsListCache = employerShiftStorage.getPosts();
 
   return postsListCache;
@@ -79,6 +84,7 @@ export function subscribeEmployerShiftPosts(callback: () => void): () => void {
   document.addEventListener("visibilitychange", handler);
   window.addEventListener(postsEvent, handler);
   window.addEventListener(appsEvent, handler);
+  window.addEventListener(SHIFT_EMPLOYER_SCOPE_CHANGED_EVENT, handler);
 
   return () => {
     window.removeEventListener("storage", handler);
@@ -86,5 +92,6 @@ export function subscribeEmployerShiftPosts(callback: () => void): () => void {
     document.removeEventListener("visibilitychange", handler);
     window.removeEventListener(postsEvent, handler);
     window.removeEventListener(appsEvent, handler);
+    window.removeEventListener(SHIFT_EMPLOYER_SCOPE_CHANGED_EVENT, handler);
   };
 }

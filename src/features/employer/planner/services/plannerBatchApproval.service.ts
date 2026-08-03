@@ -159,6 +159,10 @@ export async function approvePlannerApplicationBatch(
 
   const plan = demandPlannerStorage.getById(batch.planId);
   const softWarn = plan ? probeAppsCapacitySoftWarn(plan, pending) : null;
+  // Wave-3: hard-cap — soft override can no longer overfill native confirms
+  if (softWarn?.hardBlocked) {
+    return { ok: false, processed: 0, failed: 0, reason: "capacity_full" };
+  }
   if (softWarn?.needsConfirm && options?.softCapacityOverride) {
     appendPlannerAudit({
       planId: batch.planId,

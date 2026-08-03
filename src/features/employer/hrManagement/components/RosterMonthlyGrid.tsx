@@ -3,7 +3,17 @@
 
 import { useMemo } from "react";
 import type { RosterAssignment } from "../types/rosterPlanner.types";
-import { getSiteColor, DAY_SHORT_LABELS } from "../helpers/rosterPlannerConstants";
+import {
+  getSiteColor,
+  DAY_SHORT_LABELS,
+  ROSTER_MUTED_BG,
+  ROSTER_MUTED_FG,
+  ROSTER_OFF_BG,
+  ROSTER_SURFACE,
+  ROSTER_TODAY_BG,
+  ROSTER_TODAY_BORDER,
+  ROSTER_TODAY_FG,
+} from "../helpers/rosterPlannerConstants";
 import { isToday, fromDateKey } from "../helpers/rosterPlannerUtils";
 import { companyConfigStorage } from "../../company/storage/companyConfig.storage";
 
@@ -77,14 +87,16 @@ export function RosterMonthlyGrid({ calendarDates, currentMonth, assignments, on
                 minHeight: 60,
                 padding: "4px 3px",
                 borderRadius: 8,
-                border: today ? "2px solid #0369a1" : "1px solid var(--wm-er-border, #e5e7eb)",
+                border: today
+                  ? `2px solid ${ROSTER_TODAY_BORDER}`
+                  : "1px solid var(--wm-er-border)",
                 background: !isCurrentMonth
-                  ? "#f9fafb"
+                  ? ROSTER_MUTED_BG
                   : today
-                    ? "#eff6ff"
+                    ? ROSTER_TODAY_BG
                     : isOff
-                      ? "#f3f4f6"
-                      : "#fff",
+                      ? ROSTER_OFF_BG
+                      : ROSTER_SURFACE,
                 cursor: "pointer",
                 opacity: isCurrentMonth ? 1 : 0.35,
                 display: "flex",
@@ -106,7 +118,7 @@ export function RosterMonthlyGrid({ calendarDates, currentMonth, assignments, on
                   style={{
                     fontSize: 12,
                     fontWeight: today ? 900 : 600,
-                    color: today ? "#0369a1" : isOff ? "#9ca3af" : "var(--wm-er-text)",
+                    color: today ? ROSTER_TODAY_FG : isOff ? ROSTER_MUTED_FG : "var(--wm-er-text)",
                   }}
                 >
                   {d.getDate()}
@@ -117,7 +129,7 @@ export function RosterMonthlyGrid({ calendarDates, currentMonth, assignments, on
                       fontSize: 8,
                       fontWeight: 800,
                       color: "#b45309",
-                      background: "#fffbeb",
+                      background: "var(--wm-amber-50)",
                       padding: "1px 4px",
                       borderRadius: 4,
                     }}

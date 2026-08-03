@@ -1,5 +1,6 @@
 /** Job Mitra | shiftOps/services/authBridge.service.ts | GJ-3 FE: JM session → Supabase setSession */
 
+import type { Session } from "@supabase/supabase-js";
 import { AUTH_API_PREFIX, AUTH_BACKEND_ENABLED } from "../../../shared/config/authConfig";
 import { apiService } from "../../../shared/services/apiService";
 import { getCurrentActorId, identityBridge } from "../../../app/identity/identity.adapter";
@@ -19,6 +20,23 @@ interface ApiEnvelope<T> {
 }
 
 let bridgeInFlight: Promise<void> | null = null;
+
+function readJobmitraUserIdFromSession(session: Session): string | null {
+  const meta = session.user?.user_metadata as Record<string, unknown> | undefined;
+  const raw = meta?.jobmitra_user_id;
+  return typeof raw === "string" && raw.trim() ? raw.trim() : null;
+}
+
+/**
+ * AUTH on: SO session is only reusable when user_metadata.jobmitra_user_id === current JM user.id.
+ * AUTH off (Phase-0): any live session is acceptable (anon / dev password).
+ */
+function isShiftOpsSessionOwnedByCurrentJmUser(session: Session): boolean {
+  if (!AUTH_BACKEND_ENABLED) return true;
+  const jmId = useAuthStore.getState().user?.id?.trim();
+  if (!jmId) return false;
+  return readJobmitraUserIdFromSession(session) === jmId;
+}
 
 async function applySession(session: BridgeSessionPayload): Promise<void> {
   const sb = getShiftOpsSupabase();
@@ -73,6 +91,15 @@ async function bridgeDevFallback(): Promise<void> {
   );
 }
 
+async function dropStaleShiftOpsSession(): Promise<void> {
+  try {
+    const sb = getShiftOpsSupabase();
+    await sb.auth.signOut();
+  } catch {
+    /* demo-safe — re-bridge will overwrite */
+  }
+}
+
 /** Ensure Supabase Auth session exists so shift_ops RPCs see auth.uid(). */
 export async function ensureShiftOpsAuthSession(): Promise<void> {
   if (!isShiftOpsSupabaseConfigured()) {
@@ -83,11 +110,24 @@ export async function ensureShiftOpsAuthSession(): Promise<void> {
 
   const sb = getShiftOpsSupabase();
   const { data } = await sb.auth.getSession();
-  if (data.session?.access_token) return;
+  if (data.session?.access_token) {
+    if (isShiftOpsSessionOwnedByCurrentJmUser(data.session)) {
+      return;
+    }
+    // Stale / cross-account SO token — never early-return; force re-bridge.
+    await dropStaleShiftOpsSession();
+  }
 
   if (bridgeInFlight) {
     await bridgeInFlight;
-    return;
+    const after = await sb.auth.getSession();
+    if (
+      after.data.session?.access_token &&
+      isShiftOpsSessionOwnedByCurrentJmUser(after.data.session)
+    ) {
+      return;
+    }
+    await dropStaleShiftOpsSession();
   }
 
   bridgeInFlight = (async () => {

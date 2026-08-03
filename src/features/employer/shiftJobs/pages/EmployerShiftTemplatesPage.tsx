@@ -7,14 +7,18 @@ import { EnterpriseEmpty } from "../../../../shared/components/enterprise";
 import { EmployerShiftTemplatesHeader } from "../components/EmployerShiftTemplatesHeader";
 import { EmployerShiftTemplatesList } from "../components/EmployerShiftTemplatesList";
 import { shiftTemplatesStorage, type ShiftTemplate } from "../storage/shiftTemplatesStorage";
+import { getEmployerTemplatesKey } from "../storage/employerShift.keys";
 
 let rawCache: string | null = "__init__";
+let keyCache = "";
 let templatesCache: ShiftTemplate[] = [];
 
 function getSnapshot(): ShiftTemplate[] {
-  const raw = localStorage.getItem("wm_employer_shift_templates_v1");
-  if (raw !== rawCache) {
+  const key = getEmployerTemplatesKey();
+  const raw = localStorage.getItem(key);
+  if (raw !== rawCache || key !== keyCache) {
     rawCache = raw;
+    keyCache = key;
     templatesCache = shiftTemplatesStorage.getAll();
   }
   return templatesCache;

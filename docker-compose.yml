@@ -1,0 +1,80 @@
+# WorkMitra Enterprise V2 — Docker-centric production stack
+# Usage:
+#   1. cp .env.production.template .env.production  # fill real secrets
+#   2. docker compose build
+#   3. docker compose up -d
+#
+# Nginx (edge) -> app:3001 (API). Set WM_TRUST_PROXY=true in .env.production.
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: api
+      args:
+        VITE_AUTH_BACKEND_ENABLED: "true"
+        VITE_APP_URL: ${VITE_APP_URL:-https://app.invalid}
+        VITE_API_URL: ${VITE_API_URL:-}
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:-}
+    image: workmitra-api:latest
+    container_name: workmitra-app
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    environment:
+      NODE_ENV: production
+      PORT: "3001"
+      AUTH_USER_SOURCE: db
+      WM_TRUST_PROXY: "true"
+    # Internal only — Nginx proxies here (do not publish publicly in prod)
+    expose:
+      - "3001"
+    # Optional host debug mapping: uncomment when diagnosing without Nginx
+    # ports:
+    #   - "3001:3001"
+    networks:
+      - wm_net
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3001/v1/jobmitra/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: web
+      args:
+        VITE_AUTH_BACKEND_ENABLED: "true"
+        VITE_APP_URL: ${VITE_APP_URL:-https://app.invalid}
+        VITE_API_URL: ${VITE_API_URL:-}
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:-}
+    image: workmitra-web:latest
+    container_name: workmitra-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Host TLS material (placeholders — replace with real certs)
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - wm_net
+
+networks:
+  wm_net:
+    driver: bridge

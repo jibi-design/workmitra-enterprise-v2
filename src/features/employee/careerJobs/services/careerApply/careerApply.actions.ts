@@ -35,6 +35,7 @@ import {
   normalizeNoticePeriod,
 } from "./careerApply.validation";
 import type { AcceptCareerOfferResult, CareerApplyInput } from "./careerApply.types";
+import { sanitizeUserText } from "../../../../../shared/security/sanitizeUserText";
 
 export function hasExistingApplication(jobId: string): CareerApplication | null {
   const currentEmployeeId = getCurrentEmployeeId();
@@ -79,8 +80,8 @@ export async function applyToCareerJob(input: CareerApplyInput): Promise<CareerA
     employeeName: profile.fullName.trim() || "Applicant",
     employeePhone: input.employeePhone?.trim() ?? "",
     employeeEmail: input.employeeEmail?.trim() ?? "",
-    resumeSummary: input.resumeSummary?.trim() ?? "",
-    coverNote: input.coverNote.trim(),
+    resumeSummary: sanitizeUserText(input.resumeSummary?.trim() ?? "", 2000),
+    coverNote: sanitizeUserText(input.coverNote.trim(), 600),
     expectedSalary: normalizeExpectedSalary(input.expectedSalary),
     noticePeriod: normalizeNoticePeriod(input.noticePeriod),
     profileSnapshot: buildProfileSnapshot(),
@@ -141,13 +142,12 @@ export async function applyToCareerJob(input: CareerApplyInput): Promise<CareerA
 export async function acceptCareerOffer(jobId: string): Promise<AcceptCareerOfferResult> {
   const currentEmployeeId = getCurrentEmployeeId();
   const apps = readAllApps();
-  const app = apps.find(
-    (item) =>
-      item.jobId === jobId && item.employeeId === currentEmployeeId && item.stage === "offered",
-  );
+  const app = apps.find((item) => item.jobId === jobId && item.employeeId === currentEmployeeId);
 
   if (!app) return { ok: false, reason: "not_found" };
-  if (!canTransition(app.stage, "offer_accepted")) return { ok: false, reason: "not_found" };
+  if (app.stage !== "offered" || !canTransition(app.stage, "offer_accepted")) {
+    return { ok: false, reason: "invalid_stage" };
+  }
 
   const post = getCareerPost(jobId);
   if (!post || post.status !== "active") return { ok: false, reason: "post_inactive" };
@@ -264,10 +264,8 @@ export async function declineCareerOffer(jobId: string): Promise<boolean> {
   return true;
 }
 
-/** Auth-on: blocked until server withdraw ships. Auth-off / E2E: LS cache only. */
-export function withdrawCareerApplication(jobId: string): boolean {
-  if (isCareerApiSyncEnabled()) return false;
-
+/** AUTH-on dual-writes withdraw to server; AUTH-off / E2E: LS cache only. */
+export async function withdrawCareerApplication(jobId: string): Promise<boolean> {
   const currentEmployeeId = getCurrentEmployeeId();
   const apps = readAllApps();
   const app = apps.find((item) => item.jobId === jobId && item.employeeId === currentEmployeeId);
@@ -275,7 +273,9 @@ export function withdrawCareerApplication(jobId: string): boolean {
   if (!app || !canWithdrawApplicationStage(app.stage)) return false;
 
   const now = Date.now();
-  writeAllApps(
+  const priorApps = apps;
+
+  const writeResult = writeAllApps(
     apps.map((item) =>
       item.id === app.id
         ? { ...item, stage: "withdrawn" as const, withdrawnAt: now, updatedAt: now }
@@ -283,16 +283,34 @@ export function withdrawCareerApplication(jobId: string): boolean {
     ),
   );
 
+  if (!writeResult.ok) return false;
+
+  if (isCareerApiSyncEnabled()) {
+    const serverAppId = requireCareerServerApplicationId(app.id);
+    if (!serverAppId) {
+      writeAllApps(priorApps);
+      return false;
+    }
+
+    try {
+      await careerGateApi.withdrawApplication(serverAppId);
+      await hydrateCareerApplicationsFromServer();
+    } catch {
+      writeAllApps(priorApps);
+      return false;
+    }
+  }
+
   return true;
 }
 
-/** UI gate: stage-allowed. Auth-on still shows a support CTA (P0-1). */
+/** UI gate: stage-allowed. */
 export function canShowCareerWithdraw(stage: CareerApplication["stage"] | undefined): boolean {
   if (!stage) return false;
   return canWithdrawApplicationStage(stage);
 }
 
-/** True when self-serve withdraw is blocked until server API ships. */
+/** Legacy gate — withdraw API is available; always allow stage-based withdraw UI. */
 export function isCareerWithdrawOnlineBlocked(): boolean {
-  return isCareerApiSyncEnabled();
+  return false;
 }

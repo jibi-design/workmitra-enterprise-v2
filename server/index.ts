@@ -1,5 +1,11 @@
-import { createServer } from "node:http";
-import { assertSafeAuthEnvironment, isProduction, isDbAuthEnabled } from "./modules/auth/env.js";
+import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import {
+  assertSafeAuthEnvironment,
+  isProduction,
+  isAuthEnabled,
+  isDbAuthEnabled,
+} from "./modules/auth/env.js";
+import { assertFailCloseEnvironment } from "./modules/auth/failCloseEnv.js";
 import { handleAuthRoutes } from "./modules/auth/auth.routes.js";
 import { handleEmployeeRoutes } from "./modules/employee/employee.routes.js";
 import { handleEmployerRoutes } from "./modules/employer/employer.routes.js";
@@ -8,10 +14,21 @@ import { handleFavoritesRoutes } from "./modules/shift/favorites.routes.js";
 import { handleCallingRoutes } from "./routes/calling.routes.js";
 import { enforceCsrf, isMutatingMethod } from "./middleware/csrf.js";
 import { applyApiRateLimit, applyChaosInjection } from "./middleware/rateLimitChaos.js";
+import { applySecurityHeaders } from "./middleware/securityHeaders.js";
+import { buildAllowedOrigins, resolveCorsOrigin } from "./middleware/corsOrigins.js";
+import { resolveClientIp } from "./middleware/clientIp.js";
+import { getRequestId, requireAuth } from "./middleware/index.js";
+import { initServerMonitor } from "./observability/monitor.js";
+import { logSecurityEvent } from "./observability/securityEvents.js";
+import { sendInternalServerError } from "./utils/http.js";
+import { handleOpsRoutes } from "./modules/ops/ops.routes.js";
 
 const PORT = Number(process.env.PORT ?? 3001);
 
 assertSafeAuthEnvironment();
+assertFailCloseEnvironment();
+initServerMonitor();
+process.env.WM_BOOT_TS = String(Date.now());
 
 if (isDbAuthEnabled()) {
   try {
@@ -27,43 +44,52 @@ if (isDbAuthEnabled()) {
 }
 
 /**
- * Allowed CORS origins — whitelist only.
- * Production: set WM_ALLOWED_ORIGINS="https://yourapp.com" (comma-separated).
- * Development: defaults to localhost:5173 and localhost:4173.
+ * Allowed CORS origins — whitelist only (Layer 3).
+ * Production: WM_ALLOWED_ORIGINS and/or VITE_APP_URL / WM_APP_URL (https) — assertProductionSecrets.
  */
-const ALLOWED_ORIGINS: Set<string> = new Set(
-  process.env.WM_ALLOWED_ORIGINS
-    ? process.env.WM_ALLOWED_ORIGINS.split(",").map((o) => o.trim())
-    : ["http://localhost:5173", "http://localhost:4173"],
-);
+const ALLOWED_ORIGINS = buildAllowedOrigins();
 
-function resolveAllowedOrigin(requestOrigin: string | undefined): string | null {
-  if (!requestOrigin) return null;
-  if (ALLOWED_ORIGINS.has(requestOrigin)) return requestOrigin;
-  if (isProduction()) return null;
-  try {
-    const u = new URL(requestOrigin);
-    if (u.hostname === "localhost" || u.hostname === "127.0.0.1") return requestOrigin;
-  } catch {
-    // malformed origin — reject
-  }
-  return null;
+function clientKeyFromReq(req: IncomingMessage): string {
+  return resolveClientIp(req);
 }
 
-const server = createServer(async (req, res) => {
+async function dispatchRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  applySecurityHeaders(res);
+
   const requestOrigin = req.headers.origin;
-  const allowedOrigin = resolveAllowedOrigin(requestOrigin);
+  const allowedOrigin = resolveCorsOrigin(requestOrigin, ALLOWED_ORIGINS);
 
   if (allowedOrigin) {
     res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
     res.setHeader("Vary", "Origin");
+  } else if (requestOrigin && isProduction()) {
+    res.setHeader("Vary", "Origin");
   }
   res.setHeader("Access-Control-Allow-Credentials", "true");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-CSRF-Token");
-  res.setHeader("Access-Control-Expose-Headers", "X-CSRF-Token");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, X-CSRF-Token, Idempotency-Key, Authorization",
+  );
+  res.setHeader(
+    "Access-Control-Expose-Headers",
+    "X-CSRF-Token, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Class, X-RateLimit-Dimension, Retry-After",
+  );
 
   if (req.method === "OPTIONS") {
+    if (isProduction() && requestOrigin && !allowedOrigin) {
+      logSecurityEvent({
+        event: "CORS_DENIED",
+        method: "OPTIONS",
+        httpStatus: 403,
+        clientKey: clientKeyFromReq(req),
+        meta: { phase: "preflight" },
+      });
+      res.statusCode = 403;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ error: { code: "CORS_DENIED", message: "Origin not allowed" } }));
+      return;
+    }
     res.statusCode = 204;
     res.end();
     return;
@@ -73,9 +99,56 @@ const server = createServer(async (req, res) => {
   const method = req.method ?? "GET";
 
   if (url.pathname === "/v1/jobmitra/health" && method === "GET") {
-    res.statusCode = 200;
+    const started = Number(process.env.WM_BOOT_TS || Date.now());
+    const payload: Record<string, unknown> = {
+      ok: true,
+      service: "workmitra-api",
+      ts: Date.now(),
+      uptimeSec: Math.round((Date.now() - started) / 1000),
+    };
+    if (isDbAuthEnabled()) {
+      try {
+        const { pingDb } = await import("./db/pool.js");
+        const db = await pingDb();
+        payload.db = { ok: db.ok, latencyMs: db.latencyMs };
+        const { getRuntimeFlags } = await import("./modules/ops/runtimeFlags.service.js");
+        const flags = await getRuntimeFlags();
+        payload.ops = {
+          maintenanceMode: flags.maintenanceMode,
+          lockdown: flags.lockdown,
+          source: flags.source,
+        };
+        if (db.latencyMs > 1200) payload.ok = false;
+      } catch (err) {
+        payload.db = {
+          ok: false,
+          latencyMs: null,
+          error: err instanceof Error ? err.message : "db_unreachable",
+        };
+        payload.ok = false;
+      }
+    }
+    res.statusCode = payload.ok ? 200 : 503;
     res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify({ ok: true, service: "workmitra-api", ts: Date.now() }));
+    res.end(JSON.stringify(payload));
+    return;
+  }
+
+  if (await handleOpsRoutes(req, res, url.pathname, method)) {
+    return;
+  }
+
+  if (isProduction() && requestOrigin && !allowedOrigin) {
+    logSecurityEvent({
+      event: "CORS_DENIED",
+      path: url.pathname,
+      method,
+      httpStatus: 403,
+      clientKey: clientKeyFromReq(req),
+    });
+    res.statusCode = 403;
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify({ error: { code: "CORS_DENIED", message: "Origin not allowed" } }));
     return;
   }
 
@@ -84,18 +157,26 @@ const server = createServer(async (req, res) => {
     url.pathname.startsWith("/v1/jobmitra/employer/shift/availability-pool") ||
     url.pathname.startsWith("/v1/jobmitra/employer/shift/favorites");
 
-  if (!isContractMockPath || method !== "GET") {
-    // Always rate-limit mutating + contract mock GETs used by flood probes.
-  }
-
-  const rate = applyApiRateLimit(req, res);
+  const rate = await applyApiRateLimit(req, res, url.pathname, method);
   if (rate.blocked) {
+    logSecurityEvent({
+      event: "RATE_LIMIT_HIT",
+      path: url.pathname,
+      method,
+      httpStatus: 429,
+      rateClass: rate.rateClass,
+      clientKey: clientKeyFromReq(req),
+      meta: {
+        retryAfterSec: rate.retryAfterSec,
+        dimension: rate.dimension,
+      },
+    });
     res.statusCode = 429;
     res.setHeader("Content-Type", "application/json");
     res.end(
       JSON.stringify({
         error: {
-          code: "RATE_LIMITED",
+          code: "TOO_MANY_REQUESTS",
           message: "Too Many Requests",
           retryAfterSec: rate.retryAfterSec,
         },
@@ -108,14 +189,35 @@ const server = createServer(async (req, res) => {
   if (chaos === "handled") return;
 
   const isLogin = method === "POST" && url.pathname === "/v1/jobmitra/auth/login";
-  const skipCsrf = isLogin || isContractMockPath;
+  const isOpsMutating =
+    (method === "PATCH" && url.pathname === "/v1/jobmitra/ops/flags") ||
+    (method === "POST" && url.pathname === "/v1/jobmitra/ops/audit");
+  const skipCsrf = isLogin || isOpsMutating || (isContractMockPath && !isAuthEnabled());
   if (isMutatingMethod(method) && !skipCsrf) {
-    if (!enforceCsrf(req, res)) return;
+    if (!(await enforceCsrf(req, res))) return;
   }
 
-  // Contract mocks (availability/favorites) — PII-scrubbed; used by k6 + security probes.
-  if (await handleAvailabilityRoutes(req, res, url, method)) return;
-  if (await handleFavoritesRoutes(req, res, url, method)) return;
+  if (isContractMockPath) {
+    if (isAuthEnabled()) {
+      const requestId = getRequestId();
+      await requireAuth(
+        req,
+        res,
+        requestId,
+        async () => {
+          if (await handleAvailabilityRoutes(req, res, url, method)) return;
+          if (await handleFavoritesRoutes(req, res, url, method)) return;
+          res.statusCode = 404;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ error: { code: "NOT_FOUND", message: "Route not found" } }));
+        },
+        url,
+      );
+      return;
+    }
+    if (await handleAvailabilityRoutes(req, res, url, method)) return;
+    if (await handleFavoritesRoutes(req, res, url, method)) return;
+  }
 
   if (await handleAuthRoutes(req, res, url.pathname, method)) return;
   if (await handleCallingRoutes(req, res, url, method)) return;
@@ -125,6 +227,15 @@ const server = createServer(async (req, res) => {
   res.statusCode = 404;
   res.setHeader("Content-Type", "application/json");
   res.end(JSON.stringify({ error: { code: "NOT_FOUND", message: "Route not found" } }));
+}
+
+const server = createServer((req, res) => {
+  void dispatchRequest(req, res).catch((err: unknown) => {
+    sendInternalServerError(res, getRequestId(), err, {
+      path: req.url,
+      method: req.method,
+    });
+  });
 });
 
 server.listen(PORT, () => {
@@ -139,8 +250,9 @@ server.listen(PORT, () => {
     `[Job Mitra API] employer: /v1/jobmitra/employer/career|shift|vault|hr|workforce/* (requireAuth + requireEmployerRole)`,
   );
   console.log(
-    `[Job Mitra API] calling:  POST /v1/jobmitra/call/{initiate|answer|end|fallback} (alias /api/call/*)`,
+    `[Job Mitra API] calling:  POST /v1/jobmitra/call/{initiate|answer|end|fallback|register-device} (alias /api/call/*)`,
   );
+  console.log(`[Job Mitra API] defense:  L1–L4 + L5 DB resilience + L6 fail-close env`);
   console.log(
     `[Job Mitra API] calling job: npm run job:call-fallback (no-answer → Twilio or mark failed)`,
   );

@@ -5,11 +5,13 @@ import {
   shiftDirectInviteStorage,
   type ShiftDirectInvite,
 } from "../../../shared/shift/shiftEmployerPublic";
-import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
+import { actorMatchKeys } from "../../../../app/identity/identity.adapter";
 import type { ShiftPostData } from "../../shiftJobs/types/shiftApplicationTypes";
+import { EMPLOYEE_SEARCH_POSTS_KEY } from "../../../shared/shift/shiftTenantProjection";
+import { WORKER_INVITES_PROJECTION_KEY } from "../../../shared/shift/shiftTenantProjection";
 
-const POSTS_KEY = "wm_employer_shift_posts_v1";
-const INVITES_KEY = "wm_shift_direct_invites_v1";
+const POSTS_KEY = EMPLOYEE_SEARCH_POSTS_KEY;
+const INVITES_KEY = WORKER_INVITES_PROJECTION_KEY;
 const EMPTY_PENDING: EmployeePendingDirectInvite[] = [];
 
 export { EMPTY_PENDING as EMPTY_PENDING_DIRECT_INVITES };
@@ -51,32 +53,40 @@ export function formatShiftInviteDate(startAt: number | null): string {
   });
 }
 
-function buildPendingInvites(workerMlId: string): EmployeePendingDirectInvite[] {
-  const key = workerMlId.trim().toUpperCase();
-  if (!key) return EMPTY_PENDING;
+function buildPendingInvitesForKeys(matchKeys: string[]): EmployeePendingDirectInvite[] {
+  if (matchKeys.length === 0) return EMPTY_PENDING;
+  const keySet = new Set(matchKeys.map((k) => k.trim().toUpperCase()).filter(Boolean));
 
   return shiftDirectInviteStorage
-    .getAll()
-    .filter((invite) => invite.workerMlId === key && invite.status === "pending")
+    .getAllForWorker()
+    .filter(
+      (invite) => keySet.has(invite.workerMlId.trim().toUpperCase()) && invite.status === "pending",
+    )
     .map((invite) => ({
       ...invite,
       shiftDateLabel: formatShiftInviteDate(readPostStartAt(invite.postId)),
     }));
 }
 
+function buildPendingInvites(workerMlId: string): EmployeePendingDirectInvite[] {
+  return buildPendingInvitesForKeys([workerMlId]);
+}
+
 /** Stable-reference snapshot for useSyncExternalStore (prevents infinite re-render loops). */
 export function getEmployeePendingDirectInvitesSnapshot(): EmployeePendingDirectInvite[] {
-  const wmId = employeeProfileStorage.get().uniqueId?.trim().toUpperCase() ?? "";
+  const matchKeys = actorMatchKeys("employee");
   const invitesRaw = localStorage.getItem(INVITES_KEY) ?? "";
   const postsRaw = localStorage.getItem(POSTS_KEY) ?? "";
-  const cacheKey = `${wmId}|${invitesRaw}|${postsRaw}`;
+  const identityKey = matchKeys.join(",");
+  const cacheKey = `${identityKey}|${invitesRaw}|${postsRaw}`;
 
   if (cacheKey === pendingInvitesCacheKey) {
     return pendingInvitesCacheList;
   }
 
   pendingInvitesCacheKey = cacheKey;
-  pendingInvitesCacheList = wmId ? buildPendingInvites(wmId) : EMPTY_PENDING;
+  pendingInvitesCacheList =
+    matchKeys.length > 0 ? buildPendingInvitesForKeys(matchKeys) : EMPTY_PENDING;
   return pendingInvitesCacheList;
 }
 
@@ -90,7 +100,7 @@ export function countEmployeePendingDirectInvites(workerMlId: string): number {
 
 export function isDirectInviteAcceptedApplication(appId: string): boolean {
   return shiftDirectInviteStorage
-    .getAll()
+    .getAllForWorker()
     .some((invite) => invite.appId === appId && invite.status === "accepted");
 }
 

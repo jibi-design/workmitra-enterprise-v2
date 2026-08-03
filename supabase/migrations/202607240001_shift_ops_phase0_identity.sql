@@ -359,9 +359,16 @@ begin
     raise exception 'not_authenticated';
   end if;
 
+  -- Existing row: return id (role already assigned; no client-side elevation path).
   select id into uid from shift_ops.users where auth_user_id = aid;
   if uid is not null then
     return uid;
+  end if;
+
+  -- CRIT-2: clients may only self-register as 'worker'. Elevations require service_role / ops SQL.
+  if p_role <> 'worker' then
+    raise exception 'role_escalation_forbidden'
+      using hint = 'Only service_role (or ops SQL) may assign non-worker roles. Self-registration is worker only.';
   end if;
 
   insert into shift_ops.users (auth_user_id, role)

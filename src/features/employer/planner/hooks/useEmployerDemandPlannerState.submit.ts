@@ -33,6 +33,7 @@ export async function submitDemandPlannerPlan(input: {
   setSubmitResults: (results: SlotResult[] | null) => void;
   expectedUpdatedAt?: number | null;
   onBaselineUpdatedAt?: (updatedAt: number) => void;
+  onPublished?: () => void;
 }): Promise<void> {
   const {
     nav,
@@ -45,6 +46,7 @@ export async function submitDemandPlannerPlan(input: {
     setSubmitResults,
     expectedUpdatedAt,
     onBaselineUpdatedAt,
+    onPublished,
   } = input;
 
   const hasWorkers = slots.some((s) => s.workers > 0 && s.payPerDay > 0);
@@ -179,6 +181,7 @@ export async function submitDemandPlannerPlan(input: {
     }
 
     setSubmitResults(results);
+    onPublished?.();
     nav(ROUTE_PATHS.employerPlannerDetail.replace(":planId", activePlanId));
   } catch {
     if (planId) {

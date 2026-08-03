@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 import type { ConfirmData } from "../../../../shared/components/ConfirmModal";
 import type { NoticeData } from "../../../../shared/components/NoticeModal";
+import { useUnsavedChangesGuard } from "../../../../shared/hooks/useUnsavedChangesGuard";
 import {
   goEmployerCareerCreateBack,
   goEmployerCareerCreateNext,
@@ -128,6 +129,8 @@ export function useEmployerCareerCreatePage() {
       screeningQuestions.length > 0
     );
   }, [basic, req, screeningQuestions]);
+
+  useUnsavedChangesGuard(isDirty(), "You have unsaved Career Job changes. Leave this page?");
 
   function resetToFreshPost() {
     clearEmployerCareerCreateDraft();

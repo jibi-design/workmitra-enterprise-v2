@@ -6,11 +6,12 @@ import {
   type ShiftPost,
 } from "../../shiftJobs/storage/employerShift.storage";
 import { countApplicationsForPostIndexed } from "./appsByPostIndex";
+import { getEmpPostsKey, getEmployerWorkspacesKey } from "../storage/employerShift.keys";
+import { SHIFT_EMPLOYER_SCOPE_CHANGED_EVENT } from "../../../shared/shift/shiftEmployerScope";
 
 /* ------------------------------------------------ */
 /* Constants                                        */
 /* ------------------------------------------------ */
-const WS_KEY = "wm_employee_shift_workspaces_v1";
 
 export const POSTS_CHANGED_EVENT = employerShiftStorage._events.employerShiftPostsChanged;
 
@@ -18,12 +19,15 @@ export const POSTS_CHANGED_EVENT = employerShiftStorage._events.employerShiftPos
 /* Stable-reference posts cache                     */
 /* ------------------------------------------------ */
 let cachedRaw: string | null = "__init__";
+let cachedKey = "";
 let cachedPosts: ShiftPost[] = [];
 
 export function getPostsSnapshot(): ShiftPost[] {
-  const raw = localStorage.getItem("wm_employer_shift_posts_v1");
-  if (raw !== cachedRaw) {
+  const key = getEmpPostsKey();
+  const raw = localStorage.getItem(key);
+  if (raw !== cachedRaw || key !== cachedKey) {
     cachedRaw = raw;
+    cachedKey = key;
     cachedPosts = employerShiftStorage.getPosts();
   }
   return cachedPosts;
@@ -34,11 +38,13 @@ export function subscribePosts(callback: () => void): () => void {
   window.addEventListener(POSTS_CHANGED_EVENT, handler);
   window.addEventListener("storage", handler);
   window.addEventListener("focus", handler);
+  window.addEventListener(SHIFT_EMPLOYER_SCOPE_CHANGED_EVENT, handler);
   document.addEventListener("visibilitychange", handler);
   return () => {
     window.removeEventListener(POSTS_CHANGED_EVENT, handler);
     window.removeEventListener("storage", handler);
     window.removeEventListener("focus", handler);
+    window.removeEventListener(SHIFT_EMPLOYER_SCOPE_CHANGED_EVENT, handler);
     document.removeEventListener("visibilitychange", handler);
   };
 }
@@ -55,7 +61,7 @@ export function countApplicationsForPost(postId: string, statusFilter?: string):
 /* ------------------------------------------------ */
 export function countActiveWorkspaceGroups(): number {
   try {
-    const raw = localStorage.getItem(WS_KEY);
+    const raw = localStorage.getItem(getEmployerWorkspacesKey());
     if (!raw) return 0;
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return 0;

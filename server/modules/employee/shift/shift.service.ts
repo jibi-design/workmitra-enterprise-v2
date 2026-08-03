@@ -2,6 +2,7 @@ import type { AuthUser } from "../../auth/types.js";
 import type { ShiftApplicationRow } from "../../shift/types.js";
 import { employerShiftRepository, isShiftUuid } from "../../employer/shift/shift.repository.js";
 import { employerShiftService } from "../../employer/shift/shift.service.js";
+import { logSecurityEvent } from "../../../observability/securityEvents.js";
 
 export type ApplyShiftResult =
   | { ok: true; application: ShiftApplicationRow }
@@ -15,11 +16,28 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function resolveWorkerWmId(employee: AuthUser, body: Record<string, unknown>): string | null {
-  const fromBody = typeof body.worker_wm_id === "string" ? body.worker_wm_id.trim() : "";
-  if (fromBody) return fromBody.toUpperCase();
-  // Fallback: auth user id as stable worker key when legacy wmId missing
+/**
+ * Wave-4: session identity binds the worker key.
+ * Never trust body.worker_wm_id (or query hints) over authenticated employee.id.
+ */
+function resolveWorkerWmId(employee: AuthUser, _body?: Record<string, unknown>): string | null {
+  void _body;
   return employee.id.trim().toUpperCase() || null;
+}
+
+/** Defense Layer 2 — alert when client tries to supply a conflicting MUID (ignored by bind). */
+function alertClaimedMuidMismatch(
+  sessionWmId: string,
+  claimed: string | undefined,
+  source: string,
+): void {
+  const claim = claimed?.trim().toUpperCase();
+  if (!claim || claim === sessionWmId) return;
+  logSecurityEvent({
+    event: "MUID_MISMATCH_ATTEMPT",
+    httpStatus: 409,
+    meta: { source, mismatch: true },
+  });
 }
 
 export const employeeShiftService = {
@@ -27,17 +45,17 @@ export const employeeShiftService = {
     employee: AuthUser,
     workerWmIdHint?: string,
   ): Promise<ListShiftAppsResult> {
-    const workerKey = (workerWmIdHint?.trim() || employee.id).toUpperCase();
-    const byAuth = await employerShiftRepository.listApplicationsByWorker(workerKey);
-    if (
-      workerWmIdHint?.trim() &&
-      workerWmIdHint.trim().toUpperCase() !== employee.id.toUpperCase()
-    ) {
-      const byHint = await employerShiftRepository.listApplicationsByWorker(workerWmIdHint.trim());
-      const map = new Map<string, ShiftApplicationRow>();
-      for (const row of [...byAuth, ...byHint]) map.set(row.id, row);
-      return { ok: true, applications: [...map.values()] };
+    const workerKey = employee.id.trim().toUpperCase();
+    if (!workerKey) {
+      return {
+        ok: false,
+        code: "VALIDATION_ERROR",
+        message: "Authenticated employee identity is required",
+        httpStatus: 400,
+      };
     }
+    alertClaimedMuidMismatch(workerKey, workerWmIdHint, "list_applications_hint");
+    const byAuth = await employerShiftRepository.listApplicationsByWorker(workerKey);
     return { ok: true, applications: byAuth };
   },
 
@@ -74,6 +92,14 @@ export const employeeShiftService = {
         httpStatus: 400,
       };
     }
+
+    const claimed =
+      typeof body.worker_wm_id === "string"
+        ? body.worker_wm_id
+        : typeof body.workerWmId === "string"
+          ? body.workerWmId
+          : undefined;
+    alertClaimedMuidMismatch(workerWmId, claimed, "apply_body");
 
     const existing = await employerShiftRepository.findApplicationByPostAndWorker(
       postId,

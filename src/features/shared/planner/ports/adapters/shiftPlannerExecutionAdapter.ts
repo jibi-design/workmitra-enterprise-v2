@@ -18,6 +18,7 @@ import type {
   PlannerExecutionPort,
 } from "../plannerExecutionPort.types";
 import type { ShiftApplicationData } from "../../../../employee/shiftJobs/types/shiftApplicationTypes";
+/** Wave-2: local check-in is device SoT only — see clientPunchSync.policy.ts */
 import type { ShiftPost } from "../../../shift/shiftEmployerPublic";
 import type { ShiftWorkspace } from "../../../../employee/shiftJobs/types/shiftWorkspace.types";
 

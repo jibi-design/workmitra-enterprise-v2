@@ -5,8 +5,9 @@
 import {
   EMPLOYEE_SEARCH_POSTS_KEY,
   EMPLOYEE_SHIFT_SEARCH_CHANGED_EVENT,
-  EMP_POSTS_KEY,
+  getEmpPostsKey,
 } from "./employerShift.keys";
+import { getShiftEmployerScopeId } from "../../../shared/shift/shiftEmployerScope";
 import type {
   ShiftPayBasis,
   ShiftPost,
@@ -63,6 +64,7 @@ export function normalizePost(raw: unknown): ShiftPost | null {
     planSlotDate: getString(raw, "planSlotDate") || undefined,
     source:
       raw["source"] === "planner" ? "planner" : raw["source"] === "single" ? "single" : undefined,
+    siteId: getString(raw, "siteId") || undefined,
     mustHave: getStringArray(raw, "mustHave"),
     goodToHave: getStringArray(raw, "goodToHave"),
     whatWeProvide: getStringArray(raw, "whatWeProvide"),
@@ -84,7 +86,7 @@ export function normalizePost(raw: unknown): ShiftPost | null {
 }
 
 export function readEmployerPosts(): ShiftPost[] {
-  const raw = localStorage.getItem(EMP_POSTS_KEY);
+  const raw = localStorage.getItem(getEmpPostsKey());
 
   return safeParse<unknown>(raw)
     .map(normalizePost)
@@ -93,7 +95,7 @@ export function readEmployerPosts(): ShiftPost[] {
 }
 
 export function writeEmployerPosts(posts: ShiftPost[]): void {
-  safeWrite(EMP_POSTS_KEY, posts);
+  safeWrite(getEmpPostsKey(), posts);
   notifyEmployerShiftPostsChanged();
 }
 
@@ -119,12 +121,14 @@ export function syncToEmployeeSearch(posts: ShiftPost[]): void {
     planId: post.planId,
     planSlotDate: post.planSlotDate,
     source: post.source,
+    siteId: post.siteId,
     mustHave: post.mustHave,
     goodToHave: post.goodToHave,
     whatWeProvide: post.whatWeProvide,
     quickQuestions: post.quickQuestions,
     dressCode: post.dressCode,
     jobType: post.jobType,
+    employerScopeId: getShiftEmployerScopeId(),
   }));
 
   const existing = safeParse<Record<string, unknown>>(

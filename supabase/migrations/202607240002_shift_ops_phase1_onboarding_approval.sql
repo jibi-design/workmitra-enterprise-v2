@@ -793,18 +793,9 @@ create policy so_invites_manager_select on shift_ops.invites
     )
   );
 
--- OTP challenges: owner can see metadata (no otp_hash exposure via view preferred)
--- Block selecting otp_hash by using a safe view; still restrict base table to own channels
+-- OTP challenges: clients must use otp_challenges_safe only (no otp_hash).
+-- CRIT-3: do not grant SELECT on the base table to authenticated.
 drop policy if exists so_otp_select_own on shift_ops.channel_otp_challenges;
-create policy so_otp_select_own on shift_ops.channel_otp_challenges
-  for select to authenticated
-  using (
-    exists (
-      select 1 from shift_ops.communication_channels c
-      where c.id = channel_otp_challenges.channel_id
-        and c.user_id = shift_ops.current_so_user_id()
-    )
-  );
 
 create or replace view shift_ops.otp_challenges_safe
 with (security_invoker = true)
@@ -820,6 +811,7 @@ select
   created_at
 from shift_ops.channel_otp_challenges;
 
+-- Safe view: metadata only (no otp_hash). Base table SELECT revoked below.
 grant select on shift_ops.otp_challenges_safe to authenticated;
 
 -- memberships
@@ -878,6 +870,7 @@ grant select on shift_ops.pending_shift_assignments to authenticated;
 grant insert on shift_ops.pending_shift_assignments to authenticated;
 grant select on shift_ops.worker_availability to authenticated;
 grant select on shift_ops.alert_test_log to authenticated;
-grant select on shift_ops.channel_otp_challenges to authenticated;
+-- CRIT-3: revoke base-table SELECT so otp_hash is not client-readable
+revoke select on shift_ops.channel_otp_challenges from authenticated;
 
 commit;

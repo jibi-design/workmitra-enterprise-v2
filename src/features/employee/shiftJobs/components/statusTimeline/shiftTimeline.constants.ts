@@ -25,7 +25,7 @@ export const STATUS_HELPER: Record<ShiftApplicationStatus, string> = {
   waiting:
     "You are on the backup list. Stay ready, but continue applying to other suitable shifts too.",
   confirmed:
-    "You are confirmed for this shift. Confirm attendance, then open your workspace and prepare before the shift starts.",
+    "You are confirmed for this shift. Confirm attendance intent (check-in signal), then open your workspace and prepare before the shift starts.",
   rejected:
     "The employer did not select you for this shift. You can continue applying to other shifts.",
   withdrawn: "You withdrew this application. You can apply to other suitable shifts.",

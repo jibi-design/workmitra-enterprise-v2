@@ -6,6 +6,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../../app/router/routePaths";
 import type { ConfirmData } from "../../../../../shared/components/ConfirmModal";
 import type { NoticeData } from "../../../../../shared/components/NoticeModal";
+import { useUnsavedChangesGuard } from "../../../../../shared/hooks/useUnsavedChangesGuard";
 import { getCurrentEmployerMlId } from "../../../company/helpers/employerPublicIdentity";
 import { canPublishJobPosts } from "../../../company/helpers/employerVerificationPolicy.helpers";
 import { employerSettingsStorage } from "../../../company/storage/employerSettings.storage";
@@ -146,6 +147,8 @@ export function useEmployerShiftCreateState() {
       }),
     [form],
   );
+
+  useUnsavedChangesGuard(checkDirty(), "You have unsaved Shift Job changes. Leave this page?");
 
   function handlePayBasis(value: ShiftPayBasisDraft): void {
     form.setPayBasis(value);

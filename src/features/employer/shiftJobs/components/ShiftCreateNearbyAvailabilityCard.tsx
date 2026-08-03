@@ -1,17 +1,16 @@
 // App name: Job Mitra
 // Recessed glass "Nearby Worker Availability" card — Step 2 (blind count only).
 
-import { useSyncExternalStore } from "react";
+import { useRef, useSyncExternalStore } from "react";
 import { availabilityStorage } from "../../../shared/shift/availability.reader";
 import { toDateStr } from "../helpers/shiftCreateHelpers";
+import { AvailabilitySyncDebugChip } from "./AvailabilitySyncDebugChip";
 
 type Props = {
   startAt: number;
 };
 
-function readFreeWorkerCount(startAt: number): number {
-  return availabilityStorage.countWorkersFreeOnIsoDate(toDateStr(startAt));
-}
+const ALL_KEY = "wm_all_availability_broadcasts_v1";
 
 function RadarIcon() {
   return (
@@ -25,14 +24,25 @@ function RadarIcon() {
 }
 
 export function ShiftCreateNearbyAvailabilityCard({ startAt }: Props) {
+  const cacheRef = useRef<{ key: string; count: number }>({ key: "", count: 0 });
+
   const count = useSyncExternalStore(
     availabilityStorage.subscribe,
-    () => readFreeWorkerCount(startAt),
+    () => {
+      const iso = toDateStr(startAt);
+      const availRaw = localStorage.getItem(ALL_KEY) ?? "";
+      const key = `${iso}|${availRaw}`;
+      if (cacheRef.current.key === key) return cacheRef.current.count;
+      const next = availabilityStorage.countWorkersFreeOnIsoDate(iso);
+      cacheRef.current = { key, count: next };
+      return next;
+    },
     () => 0,
   );
 
   const hasMatches = count > 0;
   const workerLabel = count === 1 ? "available worker" : "available workers";
+  const iso = toDateStr(startAt);
 
   return (
     <div
@@ -68,6 +78,11 @@ export function ShiftCreateNearbyAvailabilityCard({ startAt }: Props) {
           )}
         </div>
       </div>
+
+      <AvailabilitySyncDebugChip
+        label="Create Nearby card"
+        lines={[`iso=${iso}`, `count=${count}`, `subscribes=${availabilityStorage.CHANGED_EVENT}`]}
+      />
     </div>
   );
 }

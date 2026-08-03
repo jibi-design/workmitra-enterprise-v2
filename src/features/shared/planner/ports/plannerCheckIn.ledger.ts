@@ -56,6 +56,9 @@ export function findPlannerCheckIn(
 /**
  * P0-5 — merge-by-key with retry so concurrent check-ins do not clobber each other.
  * Last write still wins per worker key; other workers' rows are preserved on collision.
+ *
+ * Wave-2: these timestamps are device-local only — see clientPunchSync.policy.ts.
+ * Do not POST ledger rows as server SoT.
  */
 export function upsertPlannerCheckIn(
   record: PlannerDailyCheckInRecord,

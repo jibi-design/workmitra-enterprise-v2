@@ -38,7 +38,14 @@ export function useEmployeeDirectInvitePendingFlow() {
   }, []);
 
   const pendingInvites = useSyncExternalStore(
-    shiftDirectInviteStorage.subscribe,
+    (cb) => {
+      const unsubInvites = shiftDirectInviteStorage.subscribe(cb);
+      const unsubProfile = employeeProfileStorage.subscribe(cb);
+      return () => {
+        unsubInvites();
+        unsubProfile();
+      };
+    },
     getEmployeePendingDirectInvitesSnapshot,
     () => EMPTY_PENDING_DIRECT_INVITES,
   );
@@ -91,6 +98,13 @@ export function useEmployeeDirectInvitePendingFlow() {
       return;
     }
 
+    // Seal identity into PII storage so actorMatchKeys / pending invite snapshots stay in sync.
+    const sealedProfile = employeeProfileStorage.set({
+      ...profile,
+      uniqueId: activeWorkerMlId,
+      fullName: profile.fullName.trim() || modal.invite.workerName,
+    });
+
     if (modal.kind === "decline") {
       setIsBusy(true);
       const ok = declineShiftDirectInvite(modal.invite.id, activeWorkerMlId);
@@ -111,12 +125,12 @@ export function useEmployeeDirectInvitePendingFlow() {
 
     const result = await acceptShiftDirectInvite({
       inviteId: modal.invite.id,
-      workerMlId: activeWorkerMlId,
-      workerName: profile.fullName.trim() || modal.invite.workerName,
-      city: profile.city.trim() || undefined,
-      experience: profile.experience || undefined,
-      skills: profile.skills.length > 0 ? [...profile.skills] : undefined,
-      languages: profile.languages.length > 0 ? [...profile.languages] : undefined,
+      workerMlId: sealedProfile.uniqueId?.trim().toUpperCase() || activeWorkerMlId,
+      workerName: sealedProfile.fullName.trim() || modal.invite.workerName,
+      city: sealedProfile.city.trim() || undefined,
+      experience: sealedProfile.experience || undefined,
+      skills: sealedProfile.skills.length > 0 ? [...sealedProfile.skills] : undefined,
+      languages: sealedProfile.languages.length > 0 ? [...sealedProfile.languages] : undefined,
     });
 
     if (!mountedRef.current) return;

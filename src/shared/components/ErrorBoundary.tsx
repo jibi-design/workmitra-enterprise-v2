@@ -36,7 +36,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
-    console.error("[JobMitra ErrorBoundary]", error, info.componentStack);
+    void import("../observability/monitor").then(({ captureException }) => {
+      captureException(error, {
+        kind: "react_error_boundary",
+        componentStack: info.componentStack ?? undefined,
+      });
+    });
   }
 
   private handleGoHome = (): void => {
@@ -181,7 +186,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             </button>
           </div>
 
-          {this.state.error && (
+          {this.state.error && import.meta.env.DEV && (
             <details
               style={{
                 marginTop: 16,

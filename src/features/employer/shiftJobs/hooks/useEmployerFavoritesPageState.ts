@@ -5,15 +5,19 @@
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { favoritesStorage, type FavoriteWorker } from "../storage/favoritesStorage";
 import type { InviteTarget } from "../types/employerFavorites.types";
+import { resolveShiftEmployerScopedKey } from "../../../shared/shift/shiftEmployerScope";
 
 let favoritesRawCache: string | null = "__init__";
+let favoritesKeyCache = "";
 let favoritesListCache: FavoriteWorker[] = [];
 
 function getFavoritesSnapshot(): FavoriteWorker[] {
-  const raw = localStorage.getItem("wm_employer_shift_favorites_v1");
+  const key = resolveShiftEmployerScopedKey("shift_favorites_v1");
+  const raw = localStorage.getItem(key);
 
-  if (raw !== favoritesRawCache) {
+  if (raw !== favoritesRawCache || key !== favoritesKeyCache) {
     favoritesRawCache = raw;
+    favoritesKeyCache = key;
     favoritesListCache = favoritesStorage.getAll();
   }
 

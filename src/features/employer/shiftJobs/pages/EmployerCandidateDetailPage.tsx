@@ -42,7 +42,7 @@ export function EmployerCandidateDetailPage() {
         audience="employer"
         title="Candidate Detail"
         subtitle={post ? `${post.jobName} - ${post.companyName}` : "Shift Job"}
-        description="Review candidate identity, match score, and requirement answers."
+        description="Review candidate identity, Profile Fit Score, and requirement answers."
       />
 
       <EmployerCandidateIdentityCard app={app} displayId={displayId} />

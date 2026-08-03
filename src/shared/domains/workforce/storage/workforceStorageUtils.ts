@@ -2,6 +2,8 @@
 // File: workforceStorageUtils.ts
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\shared\domains\workforce\storage\workforceStorageUtils.ts
 
+import { writeLocalStorageJson } from "../../../storage/localStorageWrite";
+
 export const WF_CATEGORIES_KEY = "wm_workforce_categories_v1";
 export const WF_STAFF_KEY = "wm_workforce_staff_v1";
 export const WF_TEMPLATES_KEY = "wm_workforce_templates_v1";
@@ -65,12 +67,9 @@ export function safeParse<T>(raw: string | null): T[] {
   }
 }
 
-export function safeWrite(key: string, value: unknown): void {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // Demo-safe: ignore quota / private mode errors.
-  }
+/** Wave-3: returns false on quota/private-mode failure (fires wm:storage-quota-exceeded). */
+export function safeWrite(key: string, value: unknown): boolean {
+  return writeLocalStorageJson(key, value).ok;
 }
 
 export function safeRead(key: string): string | null {

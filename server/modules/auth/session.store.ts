@@ -2,7 +2,6 @@
  * Session store — DB-backed (Phase 2) or in-memory (Phase 1 dev demo).
  * Interface is identical; auth.routes.ts calls this without knowing which backend.
  */
-import { randomUUID } from "node:crypto";
 import { isDbAuthEnabled } from "./env.js";
 import { authRepository } from "./auth.repository.js";
 import { auditService } from "./audit.service.js";
@@ -12,6 +11,7 @@ import type { SessionRecord } from "./types.js";
 import type { RequestMeta } from "./request-meta.js";
 
 // ─── In-memory store (Phase 1 / dev demo) ─────────────────────────────────────
+// MED-2: map keys are HMAC-SHA256(token) — raw cookie token never stored as key.
 
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const GC_INTERVAL_MS = 60 * 60 * 1000;
@@ -30,26 +30,32 @@ if (typeof gcTimer.unref === "function") gcTimer.unref();
 
 const memoryStore = {
   create(userId: string): string {
-    const id = randomUUID();
+    const rawToken = generateSessionToken();
+    const tokenHash = hashSessionToken(rawToken);
     const now = Date.now();
-    memorySessions.set(id, { userId, createdAt: now, expiresAt: now + SESSION_TTL_MS });
-    return id;
+    memorySessions.set(tokenHash, {
+      userId,
+      createdAt: now,
+      expiresAt: now + SESSION_TTL_MS,
+    });
+    return rawToken;
   },
-  get(sessionId: string): SessionRecord | null {
-    const record = memorySessions.get(sessionId);
+  get(rawToken: string): SessionRecord | null {
+    const tokenHash = hashSessionToken(rawToken);
+    const record = memorySessions.get(tokenHash);
     if (!record) return null;
     if (record.expiresAt < Date.now()) {
-      memorySessions.delete(sessionId);
+      memorySessions.delete(tokenHash);
       return null;
     }
     return record;
   },
-  delete(sessionId: string): void {
-    memorySessions.delete(sessionId);
+  delete(rawToken: string): void {
+    memorySessions.delete(hashSessionToken(rawToken));
   },
   deleteAllForUser(userId: string): void {
-    for (const [id, record] of memorySessions) {
-      if (record.userId === userId) memorySessions.delete(id);
+    for (const [tokenHash, record] of memorySessions) {
+      if (record.userId === userId) memorySessions.delete(tokenHash);
     }
   },
 };

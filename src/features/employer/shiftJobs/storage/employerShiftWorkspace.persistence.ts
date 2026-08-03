@@ -11,8 +11,13 @@ import type {
   ShiftWorkspaceStatus,
   ShiftWorkspaceUpdate,
 } from "../types/shiftWorkspaceTypes";
-import { EMPLOYEE_WORKSPACES_CHANGED_EVENT, EMPLOYEE_WORKSPACES_KEY } from "./employerShift.keys";
+import {
+  EMPLOYEE_WORKSPACES_CHANGED_EVENT,
+  EMPLOYEE_WORKSPACES_KEY,
+  getEmployerWorkspacesKey,
+} from "./employerShift.keys";
 import { safeWrite, type JsonStorageWriteResult } from "./employerShift.utils";
+import { SHIFT_EMPLOYER_SCOPE_CHANGED_EVENT } from "../../../shared/shift/shiftEmployerScope";
 
 export type EmployerShiftWorkspaceWriteResult = JsonStorageWriteResult;
 
@@ -192,39 +197,62 @@ function normalizeEmployerShiftWorkspaces(rawList: unknown[]): ShiftWorkspace[] 
 }
 
 let cacheRaw: string | null = "__init__";
+let cacheKey = "";
 let cacheList: ShiftWorkspace[] = [];
 
-function syncCacheFromRaw(raw: string | null): ShiftWorkspace[] {
+function syncCacheFromRaw(raw: string | null, key: string): ShiftWorkspace[] {
   cacheRaw = raw;
+  cacheKey = key;
   cacheList = normalizeEmployerShiftWorkspaces(safeParseArray(raw));
   return cacheList;
 }
 
 export function invalidateEmployerShiftWorkspaceCache(): void {
   cacheRaw = "__dirty__";
+  cacheKey = "";
 }
 
 export function readEmployerShiftWorkspaces(): ShiftWorkspace[] {
-  const raw = localStorage.getItem(EMPLOYEE_WORKSPACES_KEY);
+  const key = getEmployerWorkspacesKey();
+  const raw = localStorage.getItem(key);
 
-  if (raw === cacheRaw) {
+  if (raw === cacheRaw && key === cacheKey) {
     return cacheList;
   }
 
-  return syncCacheFromRaw(raw);
+  return syncCacheFromRaw(raw, key);
+}
+
+function mergeIntoGlobalEmployeeWorkspaces(list: ShiftWorkspace[]): JsonStorageWriteResult {
+  const existing = normalizeEmployerShiftWorkspaces(
+    safeParseArray(localStorage.getItem(EMPLOYEE_WORKSPACES_KEY)),
+  );
+  const byId = new Map(existing.map((item) => [item.id, item]));
+  for (const item of list) {
+    byId.set(item.id, item);
+  }
+  return safeWrite(EMPLOYEE_WORKSPACES_KEY, [...byId.values()]);
 }
 
 export function writeEmployerShiftWorkspaces(
   list: ShiftWorkspace[],
 ): EmployerShiftWorkspaceWriteResult {
-  const result = safeWrite(EMPLOYEE_WORKSPACES_KEY, list);
+  const scopedKey = getEmployerWorkspacesKey();
+  const result = safeWrite(scopedKey, list);
 
   if (!result.ok) {
     return result;
   }
 
+  // Keep employee marketplace in sync without wiping other employers' workspaces.
+  const globalWrite = mergeIntoGlobalEmployeeWorkspaces(list);
+  if (!globalWrite.ok) {
+    return globalWrite;
+  }
+
   try {
-    cacheRaw = localStorage.getItem(EMPLOYEE_WORKSPACES_KEY);
+    cacheRaw = localStorage.getItem(scopedKey);
+    cacheKey = scopedKey;
     cacheList = list.slice().sort((a, b) => b.lastActivityAt - a.lastActivityAt);
   } catch {
     invalidateEmployerShiftWorkspaceCache();
@@ -255,11 +283,13 @@ export function subscribeEmployerShiftWorkspaces(callback: () => void): () => vo
   window.addEventListener("focus", handler);
   document.addEventListener("visibilitychange", handler);
   window.addEventListener(EMPLOYEE_WORKSPACES_CHANGED_EVENT, handler);
+  window.addEventListener(SHIFT_EMPLOYER_SCOPE_CHANGED_EVENT, handler);
 
   return () => {
     window.removeEventListener("storage", handler);
     window.removeEventListener("focus", handler);
     document.removeEventListener("visibilitychange", handler);
     window.removeEventListener(EMPLOYEE_WORKSPACES_CHANGED_EVENT, handler);
+    window.removeEventListener(SHIFT_EMPLOYER_SCOPE_CHANGED_EVENT, handler);
   };
 }

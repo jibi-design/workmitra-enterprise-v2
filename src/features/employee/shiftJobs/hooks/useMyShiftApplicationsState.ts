@@ -168,23 +168,23 @@ export function useMyShiftApplicationsState(domain: ApplicationsDomain = "shift"
   const requestConfirmAttendanceApplication = useCallback(
     (application: ShiftApplicationData) => {
       if (application.status !== "confirmed") {
-        showToast("Only confirmed shifts can be attendance-confirmed.");
+        showToast("Only confirmed shifts can record attendance intent.");
         return;
       }
 
       if (application.attendanceConfirmedAt !== undefined) {
-        showToast("Attendance is already confirmed for this shift.");
+        showToast("Attendance intent is already saved for this shift.");
         return;
       }
 
       setPendingAttendanceApplication(application);
 
       setWithdrawConfirm({
-        title: "Confirm you will attend?",
+        title: "Confirm attendance intent?",
         message:
-          "This confirms your intention only. It is not QR check-in, a live timer, or payroll punch-in.",
+          "Saves Attendance Intent / Check-in Signal only — not a legal timecard, QR check-in, live timer, or payroll punch-in.",
         tone: "warn",
-        confirmLabel: "I will attend",
+        confirmLabel: "Save attendance intent",
         cancelLabel: "Not now",
       });
     },
@@ -213,12 +213,12 @@ export function useMyShiftApplicationsState(domain: ApplicationsDomain = "shift"
           sectionId: PulseSectionId.EMPLOYEE_SHIFT_CONFIRMATION_CARD,
         });
 
-        showToast("Attendance intent confirmed.");
+        showToast("Attendance intent / check-in signal saved.");
         return;
       }
 
       if (result.reason === "already_confirmed") {
-        showToast("Attendance intent is already confirmed.");
+        showToast("Attendance intent is already saved.");
         return;
       }
 
@@ -232,7 +232,7 @@ export function useMyShiftApplicationsState(domain: ApplicationsDomain = "shift"
         return;
       }
 
-      showToast("Unable to save attendance confirmation. Please try again.");
+      showToast("Unable to save attendance intent. Please try again.");
       return;
     }
 

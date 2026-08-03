@@ -1,4 +1,5 @@
 import { getPool } from "../../../db/pool.js";
+import { withResilientTransaction } from "../../../db/resilient.js";
 import type {
   CareerApplicationRow,
   CareerEmploymentRow,
@@ -75,13 +76,19 @@ export const employeeCareerRepository = {
     applicantUserId: string;
     coverNote: string | null;
   }): Promise<CareerApplicationRow> {
-    const result = await getPool().query<CareerApplicationRow>(
-      `INSERT INTO career_applications (post_id, applicant_user_id, status, cover_note)
-       VALUES ($1, $2, 'pending', $3)
-       RETURNING id, post_id, applicant_user_id, status, cover_note, applied_at, updated_at`,
-      [params.postId, params.applicantUserId, params.coverNote],
-    );
-    return result.rows[0];
+    return withResilientTransaction(async (client) => {
+      await client.query(
+        `SELECT id FROM career_posts WHERE id = $1 AND status = 'published' FOR UPDATE`,
+        [params.postId],
+      );
+      const result = await client.query<CareerApplicationRow>(
+        `INSERT INTO career_applications (post_id, applicant_user_id, status, cover_note)
+         VALUES ($1, $2, 'pending', $3)
+         RETURNING id, post_id, applicant_user_id, status, cover_note, applied_at, updated_at`,
+        [params.postId, params.applicantUserId, params.coverNote],
+      );
+      return result.rows[0];
+    });
   },
 
   async findPendingOfferByApplicationId(applicationId: string): Promise<CareerOfferRow | null> {
@@ -96,10 +103,7 @@ export const employeeCareerRepository = {
   },
 
   async acceptOfferTransaction(applicationId: string, offerId: string): Promise<void> {
-    const client = await getPool().connect();
-    try {
-      await client.query("BEGIN");
-
+    await withResilientTransaction(async (client) => {
       const lockResult = await client.query<{ status: string }>(
         `SELECT status FROM career_offers WHERE id = $1 FOR UPDATE`,
         [offerId],
@@ -107,7 +111,6 @@ export const employeeCareerRepository = {
 
       const offerStatus = lockResult.rows[0]?.status;
       if (offerStatus !== "pending") {
-        await client.query("ROLLBACK");
         throw Object.assign(
           new Error(`Offer is no longer pending — current status: '${offerStatus}'`),
           { code: "CONFLICT", httpStatus: 409 },
@@ -126,21 +129,11 @@ export const employeeCareerRepository = {
          WHERE id = $1`,
         [applicationId],
       );
-
-      await client.query("COMMIT");
-    } catch (err) {
-      await client.query("ROLLBACK");
-      throw err;
-    } finally {
-      client.release();
-    }
+    });
   },
 
   async declineOfferTransaction(applicationId: string, offerId: string): Promise<void> {
-    const client = await getPool().connect();
-    try {
-      await client.query("BEGIN");
-
+    await withResilientTransaction(async (client) => {
       const lockResult = await client.query<{ status: string }>(
         `SELECT status FROM career_offers WHERE id = $1 FOR UPDATE`,
         [offerId],
@@ -148,7 +141,6 @@ export const employeeCareerRepository = {
 
       const offerStatus = lockResult.rows[0]?.status;
       if (offerStatus !== "pending") {
-        await client.query("ROLLBACK");
         throw Object.assign(
           new Error(`Offer is no longer pending — current status: '${offerStatus}'`),
           { code: "CONFLICT", httpStatus: 409 },
@@ -167,14 +159,39 @@ export const employeeCareerRepository = {
          WHERE id = $1`,
         [applicationId],
       );
+    });
+  },
 
-      await client.query("COMMIT");
-    } catch (err) {
-      await client.query("ROLLBACK");
-      throw err;
-    } finally {
-      client.release();
-    }
+  /**
+   * Employee self-withdraw — only pending | shortlisted | interview_scheduled.
+   */
+  async withdrawApplicationTransaction(applicationId: string): Promise<{ previousStatus: string }> {
+    return withResilientTransaction(async (client) => {
+      const lockResult = await client.query<{ status: string }>(
+        `SELECT status FROM career_applications WHERE id = $1 FOR UPDATE`,
+        [applicationId],
+      );
+
+      const previousStatus = lockResult.rows[0]?.status;
+      if (
+        previousStatus !== "pending" &&
+        previousStatus !== "shortlisted" &&
+        previousStatus !== "interview_scheduled"
+      ) {
+        throw Object.assign(
+          new Error(`Cannot withdraw — application is in '${previousStatus ?? "missing"}' status`),
+          { code: "CONFLICT", httpStatus: 409 },
+        );
+      }
+
+      await client.query(
+        `UPDATE career_applications SET status = 'withdrawn', updated_at = now()
+         WHERE id = $1`,
+        [applicationId],
+      );
+
+      return { previousStatus };
+    });
   },
 
   async logLifecycleEvent(params: {
@@ -186,20 +203,22 @@ export const employeeCareerRepository = {
     newStatus: string | null;
     metadata?: Record<string, unknown>;
   }): Promise<void> {
-    await getPool().query(
-      `INSERT INTO career_lifecycle_events
-         (application_id, actor_user_id, actor_role, event_type, previous_status, new_status, metadata)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [
-        params.applicationId,
-        params.actorUserId,
-        params.actorRole,
-        params.eventType,
-        params.previousStatus ?? null,
-        params.newStatus ?? null,
-        JSON.stringify(params.metadata ?? {}),
-      ],
-    );
+    await withResilientTransaction(async (client) => {
+      await client.query(
+        `INSERT INTO career_lifecycle_events
+           (application_id, actor_user_id, actor_role, event_type, previous_status, new_status, metadata)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [
+          params.applicationId,
+          params.actorUserId,
+          params.actorRole,
+          params.eventType,
+          params.previousStatus ?? null,
+          params.newStatus ?? null,
+          JSON.stringify(params.metadata ?? {}),
+        ],
+      );
+    });
   },
 
   async listEmploymentsByEmployee(employeeUserId: string): Promise<CareerEmploymentRow[]> {
@@ -221,36 +240,39 @@ export const employeeCareerRepository = {
     employeeUserId: string,
     patch: { status?: string; details?: Record<string, unknown> },
   ): Promise<CareerEmploymentRow | null> {
-    const existing = await getPool().query<CareerEmploymentRow>(
-      `SELECT id, application_id, post_id, employee_user_id, employer_user_id,
-              status, COALESCE(details, '{}'::jsonb) AS details,
-              confirmed_at, created_at, updated_at
-       FROM career_employments
-       WHERE id = $1 AND employee_user_id = $2`,
-      [employmentId, employeeUserId],
-    );
-    const row = existing.rows[0];
-    if (!row) return null;
+    return withResilientTransaction(async (client) => {
+      const existing = await client.query<CareerEmploymentRow>(
+        `SELECT id, application_id, post_id, employee_user_id, employer_user_id,
+                status, COALESCE(details, '{}'::jsonb) AS details,
+                confirmed_at, created_at, updated_at
+         FROM career_employments
+         WHERE id = $1 AND employee_user_id = $2
+         FOR UPDATE`,
+        [employmentId, employeeUserId],
+      );
+      const row = existing.rows[0];
+      if (!row) return null;
 
-    const nextStatus = patch.status?.trim() || row.status;
-    const nextDetails = {
-      ...(typeof row.details === "object" && row.details && !Array.isArray(row.details)
-        ? row.details
-        : {}),
-      ...(patch.details ?? {}),
-    };
+      const nextStatus = patch.status?.trim() || row.status;
+      const nextDetails = {
+        ...(typeof row.details === "object" && row.details && !Array.isArray(row.details)
+          ? row.details
+          : {}),
+        ...(patch.details ?? {}),
+      };
 
-    const result = await getPool().query<CareerEmploymentRow>(
-      `UPDATE career_employments
-       SET status = $3,
-           details = $4::jsonb,
-           updated_at = now()
-       WHERE id = $1 AND employee_user_id = $2
-       RETURNING id, application_id, post_id, employee_user_id, employer_user_id,
-                 status, COALESCE(details, '{}'::jsonb) AS details,
-                 confirmed_at, created_at, updated_at`,
-      [employmentId, employeeUserId, nextStatus, JSON.stringify(nextDetails)],
-    );
-    return result.rows[0] ?? null;
+      const result = await client.query<CareerEmploymentRow>(
+        `UPDATE career_employments
+         SET status = $3,
+             details = $4::jsonb,
+             updated_at = now()
+         WHERE id = $1 AND employee_user_id = $2
+         RETURNING id, application_id, post_id, employee_user_id, employer_user_id,
+                   status, COALESCE(details, '{}'::jsonb) AS details,
+                   confirmed_at, created_at, updated_at`,
+        [employmentId, employeeUserId, nextStatus, JSON.stringify(nextDetails)],
+      );
+      return result.rows[0] ?? null;
+    });
   },
 };

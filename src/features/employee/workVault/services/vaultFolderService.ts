@@ -1,22 +1,27 @@
 // src/features/employee/workVault/services/vaultFolderService.ts
 
 import type { VaultFolder, FolderVisibility } from "../types/vaultTypes";
-import { VAULT_STORAGE_KEYS, DEFAULT_FOLDER_SUGGESTIONS } from "../constants/vaultConstants";
+import { DEFAULT_FOLDER_SUGGESTIONS } from "../constants/vaultConstants";
 import { readStorage, writeStorage, generateVaultEntityId } from "../helpers/vaultStorageUtils";
 import { normalizeFolders } from "../helpers/vaultNormalizers";
+import { resolveVaultWorkerScopedKey } from "../../../shared/workVault/vaultWorkerScope";
+
+function foldersKey(workerScopeId?: string): string {
+  return resolveVaultWorkerScopedKey("folders_v1", workerScopeId);
+}
 
 /**
- * Reads all folders from storage.
+ * Reads all folders from storage (current worker unless workerScopeId passed).
  */
-export function getAllFolders(): VaultFolder[] {
-  return normalizeFolders(readStorage(VAULT_STORAGE_KEYS.folders));
+export function getAllFolders(workerScopeId?: string): VaultFolder[] {
+  return normalizeFolders(readStorage(foldersKey(workerScopeId)));
 }
 
 /**
  * Writes all folders to storage. Throws when browser storage write fails.
  */
-function saveFolders(folders: VaultFolder[]): void {
-  const result = writeStorage(VAULT_STORAGE_KEYS.folders, folders);
+function saveFolders(folders: VaultFolder[], workerScopeId?: string): void {
+  const result = writeStorage(foldersKey(workerScopeId), folders);
   if (!result.ok) {
     throw new Error("Browser storage is full or unavailable. Folder changes were not saved.");
   }
@@ -97,9 +102,10 @@ export function setAllFoldersVisibility(visibility: FolderVisibility): void {
 
 /**
  * Returns only visible folders (for employer view).
+ * Pass workerScopeId when employer reviews a candidate vault.
  */
-export function getVisibleFolders(): VaultFolder[] {
-  return getAllFolders().filter((f) => f.visibility === "visible");
+export function getVisibleFolders(workerScopeId?: string): VaultFolder[] {
+  return getAllFolders(workerScopeId).filter((f) => f.visibility === "visible");
 }
 
 /**

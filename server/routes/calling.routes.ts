@@ -14,6 +14,7 @@ import {
   handleEnd,
   handleFallback,
   handleInitiate,
+  handleRegisterDevice,
   handleStatus,
 } from "./calling.handlers.js";
 import { sendNotFound } from "../utils/http.js";
@@ -56,6 +57,10 @@ export async function handleCallingRoutes(
       }
       if (method === "POST" && subpath === "/initiate") {
         await handleInitiate(authedReq, res);
+        return;
+      }
+      if (method === "POST" && subpath === "/register-device") {
+        await handleRegisterDevice(authedReq, res);
         return;
       }
       if (method === "POST" && subpath === "/answer") {

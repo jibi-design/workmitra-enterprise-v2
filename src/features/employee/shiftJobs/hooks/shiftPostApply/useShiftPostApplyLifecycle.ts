@@ -89,22 +89,23 @@ export function useShiftPostApplyLifecycle({
 
   function requestConfirmAttendance() {
     if (!existingApp || existingApp.status !== "confirmed") {
-      showToast("Only confirmed shifts can be attendance-confirmed.");
+      showToast("Only confirmed shifts can record attendance intent.");
       return;
     }
 
     if (existingApp.attendanceConfirmedAt !== undefined) {
-      showToast("Attendance is already confirmed for this shift.");
+      showToast("Attendance intent is already saved for this shift.");
       return;
     }
 
     setAttendanceConfirmPending(true);
 
     setWithdrawConfirm({
-      title: "Confirm shift attendance?",
-      message: "Confirm only if you are available and will attend this shift on time.",
+      title: "Confirm attendance intent?",
+      message:
+        "Saves Attendance Intent / Check-in Signal only — not a legal timecard, QR check-in, live timer, or payroll punch-in.",
       tone: "warn",
-      confirmLabel: "I will attend",
+      confirmLabel: "Save attendance intent",
       cancelLabel: "Not now",
     });
   }
@@ -125,12 +126,12 @@ export function useShiftPostApplyLifecycle({
         sectionId: PulseSectionId.EMPLOYEE_SHIFT_CONFIRMATION_CARD,
       });
 
-      showToast("Attendance confirmed.");
+      showToast("Attendance intent / check-in signal saved.");
       return;
     }
 
     if (result.reason === "already_confirmed") {
-      showToast("Attendance is already confirmed.");
+      showToast("Attendance intent is already saved.");
       return;
     }
 
@@ -144,7 +145,7 @@ export function useShiftPostApplyLifecycle({
       return;
     }
 
-    showToast("Unable to save attendance confirmation. Please try again.");
+    showToast("Unable to save attendance intent. Please try again.");
   }
 
   function requestWithdraw() {

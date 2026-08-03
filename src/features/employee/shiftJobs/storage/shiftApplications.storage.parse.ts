@@ -6,7 +6,9 @@ import type {
   ShiftPostData,
 } from "../../shiftJobs/types/shiftApplicationTypes";
 
-export const POSTS_KEY = "wm_employer_shift_posts_v1";
+export const POSTS_KEY = "wm_employee_shift_search_v1";
+/** @deprecated Alias — native marketplace search is the posts join source. */
+export const LEGACY_EMPLOYER_POSTS_KEY = "wm_employer_shift_posts_v1";
 export const APPS_KEY = "wm_employee_shift_applications_v1";
 export const APPS_CHANGED = "wm:employee-shift-applications-changed";
 

@@ -4,7 +4,11 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { clearShiftRetryQueue, peekShiftRetryQueue } from "../shared/shift/shiftRetryQueue";
+import {
+  clearShiftRetryDeadLetter,
+  clearShiftRetryQueue,
+  peekShiftRetryQueue,
+} from "../shared/shift/shiftRetryQueue";
 
 vi.mock("../features/shared/planner/plannerEmployeeBridge", () => ({
   plannerEmployeeNotifications: {
@@ -91,6 +95,7 @@ vi.mock("../features/employer/planner/storage/planBroadcastGroup.storage", () =>
 describe("Planner T1-3 — retry queue enqueue", () => {
   beforeEach(() => {
     clearShiftRetryQueue();
+    clearShiftRetryDeadLetter();
     vi.clearAllMocks();
   });
 

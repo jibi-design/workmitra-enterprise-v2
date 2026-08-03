@@ -1,6 +1,6 @@
 // src/features/employee/shiftJobs/helpers/shiftPostDetailHelpers.ts
 const APPS_KEY = "wm_employee_shift_applications_v1";
-const POSTS_KEY = "wm_employer_shift_posts_v1";
+const POSTS_KEY = "wm_employee_shift_search_v1";
 
 export function hasConfirmedOverlap(postId: string, startAt: number, endAt: number): boolean {
   try {

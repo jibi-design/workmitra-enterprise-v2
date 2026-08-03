@@ -180,6 +180,11 @@ export const EmployeeVaultAccessLogPage = lazyPage(() =>
     default: m.EmployeeVaultAccessLogPage,
   })),
 );
+export const EmployeeVaultEditProfilePage = lazyPage(() =>
+  import("../../../features/employee/workVault/pages/EmployeeVaultEditProfilePage").then((m) => ({
+    default: m.EmployeeVaultEditProfilePage,
+  })),
+);
 export const EmployeeCompanyWrapper = lazyPage(() =>
   import("../../../features/employer/workforceOps/pages/WorkforceRouteWrappers").then((m) => ({
     default: m.EmployeeCompanyWrapper,

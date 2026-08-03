@@ -10,6 +10,8 @@ This folder is the official split documentation system for WorkMitra / Job Mitra
 
 **Canonical brand & domain (2026-07-16):** [`MITRA_ACCESS_HUB_BRAND_DOMAIN_AND_ADMIN_DECISION_V2.md`](./MITRA_ACCESS_HUB_BRAND_DOMAIN_AND_ADMIN_DECISION_V2.md) — Mitra Labs, Mitra Access Hub, `mitraaccesshub.com` family, Job Mitra as application, Smart Tag and Mitra Business QR as websites/services, Master Admin at `admin.mitraaccesshub.com`. In-app `/admin` routes are **deprecated-candidate**, not final production architecture.
 
+**Super Admin / Master Control Hub (2026-07-28 LOCKED):** Canonical **standalone app + docs** under `C:\projects\Admin\Super Admin\` — start at `docs/MASTER_CONTROL_HUB_DECISION_RECORD_v1.0.md`. Host: `admin.mitraaccesshub.com`. Role: `master_admin`. UI law: plain-English + G/Y/R gauges only; `platform_ops` RLS + BFF. **Not** inside `mithra-access-hub` or Job Mitra `src/features/admin/**`. Domain admins later under `C:\projects\Admin\<Domain>\`. Independent Co-worker (no direct DB): `C:\projects\Admin\CoWorker\` + Super Admin `docs/COWORKER_BFF_TRUST_BOUNDARY.md`.
+
 The goal is to keep the product documentation easy to understand, easy to update and safe for future development without weakening the master product truth.
 
 This split system does not replace the Core Master Truth.

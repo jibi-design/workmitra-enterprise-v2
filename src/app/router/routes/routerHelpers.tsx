@@ -7,6 +7,7 @@ import type { AppRole } from "../../storage/roleStorage";
 import { useAppRole } from "../guards/useAppRole";
 import { AUTH_BACKEND_ENABLED } from "../../../shared/config/authConfig";
 import { RouteGuardLoading } from "../../../shared/components/routes/RouteGuardStatus";
+import { useRuntimeOpsFlags } from "../../../shared/ops/useRuntimeOpsFlags";
 
 export const IS_DEV_ADMIN_ENABLED = import.meta.env.DEV;
 
@@ -31,9 +32,21 @@ export function RoleHomeRedirect() {
 export function LaunchModuleBoundary({
   enabled,
   fallback,
+  runtimeKill,
 }: {
   enabled: boolean;
   fallback: string;
+  /** Sprint 3 — Super Admin remote kill switch */
+  runtimeKill?: "shift" | "career" | "planner";
 }): ReactNode {
-  return enabled ? <Outlet /> : <Navigate to={fallback} replace />;
+  const flags = useRuntimeOpsFlags();
+  const killed =
+    runtimeKill === "shift"
+      ? flags.killShift
+      : runtimeKill === "career"
+        ? flags.killCareer
+        : runtimeKill === "planner"
+          ? flags.killPlanner
+          : false;
+  return enabled && !killed ? <Outlet /> : <Navigate to={fallback} replace />;
 }

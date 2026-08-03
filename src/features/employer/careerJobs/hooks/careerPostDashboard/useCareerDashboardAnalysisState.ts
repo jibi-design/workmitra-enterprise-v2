@@ -21,6 +21,11 @@ import {
   writeStoredAnalysisState,
   writeStoredBackupSuggestionIds,
 } from "./useCareerDashboardAnalysisState.storage.helpers";
+import {
+  clearCareerBackupReserve,
+  readCareerBackupReservedIds,
+  setCareerBackupReserve,
+} from "../../helpers/careerBackupReserve.helpers";
 
 type UseCareerDashboardAnalysisStateArgs = {
   post: CareerJobPost | null;
@@ -45,11 +50,14 @@ export function useCareerDashboardAnalysisState({
   const appliedCount = appliedApps.length;
   const storedAnalysisState = readStoredAnalysisState(post?.id);
   const storedBackupSuggestionIds = readStoredBackupSuggestionIds(post?.id);
+  const durableBackupIds = post?.id ? readCareerBackupReservedIds(post.id) : [];
+  const initialBackupIds =
+    storedBackupSuggestionIds.length > 0 ? storedBackupSuggestionIds : durableBackupIds;
 
   const [analysisOpen, setAnalysisOpen] = useState(storedAnalysisState?.analysisOpen ?? false);
   const [analysisDone, setAnalysisDone] = useState(storedAnalysisState?.analysisDone ?? false);
   const [analysisLocked, setAnalysisLocked] = useState(
-    readStoredAnalysisLock(post?.id) || storedBackupSuggestionIds.length > 0,
+    readStoredAnalysisLock(post?.id) || initialBackupIds.length > 0,
   );
   const [shortlistTarget, setShortlistTarget] = useState(storedAnalysisState?.shortlistTarget ?? 0);
   const [backupTarget, setBackupTarget] = useState(storedAnalysisState?.backupTarget ?? 0);
@@ -57,7 +65,7 @@ export function useCareerDashboardAnalysisState({
     () => new Set(storedAnalysisState?.selectedShortlistIds ?? []),
   );
   const [backupSuggestionIds, setBackupSuggestionIds] = useState<Set<string>>(
-    () => new Set(storedBackupSuggestionIds),
+    () => new Set(initialBackupIds),
   );
 
   const safeShortlistTarget = clampNumber(shortlistTarget, 0, appliedCount);
@@ -73,7 +81,8 @@ export function useCareerDashboardAnalysisState({
   );
 
   const visibleBackupApps = useMemo(
-    () => appliedApps.filter((app) => backupSuggestionIds.has(app.id)),
+    () =>
+      appliedApps.filter((app) => app.backupReserved === true || backupSuggestionIds.has(app.id)),
     [appliedApps, backupSuggestionIds],
   );
 
@@ -92,6 +101,7 @@ export function useCareerDashboardAnalysisState({
       setSelectedShortlistIds(new Set());
       setBackupSuggestionIds(new Set());
       clearStoredBackupSuggestionIds(post?.id);
+      if (post?.id) clearCareerBackupReserve(post.id);
       return;
     }
 
@@ -100,6 +110,7 @@ export function useCareerDashboardAnalysisState({
     setSelectedShortlistIds(new Set(analysis.shortlist.map((item) => item.app.id)));
     setBackupSuggestionIds(nextBackupIds);
     writeStoredBackupSuggestionIds(post?.id, Array.from(nextBackupIds));
+    if (post?.id) setCareerBackupReserve(post.id, nextBackupIds);
     setAnalysisDone(true);
   }
 
@@ -118,6 +129,7 @@ export function useCareerDashboardAnalysisState({
     clearStoredAnalysisLock(post?.id);
     setBackupSuggestionIds(new Set());
     clearStoredBackupSuggestionIds(post?.id);
+    if (post?.id) clearCareerBackupReserve(post.id);
 
     if (tab === "backup") {
       setTab("applied");
@@ -135,6 +147,7 @@ export function useCareerDashboardAnalysisState({
     writeStoredAnalysisLock(post?.id, true);
     setBackupSuggestionIds(finalBackupIds);
     setAnalysisLocked(true);
+    if (post?.id) setCareerBackupReserve(post.id, finalBackupIds);
     resetAnalysisPanel();
 
     if (finalBackupIds.size > 0) {
@@ -156,6 +169,7 @@ export function useCareerDashboardAnalysisState({
     setSelectedShortlistIds(new Set());
     setBackupSuggestionIds(new Set());
     clearStoredBackupSuggestionIds(post?.id);
+    if (post?.id) clearCareerBackupReserve(post.id);
   }
 
   function updateBackupTarget(value: number) {
@@ -166,6 +180,7 @@ export function useCareerDashboardAnalysisState({
     setSelectedShortlistIds(new Set());
     setBackupSuggestionIds(new Set());
     clearStoredBackupSuggestionIds(post?.id);
+    if (post?.id) clearCareerBackupReserve(post.id);
   }
 
   function toggleSelected(appId: string) {

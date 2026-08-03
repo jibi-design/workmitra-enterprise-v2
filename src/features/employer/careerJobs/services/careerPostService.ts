@@ -23,5 +23,7 @@ export {
   pauseCareerPost,
   resumeCareerPost,
   closeCareerPost,
+  expireCareerPost,
+  extendCareerPostClosingDate,
   deleteCareerPost,
 } from "./careerPostService.lifecycle";

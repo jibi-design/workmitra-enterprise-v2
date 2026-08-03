@@ -4,6 +4,7 @@
 import { availabilityStorage, getRolling7Days } from "../../../shared/shift/availability.reader";
 import { employerSettingsStorage } from "../../company/storage/employerSettings.storage";
 import { favoritesStorage } from "../storage/favoritesStorage";
+import { resolveShiftEmployerScopedKey } from "../../../shared/shift/shiftEmployerScope";
 
 export type LocalWorkersRadarMetrics = {
   totalAvailableCount: number;
@@ -11,7 +12,6 @@ export type LocalWorkersRadarMetrics = {
 };
 
 const ALL_AVAILABILITY_KEY = "wm_all_availability_broadcasts_v1";
-const FAVORITES_KEY = "wm_employer_shift_favorites_v1";
 const EMPLOYER_PROFILE_KEY = "wm_employer_profile_v1";
 
 const EMPTY_METRICS: LocalWorkersRadarMetrics = {
@@ -60,7 +60,7 @@ function computeLocalWorkersRadarMetrics(): LocalWorkersRadarMetrics {
 export function readLocalWorkersRadarMetricsSnapshot(): LocalWorkersRadarMetrics {
   const city = employerSettingsStorage.get().locationCity.trim();
   const availRaw = localStorage.getItem(ALL_AVAILABILITY_KEY) ?? "";
-  const favRaw = localStorage.getItem(FAVORITES_KEY) ?? "";
+  const favRaw = localStorage.getItem(resolveShiftEmployerScopedKey("shift_favorites_v1")) ?? "";
   const profileRaw = localStorage.getItem(EMPLOYER_PROFILE_KEY) ?? "";
   const cacheKey = `${city}|${availRaw}|${favRaw}|${profileRaw}`;
 

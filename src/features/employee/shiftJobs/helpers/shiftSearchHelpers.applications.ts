@@ -3,6 +3,7 @@ import { employeeSettingsStorage } from "../../settings/storage/employeeSettings
 import { hydrateShiftApplicationsFromServer } from "../../../shift/services/shiftDbTruth.service";
 import { isShiftApiSyncEnabled } from "../../../shift/services/shiftGateApi.service";
 import { APPS_KEY, POSTS_KEY, safeArray } from "./shiftSearchHelpers.storage";
+import { upsertAppIntoEmployerScope } from "../../../shared/shift/shiftTenantProjection";
 
 type ActiveApplicationStatus = "applied" | "shortlisted" | "waiting" | "confirmed";
 
@@ -118,6 +119,7 @@ export function quickApply(postId: string): boolean {
     const raw = localStorage.getItem(APPS_KEY);
     const existing: unknown[] = raw ? JSON.parse(raw) : [];
     localStorage.setItem(APPS_KEY, JSON.stringify([newApp, ...existing]));
+    upsertAppIntoEmployerScope(newApp as Record<string, unknown>);
     window.dispatchEvent(new Event("wm:employee-shift-applications-changed"));
     return true;
   } catch {

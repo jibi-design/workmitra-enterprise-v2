@@ -2,8 +2,14 @@
 // File name: careerPostNormalizers.ts
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\careerJobs\helpers\careerPostNormalizers.ts
 
-import { getCurrentActorId, identityBridge } from "../../../../app/identity/identity.adapter";
+import { AUTH_BACKEND_ENABLED } from "../../../../shared/config/authConfig";
+import {
+  getCurrentActorId,
+  identityBridge,
+  resolveActorStorageId,
+} from "../../../../app/identity/identity.adapter";
 import { employerSettingsStorage } from "../../company/storage/employerSettings.storage";
+import { sanitizeUserText } from "../../../../shared/security/sanitizeUserText";
 import type { CareerJobPost, InterviewRoundConfig } from "../types/careerTypes";
 import { getNumber, getString, getStringArray, isRecord } from "./careerStorageUtils";
 import {
@@ -38,9 +44,12 @@ function normalizeScreeningQuestion(raw: unknown): NormalizedScreeningQuestion |
   if (!isRecord(raw)) return null;
 
   const id = getString(raw, "id");
-  const text = getString(raw, "text")?.trim();
+  const textRaw = getString(raw, "text")?.trim();
 
-  if (!id || !text) return null;
+  if (!id || !textRaw) return null;
+
+  const text = sanitizeUserText(textRaw, 500);
+  if (!text) return null;
 
   return {
     id,
@@ -85,9 +94,22 @@ export function normalizeCareerPost(raw: unknown): CareerJobPost | null {
     identityBridge.upsert("employer", legacyEmployerId, actor.authUserId);
   }
 
+  let employerId = getString(raw, "employerId") ?? legacyEmployerId ?? undefined;
+  if (!employerId) {
+    if (AUTH_BACKEND_ENABLED) {
+      try {
+        employerId = resolveActorStorageId("employer", "employer_demo");
+      } catch {
+        employerId = "missing_employer";
+      }
+    } else {
+      employerId = "employer_demo";
+    }
+  }
+
   return {
     id: idVal,
-    employerId: getString(raw, "employerId") ?? legacyEmployerId ?? "employer_demo",
+    employerId,
     companyName: getString(raw, "companyName") ?? "Company",
     jobTitle: getString(raw, "jobTitle") ?? "Untitled Position",
     department: getString(raw, "department") ?? "",
@@ -104,7 +126,7 @@ export function normalizeCareerPost(raw: unknown): CareerJobPost | null {
     noticePeriodDays: noticePeriodDays === undefined ? undefined : Math.max(0, noticePeriodDays),
     qualifications: getStringArray(raw, "qualifications"),
     skills: getStringArray(raw, "skills"),
-    description: getString(raw, "description") ?? "",
+    description: sanitizeUserText(getString(raw, "description") ?? "", 8000),
     responsibilities: getStringArray(raw, "responsibilities"),
     interviewRounds: Math.max(1, Math.min(10, interviewRounds)),
     roundConfigs,

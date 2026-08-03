@@ -7,6 +7,7 @@ import {
   formatShiftPayDisplay,
   getShiftPayBasisLabel,
   SHIFT_PAY_BASIS_OPTIONS,
+  ensureEndAfterStart,
   toDateStr,
   todayStr,
   toEpoch,
@@ -75,7 +76,11 @@ export function ShiftCreateScheduleSection(props: Props) {
             type="date"
             value={toDateStr(props.startAt)}
             min={todayStr()}
-            onChange={(e) => props.onStartAt(toEpoch(e.target.value))}
+            onChange={(e) => {
+              const nextStart = toEpoch(e.target.value);
+              props.onStartAt(nextStart);
+              props.onEndAt(ensureEndAfterStart(nextStart, props.endAt));
+            }}
           />
         </div>
 
@@ -88,7 +93,10 @@ export function ShiftCreateScheduleSection(props: Props) {
             type="date"
             value={toDateStr(props.endAt)}
             min={toDateStr(props.startAt)}
-            onChange={(e) => props.onEndAt(toEpoch(e.target.value))}
+            onChange={(e) => {
+              const nextEnd = toEpoch(e.target.value);
+              props.onEndAt(ensureEndAfterStart(props.startAt, nextEnd));
+            }}
           />
         </div>
       </div>

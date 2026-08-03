@@ -20,6 +20,7 @@ const VALID_ACTIVITY_KINDS: readonly EmployerCareerActivityKind[] = [
   "post_resumed",
   "post_closed",
   "post_filled",
+  "post_updated",
   "candidate_shortlisted",
   "candidate_unshortlisted",
   "candidate_returned_to_shortlist",

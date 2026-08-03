@@ -45,6 +45,7 @@ export const EC = {
   vaultUpload: "vault/folder/:folderId/upload",
   vaultOtp: "vault/otp",
   vaultAccessLog: "vault/access-log",
+  vaultEditProfile: "vault/edit-profile",
   shiftOpsHub: "shift-ops",
   shiftOpsInvite: "shift-ops/invite",
   shiftOpsVerify: "shift-ops/verify",

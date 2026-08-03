@@ -1,8 +1,11 @@
 /** Job Mitra | shiftOpsRosterOverlay.storage.ts | Local roster overlay when RPC unavailable */
 
+import { writeLocalStorageJson } from "../../../shared/storage/localStorageWrite";
 import type { ActiveGroupRosterRow } from "../types";
 
 const KEY = "wm_shift_ops_roster_overlay_v1";
+/** Wave-3: per-site roster overlay cap */
+const OVERLAY_ROWS_PER_SITE_MAX = 500;
 
 type OverlayMap = Record<string, ActiveGroupRosterRow[]>;
 
@@ -17,12 +20,8 @@ function readMap(): OverlayMap {
   }
 }
 
-function writeMap(map: OverlayMap): void {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(map));
-  } catch {
-    /* demo-safe */
-  }
+function writeMap(map: OverlayMap): boolean {
+  return writeLocalStorageJson(KEY, map).ok;
 }
 
 export function listOverlayRoster(siteId: string): ActiveGroupRosterRow[] {
@@ -31,21 +30,21 @@ export function listOverlayRoster(siteId: string): ActiveGroupRosterRow[] {
   return readMap()[id] ?? [];
 }
 
-export function upsertOverlayRosterMember(row: ActiveGroupRosterRow): void {
+export function upsertOverlayRosterMember(row: ActiveGroupRosterRow): boolean {
   const siteId = row.site_id.trim();
-  if (!siteId) return;
+  if (!siteId) return false;
   const map = readMap();
   const list = [...(map[siteId] ?? [])];
   const idx = list.findIndex((r) => r.membership_id === row.membership_id);
   if (idx >= 0) list[idx] = row;
   else list.unshift(row);
-  map[siteId] = list;
+  map[siteId] = list.slice(0, OVERLAY_ROWS_PER_SITE_MAX);
   // Drop from other sites if group moved
   for (const key of Object.keys(map)) {
     if (key === siteId) continue;
     map[key] = (map[key] ?? []).filter((r) => r.membership_id !== row.membership_id);
   }
-  writeMap(map);
+  return writeMap(map);
 }
 
 export function seedOverlayRosterIfEmpty(siteId: string, siteName: string): ActiveGroupRosterRow[] {

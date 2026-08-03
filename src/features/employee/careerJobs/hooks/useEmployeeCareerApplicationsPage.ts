@@ -21,14 +21,13 @@ import { getCareerSearchSnapshot, subscribeCareerSearch } from "../helpers/caree
 import {
   acceptCareerOffer,
   declineCareerOffer,
-  isCareerWithdrawOnlineBlocked,
   withdrawCareerApplication,
 } from "../services/careerApplyService";
 import { acceptInterview, declineInterview } from "../services/careerInterviewRsvpService";
 import type { Tab } from "../types/careerApplicationTypes";
 
-const WITHDRAW_SUPPORT_MESSAGE =
-  "Online self-serve withdrawal is not available yet. Please contact support if you need to withdraw this application.";
+const WITHDRAW_FAIL_MESSAGE =
+  "This application cannot be withdrawn from its current status, or the server could not complete withdrawal.";
 
 export function useEmployeeCareerApplicationsPage() {
   const nav = useNavigate();
@@ -78,20 +77,16 @@ export function useEmployeeCareerApplicationsPage() {
   );
   const kpi = useMemo(() => computeKpi(filtered), [filtered]);
 
-  function handleWithdrawConfirm() {
+  async function handleWithdrawConfirm() {
     if (!withdrawJobId) return;
 
-    const ok = withdrawCareerApplication(withdrawJobId);
+    const ok = await withdrawCareerApplication(withdrawJobId);
 
     setWithdrawJobId(null);
     setWithdrawJobTitle("");
 
     if (!ok) {
-      setActionError(
-        isCareerApiSyncEnabled()
-          ? WITHDRAW_SUPPORT_MESSAGE
-          : "This application cannot be withdrawn from its current status.",
-      );
+      setActionError(WITHDRAW_FAIL_MESSAGE);
     }
   }
 
@@ -128,10 +123,6 @@ export function useEmployeeCareerApplicationsPage() {
   }
 
   function requestWithdraw(jobId: string, jobTitle: string) {
-    if (isCareerWithdrawOnlineBlocked()) {
-      setActionError(WITHDRAW_SUPPORT_MESSAGE);
-      return;
-    }
     setWithdrawJobTitle(jobTitle);
     setWithdrawJobId(jobId);
   }
@@ -152,7 +143,15 @@ export function useEmployeeCareerApplicationsPage() {
     setActionError(
       result.reason === "api_error"
         ? "Server could not accept this offer. Local change was rolled back."
-        : "This offer cannot be accepted from its current status.",
+        : result.reason === "not_found"
+          ? "No application was found for this job."
+          : result.reason === "invalid_stage"
+            ? "This offer cannot be accepted from its current status."
+            : result.reason === "post_inactive"
+              ? "This job is no longer active."
+              : result.reason === "invalid_offer"
+                ? "This offer is missing details or has expired."
+                : "This offer could not be accepted. Please try again.",
     );
   }
 

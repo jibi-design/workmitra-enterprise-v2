@@ -1,4 +1,5 @@
 import { getPool } from "../../../db/pool.js";
+import { withResilientTransaction } from "../../../db/resilient.js";
 import type {
   CareerPostRow,
   CareerApplicationRow,
@@ -49,22 +50,24 @@ export const employerCareerRepository = {
     status: string;
     details: Record<string, unknown>;
   }): Promise<CareerPostRow> {
-    const result = await getPool().query<CareerPostRow>(
-      `INSERT INTO career_posts
-         (employer_user_id, title, description, location, status, details)
-       VALUES ($1, $2, $3, $4, $5, $6::jsonb)
-       RETURNING id, employer_user_id, title, description, location, status,
-                 COALESCE(details, '{}'::jsonb) AS details, created_at, updated_at`,
-      [
-        params.employerUserId,
-        params.title,
-        params.description,
-        params.location,
-        params.status,
-        JSON.stringify(params.details),
-      ],
-    );
-    return result.rows[0];
+    return withResilientTransaction(async (client) => {
+      const result = await client.query<CareerPostRow>(
+        `INSERT INTO career_posts
+           (employer_user_id, title, description, location, status, details)
+         VALUES ($1, $2, $3, $4, $5, $6::jsonb)
+         RETURNING id, employer_user_id, title, description, location, status,
+                   COALESCE(details, '{}'::jsonb) AS details, created_at, updated_at`,
+        [
+          params.employerUserId,
+          params.title,
+          params.description,
+          params.location,
+          params.status,
+          JSON.stringify(params.details),
+        ],
+      );
+      return result.rows[0];
+    });
   },
 
   async updatePost(params: {
@@ -76,38 +79,42 @@ export const employerCareerRepository = {
     status: string;
     details: Record<string, unknown>;
   }): Promise<CareerPostRow | null> {
-    const result = await getPool().query<CareerPostRow>(
-      `UPDATE career_posts
-       SET title = $3,
-           description = $4,
-           location = $5,
-           status = $6,
-           details = $7::jsonb,
-           updated_at = now()
-       WHERE id = $1 AND employer_user_id = $2 AND status != 'deleted'
-       RETURNING id, employer_user_id, title, description, location, status,
-                 COALESCE(details, '{}'::jsonb) AS details, created_at, updated_at`,
-      [
-        params.postId,
-        params.employerUserId,
-        params.title,
-        params.description,
-        params.location,
-        params.status,
-        JSON.stringify(params.details),
-      ],
-    );
-    return result.rows[0] ?? null;
+    return withResilientTransaction(async (client) => {
+      const result = await client.query<CareerPostRow>(
+        `UPDATE career_posts
+         SET title = $3,
+             description = $4,
+             location = $5,
+             status = $6,
+             details = $7::jsonb,
+             updated_at = now()
+         WHERE id = $1 AND employer_user_id = $2 AND status != 'deleted'
+         RETURNING id, employer_user_id, title, description, location, status,
+                   COALESCE(details, '{}'::jsonb) AS details, created_at, updated_at`,
+        [
+          params.postId,
+          params.employerUserId,
+          params.title,
+          params.description,
+          params.location,
+          params.status,
+          JSON.stringify(params.details),
+        ],
+      );
+      return result.rows[0] ?? null;
+    });
   },
 
   async softDeletePost(postId: string, employerUserId: string): Promise<boolean> {
-    const result = await getPool().query(
-      `UPDATE career_posts
-       SET status = 'deleted', updated_at = now()
-       WHERE id = $1 AND employer_user_id = $2 AND status != 'deleted'`,
-      [postId, employerUserId],
-    );
-    return (result.rowCount ?? 0) > 0;
+    return withResilientTransaction(async (client) => {
+      const result = await client.query(
+        `UPDATE career_posts
+         SET status = 'deleted', updated_at = now()
+         WHERE id = $1 AND employer_user_id = $2 AND status != 'deleted'`,
+        [postId, employerUserId],
+      );
+      return (result.rowCount ?? 0) > 0;
+    });
   },
 
   async findApplicationById(applicationId: string): Promise<CareerApplicationRow | null> {
@@ -187,37 +194,40 @@ export const employerCareerRepository = {
     employerUserId: string,
     patch: { status?: string; details?: Record<string, unknown> },
   ): Promise<CareerEmploymentRow | null> {
-    const existing = await getPool().query<CareerEmploymentRow>(
-      `SELECT id, application_id, post_id, employee_user_id, employer_user_id,
-              status, COALESCE(details, '{}'::jsonb) AS details,
-              confirmed_at, created_at, updated_at
-       FROM career_employments
-       WHERE id = $1 AND employer_user_id = $2`,
-      [employmentId, employerUserId],
-    );
-    const row = existing.rows[0];
-    if (!row) return null;
+    return withResilientTransaction(async (client) => {
+      const existing = await client.query<CareerEmploymentRow>(
+        `SELECT id, application_id, post_id, employee_user_id, employer_user_id,
+                status, COALESCE(details, '{}'::jsonb) AS details,
+                confirmed_at, created_at, updated_at
+         FROM career_employments
+         WHERE id = $1 AND employer_user_id = $2
+         FOR UPDATE`,
+        [employmentId, employerUserId],
+      );
+      const row = existing.rows[0];
+      if (!row) return null;
 
-    const nextStatus = patch.status?.trim() || row.status;
-    const nextDetails = {
-      ...(typeof row.details === "object" && row.details && !Array.isArray(row.details)
-        ? row.details
-        : {}),
-      ...(patch.details ?? {}),
-    };
+      const nextStatus = patch.status?.trim() || row.status;
+      const nextDetails = {
+        ...(typeof row.details === "object" && row.details && !Array.isArray(row.details)
+          ? row.details
+          : {}),
+        ...(patch.details ?? {}),
+      };
 
-    const result = await getPool().query<CareerEmploymentRow>(
-      `UPDATE career_employments
-       SET status = $3,
-           details = $4::jsonb,
-           updated_at = now()
-       WHERE id = $1 AND employer_user_id = $2
-       RETURNING id, application_id, post_id, employee_user_id, employer_user_id,
-                 status, COALESCE(details, '{}'::jsonb) AS details,
-                 confirmed_at, created_at, updated_at`,
-      [employmentId, employerUserId, nextStatus, JSON.stringify(nextDetails)],
-    );
-    return result.rows[0] ?? null;
+      const result = await client.query<CareerEmploymentRow>(
+        `UPDATE career_employments
+         SET status = $3,
+             details = $4::jsonb,
+             updated_at = now()
+         WHERE id = $1 AND employer_user_id = $2
+         RETURNING id, application_id, post_id, employee_user_id, employer_user_id,
+                   status, COALESCE(details, '{}'::jsonb) AS details,
+                   confirmed_at, created_at, updated_at`,
+        [employmentId, employerUserId, nextStatus, JSON.stringify(nextDetails)],
+      );
+      return result.rows[0] ?? null;
+    });
   },
 
   async createOffer(params: {
@@ -226,21 +236,36 @@ export const employerCareerRepository = {
     terms: Record<string, unknown>;
     expiresAt: Date | null;
   }): Promise<CareerOfferRow> {
-    const result = await getPool().query<CareerOfferRow>(
-      `INSERT INTO career_offers (application_id, employer_user_id, terms, expires_at)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, application_id, employer_user_id, status, terms,
-                 offered_at, expires_at, accepted_at, declined_at, updated_at`,
-      [params.applicationId, params.employerUserId, JSON.stringify(params.terms), params.expiresAt],
-    );
-    return result.rows[0];
+    return withResilientTransaction(async (client) => {
+      await client.query(`SELECT id FROM career_applications WHERE id = $1 FOR UPDATE`, [
+        params.applicationId,
+      ]);
+      const result = await client.query<CareerOfferRow>(
+        `INSERT INTO career_offers (application_id, employer_user_id, terms, expires_at)
+         VALUES ($1, $2, $3, $4)
+         RETURNING id, application_id, employer_user_id, status, terms,
+                   offered_at, expires_at, accepted_at, declined_at, updated_at`,
+        [
+          params.applicationId,
+          params.employerUserId,
+          JSON.stringify(params.terms),
+          params.expiresAt,
+        ],
+      );
+      return result.rows[0];
+    });
   },
 
   async updateApplicationStatus(applicationId: string, status: string): Promise<void> {
-    await getPool().query(
-      `UPDATE career_applications SET status = $2, updated_at = now() WHERE id = $1`,
-      [applicationId, status],
-    );
+    await withResilientTransaction(async (client) => {
+      await client.query(`SELECT id FROM career_applications WHERE id = $1 FOR UPDATE`, [
+        applicationId,
+      ]);
+      await client.query(
+        `UPDATE career_applications SET status = $2, updated_at = now() WHERE id = $1`,
+        [applicationId, status],
+      );
+    });
   },
 
   async logLifecycleEvent(params: {
@@ -252,20 +277,22 @@ export const employerCareerRepository = {
     newStatus: string | null;
     metadata?: Record<string, unknown>;
   }): Promise<void> {
-    await getPool().query(
-      `INSERT INTO career_lifecycle_events
-         (application_id, actor_user_id, actor_role, event_type, previous_status, new_status, metadata)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [
-        params.applicationId,
-        params.actorUserId,
-        params.actorRole,
-        params.eventType,
-        params.previousStatus ?? null,
-        params.newStatus ?? null,
-        JSON.stringify(params.metadata ?? {}),
-      ],
-    );
+    await withResilientTransaction(async (client) => {
+      await client.query(
+        `INSERT INTO career_lifecycle_events
+           (application_id, actor_user_id, actor_role, event_type, previous_status, new_status, metadata)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [
+          params.applicationId,
+          params.actorUserId,
+          params.actorRole,
+          params.eventType,
+          params.previousStatus ?? null,
+          params.newStatus ?? null,
+          JSON.stringify(params.metadata ?? {}),
+        ],
+      );
+    });
   },
 
   /**
@@ -284,10 +311,7 @@ export const employerCareerRepository = {
     employerUserId: string;
     details?: Record<string, unknown>;
   }): Promise<CreateEmploymentResult> {
-    const client = await getPool().connect();
-    try {
-      await client.query("BEGIN");
-
+    const outcome = await withResilientTransaction(async (client) => {
       // Lock the application row to serialise concurrent confirm-hire calls
       const lockResult = await client.query<{ status: string }>(
         `SELECT status FROM career_applications WHERE id = $1 FOR UPDATE`,
@@ -296,16 +320,11 @@ export const employerCareerRepository = {
 
       const currentStatus = lockResult.rows[0]?.status;
 
-      // If already hired (concurrent request won the race), just return existing
       if (currentStatus === "hired") {
-        await client.query("COMMIT");
-        const existing = await this.findEmploymentByApplicationId(params.applicationId);
-        return { employment: existing!, wasCreated: false };
+        return { kind: "already" as const };
       }
 
-      // Gate enforcement inside the transaction — status must be offer_accepted
       if (currentStatus !== "offer_accepted") {
-        await client.query("ROLLBACK");
         throw Object.assign(
           new Error(
             `Cannot confirm hire — application must be 'offer_accepted', current: '${currentStatus}'`,
@@ -314,13 +333,11 @@ export const employerCareerRepository = {
         );
       }
 
-      // Step A: update application to hired
       await client.query(
         `UPDATE career_applications SET status = 'hired', updated_at = now() WHERE id = $1`,
         [params.applicationId],
       );
 
-      // Step B: insert employment — ON CONFLICT DO NOTHING for idempotency
       const insertResult = await client.query<{ id: string }>(
         `INSERT INTO career_employments
            (application_id, post_id, employee_user_id, employer_user_id, details)
@@ -337,7 +354,6 @@ export const employerCareerRepository = {
       );
       const wasCreated = insertResult.rowCount !== null && insertResult.rowCount > 0;
 
-      // If row already existed, merge details
       if (!wasCreated && params.details) {
         await client.query(
           `UPDATE career_employments
@@ -348,7 +364,6 @@ export const employerCareerRepository = {
         );
       }
 
-      // Step C: log lifecycle event
       await client.query(
         `INSERT INTO career_lifecycle_events
            (application_id, actor_user_id, actor_role, event_type, previous_status, new_status)
@@ -356,16 +371,13 @@ export const employerCareerRepository = {
         [params.applicationId, params.employerUserId],
       );
 
-      await client.query("COMMIT");
+      return { kind: "done" as const, wasCreated };
+    });
 
-      // Fetch the employment record (works whether just created or already existed)
-      const employment = await this.findEmploymentByApplicationId(params.applicationId);
-      return { employment: employment!, wasCreated };
-    } catch (err) {
-      await client.query("ROLLBACK");
-      throw err;
-    } finally {
-      client.release();
-    }
+    const employment = await this.findEmploymentByApplicationId(params.applicationId);
+    return {
+      employment: employment!,
+      wasCreated: outcome.kind === "done" ? outcome.wasCreated : false,
+    };
   },
 };

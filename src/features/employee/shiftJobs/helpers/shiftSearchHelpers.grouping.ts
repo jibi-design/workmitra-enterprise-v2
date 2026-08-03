@@ -8,6 +8,7 @@ import {
   markApplyBatchIdSeen,
   releaseBatchActionLock,
 } from "../../../shared/planner/services/plannerConcurrency.service";
+import { upsertAppIntoEmployerScope } from "../../../shared/shift/shiftTenantProjection";
 
 export type PlanGroup = {
   key: string;
@@ -110,6 +111,9 @@ export function multiApplyGroup(
 
     try {
       localStorage.setItem(APPS_KEY, JSON.stringify([...newApps, ...existing]));
+      for (const app of newApps) {
+        upsertAppIntoEmployerScope(app as Record<string, unknown>);
+      }
       window.dispatchEvent(new Event("wm:employee-shift-applications-changed"));
       markApplyBatchIdSeen(batchId);
       return newApps.length;

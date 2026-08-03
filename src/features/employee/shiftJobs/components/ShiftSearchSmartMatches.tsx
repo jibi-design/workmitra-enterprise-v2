@@ -12,9 +12,9 @@ type Props = {
 };
 
 const QUALITY_LABEL: Record<MatchQuality, string> = {
-  high: "Strong match",
-  medium: "Good match",
-  low: "Basic match",
+  high: "Strong profile fit",
+  medium: "Good profile fit",
+  low: "Basic profile fit",
   "profile incomplete": "Profile incomplete",
 };
 
@@ -32,11 +32,11 @@ export function ShiftSearchSmartMatches({ matches, matchQuality, onOpenDetails }
         }}
       >
         <div style={{ fontWeight: 950, fontSize: 15, color: "var(--wm-er-text)" }}>
-          Smart Matches
+          Profile Fit Score
         </div>
 
         <div style={{ marginTop: 5, fontSize: 12, color: "var(--wm-er-muted)", lineHeight: 1.5 }}>
-          Add city and skills to unlock safer shift match scoring.
+          Add city and skills to unlock profile-based fit scoring (heuristic — not AI hiring).
         </div>
 
         <div
@@ -52,7 +52,7 @@ export function ShiftSearchSmartMatches({ matches, matchQuality, onOpenDetails }
             lineHeight: 1.45,
           }}
         >
-          Profile incomplete. Match score is hidden until enough profile data is available.
+          Profile incomplete. Fit score is hidden until enough profile data is available.
         </div>
       </section>
     );
@@ -82,11 +82,12 @@ export function ShiftSearchSmartMatches({ matches, matchQuality, onOpenDetails }
       >
         <div>
           <div style={{ fontWeight: 950, fontSize: 15, color: "var(--wm-er-text)" }}>
-            Smart Matches
+            Profile Fit Score
           </div>
 
           <div style={{ marginTop: 5, fontSize: 12, color: "var(--wm-er-muted)", lineHeight: 1.5 }}>
-            Match score helps discovery only. Review job details before applying.
+            Candidate match score is a profile heuristic for discovery only — not an algorithmic
+            hiring guarantee. Review job details before applying.
           </div>
         </div>
 
@@ -164,7 +165,7 @@ export function ShiftSearchSmartMatches({ matches, matchQuality, onOpenDetails }
                       color: "var(--wm-er-muted)",
                     }}
                   >
-                    match
+                    fit score
                   </div>
                 </div>
               </div>
@@ -198,7 +199,7 @@ export function ShiftSearchSmartMatches({ matches, matchQuality, onOpenDetails }
                   color: "#16a34a",
                 }}
               >
-                View match details
+                View fit details
               </div>
             </button>
           );

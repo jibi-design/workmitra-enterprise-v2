@@ -362,9 +362,17 @@ export const demandPlannerStorage = {
   },
 
   subscribe(cb: () => void): () => void {
-    const h = () => cb();
-    window.addEventListener(CHANGED, h);
-    return () => window.removeEventListener(CHANGED, h);
+    const onSameTab = () => cb();
+    /** Wave-2: peer tabs writing demand plans must refresh UI (storage event). */
+    const onCrossTab = (event: StorageEvent) => {
+      if (event.key === KEY || event.key === null) cb();
+    };
+    window.addEventListener(CHANGED, onSameTab);
+    window.addEventListener("storage", onCrossTab);
+    return () => {
+      window.removeEventListener(CHANGED, onSameTab);
+      window.removeEventListener("storage", onCrossTab);
+    };
   },
 
   CHANGED_EVENT: CHANGED,

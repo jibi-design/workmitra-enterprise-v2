@@ -2,6 +2,8 @@
 // File name: shiftApplyHelpers.ts
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\helpers\shiftApplyHelpers.ts
 
+import { upsertAppIntoEmployerScope } from "../../../shared/shift/shiftTenantProjection";
+
 export type ExperienceLabel = "helper" | "fresher_ok" | "experienced";
 
 export type ShiftPayBasis = "per_hour" | "per_day" | "fixed_total" | "not_listed";
@@ -54,7 +56,7 @@ export type ShiftApplicationDemo = {
   quickAnswers?: Record<string, "yes" | "no">;
 };
 
-export const POSTS_KEY = "wm_employer_shift_posts_v1";
+export const POSTS_KEY = "wm_employee_shift_search_v1";
 export const APPS_KEY = "wm_employee_shift_applications_v1";
 
 export function safeParsePosts(raw: string | null): ShiftPostDemo[] {
@@ -108,6 +110,9 @@ export function safeParseApps(raw: string | null): ShiftApplicationDemo[] {
 export function safeWriteApps(list: ShiftApplicationDemo[]): void {
   try {
     localStorage.setItem(APPS_KEY, JSON.stringify(list));
+    for (const app of list) {
+      upsertAppIntoEmployerScope(app as unknown as Record<string, unknown>);
+    }
     window.dispatchEvent(new Event("wm:employee-shift-applications-changed"));
   } catch {
     // Local-first safe fallback.

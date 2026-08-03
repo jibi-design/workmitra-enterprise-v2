@@ -16,7 +16,8 @@ export function useEmployeeShiftMyWorkUnreadBadge(): boolean {
   const subscribe = useCallback((callback: () => void) => {
     const unsubscribeInvites = shiftDirectInviteStorage.subscribe(callback);
     const onStorage = (event: StorageEvent) => {
-      if (event.key === null || event.key.includes("profile")) callback();
+      // Synthetic `new Event("storage")` has undefined key — guard before .includes().
+      if (event.key == null || event.key.includes("profile")) callback();
     };
     window.addEventListener("storage", onStorage);
     window.addEventListener("focus", callback);

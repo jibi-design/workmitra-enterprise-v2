@@ -1,8 +1,12 @@
 // App name: Job Mitra
 // File name: employerShift.employeeApplications.ts
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\storage\employerShift.employeeApplications.ts
+// Employer-scoped applications SoT + worker projection sync (Step 1).
 
-import { EMPLOYEE_APPS_KEY } from "./employerShift.keys";
+import {
+  EMPLOYEE_APPS_CHANGED_EVENT,
+  EMPLOYEE_APPS_KEY,
+  getEmployerApplicationsKey,
+} from "./employerShift.keys";
 import type { EmployeeShiftApplication, RequirementAnswer } from "./employerShift.types";
 import {
   getNumber,
@@ -12,8 +16,17 @@ import {
   safeParse,
   safeWrite,
 } from "./employerShift.utils";
+import { mergeEmployerAppsIntoWorkerProjection } from "../../../shared/shift/shiftTenantProjection";
 
 export function readEmployeeApplications(): EmployeeShiftApplication[] {
+  return safeParse<unknown>(localStorage.getItem(getEmployerApplicationsKey()))
+    .map(normalizeEmployeeApplication)
+    .filter((app): app is EmployeeShiftApplication => app !== null)
+    .sort((a, b) => b.createdAt - a.createdAt);
+}
+
+/** Worker projection read (marketplace / earnings / employee UI). */
+export function readWorkerApplicationProjection(): EmployeeShiftApplication[] {
   return safeParse<unknown>(localStorage.getItem(EMPLOYEE_APPS_KEY))
     .map(normalizeEmployeeApplication)
     .filter((app): app is EmployeeShiftApplication => app !== null)
@@ -22,11 +35,24 @@ export function readEmployeeApplications(): EmployeeShiftApplication[] {
 
 export type ApplicationWriteResult = { ok: true } | { ok: false; reason: "storage_error" };
 
+/**
+ * Employer write: scoped SoT, then upsert those rows into the worker projection.
+ * Does not wipe unrelated employers' projection rows.
+ */
 export function writeEmployeeApplications(
   apps: EmployeeShiftApplication[],
 ): ApplicationWriteResult {
-  const result = safeWrite(EMPLOYEE_APPS_KEY, apps);
+  const scopedKey = getEmployerApplicationsKey();
+  const result = safeWrite(scopedKey, apps);
   if (!result.ok) return { ok: false, reason: "storage_error" };
+
+  try {
+    mergeEmployerAppsIntoWorkerProjection(apps as unknown as Record<string, unknown>[]);
+    window.dispatchEvent(new Event(EMPLOYEE_APPS_CHANGED_EVENT));
+  } catch {
+    /* projection advisory */
+  }
+
   notifyEmployeeAppsChanged();
   return { ok: true };
 }

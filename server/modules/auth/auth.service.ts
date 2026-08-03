@@ -14,6 +14,7 @@ export type { LoginResult };
 export const authService = {
   async login(email: string, password: string, meta: RequestMeta): Promise<LoginResult> {
     if (isDbAuthEnabled()) return dbAuthService.login(email, password, meta);
+    // Sprint 1: memory path only when demo lab explicitly enabled
     return memoryAuthService.login(email, password);
   },
 
@@ -24,5 +25,10 @@ export const authService = {
 
   isRole(value: unknown): value is UserRole {
     return value === "employee" || value === "employer" || value === "admin";
+  },
+
+  /** True when this process is bound to Postgres auth (not memory demo). */
+  isDbBound(): boolean {
+    return isDbAuthEnabled();
   },
 };

@@ -27,7 +27,7 @@ export function safeStringArray(key: string): string[] {
 export const VIEWS_KEY = "wm_employee_shift_views_v1";
 export const FAVORITES_KEY = "wm_employee_shift_favorites_v1";
 export const APPS_KEY = "wm_employee_shift_applications_v1";
-export const POSTS_KEY = "wm_employer_shift_posts_v1";
+export const POSTS_KEY = "wm_employee_shift_search_v1";
 
 export const MAX_VIEWS = 5;
 export const MAX_FAVORITES = 30;

@@ -11,7 +11,7 @@ import { notifyCrossRole } from "../../../pulse/pulseEventBridge";
 import { notifyShiftBothPleaseRate } from "../services/shiftCompletionNotifications";
 import type { ShiftWorkspace, ShiftWorkspaceUpdate } from "../types/shiftWorkspaceTypes";
 import { wsId } from "../types/shiftWorkspaceTypes";
-import { EMP_POSTS_KEY } from "./employerShift.keys";
+import { getEmpPostsKey } from "./employerShift.keys";
 import { readEmployerPosts, syncToEmployeeSearch } from "./employerShift.postStorage";
 import { notifyEmployerShiftPostsChanged, safeWrite } from "./employerShift.utils";
 import { getWorkspacesSnapshot, saveWorkspaces } from "./shiftWorkspaceStorage";
@@ -126,7 +126,7 @@ export function completePostSaga(
   );
 
   // Step 1 — CRITICAL: mark post completed.
-  const postWrite = safeWrite(EMP_POSTS_KEY, nextPosts);
+  const postWrite = safeWrite(getEmpPostsKey(), nextPosts);
   if (!postWrite.ok) return { ok: false, reason: "post_write_error" };
   notifyEmployerShiftPostsChanged();
 
@@ -144,7 +144,7 @@ export function completePostSaga(
   // (otherwise please-rate / workspace alerts would orphan after rollback).
   const vaultResult = finalizeVaultShiftHistoryForPost(postId, workspaces);
   if (!vaultResult.ok) {
-    safeWrite(EMP_POSTS_KEY, priorPosts);
+    safeWrite(getEmpPostsKey(), priorPosts);
     notifyEmployerShiftPostsChanged();
 
     try {

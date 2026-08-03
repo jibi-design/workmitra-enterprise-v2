@@ -6,14 +6,18 @@
 // Call checkAndSendRatingReminders() on employer app load or page visit.
 
 import { getShiftUnratedWorkspaceIds, getWorkforceUnratedGroupIds } from "./ratingNudgeHelpers";
+import { resolveShiftEmployerScopedKey } from "../../shared/shift/shiftEmployerScope";
 
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* Constants                                                                  */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
 const NUDGE_LOG_KEY = "wm_rating_nudge_log_v1";
-const EMPLOYER_NOTIFICATIONS_KEY = "wm_employer_notifications_v1";
 const EMPLOYER_NOTIFICATIONS_CHANGED = "wm:employer-notifications-changed";
+
+function employerNotificationsKey(): string {
+  return resolveShiftEmployerScopedKey("shift_notifications_v1");
+}
 
 const HOURS_24 = 24 * 60 * 60 * 1000;
 const HOURS_72 = 72 * 60 * 60 * 1000;
@@ -64,7 +68,7 @@ function pushEmployerNotification(
   body: string,
 ): void {
   try {
-    const raw = localStorage.getItem(EMPLOYER_NOTIFICATIONS_KEY);
+    const raw = localStorage.getItem(employerNotificationsKey());
     const existing: unknown[] = raw ? (JSON.parse(raw) as unknown[]) : [];
 
     const note = {
@@ -77,7 +81,7 @@ function pushEmployerNotification(
     };
 
     const next = [note, ...existing].slice(0, 150);
-    localStorage.setItem(EMPLOYER_NOTIFICATIONS_KEY, JSON.stringify(next));
+    localStorage.setItem(employerNotificationsKey(), JSON.stringify(next));
     window.dispatchEvent(new Event(EMPLOYER_NOTIFICATIONS_CHANGED));
   } catch {
     // demo-safe ignore

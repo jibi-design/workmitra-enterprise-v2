@@ -3,7 +3,7 @@
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\workVault\pages\EmployeeVaultFolderPage.tsx
 
 import { useCallback, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ConfirmModal } from "../../../../shared/components/ConfirmModal";
 import { FullscreenDocViewer } from "../../../../shared/components/FullscreenDocViewer";
 import { NoticeModal, type NoticeData } from "../../../../shared/components/NoticeModal";
@@ -32,6 +32,7 @@ import type { VaultDocument, VaultFileType } from "../types/vaultTypes";
 export function EmployeeVaultFolderPage() {
   const { folderId } = useParams<{ folderId: string }>();
   const nav = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [folder, setFolder] = useState(() => getFolderById(folderId ?? ""));
   const [docs, setDocs] = useState<VaultDocument[]>(() => getDocumentsByFolder(folderId ?? ""));
@@ -41,6 +42,17 @@ export function EmployeeVaultFolderPage() {
   const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
   const [previewDoc, setPreviewDoc] = useState<VaultDocument | null>(null);
   const [notice, setNotice] = useState<NoticeData | null>(null);
+
+  const uploadFromQuery = searchParams.get("upload") === "1";
+  const uploadOpen = showUploadModal || uploadFromQuery;
+
+  const closeUploadModal = useCallback(() => {
+    setShowUploadModal(false);
+    if (!uploadFromQuery) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete("upload");
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams, uploadFromQuery]);
 
   const isSystemFolder = useMemo(
     () => (folder ? isSystemFolderName(folder.name) : false),
@@ -77,7 +89,7 @@ export function EmployeeVaultFolderPage() {
 
     if (!limitCheck.valid) {
       setNotice({ title: "Limit Reached", message: limitCheck.reason, tone: "warn" });
-      setShowUploadModal(false);
+      closeUploadModal();
       return;
     }
 
@@ -87,7 +99,7 @@ export function EmployeeVaultFolderPage() {
 
     if (!quotaCheck.valid) {
       setNotice({ title: "Storage Full", message: quotaCheck.reason, tone: "warn" });
-      setShowUploadModal(false);
+      closeUploadModal();
       return;
     }
 
@@ -103,12 +115,12 @@ export function EmployeeVaultFolderPage() {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Could not save this document.";
       setNotice({ title: "Upload Failed", message, tone: "warn" });
-      setShowUploadModal(false);
+      closeUploadModal();
       return;
     }
 
     refreshDocs();
-    setShowUploadModal(false);
+    closeUploadModal();
     setNotice({
       title: "Uploaded",
       message: `"${data.name}" added to this folder.`,
@@ -176,11 +188,7 @@ export function EmployeeVaultFolderPage() {
 
       <div style={{ height: 80 }} />
 
-      <VaultUploadModal
-        open={showUploadModal}
-        onClose={() => setShowUploadModal(false)}
-        onUpload={handleUpload}
-      />
+      <VaultUploadModal open={uploadOpen} onClose={closeUploadModal} onUpload={handleUpload} />
 
       <VaultCreateFolderModal
         open={showRenameModal}

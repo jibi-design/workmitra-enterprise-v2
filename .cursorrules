@@ -122,3 +122,30 @@ These standards govern `tests/e2e/helpers/visual-assertion-inspector.ts` and all
   (`.wm-ent-skeleton`, `.wm-ent-empty`, `.wm-domainHero` / command tiles, `[role=alert]` / `.wm-ent-error`).
 - Zero-data Active views without Empty primitive = HIGH (raw DOM fallback risk).
 - Missing Active enterprise primitives on a content page = HIGH.
+
+---
+
+# WORKMITRA ENTERPRISE V2 — MANDATORY CODING & SECURITY RULES
+
+## 1. ARCHITECTURAL INTEGRITY (6-LAYER DEFENSE)
+- Always apply Zod runtime schema validation and text sanitization (sanitizeText / sanitizeUserText) on all incoming API request bodies, parameters, and drafts.
+- All database write/update operations must use `withResilientTransaction` to guarantee deadlock retries (40P01) and connection pooling limits.
+
+## 2. IDENTITY & TRANSACTION BINDING
+- Never accept or trust `wm_id` or user IDs from the request body directly. Always bind to the authenticated session context (`application.worker_wm_id`).
+- All shift claims and invitations must require verified tokens/proofs before state updates.
+
+## 3. NETWORK & ENVIRONMENT HARDENING
+- Ensure rate-limiting layers check sanitized IPs and session buckets.
+- Never downgrade SSL settings or insert hardcoded fallback secrets. All production boots must fail hard if environment secrets (JWT_SECRET / Pepper >= 32 chars) are missing.
+
+## 4. BUILD & TYPE STRICTNESS
+- Never allow `any` types for sensitive payload fields.
+- Ensure `npx tsc --noEmit` and `npm run build` pass cleanly without debug leftovers.
+
+---
+
+## 5. DEPLOYMENT REFERENCE (PERMANENT CONTEXT)
+- Full production deployment manual (Docker, Nginx, env checklist, smoke commands): [`DEPLOYMENT.md`](./DEPLOYMENT.md)
+- Before changing deploy/runtime/proxy/env behavior, read and preserve the contracts documented in `DEPLOYMENT.md`.
+- Do not weaken fail-close secrets, `WM_TRUST_PROXY` + `clientIp.ts` trust rules, or Nginx `X-Forwarded-*` headers without an explicit ops decision.

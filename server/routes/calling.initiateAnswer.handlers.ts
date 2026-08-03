@@ -1,6 +1,7 @@
 /**
  * Job Mitra | Phase 3 Calling — initiate + answer handlers
  * Path: server/routes/calling.initiateAnswer.handlers.ts
+ * Wave-5: session-bound ML + workspace membership before Agora/FCM
  */
 
 import { randomUUID } from "node:crypto";
@@ -13,9 +14,20 @@ import {
   updateCallSessionStatus,
 } from "../modules/calling/callSession.service.js";
 import { isAgoraConfigured } from "../modules/calling/calling.env.js";
+import {
+  assertAnswerParty,
+  resolveAuthorizedCallParties,
+} from "../modules/calling/calling.membership.js";
 import { sendIncomingCallPush } from "../modules/calling/fcmCallNotify.service.js";
 import { envelope, readJsonBody, sendJson } from "../utils/http.js";
 import { agoraAppIdPublic, asString, asUid, normalizeMl } from "./calling.httpHelpers.js";
+import { fcmDeviceTokenStore } from "../modules/calling/fcmDeviceToken.store.js";
+import { parseWithSchema } from "../validation/zodParse.js";
+import {
+  callAnswerBodySchema,
+  callInitiateBodySchema,
+  callRegisterDeviceBodySchema,
+} from "../validation/schemas/calling.schemas.js";
 
 export async function handleInitiate(
   req: AuthenticatedRequest,
@@ -30,33 +42,45 @@ export async function handleInitiate(
     return;
   }
 
-  const workspaceId = asString(body.workspaceId ?? body.workspace_id);
-  const initiatorMl = normalizeMl(asString(body.initiatorMl ?? body.initiator_ml));
-  const receiverMl = normalizeMl(asString(body.receiverMl ?? body.receiver_ml));
-  const fcmToken = asString(body.fcmToken ?? body.fcm_token);
-  const uid = asUid(body.uid);
+  const parsed = parseWithSchema(callInitiateBodySchema, body);
+  if (!parsed.ok) {
+    sendJson(res, 400, {
+      error: { code: "VALIDATION_ERROR", message: "Invalid call initiate body", requestId },
+    });
+    return;
+  }
 
-  if (!workspaceId || !initiatorMl || !receiverMl) {
+  const workspaceId = asString(parsed.data.workspaceId ?? parsed.data.workspace_id);
+  const requestedReceiverMl = normalizeMl(
+    asString(parsed.data.receiverMl ?? parsed.data.receiver_ml),
+  );
+  const clientFcmHint = asString(parsed.data.fcmToken ?? parsed.data.fcm_token);
+  const uid = asUid(parsed.data.uid);
+
+  if (!workspaceId || !requestedReceiverMl) {
     sendJson(res, 400, {
       error: {
         code: "CALL_INVALID_INPUT",
-        message: "workspaceId, initiatorMl, and receiverMl are required",
+        message: "workspaceId and receiverMl are required",
         requestId,
       },
     });
     return;
   }
 
-  if (initiatorMl === receiverMl) {
-    sendJson(res, 400, {
-      error: {
-        code: "CALL_SAME_PARTY",
-        message: "initiatorMl and receiverMl must differ",
-        requestId,
-      },
+  const membership = await resolveAuthorizedCallParties({
+    workspaceId,
+    sessionUser: req.authenticatedUser,
+    requestedReceiverMl,
+  });
+  if (!membership.ok) {
+    sendJson(res, membership.httpStatus, {
+      error: { code: membership.code, message: membership.message, requestId },
     });
     return;
   }
+
+  const { initiatorMl, receiverMl, workspaceId: verifiedWorkspaceId } = membership;
 
   if (!isAgoraConfigured()) {
     sendJson(res, 503, {
@@ -71,7 +95,7 @@ export async function handleInitiate(
 
   const channelId = `wm-call-${randomUUID()}`;
   const session = await createCallSession({
-    workspaceId,
+    workspaceId: verifiedWorkspaceId,
     channelId,
     initiatorMl,
     receiverMl,
@@ -81,9 +105,10 @@ export async function handleInitiate(
   try {
     token = generateRtcToken(channelId, uid, "publisher");
   } catch (err) {
+    console.error("[Agora] RTC token mint failed:", err);
     sendJson(res, 503, {
       error: {
-        code: err instanceof Error ? err.message : "AGORA_TOKEN_FAILED",
+        code: "AGORA_TOKEN_FAILED",
         message: "Failed to mint Agora RTC token",
         requestId,
       },
@@ -91,17 +116,24 @@ export async function handleInitiate(
     return;
   }
 
+  // Wave-5.1 R3: only push to server-registered FCM for the verified receiver
   let push: { ok: boolean; code?: string } | null = null;
-  if (fcmToken) {
+  const registeredFcm = await fcmDeviceTokenStore.resolvePushToken(
+    receiverMl,
+    clientFcmHint || undefined,
+  );
+  if (registeredFcm) {
     const pushResult = await sendIncomingCallPush({
-      fcmToken,
+      fcmToken: registeredFcm,
       callSessionId: session.id,
       channelId,
-      workspaceId,
+      workspaceId: verifiedWorkspaceId,
       initiatorMl,
       receiverMl,
     });
     push = pushResult.ok ? { ok: true } : { ok: false, code: pushResult.code };
+  } else if (clientFcmHint) {
+    push = { ok: false, code: "FCM_TOKEN_NOT_REGISTERED" };
   }
 
   sendJson(
@@ -135,15 +167,25 @@ export async function handleAnswer(req: AuthenticatedRequest, res: ServerRespons
     return;
   }
 
-  const callSessionId = asString(body.callSessionId ?? body.call_session_id);
-  const partyMl = normalizeMl(asString(body.partyMl ?? body.party_ml ?? body.receiverMl));
-  const uid = asUid(body.uid);
+  const parsed = parseWithSchema(callAnswerBodySchema, body);
+  if (!parsed.ok) {
+    sendJson(res, 400, {
+      error: { code: "VALIDATION_ERROR", message: "Invalid call answer body", requestId },
+    });
+    return;
+  }
 
-  if (!callSessionId || !partyMl) {
+  const callSessionId = asString(parsed.data.callSessionId ?? parsed.data.call_session_id);
+  const claimedPartyMl = normalizeMl(
+    asString(parsed.data.partyMl ?? parsed.data.party_ml ?? parsed.data.receiverMl),
+  );
+  const uid = asUid(parsed.data.uid);
+
+  if (!callSessionId) {
     sendJson(res, 400, {
       error: {
         code: "CALL_INVALID_INPUT",
-        message: "callSessionId and partyMl are required",
+        message: "callSessionId is required",
         requestId,
       },
     });
@@ -158,13 +200,14 @@ export async function handleAnswer(req: AuthenticatedRequest, res: ServerRespons
     return;
   }
 
-  if (normalizeMl(partyMl) !== existing.receiverMl) {
-    sendJson(res, 403, {
-      error: {
-        code: "CALL_NOT_RECEIVER",
-        message: "Only the receiver may answer this call",
-        requestId,
-      },
+  const answerAuth = await assertAnswerParty({
+    sessionUser: req.authenticatedUser,
+    callReceiverMl: existing.receiverMl,
+    claimedPartyMl: claimedPartyMl || req.authenticatedUser.id,
+  });
+  if (!answerAuth.ok) {
+    sendJson(res, answerAuth.httpStatus, {
+      error: { code: answerAuth.code, message: answerAuth.message, requestId },
     });
     return;
   }
@@ -203,9 +246,10 @@ export async function handleAnswer(req: AuthenticatedRequest, res: ServerRespons
   try {
     token = generateRtcToken(session.channelId, uid, "publisher");
   } catch (err) {
+    console.error("[Agora] RTC token mint failed (answer):", err);
     sendJson(res, 503, {
       error: {
-        code: err instanceof Error ? err.message : "AGORA_TOKEN_FAILED",
+        code: "AGORA_TOKEN_FAILED",
         message: "Failed to mint Agora RTC token",
         requestId,
       },
@@ -231,4 +275,45 @@ export async function handleAnswer(req: AuthenticatedRequest, res: ServerRespons
       requestId,
     ),
   );
+}
+
+/** Wave-5.1 R3: bind FCM device token to authenticated session user */
+export async function handleRegisterDevice(
+  req: AuthenticatedRequest,
+  res: ServerResponse,
+): Promise<void> {
+  const { requestId } = req;
+  const body = await readJsonBody(req);
+  if (body === null) {
+    sendJson(res, 413, {
+      error: { code: "PAYLOAD_TOO_LARGE", message: "Request body too large", requestId },
+    });
+    return;
+  }
+
+  const parsed = parseWithSchema(callRegisterDeviceBodySchema, body);
+  if (!parsed.ok) {
+    sendJson(res, 400, {
+      error: { code: "VALIDATION_ERROR", message: "Invalid register-device body", requestId },
+    });
+    return;
+  }
+
+  const fcmToken = asString(parsed.data.fcmToken ?? parsed.data.fcm_token);
+  if (!fcmToken) {
+    sendJson(res, 400, {
+      error: { code: "FCM_TOKEN_REQUIRED", message: "fcmToken is required", requestId },
+    });
+    return;
+  }
+
+  const registered = await fcmDeviceTokenStore.register(req.authenticatedUser.id, fcmToken);
+  if (!registered.ok) {
+    sendJson(res, 400, {
+      error: { code: registered.code, message: "Invalid FCM token", requestId },
+    });
+    return;
+  }
+
+  sendJson(res, 200, envelope({ registered: true, userId: req.authenticatedUser.id }, requestId));
 }

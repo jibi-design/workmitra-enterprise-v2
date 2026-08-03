@@ -9,10 +9,10 @@
 // localStorage Keys
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const CAREER_POSTS_KEY = "wm_employer_career_posts_v1";
+export const CAREER_POSTS_KEY = "wm_employer_career_posts_v1"; // legacy unscoped — prefer resolveCareerEmployerScopedKey
 export const CAREER_APPS_KEY = "wm_employee_career_applications_v1";
 export const CAREER_WORKSPACES_KEY = "wm_employee_career_workspaces_v1";
-export const CAREER_ACTIVITY_KEY = "wm_employer_career_activity_log_v1";
+export const CAREER_ACTIVITY_KEY = "wm_employer_career_activity_log_v1"; // legacy unscoped — prefer resolveCareerEmployerScopedKey
 export const EMPLOYEE_SEARCH_CAREER_KEY = "wm_employee_career_posts_search_v1";
 export const EMPLOYEE_CAREER_SAVED_JOBS_KEY = "wm_employee_career_saved_jobs_v1";
 export const EMPLOYEE_CAREER_RECENT_JOBS_KEY = "wm_employee_career_recent_jobs_v1";

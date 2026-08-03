@@ -33,6 +33,7 @@ export type EmployeeProfile = {
 };
 
 const KEY = "wm_employee_profile_v1";
+const CHANGED = "wm:employee-profile-changed";
 
 const DEFAULT_PROFILE: EmployeeProfile = {
   fullName: "",
@@ -78,6 +79,9 @@ function safeParse(raw: string | null): EmployeeProfile {
 
 function write(profile: EmployeeProfile): void {
   piiSecureStorage.setJson(KEY, profile);
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(CHANGED));
+  }
 }
 
 /** Read sealed profile without generating uniqueId (avoids nested writes). */
@@ -126,5 +130,20 @@ export const employeeProfileStorage = {
 
   clear(): void {
     piiSecureStorage.removeItem(KEY);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event(CHANGED));
+    }
   },
+
+  subscribe(cb: () => void): () => void {
+    const handler = () => cb();
+    window.addEventListener(CHANGED, handler);
+    window.addEventListener("storage", handler);
+    return () => {
+      window.removeEventListener(CHANGED, handler);
+      window.removeEventListener("storage", handler);
+    };
+  },
+
+  CHANGED_EVENT: CHANGED,
 };

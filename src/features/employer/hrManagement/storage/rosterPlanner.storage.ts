@@ -6,7 +6,11 @@
 import type { RosterAssignment, RosterAssignmentFormData } from "../types/rosterPlanner.types";
 import { hrEmployerScopedKey } from "./hrStorageKeys";
 
+import { writeLocalStorageJson } from "../../../../shared/storage/localStorageWrite";
+
 const CHANGED_EVENT = "wm:roster-planner-changed";
+/** Wave-3: FIFO cap so roster growth cannot unbounded-fill localStorage */
+const ROSTER_ASSIGNMENT_MAX = 2000;
 
 function storageKey(): string {
   return hrEmployerScopedKey("roster_planner_v1");
@@ -23,10 +27,16 @@ function read(): RosterAssignment[] {
   }
 }
 
-function write(entries: RosterAssignment[]): void {
-  localStorage.setItem(storageKey(), JSON.stringify(entries));
+function write(entries: RosterAssignment[]): ReturnType<typeof writeLocalStorageJson> {
+  const trimmed =
+    entries.length > ROSTER_ASSIGNMENT_MAX
+      ? [...entries].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, ROSTER_ASSIGNMENT_MAX)
+      : entries;
+  const result = writeLocalStorageJson(storageKey(), trimmed);
+  if (!result.ok) return result;
   rosterRevision += 1;
   window.dispatchEvent(new Event(CHANGED_EVENT));
+  return { ok: true };
 }
 
 let rosterRevision = 0;
@@ -106,8 +116,8 @@ export const rosterPlannerStorage = {
 
   // ── Create ──
 
-  /** Create a new roster assignment */
-  createAssignment(form: RosterAssignmentFormData): string {
+  /** Create a new roster assignment. Returns id or null on storage/quota failure. */
+  createAssignment(form: RosterAssignmentFormData): string | null {
     const now = Date.now();
     const assignment: RosterAssignment = {
       id: genId(),
@@ -123,8 +133,8 @@ export const rosterPlannerStorage = {
     };
 
     const all = read();
-    write([...all, assignment]);
-    return assignment.id;
+    const result = write([...all, assignment]);
+    return result.ok ? assignment.id : null;
   },
 
   /** Bulk assign multiple employees to same site/date/shift */
@@ -139,6 +149,7 @@ export const rosterPlannerStorage = {
     const now = Date.now();
     const all = read();
     const ids: string[] = [];
+    const next = [...all];
 
     for (const emp of data.employees) {
       const assignment: RosterAssignment = {
@@ -153,12 +164,12 @@ export const rosterPlannerStorage = {
         createdAt: now,
         updatedAt: now,
       };
-      all.push(assignment);
+      next.push(assignment);
       ids.push(assignment.id);
     }
 
-    write(all);
-    return ids;
+    const result = write(next);
+    return result.ok ? ids : [];
   },
 
   // ── Update ──
@@ -179,8 +190,7 @@ export const rosterPlannerStorage = {
       updatedAt: Date.now(),
     };
 
-    write(all);
-    return true;
+    return write(all).ok;
   },
 
   // ── Delete ──
@@ -190,8 +200,7 @@ export const rosterPlannerStorage = {
     const all = read();
     const filtered = all.filter((a) => a.id !== id);
     if (filtered.length === all.length) return false;
-    write(filtered);
-    return true;
+    return write(filtered).ok;
   },
 
   /** Delete all assignments for a specific date (bulk clear) */
@@ -199,7 +208,7 @@ export const rosterPlannerStorage = {
     const all = read();
     const filtered = all.filter((a) => a.date !== date);
     const removed = all.length - filtered.length;
-    if (removed > 0) write(filtered);
+    if (removed > 0 && !write(filtered).ok) return 0;
     return removed;
   },
 

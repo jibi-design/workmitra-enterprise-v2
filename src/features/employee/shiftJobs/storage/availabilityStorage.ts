@@ -12,17 +12,47 @@ import {
   formatDayLabel,
   getAllActiveFromStorage,
   getRolling7Days,
+  invalidateAvailabilityPoolCache,
   isoFromEpoch,
   normalizeBroadcast,
   sanitizeSelectedDates,
   writeToPool,
 } from "./availabilityStorage.helpers";
 import type { AvailabilityBroadcast } from "./availabilityStorage.types";
+import {
+  ensureAvailabilitySyncDebugListener,
+  noteAvailabilitySyncEvent,
+} from "../../../shared/shift/availabilitySyncDebug";
 
 export type { AvailabilityBroadcast, RollingDay } from "./availabilityStorage.types";
 export { getRolling7Days, toIsoDate } from "./availabilityStorage.helpers";
 
 const EMPTY_SELECTED_DATES: string[] = [];
+
+let selectedDatesCacheKey = "";
+let selectedDatesCache: string[] = EMPTY_SELECTED_DATES;
+
+function readSelectedDatesSnapshot(): string[] {
+  const raw = localStorage.getItem(BROADCAST_KEY) ?? "";
+  if (raw === selectedDatesCacheKey) {
+    return selectedDatesCache;
+  }
+
+  selectedDatesCacheKey = raw;
+  if (!raw) {
+    selectedDatesCache = EMPTY_SELECTED_DATES;
+    return selectedDatesCache;
+  }
+
+  try {
+    const normalized = normalizeBroadcast(JSON.parse(raw) as unknown);
+    selectedDatesCache = normalized?.selectedDates ?? EMPTY_SELECTED_DATES;
+  } catch {
+    selectedDatesCache = EMPTY_SELECTED_DATES;
+  }
+
+  return selectedDatesCache;
+}
 
 export const availabilityStorage = {
   getMyBroadcast(): AvailabilityBroadcast | null {
@@ -33,6 +63,8 @@ export const availabilityStorage = {
       const normalized = normalizeBroadcast(JSON.parse(raw) as unknown);
       if (!normalized) {
         localStorage.removeItem(BROADCAST_KEY);
+        selectedDatesCacheKey = "";
+        selectedDatesCache = EMPTY_SELECTED_DATES;
         return null;
       }
 
@@ -43,7 +75,7 @@ export const availabilityStorage = {
   },
 
   getMySelectedDates(): string[] {
-    return this.getMyBroadcast()?.selectedDates ?? EMPTY_SELECTED_DATES;
+    return readSelectedDatesSnapshot();
   },
 
   /** Auto-save rolling calendar selection (Phase 1 — no employer notifications). */
@@ -73,8 +105,15 @@ export const availabilityStorage = {
     };
 
     try {
+      ensureAvailabilitySyncDebugListener();
       localStorage.setItem(BROADCAST_KEY, JSON.stringify(b));
       writeToPool(b);
+      noteAvailabilitySyncEvent({
+        action: "saveMyAvailability",
+        workerMlId: b.workerMlId,
+        city: b.city ?? null,
+        selectedDates: b.selectedDates,
+      });
       window.dispatchEvent(new Event(CHANGED));
     } catch {
       /* safe */
@@ -104,13 +143,19 @@ export const availabilityStorage = {
     try {
       const b = this.getMyBroadcast();
       if (b) {
+        const key = b.workerMlId.trim().toUpperCase();
         const existing = this.getAllActive();
         localStorage.setItem(
           ALL_KEY,
-          JSON.stringify(existing.filter((x) => x.workerMlId !== b.workerMlId)),
+          JSON.stringify(existing.filter((x) => x.workerMlId.trim().toUpperCase() !== key)),
         );
+        invalidateAvailabilityPoolCache();
       }
       localStorage.removeItem(BROADCAST_KEY);
+      noteAvailabilitySyncEvent({
+        action: "clearMyBroadcast",
+        workerMlId: b?.workerMlId ?? null,
+      });
       window.dispatchEvent(new Event(CHANGED));
     } catch {
       /* safe */
@@ -118,8 +163,9 @@ export const availabilityStorage = {
   },
 
   getForWorker(workerMlId: string): AvailabilityBroadcast | null {
-    if (!workerMlId.trim()) return null;
-    return this.getAllActive().find((b) => b.workerMlId === workerMlId) ?? null;
+    const key = workerMlId.trim().toUpperCase();
+    if (!key) return null;
+    return this.getAllActive().find((b) => b.workerMlId.trim().toUpperCase() === key) ?? null;
   },
 
   isWorkerFreeOnDate(workerMlId: string, shiftStartAt: number): boolean {
@@ -159,7 +205,7 @@ export const availabilityStorage = {
       }
 
       if (!broadcast.selectedDates.some((iso) => rolling.has(iso))) continue;
-      seen.add(broadcast.workerMlId);
+      seen.add(broadcast.workerMlId.trim().toUpperCase());
     }
 
     return seen.size;
@@ -179,8 +225,9 @@ export const availabilityStorage = {
 
     for (const broadcast of this.getAllActive()) {
       if (!broadcast.selectedDates.includes(iso)) continue;
-      if (seen.has(broadcast.workerMlId)) continue;
-      seen.add(broadcast.workerMlId);
+      const workerKey = broadcast.workerMlId.trim().toUpperCase();
+      if (seen.has(workerKey)) continue;
+      seen.add(workerKey);
       output.push(broadcast.workerMlId);
     }
 

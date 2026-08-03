@@ -31,6 +31,8 @@ export function createShiftPostApplySubmitActions(input: {
     React.SetStateAction<import("../../../../../shared/components/ConfirmModal").ConfirmData | null>
   >;
   setDoubleBookingPending: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsSubmitting?: React.Dispatch<React.SetStateAction<boolean>>;
+  isSubmittingRef?: React.MutableRefObject<boolean>;
 }) {
   const {
     nav,
@@ -44,6 +46,8 @@ export function createShiftPostApplySubmitActions(input: {
     setToast,
     setWithdrawConfirm,
     setDoubleBookingPending,
+    setIsSubmitting = () => undefined,
+    isSubmittingRef = { current: false },
   } = input;
 
   const { post, quickQuestions, existingApp, activeWorkspaceId, isClosedOrExpired } = derived;
@@ -65,41 +69,50 @@ export function createShiftPostApplySubmitActions(input: {
 
   async function submitApplicationWithList(all: readonly ShiftApplicationRecord[]) {
     if (!post) return;
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
 
-    const profile = employeeProfileStorage.get();
+    try {
+      const profile = employeeProfileStorage.get();
 
-    const app = createShiftApplicationRecord({
-      id: newId("app"),
-      postId: post.id,
-      createdAt: Date.now(),
-      profile,
-      mustAns,
-      goodAns,
-      notes,
-      quickAnswers,
-      quickQuestionCount: quickQuestions.length,
-    });
+      const app = createShiftApplicationRecord({
+        id: newId("app"),
+        postId: post.id,
+        createdAt: Date.now(),
+        profile,
+        mustAns,
+        goodAns,
+        notes,
+        quickAnswers,
+        quickQuestionCount: quickQuestions.length,
+      });
 
-    const writeResult = await saveShiftApplicationSubmission({
-      applications: all,
-      application: app,
-    });
+      const writeResult = await saveShiftApplicationSubmission({
+        applications: all,
+        application: app,
+      });
 
-    if (!writeResult.ok) {
-      showToast(
-        writeResult.reason === "conflict"
-          ? SHIFT_APPLY_CONFLICT_MESSAGE
-          : "Unable to save application on this device. Please free storage and try again.",
-      );
-      return;
+      if (!writeResult.ok) {
+        showToast(
+          writeResult.reason === "conflict"
+            ? SHIFT_APPLY_CONFLICT_MESSAGE
+            : "Unable to save application on this device. Please free storage and try again.",
+        );
+        return;
+      }
+
+      showToast("Application submitted!");
+      setTimeout(() => nav(ROUTE_PATHS.employeeShiftApplications), 800);
+    } finally {
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
     }
-
-    showToast("Application submitted!");
-    setTimeout(() => nav(ROUTE_PATHS.employeeShiftApplications), 800);
   }
 
   function submit() {
     if (!post) return;
+    if (isSubmittingRef.current) return;
 
     if (isClosedOrExpired) {
       showToast("This shift is no longer accepting applications.");

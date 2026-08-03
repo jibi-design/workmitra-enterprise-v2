@@ -1,10 +1,14 @@
 // App name: Job Mitra
 // Phase 1 / Level 3.1: 7-day rolling calendar — auto-save on tap, Mitra Green active state.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 import { triggerSelectionHaptic } from "../../../../shared/platform/haptics";
 import { availabilityStorage, getRolling7Days } from "../storage/availabilityStorage";
+import {
+  ensureAvailabilitySyncDebugListener,
+  isAvailabilitySyncDebugEnabled,
+} from "../../../shared/shift/availabilitySyncDebug";
 
 const SHIFT_GREEN_BG = "var(--wm-shift-accent, #16a34a)";
 
@@ -17,9 +21,14 @@ export function ShiftAvailabilityBroadcastCard({
   selectedDates,
   onToggleDay,
 }: ShiftAvailabilityBroadcastCardProps) {
+  useEffect(() => {
+    ensureAvailabilitySyncDebugListener();
+  }, []);
+
   const rollingDays = getRolling7Days();
   const hasSelection = selectedDates.length > 0;
   const selectedLabel = availabilityStorage.formatSelectedDatesLabel(selectedDates);
+  const debugOn = isAvailabilitySyncDebugEnabled();
 
   return (
     <div
@@ -63,6 +72,23 @@ export function ShiftAvailabilityBroadcastCard({
           ? `You are free on: ${selectedLabel}. We will notify you if a job matches your free days.`
           : "You are free on: (no days selected yet). We will notify you if a job matches your free days."}
       </p>
+
+      {debugOn ? (
+        <p
+          data-testid="availability-sync-debug-chip"
+          style={{
+            marginTop: 8,
+            fontSize: 11,
+            fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+            color: "#a16207",
+          }}
+        >
+          [QA] Employee availability · event=
+          {availabilityStorage.CHANGED_EVENT} · selected=
+          {selectedDates.join(",") || "(none)"} · pool=
+          {availabilityStorage.getActiveCount()}
+        </p>
+      ) : null}
     </div>
   );
 }

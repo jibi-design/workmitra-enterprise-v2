@@ -4,6 +4,7 @@
 
 import type { ExperienceLabel } from "../../shiftJobs/storage/employerShift.storage";
 import type { ShiftPayBasis } from "./employerShift.types";
+import { getEmployerTemplatesKey, LEGACY_TEMPLATES_KEY } from "./employerShift.keys";
 
 export type ShiftTemplate = {
   id: string;
@@ -29,13 +30,18 @@ export type ShiftTemplate = {
 
 export type PendingTemplate = Omit<ShiftTemplate, "id" | "name" | "createdAt">;
 
-const KEY = "wm_employer_shift_templates_v1";
+/** @deprecated Legacy unscoped — prefer getEmployerTemplatesKey(). */
+const KEY = LEGACY_TEMPLATES_KEY;
 const PENDING_KEY = "wm_pending_shift_template";
 const CHANGED = "wm:employer-shift-templates-changed";
 
+function templatesKey(): string {
+  return getEmployerTemplatesKey();
+}
+
 function read(): ShiftTemplate[] {
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = localStorage.getItem(templatesKey());
     if (!raw) return [];
 
     const parsed: unknown = JSON.parse(raw);
@@ -49,7 +55,12 @@ function read(): ShiftTemplate[] {
 
 function write(list: ShiftTemplate[]): void {
   try {
-    localStorage.setItem(KEY, JSON.stringify(list));
+    localStorage.setItem(templatesKey(), JSON.stringify(list));
+    try {
+      localStorage.removeItem(KEY);
+    } catch {
+      /* safe */
+    }
     window.dispatchEvent(new Event(CHANGED));
   } catch {
     // Phase-0 localStorage-safe fallback.

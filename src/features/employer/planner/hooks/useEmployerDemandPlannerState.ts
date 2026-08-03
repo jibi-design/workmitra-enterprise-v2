@@ -1,10 +1,12 @@
 // Job Mitra | useEmployerDemandPlannerState.ts | 3-step Gig Projects wizard
+// Wave-4: autosave wizard draft + Resume/Start Fresh + dirty-form guard
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import type { NoticeData } from "../../../../shared/components/NoticeModal";
 import { showEnterpriseToast } from "../../../../shared/components/enterprise";
+import { useUnsavedChangesGuard } from "../../../../shared/hooks/useUnsavedChangesGuard";
 import { DEFAULT_STEP1_DATA, type Step1Data } from "../components/wizard/DemandPlannerStep1.types";
 import {
   validateDemandPlannerIdentity,
@@ -13,9 +15,23 @@ import {
 } from "../helpers/employerDemandPlanner.helpers";
 import { getPlannerEmployerAutofill } from "../../../shared/planner/services/plannerEmployerAutofill";
 import { demandPlannerStorage, generateDates, type DaySlot } from "../storage/demandPlannerStorage";
+import {
+  clearDemandPlannerWizardDraft,
+  readDemandPlannerWizardDraft,
+  writeDemandPlannerWizardDraft,
+} from "../storage/demandPlannerWizardDraft.storage";
 import type { DemandPlannerStep, SlotResult } from "../types/employerDemandPlanner.types";
 import { buildStep1FromDraft } from "./useEmployerDemandPlannerState.helpers";
 import { submitDemandPlannerPlan } from "./useEmployerDemandPlannerState.submit";
+
+function buildFreshStep1(autoFill: ReturnType<typeof getPlannerEmployerAutofill>): Step1Data {
+  return {
+    ...DEFAULT_STEP1_DATA,
+    companyName: autoFill.companyName,
+    locationName: autoFill.locationCity,
+    category: autoFill.industryType || DEFAULT_STEP1_DATA.category,
+  };
+}
 
 export function useEmployerDemandPlannerState() {
   const nav = useNavigate();
@@ -24,6 +40,14 @@ export function useEmployerDemandPlannerState() {
 
   const resumePlanId = searchParams.get("planId");
   const resumeStep = Number(searchParams.get("step") ?? "1");
+
+  const existingWizardDraft = useMemo(() => {
+    if (resumePlanId) return null;
+    return readDemandPlannerWizardDraft();
+  }, [resumePlanId]);
+
+  const [draftPromptOpen, setDraftPromptOpen] = useState(() => Boolean(existingWizardDraft));
+  const [draftChoiceMade, setDraftChoiceMade] = useState(() => !existingWizardDraft);
 
   const [planId, setPlanId] = useState<string | null>(resumePlanId);
   const [baselineUpdatedAt, setBaselineUpdatedAt] = useState<number | null>(() => {
@@ -44,12 +68,7 @@ export function useEmployerDemandPlannerState() {
       const draft = demandPlannerStorage.getById(resumePlanId);
       if (draft) return buildStep1FromDraft(draft);
     }
-    return {
-      ...DEFAULT_STEP1_DATA,
-      companyName: autoFill.companyName,
-      locationName: autoFill.locationCity,
-      category: autoFill.industryType || DEFAULT_STEP1_DATA.category,
-    };
+    return buildFreshStep1(autoFill);
   });
 
   const [slots, setSlots] = useState<DaySlot[]>(() => {
@@ -59,6 +78,65 @@ export function useEmployerDemandPlannerState() {
     }
     return [];
   });
+
+  const skipAutosaveRef = useRef(!draftChoiceMade);
+
+  const isDirty =
+    draftChoiceMade &&
+    !isSubmitting &&
+    (step1.name.trim().length > 0 ||
+      step1.description.trim().length > 0 ||
+      step1.startDate.trim().length > 0 ||
+      slots.length > 0);
+
+  useUnsavedChangesGuard(isDirty, "You have unsaved Demand Planner changes. Leave this page?");
+
+  useEffect(() => {
+    if (!draftChoiceMade || draftPromptOpen || skipAutosaveRef.current) return;
+    if (!isDirty && !planId) return;
+
+    const timer = window.setTimeout(() => {
+      writeDemandPlannerWizardDraft({
+        step,
+        step1,
+        slots,
+        planId,
+      });
+      setDraftSavedAt(Date.now());
+    }, 600);
+
+    return () => window.clearTimeout(timer);
+  }, [draftChoiceMade, draftPromptOpen, isDirty, planId, slots, step, step1]);
+
+  function resumeWizardDraft(): void {
+    const draft = readDemandPlannerWizardDraft();
+    if (draft) {
+      setStep1(draft.step1);
+      setSlots(draft.slots);
+      setStep(draft.step);
+      setPlanId(draft.planId);
+      if (draft.planId) {
+        setBaselineUpdatedAt(demandPlannerStorage.getById(draft.planId)?.updatedAt ?? null);
+      }
+      setDraftSavedAt(draft.savedAt);
+    }
+    skipAutosaveRef.current = false;
+    setDraftPromptOpen(false);
+    setDraftChoiceMade(true);
+  }
+
+  function startFreshWizard(): void {
+    clearDemandPlannerWizardDraft();
+    setStep1(buildFreshStep1(autoFill));
+    setSlots([]);
+    setStep(1);
+    setPlanId(null);
+    setBaselineUpdatedAt(null);
+    setDraftSavedAt(null);
+    skipAutosaveRef.current = false;
+    setDraftPromptOpen(false);
+    setDraftChoiceMade(true);
+  }
 
   function persistDraft(nextStep?: DemandPlannerStep): boolean {
     const payload = {
@@ -76,6 +154,7 @@ export function useEmployerDemandPlannerState() {
       draftStep: nextStep ?? step,
     };
 
+    let activePlanId = planId;
     if (planId) {
       const result = demandPlannerStorage.updatePlan(planId, payload, {
         expectedUpdatedAt: baselineUpdatedAt ?? undefined,
@@ -92,12 +171,20 @@ export function useEmployerDemandPlannerState() {
         return false;
       }
       setBaselineUpdatedAt(result.plan.updatedAt);
+      activePlanId = planId;
     } else {
       const id = demandPlannerStorage.create(payload);
       setPlanId(id);
       const created = demandPlannerStorage.getById(id);
       setBaselineUpdatedAt(created?.updatedAt ?? Date.now());
+      activePlanId = id;
     }
+    writeDemandPlannerWizardDraft({
+      step: nextStep ?? step,
+      step1,
+      slots,
+      planId: activePlanId,
+    });
     setDraftSavedAt(Date.now());
     return true;
   }
@@ -171,10 +258,14 @@ export function useEmployerDemandPlannerState() {
       setSubmitResults,
       expectedUpdatedAt: baselineUpdatedAt,
       onBaselineUpdatedAt: setBaselineUpdatedAt,
+      onPublished: () => {
+        clearDemandPlannerWizardDraft();
+      },
     });
   }
 
   function goToPlannerHome() {
+    clearDemandPlannerWizardDraft();
     nav(ROUTE_PATHS.employerPlannerHome);
   }
 
@@ -215,5 +306,8 @@ export function useEmployerDemandPlannerState() {
     goToPlannerHome,
     handleNoticeClose,
     persistDraft,
+    draftPromptOpen,
+    resumeWizardDraft,
+    startFreshWizard,
   };
 }

@@ -1,0 +1,19 @@
+---
+description: Manual-operator steps must be explicit; never imply auto-completion of secrets or human-only actions
+alwaysApply: true
+---
+
+# Manual Operator Steps (Master Rule)
+
+When the operator must do something by hand — especially secrets, tokens, chat IDs, passwords, dashboard clicks, Telegram/BotFather, Cloudflare, DNS, billing, or anything the agent cannot safely/automatically complete:
+
+1. **Say clearly it is MANUAL** (Malayalam or English matching the user): e.g. "ഇത് നിങ്ങൾ മാനുവലായി ചെയ്യണം — ഞാൻ ഓട്ടോമാറ്റിക് ചെയ്യില്ല."
+2. **Never imply it is already done** unless the agent actually completed it in this session with evidence.
+3. **Never invent or assume** that tokens/IDs/passwords were written into `.env` or vaults. Placeholders ≠ real credentials.
+4. If the agent *cannot* do a step (no access, credential boundary, UI-only), say so **before** asking the operator to proceed — not after confusion.
+5. Prefer **one manual step at a time** when walking the operator through setup.
+6. Do **not** ask the operator to paste secrets into chat; tell them where to put them locally (e.g. `.env` on disk).
+
+Violation example: creating `.env` with `YOUR_ACTUAL_*` and later speaking as if live Telegram IDs were configured.
+
+Correct example: "`.env`-ൽ placeholder മാത്രമേ ഉള്ളൂ. യഥാർത്ഥ token/chat id നിങ്ങൾ Notepad-ൽ മാറ്റണം — ഞാൻ അത് ഓട്ടോ ഇടില്ല."

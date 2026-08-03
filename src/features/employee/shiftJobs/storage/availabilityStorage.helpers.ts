@@ -125,9 +125,11 @@ export function isExpired(b: AvailabilityBroadcast): boolean {
 }
 
 export function writeToPool(b: AvailabilityBroadcast): void {
+  const key = b.workerMlId.trim().toUpperCase();
   const existing = readAllActiveFromStorage();
-  const filtered = existing.filter((x) => x.workerMlId !== b.workerMlId);
+  const filtered = existing.filter((x) => x.workerMlId.trim().toUpperCase() !== key);
   localStorage.setItem(ALL_KEY, JSON.stringify([b, ...filtered].slice(0, 200)));
+  invalidateAvailabilityPoolCache();
 }
 
 export function formatDayLabel(iso: string): string {
@@ -152,6 +154,25 @@ function readAllActiveFromStorage(): AvailabilityBroadcast[] {
   }
 }
 
+let activePoolCacheKey = "";
+let activePoolCache: AvailabilityBroadcast[] = [];
+
 export function getAllActiveFromStorage(): AvailabilityBroadcast[] {
-  return readAllActiveFromStorage();
+  try {
+    const raw = localStorage.getItem(ALL_KEY) ?? "";
+    if (raw === activePoolCacheKey) return activePoolCache;
+    activePoolCacheKey = raw;
+    activePoolCache = readAllActiveFromStorage();
+    return activePoolCache;
+  } catch {
+    activePoolCacheKey = "";
+    activePoolCache = [];
+    return activePoolCache;
+  }
+}
+
+/** Invalidate pool cache after writes (same-tab). */
+export function invalidateAvailabilityPoolCache(): void {
+  activePoolCacheKey = "";
+  activePoolCache = [];
 }

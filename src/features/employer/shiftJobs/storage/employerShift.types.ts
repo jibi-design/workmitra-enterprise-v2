@@ -55,6 +55,8 @@ export type ShiftPost = {
   planId?: string;
   planSlotDate?: string;
   source?: "planner" | "single";
+  /** Formal Shift Ops site UUID (group link) — used by confirm / membership. */
+  siteId?: string;
   mustHave: string[];
   goodToHave: string[];
   whatWeProvide?: string[];

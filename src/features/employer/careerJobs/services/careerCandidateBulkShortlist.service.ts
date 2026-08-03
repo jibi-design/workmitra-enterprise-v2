@@ -39,7 +39,12 @@ export async function shortlistCandidatesBulk(
     if (!idSet.has(item.id) || item.jobId !== postId) return item;
     if (!canTransition(item.stage, "shortlisted")) return item;
     eligible.push(item);
-    return { ...item, stage: "shortlisted" as const, updatedAt: now };
+    return {
+      ...item,
+      stage: "shortlisted" as const,
+      backupReserved: undefined,
+      updatedAt: now,
+    };
   });
 
   if (eligible.length === 0) {

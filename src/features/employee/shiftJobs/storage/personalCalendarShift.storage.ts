@@ -20,6 +20,8 @@ export type PersonalCalendarShiftBlock = {
 
 const KEY = "wm_employee_personal_calendar_shift_v1";
 const CHANGED = "wm:employee-personal-calendar-shift-changed";
+/** Wave-3: FIFO cap aligned with vault history pattern */
+const PERSONAL_CALENDAR_SHIFT_MAX = 200;
 
 const EMPTY_BLOCKS: PersonalCalendarShiftBlock[] = [];
 
@@ -85,13 +87,23 @@ function getActiveCached(): PersonalCalendarShiftBlock[] {
   return activeCacheList;
 }
 
-function writeAll(blocks: PersonalCalendarShiftBlock[]): void {
+function writeAll(blocks: PersonalCalendarShiftBlock[]): boolean {
   try {
-    localStorage.setItem(KEY, JSON.stringify(blocks));
+    const trimmed =
+      blocks.length > PERSONAL_CALENDAR_SHIFT_MAX
+        ? [...blocks].sort((a, b) => b.syncedAt - a.syncedAt).slice(0, PERSONAL_CALENDAR_SHIFT_MAX)
+        : blocks;
+    localStorage.setItem(KEY, JSON.stringify(trimmed));
     invalidateCaches();
     window.dispatchEvent(new CustomEvent(CHANGED));
+    return true;
   } catch {
-    /* safe */
+    try {
+      window.dispatchEvent(new CustomEvent("wm:storage-quota-exceeded", { detail: { key: KEY } }));
+    } catch {
+      /* ignore */
+    }
+    return false;
   }
 }
 

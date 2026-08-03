@@ -7,6 +7,7 @@ export const VAULT_SHIFT_HISTORY_CHANGED = "wm:vault-shift-history-changed";
 /** Fired when oldest entries are dropped to enforce the 200-cap (P1-7). */
 export const VAULT_SHIFT_HISTORY_TRIMMED = "wm:vault-shift-history-trimmed";
 export const VAULT_SHIFT_HISTORY_MAX = 200;
+/** Wave-3: Phase-0 SoT remains localStorage FIFO-200; unbounded history needs Phase-1 DB/IDB. */
 
 export type VaultShiftHistoryEntry = {
   id: string;

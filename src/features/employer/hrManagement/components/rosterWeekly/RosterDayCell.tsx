@@ -3,6 +3,13 @@
 
 import { useState } from "react";
 import { isToday } from "../../helpers/rosterPlannerUtils";
+import {
+  ROSTER_OFF_BG,
+  ROSTER_SURFACE,
+  ROSTER_TODAY_BG,
+  ROSTER_TODAY_BORDER,
+  ROSTER_TODAY_FG,
+} from "../../helpers/rosterPlannerConstants";
 import type { RosterAssignment } from "../../types/rosterPlanner.types";
 import { RosterSiteGroupCard, type RosterSiteGroup } from "./RosterSiteGroupCard";
 
@@ -43,11 +50,11 @@ export function RosterDayCell({
         padding: 5,
         borderRadius: 10,
         border: today
-          ? "2px solid #0369a1"
+          ? `2px solid ${ROSTER_TODAY_BORDER}`
           : hasConflict
-            ? "2px solid #dc2626"
-            : "1px solid var(--wm-er-border, #e5e7eb)",
-        background: today ? "#eff6ff" : isOffDay ? "#fafafa" : "#fff",
+            ? "2px solid var(--wm-red-600)"
+            : "1px solid var(--wm-er-border)",
+        background: today ? ROSTER_TODAY_BG : isOffDay ? ROSTER_OFF_BG : ROSTER_SURFACE,
         display: "flex",
         flexDirection: "column",
         gap: 4,
@@ -58,10 +65,10 @@ export function RosterDayCell({
           style={{
             padding: "3px 6px",
             borderRadius: 4,
-            background: "#fef2f2",
+            background: "var(--wm-red-50)",
             fontSize: 9,
             fontWeight: 800,
-            color: "#dc2626",
+            color: "var(--wm-red-600)",
             textAlign: "center",
           }}
         >
@@ -134,9 +141,9 @@ export function RosterDayCell({
             padding: "4px 0",
             fontSize: 10,
             fontWeight: 700,
-            color: "#0369a1",
+            color: ROSTER_TODAY_FG,
             background: "none",
-            border: "1px dashed var(--wm-er-border, #e5e7eb)",
+            border: "1px dashed var(--wm-er-border)",
             borderRadius: 5,
             cursor: "pointer",
           }}

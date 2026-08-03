@@ -2,7 +2,7 @@
 //
 // CRUD for manually-entered Work Vault v2 fields:
 // Professional Summary (Section 2), Education (Section 5), Skill Proficiencies (Section 6).
-// Storage key: wm_employee_vault_profile_v2
+// Storage key: wm_employee_{workerScope}_vault_profile_v2 (legacy wm_employee_vault_profile_v2)
 
 import type {
   VaultManualProfile,
@@ -11,12 +11,15 @@ import type {
   VaultCertification,
   SkillProficiency,
 } from "../types/vaultProfileTypes";
+import { resolveVaultWorkerScopedKey } from "../../../shared/workVault/vaultWorkerScope";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Storage Key
 // ─────────────────────────────────────────────────────────────────────────────
 
-const VAULT_PROFILE_KEY = "wm_employee_vault_profile_v2";
+function profileStorageKey(workerScopeId?: string): string {
+  return resolveVaultWorkerScopedKey("profile_v2", workerScopeId);
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Defaults
@@ -48,7 +51,7 @@ const DEFAULT_PROFILE: VaultManualProfile = {
 
 function read(): VaultManualProfile {
   try {
-    const raw = localStorage.getItem(VAULT_PROFILE_KEY);
+    const raw = localStorage.getItem(profileStorageKey());
     if (!raw) return { ...DEFAULT_PROFILE };
     const parsed = JSON.parse(raw) as Partial<VaultManualProfile>;
 
@@ -63,13 +66,12 @@ function read(): VaultManualProfile {
         certifications: Array.isArray(parsed.education?.certifications)
           ? parsed.education.certifications.filter(
               (c): c is VaultCertification =>
-                typeof c === "object" && c !== null && typeof c.id === "string"
+                typeof c === "object" && c !== null && typeof c.id === "string",
             )
           : [],
       },
       skillProficiencies:
-        typeof parsed.skillProficiencies === "object" &&
-        parsed.skillProficiencies !== null
+        typeof parsed.skillProficiencies === "object" && parsed.skillProficiencies !== null
           ? (parsed.skillProficiencies as Record<string, SkillProficiency>)
           : {},
     };
@@ -80,7 +82,7 @@ function read(): VaultManualProfile {
 
 function write(profile: VaultManualProfile): void {
   try {
-    localStorage.setItem(VAULT_PROFILE_KEY, JSON.stringify(profile));
+    localStorage.setItem(profileStorageKey(), JSON.stringify(profile));
   } catch {
     // demo-safe ignore
   }
@@ -129,7 +131,7 @@ export const vaultProfileService = {
   removeCertification(certId: string): void {
     const profile = read();
     profile.education.certifications = profile.education.certifications.filter(
-      (c) => c.id !== certId
+      (c) => c.id !== certId,
     );
     write(profile);
   },
@@ -137,7 +139,7 @@ export const vaultProfileService = {
   updateCertification(certId: string, updates: Partial<VaultCertification>): void {
     const profile = read();
     profile.education.certifications = profile.education.certifications.map((c) =>
-      c.id === certId ? { ...c, ...updates } : c
+      c.id === certId ? { ...c, ...updates } : c,
     );
     write(profile);
   },
@@ -163,7 +165,7 @@ export const vaultProfileService = {
   /** Reset all manual profile data. */
   clear(): void {
     try {
-      localStorage.removeItem(VAULT_PROFILE_KEY);
+      localStorage.removeItem(profileStorageKey());
     } catch {
       // ignore
     }

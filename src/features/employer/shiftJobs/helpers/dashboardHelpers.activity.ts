@@ -1,6 +1,12 @@
 import type { EmployerShiftActivityEntry } from "../../shiftJobs/storage/employerShift.storage";
 import { isRec, num, str } from "./dashboardHelpers.parsing";
+import { resolveShiftEmployerScopedKey } from "../../../shared/shift/shiftEmployerScope";
 
+function activityKey(): string {
+  return resolveShiftEmployerScopedKey("shift_activity_log_v1");
+}
+
+/** @deprecated Prefer activityKey() / resolveShiftEmployerScopedKey — kept for wipe lists. */
 const ACTIVITY_KEY = "wm_employer_shift_activity_log_v1";
 
 export function normalizeActivity(rawList: unknown[]): EmployerShiftActivityEntry[] {
@@ -42,4 +48,4 @@ export function normalizeActivity(rawList: unknown[]): EmployerShiftActivityEntr
   return out;
 }
 
-export { ACTIVITY_KEY };
+export { ACTIVITY_KEY, activityKey };

@@ -60,19 +60,37 @@ function CommandButton({
 
 type HeaderActionsProps = {
   post: CareerJobPost;
+  /** Wall-clock ms from parent (avoid Date.now in render). */
+  nowMs: number;
   onPause: () => void;
   onResume: () => void;
   onClose: () => void;
   onRepost: () => void;
+  onExpire: () => void;
+  onExtendClosing: () => void;
+  onDelete: () => void;
 };
 
 export function CareerPostDashboardHeaderActions({
   post,
+  nowMs,
   onPause,
   onResume,
   onClose,
   onRepost,
+  onExpire,
+  onExtendClosing,
+  onDelete,
 }: HeaderActionsProps) {
+  const isPastClosing = post.closingDate > 0 && post.closingDate < nowMs;
+  const canExpire = isPastClosing && (post.status === "active" || post.status === "paused");
+  const canExtend = post.status === "active" || post.status === "paused";
+  const canDelete =
+    post.status === "closed" ||
+    post.status === "filled" ||
+    post.status === "draft" ||
+    post.status === "paused";
+
   return (
     <div className="wm-hero-actions" style={{ marginTop: "var(--wm-stack-gap)" }}>
       <style>{HEADER_INTERACTIONS}</style>
@@ -82,12 +100,19 @@ export function CareerPostDashboardHeaderActions({
       {post.status === "paused" ? (
         <CommandButton label="Resume Receiving" variant="primary" onClick={onResume} />
       ) : null}
+      {canExtend ? (
+        <CommandButton label="Extend Closing Date" variant="neutral" onClick={onExtendClosing} />
+      ) : null}
+      {canExpire ? (
+        <CommandButton label="Mark Expired" variant="danger" onClick={onExpire} />
+      ) : null}
       {post.status === "closed" || post.status === "filled" ? (
         <CommandButton label="Create Similar Job" variant="primary" onClick={onRepost} />
       ) : null}
       {post.status !== "closed" && post.status !== "filled" ? (
         <CommandButton label="Close Job Post" variant="danger" onClick={onClose} />
       ) : null}
+      {canDelete ? <CommandButton label="Delete Post" variant="danger" onClick={onDelete} /> : null}
     </div>
   );
 }

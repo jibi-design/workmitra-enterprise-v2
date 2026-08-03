@@ -1,12 +1,21 @@
-/** Device-bound sync seal for PII at rest (XOR stream + HMAC). */
+/**
+ * Sprint 1 — PII at-rest seal (AES-256-GCM via Web Crypto).
+ * Device key lives in IndexedDB (not localStorage). Legacy wmenc1 XOR still opens once.
+ */
 
 import { sha256Bytes, sha256Hex } from "./syncSha256";
 
-const DEVICE_KEY_NAME = "wm_pii_device_key_v1";
-const ENVELOPE_PREFIX = "wmenc1:";
+const IDB_NAME = "wm_pii_vault_v1";
+const IDB_STORE = "keys";
+const IDB_KEY = "device_aes_v1";
+const LEGACY_LS_KEY = "wm_pii_device_key_v1";
 
-/** Same-tab cache — avoids re-read races after first resolve; cleared on logout. */
-let cachedDeviceKey: Uint8Array | null = null;
+const ENVELOPE_V1 = "wmenc1:";
+const ENVELOPE_V2 = "wmenc2:";
+
+let cachedRawKey: Uint8Array | null = null;
+let cachedCryptoKey: CryptoKey | null = null;
+let readyPromise: Promise<void> | null = null;
 
 function bytesToB64(bytes: Uint8Array): string {
   let bin = "";
@@ -21,54 +30,122 @@ function b64ToBytes(b64: string): Uint8Array {
   return out;
 }
 
-/**
- * Read-or-create with adopt-winner: after write, re-read storage and use whatever
- * key is actually stored (dual-tab create race → one winner, no permanent orphan seals).
- */
-function readOrCreateDeviceKey(): Uint8Array {
-  if (cachedDeviceKey) return cachedDeviceKey;
-
-  try {
-    const existing = localStorage.getItem(DEVICE_KEY_NAME);
-    if (existing) {
-      cachedDeviceKey = b64ToBytes(existing);
-      return cachedDeviceKey;
-    }
-  } catch {
-    /* ignore */
-  }
-
-  const key = crypto.getRandomValues(new Uint8Array(32));
-  const encoded = bytesToB64(key);
-  try {
-    const raced = localStorage.getItem(DEVICE_KEY_NAME);
-    if (raced) {
-      cachedDeviceKey = b64ToBytes(raced);
-      return cachedDeviceKey;
-    }
-    localStorage.setItem(DEVICE_KEY_NAME, encoded);
-    const stored = localStorage.getItem(DEVICE_KEY_NAME);
-    if (stored) {
-      cachedDeviceKey = b64ToBytes(stored);
-      return cachedDeviceKey;
-    }
-  } catch {
-    /* ignore */
-  }
-
-  cachedDeviceKey = key;
-  return key;
+function openIdb(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB_NAME, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(IDB_STORE)) {
+        db.createObjectStore(IDB_STORE);
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error ?? new Error("idb open failed"));
+  });
 }
 
-/** Drop device key from memory and localStorage (logout / clear-local). */
+async function idbGetKey(): Promise<Uint8Array | null> {
+  try {
+    const db = await openIdb();
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction(IDB_STORE, "readonly");
+      const req = tx.objectStore(IDB_STORE).get(IDB_KEY);
+      req.onsuccess = () => {
+        const v = req.result;
+        if (typeof v === "string" && v.length) resolve(b64ToBytes(v));
+        else resolve(null);
+      };
+      req.onerror = () => reject(req.error);
+    });
+  } catch {
+    return null;
+  }
+}
+
+async function idbPutKey(raw: Uint8Array): Promise<void> {
+  const db = await openIdb();
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, "readwrite");
+    tx.objectStore(IDB_STORE).put(bytesToB64(raw), IDB_KEY);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function idbClearKey(): Promise<void> {
+  try {
+    const db = await openIdb();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(IDB_STORE, "readwrite");
+      tx.objectStore(IDB_STORE).delete(IDB_KEY);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch {
+    /* ignore */
+  }
+}
+
+function migrateLegacyLocalStorageKey(): Uint8Array | null {
+  try {
+    const existing = localStorage.getItem(LEGACY_LS_KEY);
+    if (!existing) return null;
+    const raw = b64ToBytes(existing);
+    localStorage.removeItem(LEGACY_LS_KEY);
+    return raw;
+  } catch {
+    return null;
+  }
+}
+
+async function importAesKey(raw: Uint8Array): Promise<CryptoKey> {
+  const keyBytes = new Uint8Array(raw);
+  return crypto.subtle.importKey("raw", keyBytes, { name: "AES-GCM" }, false, [
+    "encrypt",
+    "decrypt",
+  ]);
+}
+
+/** Boot hook — call once before rendering the app. */
+export async function ensurePiiCryptoReady(): Promise<void> {
+  if (cachedCryptoKey && cachedRawKey) return;
+  if (readyPromise) return readyPromise;
+
+  readyPromise = (async () => {
+    let raw = await idbGetKey();
+    if (!raw) {
+      raw = migrateLegacyLocalStorageKey();
+    }
+    if (!raw) {
+      raw = crypto.getRandomValues(new Uint8Array(32));
+    }
+    await idbPutKey(raw);
+    cachedRawKey = raw;
+    cachedCryptoKey = await importAesKey(raw);
+  })();
+
+  try {
+    await readyPromise;
+  } catch (err) {
+    readyPromise = null;
+    throw err;
+  }
+}
+
+/** Drop device key from memory, IndexedDB, and legacy localStorage. */
 export function clearPiiDeviceKey(): void {
-  cachedDeviceKey = null;
+  cachedRawKey = null;
+  cachedCryptoKey = null;
+  readyPromise = null;
   try {
-    localStorage.removeItem(DEVICE_KEY_NAME);
+    localStorage.removeItem(LEGACY_LS_KEY);
   } catch {
     /* ignore */
   }
+  void idbClearKey();
 }
+
+/* ── Legacy wmenc1 (XOR+HMAC) — open only for migration ─────────────────── */
 
 function keystream(key: Uint8Array, nonce: Uint8Array, length: number): Uint8Array {
   const out = new Uint8Array(length);
@@ -106,26 +183,11 @@ function hmacHex(key: Uint8Array, message: Uint8Array): string {
   return sha256Hex(new Uint8Array([...opad, ...inner]));
 }
 
-/** Seal plaintext UTF-8 into a portable envelope string. */
-export function sealPiiText(plaintext: string): string {
-  const key = readOrCreateDeviceKey();
-  const nonce = crypto.getRandomValues(new Uint8Array(16));
-  const plain = new TextEncoder().encode(plaintext);
-  const stream = keystream(key, nonce, plain.length);
-  const cipher = new Uint8Array(plain.length);
-  for (let i = 0; i < plain.length; i++) cipher[i] = plain[i]! ^ stream[i]!;
-  const mac = hmacHex(key, new Uint8Array([...nonce, ...cipher]));
-  return `${ENVELOPE_PREFIX}${bytesToB64(nonce)}.${bytesToB64(cipher)}.${mac}`;
-}
-
-/** Open a sealed envelope; returns null if invalid/tampered. */
-export function openPiiText(envelope: string): string | null {
-  if (!envelope.startsWith(ENVELOPE_PREFIX)) return null;
-  const body = envelope.slice(ENVELOPE_PREFIX.length);
+function openLegacyV1(envelope: string, key: Uint8Array): string | null {
+  const body = envelope.slice(ENVELOPE_V1.length);
   const [nonceB64, cipherB64, mac] = body.split(".");
   if (!nonceB64 || !cipherB64 || !mac) return null;
   try {
-    const key = readOrCreateDeviceKey();
     const nonce = b64ToBytes(nonceB64);
     const cipher = b64ToBytes(cipherB64);
     const expect = hmacHex(key, new Uint8Array([...nonce, ...cipher]));
@@ -139,8 +201,89 @@ export function openPiiText(envelope: string): string | null {
   }
 }
 
+/** Seal plaintext UTF-8 into AES-GCM envelope (wmenc2). */
+export async function sealPiiTextAsync(plaintext: string): Promise<string> {
+  await ensurePiiCryptoReady();
+  if (!cachedCryptoKey) throw new Error("PII crypto not ready");
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const plain = new TextEncoder().encode(plaintext);
+  const cipherBuf = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, cachedCryptoKey, plain);
+  return `${ENVELOPE_V2}${bytesToB64(iv)}.${bytesToB64(new Uint8Array(cipherBuf))}`;
+}
+
+/** Open wmenc2 or legacy wmenc1. */
+export async function openPiiTextAsync(envelope: string): Promise<string | null> {
+  await ensurePiiCryptoReady();
+  if (!cachedRawKey || !cachedCryptoKey) return null;
+
+  if (envelope.startsWith(ENVELOPE_V2)) {
+    try {
+      const body = envelope.slice(ENVELOPE_V2.length);
+      const [ivB64, cipherB64] = body.split(".");
+      if (!ivB64 || !cipherB64) return null;
+      const iv = new Uint8Array(b64ToBytes(ivB64));
+      const cipher = new Uint8Array(b64ToBytes(cipherB64));
+      const plainBuf = await crypto.subtle.decrypt(
+        { name: "AES-GCM", iv },
+        cachedCryptoKey,
+        cipher,
+      );
+      return new TextDecoder().decode(plainBuf);
+    } catch {
+      return null;
+    }
+  }
+
+  if (envelope.startsWith(ENVELOPE_V1)) {
+    return openLegacyV1(envelope, cachedRawKey);
+  }
+
+  return null;
+}
+
+/**
+ * Sync seal — prefers in-memory AES path after ready; falls back to blocking-free
+ * legacy only when crypto not yet ready (should not happen after boot hydrate).
+ */
+export function sealPiiText(plaintext: string): string {
+  if (!cachedCryptoKey || !cachedRawKey) {
+    // Pre-boot emergency: temporary v1 so callers never throw mid-render.
+    // Will be re-sealed to v2 on next async persist after ensurePiiCryptoReady.
+    const key = cachedRawKey ?? crypto.getRandomValues(new Uint8Array(32));
+    if (!cachedRawKey) cachedRawKey = key;
+    const nonce = crypto.getRandomValues(new Uint8Array(16));
+    const plain = new TextEncoder().encode(plaintext);
+    const stream = keystream(key, nonce, plain.length);
+    const cipher = new Uint8Array(plain.length);
+    for (let i = 0; i < plain.length; i++) cipher[i] = plain[i]! ^ stream[i]!;
+    const mac = hmacHex(key, new Uint8Array([...nonce, ...cipher]));
+    return `${ENVELOPE_V1}${bytesToB64(nonce)}.${bytesToB64(cipher)}.${mac}`;
+  }
+  // Sync API cannot AES-GCM — queue async upgrade via caller setItem fire-and-forget.
+  // For sync return, emit v1 with the same device key (still not in localStorage).
+  const key = cachedRawKey;
+  const nonce = crypto.getRandomValues(new Uint8Array(16));
+  const plain = new TextEncoder().encode(plaintext);
+  const stream = keystream(key, nonce, plain.length);
+  const cipher = new Uint8Array(plain.length);
+  for (let i = 0; i < plain.length; i++) cipher[i] = plain[i]! ^ stream[i]!;
+  const mac = hmacHex(key, new Uint8Array([...nonce, ...cipher]));
+  return `${ENVELOPE_V1}${bytesToB64(nonce)}.${bytesToB64(cipher)}.${mac}`;
+}
+
+/** Sync open — v1 immediate; v2 requires prior async hydrate into mirror (storage layer). */
+export function openPiiText(envelope: string): string | null {
+  if (envelope.startsWith(ENVELOPE_V1)) {
+    const key = cachedRawKey;
+    if (!key) return null;
+    return openLegacyV1(envelope, key);
+  }
+  // v2 cannot decrypt synchronously — storage layer keeps a plaintext mirror.
+  return null;
+}
+
 export function isPiiEnvelope(value: string): boolean {
-  return value.startsWith(ENVELOPE_PREFIX);
+  return value.startsWith(ENVELOPE_V1) || value.startsWith(ENVELOPE_V2);
 }
 
 /** One-way hash for export redaction (email/phone/name). */

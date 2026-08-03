@@ -2,6 +2,11 @@
 // File name: shiftPostApply.submit.ts
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\hooks\shiftPostApply\shiftPostApply.submit.ts
 
+import {
+  AuthIdentityRequiredError,
+  resolveActorApiId,
+} from "../../../../../app/identity/identity.adapter";
+import { AUTH_BACKEND_ENABLED } from "../../../../../shared/config/authConfig";
 import { queuePulseEventForAffectedUser } from "../../../../pulse/pulseEventBridge";
 import { employeeProfileStorage } from "../../../profile/storage/employeeProfile.storage";
 import {
@@ -43,6 +48,18 @@ export function hasActiveShiftApplicationForPost({
   );
 }
 
+function resolveWorkerSnapshotId(profile: EmployeeProfileSnapshotSource): string | undefined {
+  if (AUTH_BACKEND_ENABLED) {
+    try {
+      return resolveActorApiId("employee");
+    } catch (err) {
+      if (err instanceof AuthIdentityRequiredError) return undefined;
+      throw err;
+    }
+  }
+  return profile.uniqueId?.trim() || employeeProfileStorage.get().uniqueId?.trim() || undefined;
+}
+
 export function createShiftApplicationRecord({
   id,
   postId,
@@ -64,8 +81,7 @@ export function createShiftApplicationRecord({
   readonly quickAnswers: ShiftQuickAnswerMap;
   readonly quickQuestionCount: number;
 }): ShiftApplicationRecord {
-  const resolvedUniqueId =
-    profile.uniqueId?.trim() || employeeProfileStorage.get().uniqueId?.trim() || undefined;
+  const resolvedUniqueId = resolveWorkerSnapshotId(profile);
 
   return {
     id,
@@ -90,6 +106,7 @@ export function createShiftApplicationRecord({
 /**
  * Phase 13: LS write → POST apply when auth on → merge DB into LS.
  * Auth off: LS-only (E2E/demo).
+ * P1: when AUTH on, worker_wm_id is auth UUID hint only — server binds session id.
  */
 export async function saveShiftApplicationSubmission({
   applications,
@@ -104,16 +121,24 @@ export async function saveShiftApplicationSubmission({
 
   if (isShiftApiSyncEnabled()) {
     const serverPostId = shiftPostIdBridge.resolveServerId(application.postId);
-    const workerMlId = application.profileSnapshot?.uniqueId?.trim();
+    let workerKey = application.profileSnapshot?.uniqueId?.trim();
+    if (AUTH_BACKEND_ENABLED) {
+      try {
+        workerKey = resolveActorApiId("employee");
+      } catch {
+        workerKey = undefined;
+      }
+    }
 
-    if (!serverPostId || !workerMlId) {
+    if (!serverPostId || !workerKey) {
       safeWriteAllShiftApplications(prior);
       return { ok: false, reason: "storage_error" };
     }
 
     try {
       const dto = await shiftGateApi.applyToPost(serverPostId, {
-        worker_wm_id: workerMlId,
+        // Hint only — server ignores conflicting MUID and binds employee.id
+        worker_wm_id: workerKey,
         details: {
           profileSnapshot: application.profileSnapshot,
           mustHaveAnswers: application.mustHaveAnswers,

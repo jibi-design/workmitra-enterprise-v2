@@ -3,6 +3,7 @@
 type ShiftPostSubmitSectionProps = {
   show: boolean;
   canSubmit: boolean;
+  isSubmitting?: boolean;
   isClosedOrExpired: boolean;
   allQuestionsAnswered: boolean;
   quickQuestionCount: number;
@@ -15,6 +16,7 @@ type ShiftPostSubmitSectionProps = {
 export function ShiftPostSubmitSection({
   show,
   canSubmit,
+  isSubmitting = false,
   isClosedOrExpired,
   allQuestionsAnswered,
   quickQuestionCount,
@@ -74,10 +76,14 @@ export function ShiftPostSubmitSection({
             type="button"
             className="wm-primarybtn wm-shift-pressable"
             onClick={onSubmit}
-            disabled={!canSubmit}
+            disabled={!canSubmit || isSubmitting}
             style={{ width: "100%" }}
           >
-            {isClosedOrExpired ? "Applications Closed" : "Submit Application"}
+            {isClosedOrExpired
+              ? "Applications Closed"
+              : isSubmitting
+                ? "Submitting…"
+                : "Submit Application"}
           </button>
         </>
       ) : null}

@@ -4,12 +4,17 @@
 
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { notifyCrossRole } from "../../../../features/pulse/pulseEventBridge";
+import { appendSelectionAuditEvent } from "../../../shared/shift/selectionAudit.storage";
 import {
   readEmployeeApplications,
   writeEmployeeApplications,
 } from "./employerShift.employeeBridge";
 import type { ApplicantStatus, EmployeeShiftApplication, ShiftPost } from "./employerShift.types";
 import { uniq } from "./employerShift.utils";
+
+function candidateIdFromApp(app: EmployeeShiftApplication, fallbackAppId: string): string {
+  return app.profileSnapshot?.uniqueId?.trim().toUpperCase() || fallbackAppId;
+}
 
 export function moveCandidateToShortlist(
   post: ShiftPost,
@@ -26,6 +31,13 @@ export function moveCandidateToShortlist(
 
   const appWrite = writeEmployeeApplications(updateApplicationStatus(apps, appId, "shortlisted"));
   if (!appWrite.ok) return { post, changed: false };
+
+  appendSelectionAuditEvent({
+    action: "shortlist",
+    postId: post.id,
+    candidateId: candidateIdFromApp(target, appId),
+    appId,
+  });
 
   notifyCrossRole({
     type: "SHIFT_EMPLOYEE_SHORTLISTED",
@@ -104,6 +116,13 @@ export function rejectCandidate(
 
   const appWrite = writeEmployeeApplications(updateApplicationStatus(apps, appId, "rejected"));
   if (!appWrite.ok) return { post, changed: false };
+
+  appendSelectionAuditEvent({
+    action: "reject",
+    postId: post.id,
+    candidateId: candidateIdFromApp(target, appId),
+    appId,
+  });
 
   notifyCrossRole({
     type: "SHIFT_APPLICATION_REJECTED",

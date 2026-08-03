@@ -1,7 +1,7 @@
 // WARNING DEC-012 / MIG-008: Client OTP stores hash only (never plaintext).
 // Server OTP path (Argon2 hashed) exists at server/modules/vault/
 
-/** localStorage keys for Work Vault. */
+/** localStorage keys for Work Vault (legacy unscoped — prefer resolveVaultWorkerScopedKey). */
 export const VAULT_STORAGE_KEYS = {
   folders: "wm_employee_vault_folders_v1",
   documents: "wm_employee_vault_documents_v1",

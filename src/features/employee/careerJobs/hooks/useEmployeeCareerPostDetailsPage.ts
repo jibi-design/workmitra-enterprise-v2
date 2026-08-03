@@ -5,6 +5,7 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { useUnsavedChangesGuard } from "../../../../shared/hooks/useUnsavedChangesGuard";
 import {
   getSubmitBlockReason,
   isValidCoverNote,
@@ -17,14 +18,13 @@ import { getAppsSnapshot, subscribeApps } from "../helpers/careerApplicationHelp
 import {
   applyToCareerJob,
   canShowCareerWithdraw,
-  isCareerWithdrawOnlineBlocked,
   getMyApplicationForJob,
   withdrawCareerApplication,
 } from "../services/careerApplyService";
-import { isCareerApiSyncEnabled } from "../../../career/services/careerGateApi.service";
+import { employeeCareerRecentlyViewedJobsStorage } from "../storage/employeeCareerRecentlyViewedJobs.storage";
 
-const WITHDRAW_SUPPORT_MESSAGE =
-  "Online self-serve withdrawal is not available yet. Please contact support if you need to withdraw this application.";
+const WITHDRAW_FAIL_MESSAGE =
+  "This application cannot be withdrawn from its current status, or the server could not complete withdrawal.";
 
 export function useEmployeeCareerPostDetailsPage() {
   const nav = useNavigate();
@@ -49,6 +49,13 @@ export function useEmployeeCareerPostDetailsPage() {
     return () => window.clearInterval(timerId);
   }, []);
 
+  // C-DISC-1: deep-link / direct open also updates Recently viewed.
+  useEffect(() => {
+    const id = postId.trim();
+    if (!id) return;
+    employeeCareerRecentlyViewedJobsStorage.markViewed(id);
+  }, [postId]);
+
   const allPosts = useSyncExternalStore(
     subscribeCareerSearch,
     getCareerSearchSnapshot,
@@ -68,7 +75,7 @@ export function useEmployeeCareerPostDetailsPage() {
     existingApp.stage !== "offer_declined" &&
     existingApp.stage !== "rejected";
   const canWithdraw = canShowCareerWithdraw(existingApp?.stage);
-  const withdrawOnlineBlocked = isCareerWithdrawOnlineBlocked();
+  const withdrawOnlineBlocked = false;
   const isExpired = Boolean(post && post.closingDate > 0 && post.closingDate < now);
 
   const [coverNote, setCoverNote] = useState("");
@@ -82,6 +89,20 @@ export function useEmployeeCareerPostDetailsPage() {
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
   const [showError, setShowError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const hasUnsavedApplyInput =
+    !isApplied &&
+    !showSuccess &&
+    (coverNote.trim().length > 0 ||
+      expectedSalary.trim().length > 0 ||
+      employeePhone.trim().length > 0 ||
+      employeeEmail.trim().length > 0 ||
+      Object.keys(screeningAnswers).length > 0);
+
+  useUnsavedChangesGuard(
+    hasUnsavedApplyInput,
+    "You have unsaved application answers. Leave this page?",
+  );
 
   const hasContactDetails = employeePhone.trim().length > 0 || employeeEmail.trim().length > 0;
   const screeningQuestions = post?.screeningQuestions ?? [];
@@ -153,22 +174,13 @@ export function useEmployeeCareerPostDetailsPage() {
   }
 
   function requestWithdraw() {
-    if (withdrawOnlineBlocked) {
-      setShowError(WITHDRAW_SUPPORT_MESSAGE);
-      return;
-    }
     setShowWithdrawConfirm(true);
   }
 
-  function handleWithdraw() {
-    if (withdrawOnlineBlocked) {
-      setShowWithdrawConfirm(false);
-      setShowError(WITHDRAW_SUPPORT_MESSAGE);
-      return;
-    }
-
-    const ok = withdrawCareerApplication(postId);
+  async function handleWithdraw() {
     setShowWithdrawConfirm(false);
+
+    const ok = await withdrawCareerApplication(postId);
 
     if (ok) {
       setShowSuccess(true);
@@ -176,11 +188,7 @@ export function useEmployeeCareerPostDetailsPage() {
       return;
     }
 
-    setShowError(
-      isCareerApiSyncEnabled()
-        ? WITHDRAW_SUPPORT_MESSAGE
-        : "This application cannot be withdrawn from its current status.",
-    );
+    setShowError(WITHDRAW_FAIL_MESSAGE);
   }
 
   return {

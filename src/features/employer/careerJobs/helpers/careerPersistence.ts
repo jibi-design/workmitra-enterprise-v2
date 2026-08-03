@@ -9,9 +9,7 @@ import type {
   EmployerCareerActivityEntry,
 } from "../types/careerTypes";
 import {
-  CAREER_ACTIVITY_KEY,
   CAREER_APPS_KEY,
-  CAREER_POSTS_KEY,
   CAREER_WORKSPACES_KEY,
   notifyCareerActivityChanged,
   notifyCareerAppsChanged,
@@ -21,13 +19,22 @@ import {
   safeWrite,
   type CareerStorageWriteResult,
 } from "./careerStorageUtils";
+import { resolveCareerEmployerScopedKey } from "../../../shared/career/careerEmployerScope";
 import { normalizeCareerActivity } from "./careerActivityNormalizers";
 import { normalizeCareerApplication } from "./careerApplicationNormalizers";
 import { normalizeCareerPost } from "./careerPostNormalizers";
 import { normalizeCareerWorkspace } from "./careerWorkspaceNormalizers";
 
+function careerPostsKey(): string {
+  return resolveCareerEmployerScopedKey("career_posts_v1");
+}
+
+function careerActivityKey(): string {
+  return resolveCareerEmployerScopedKey("career_activity_log_v1");
+}
+
 export function readCareerPosts(): CareerJobPost[] {
-  const raw = localStorage.getItem(CAREER_POSTS_KEY);
+  const raw = localStorage.getItem(careerPostsKey());
 
   return safeParse<unknown>(raw)
     .map(normalizeCareerPost)
@@ -53,7 +60,7 @@ export function readCareerWorkspaces(): CareerWorkspace[] {
 }
 
 export function readCareerActivityAll(): EmployerCareerActivityEntry[] {
-  const raw = localStorage.getItem(CAREER_ACTIVITY_KEY);
+  const raw = localStorage.getItem(careerActivityKey());
 
   return safeParse<unknown>(raw)
     .map(normalizeCareerActivity)
@@ -64,7 +71,7 @@ export function readCareerActivityAll(): EmployerCareerActivityEntry[] {
 export type { CareerStorageWriteResult };
 
 export function writeCareerPosts(posts: CareerJobPost[]): CareerStorageWriteResult {
-  const result = safeWrite(CAREER_POSTS_KEY, posts);
+  const result = safeWrite(careerPostsKey(), posts);
   if (!result.ok) return result;
   notifyCareerPostsChanged();
   return { ok: true };
@@ -87,7 +94,7 @@ export function writeCareerWorkspaces(list: CareerWorkspace[]): CareerStorageWri
 export function writeCareerActivityAll(
   list: EmployerCareerActivityEntry[],
 ): CareerStorageWriteResult {
-  const result = safeWrite(CAREER_ACTIVITY_KEY, list);
+  const result = safeWrite(careerActivityKey(), list);
   if (!result.ok) return result;
   notifyCareerActivityChanged();
   return { ok: true };

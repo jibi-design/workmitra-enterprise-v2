@@ -11,6 +11,7 @@ import {
 import { LaunchModuleBoundary } from "./routerHelpers";
 import { EC } from "./routeSegments";
 import { HelpSupportPage } from "./adminLazyPages";
+import { EmployeeVaultUploadRedirect } from "./employeeVaultUploadRedirect";
 import {
   EmployeeAnnounceDetailWrapper,
   EmployeeCareerApplicationsPage,
@@ -41,6 +42,7 @@ import {
   EmployeeSettingsPage,
   EmployeeTimesheetWrapper,
   EmployeeVaultAccessLogPage,
+  EmployeeVaultEditProfilePage,
   EmployeeVaultFolderPage,
   EmployeeVaultHomePage,
   EmployeeVaultOtpPage,
@@ -73,13 +75,19 @@ export const employeeRouteTree = (
       element={<Navigate to={ROUTE_PATHS.employeeVaultAccessLog} replace />}
     />
     <Route path={EC.shift} element={<ShiftControlCenterPage />} />
-    <Route path={EC.career} element={<EmployeeCareerHomePage />} />
-    <Route path={EC.careerSearch} element={<EmployeeCareerSearchPage />} />
-    <Route path={EC.careerPostDetails} element={<EmployeeCareerPostDetailsPage />} />
-    <Route path={EC.careerApplications} element={<EmployeeCareerApplicationsPage />} />
-    <Route path={EC.careerWorkspaces} element={<EmployeeCareerWorkspacesPage />} />
-    <Route path={EC.careerWorkspace} element={<EmployeeCareerWorkspacePage />} />
-    <Route path={EC.careerCompletedRecords} element={<EmployeeCareerCompletedRecordsPage />} />
+    <Route
+      element={
+        <LaunchModuleBoundary enabled runtimeKill="career" fallback={ROUTE_PATHS.employeeHome} />
+      }
+    >
+      <Route path={EC.career} element={<EmployeeCareerHomePage />} />
+      <Route path={EC.careerSearch} element={<EmployeeCareerSearchPage />} />
+      <Route path={EC.careerPostDetails} element={<EmployeeCareerPostDetailsPage />} />
+      <Route path={EC.careerApplications} element={<EmployeeCareerApplicationsPage />} />
+      <Route path={EC.careerWorkspaces} element={<EmployeeCareerWorkspacesPage />} />
+      <Route path={EC.careerWorkspace} element={<EmployeeCareerWorkspacePage />} />
+      <Route path={EC.careerCompletedRecords} element={<EmployeeCareerCompletedRecordsPage />} />
+    </Route>
     <Route
       element={
         <LaunchModuleBoundary enabled={showPhase2Features} fallback={ROUTE_PATHS.employeeHome} />
@@ -96,33 +104,47 @@ export const employeeRouteTree = (
       path={EC.shiftProjects}
       element={<Navigate to={ROUTE_PATHS.employeePlannerBrowse} replace />}
     />
-    <Route path={EC.plannerHome} element={<EmployeePlannerHomePage />} />
     <Route
-      path={EC.plannerDiscover}
-      element={<Navigate to={ROUTE_PATHS.employeePlannerBrowse} replace />}
-    />
-    <Route path={EC.plannerBrowse} element={<EmployeePlannerBrowsePage />} />
-    <Route path={EC.plannerProjectDetail} element={<EmployeeProjectDetailPage />} />
-    <Route path={EC.plannerProjectApply} element={<EmployeeProjectPickApplyPage />} />
+      element={
+        <LaunchModuleBoundary enabled runtimeKill="planner" fallback={ROUTE_PATHS.employeeHome} />
+      }
+    >
+      <Route path={EC.plannerHome} element={<EmployeePlannerHomePage />} />
+      <Route
+        path={EC.plannerDiscover}
+        element={<Navigate to={ROUTE_PATHS.employeePlannerBrowse} replace />}
+      />
+      <Route path={EC.plannerBrowse} element={<EmployeePlannerBrowsePage />} />
+      <Route path={EC.plannerProjectDetail} element={<EmployeeProjectDetailPage />} />
+      <Route path={EC.plannerProjectApply} element={<EmployeeProjectPickApplyPage />} />
+      <Route
+        path={EC.plannerPlanApplicationSummary}
+        element={<EmployeePlanApplicationSummaryPage />}
+      />
+      <Route path={EC.plannerApplications} element={<EmployeePlannerApplicationsPage />} />
+      <Route path={EC.plannerWorkspaces} element={<EmployeePlannerWorkspacesPage />} />
+      <Route path={EC.plannerWorkspaceHub} element={<EmployeePlannerWorkspaceHubPage />} />
+      <Route path={EC.plannerWorkspace} element={<EmployeePlannerWorkspaceDayPage />} />
+      <Route path={EC.plannerEarnings} element={<EmployeePlannerEarningsPage />} />
+    </Route>
     <Route
-      path={EC.plannerPlanApplicationSummary}
-      element={<EmployeePlanApplicationSummaryPage />}
-    />
-    <Route path={EC.plannerApplications} element={<EmployeePlannerApplicationsPage />} />
-    <Route path={EC.plannerWorkspaces} element={<EmployeePlannerWorkspacesPage />} />
-    <Route path={EC.plannerWorkspaceHub} element={<EmployeePlannerWorkspaceHubPage />} />
-    <Route path={EC.plannerWorkspace} element={<EmployeePlannerWorkspaceDayPage />} />
-    <Route path={EC.plannerEarnings} element={<EmployeePlannerEarningsPage />} />
-    <Route path={EC.shiftProjectDetail} element={<LegacyShiftProjectRedirect />} />
-    <Route path={EC.shiftProjectApply} element={<LegacyShiftProjectApplyRedirect />} />
-    <Route path={EC.shiftPlanApplicationSummary} element={<LegacyShiftPlanSummaryRedirect />} />
-    <Route path={EC.shiftPostDetails} element={<ShiftPostDetailsApplyPage />} />
-    <Route path={EC.shiftApplications} element={<MyShiftApplicationsPage />} />
-    <Route path={EC.shiftWorkspaces} element={<MyShiftWorkspacesPage />} />
-    <Route path={EC.shiftWorkspace} element={<ShiftWorkspacePage />} />
-    <Route path={EC.shiftEarnings} element={<EmployeeEarningsPage />} />
+      element={
+        <LaunchModuleBoundary enabled runtimeKill="shift" fallback={ROUTE_PATHS.employeeHome} />
+      }
+    >
+      <Route path={EC.shiftProjectDetail} element={<LegacyShiftProjectRedirect />} />
+      <Route path={EC.shiftProjectApply} element={<LegacyShiftProjectApplyRedirect />} />
+      <Route path={EC.shiftPlanApplicationSummary} element={<LegacyShiftPlanSummaryRedirect />} />
+      <Route path={EC.shiftPostDetails} element={<ShiftPostDetailsApplyPage />} />
+      <Route path={EC.shiftApplications} element={<MyShiftApplicationsPage />} />
+      <Route path={EC.shiftWorkspaces} element={<MyShiftWorkspacesPage />} />
+      <Route path={EC.shiftWorkspace} element={<ShiftWorkspacePage />} />
+      <Route path={EC.shiftEarnings} element={<EmployeeEarningsPage />} />
+    </Route>
     <Route path={EC.vault} element={<EmployeeVaultHomePage />} />
     <Route path={EC.vaultFolder} element={<EmployeeVaultFolderPage />} />
+    <Route path={EC.vaultUpload} element={<EmployeeVaultUploadRedirect />} />
+    <Route path={EC.vaultEditProfile} element={<EmployeeVaultEditProfilePage />} />
     <Route path={EC.vaultOtp} element={<EmployeeVaultOtpPage />} />
     <Route path={EC.vaultAccessLog} element={<EmployeeVaultAccessLogPage />} />
     <Route path={EC.employmentDetail} element={<EmployeeEmploymentDetailPage />} />
@@ -133,7 +155,11 @@ export const employeeRouteTree = (
     <Route path="help" element={<HelpSupportPage />} />
     <Route
       element={
-        <LaunchModuleBoundary enabled={showShiftOpsFeatures} fallback={ROUTE_PATHS.employeeHome} />
+        <LaunchModuleBoundary
+          enabled={showShiftOpsFeatures}
+          runtimeKill="shift"
+          fallback={ROUTE_PATHS.employeeHome}
+        />
       }
     >
       {/* Distinct path from /employee/shift so Home + Shift Ops tabs never dual-select. */}

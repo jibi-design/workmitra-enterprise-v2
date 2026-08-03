@@ -21,7 +21,12 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("[Uncaught Error Boundary Triggered]:", error, errorInfo);
+    void import("../../observability/monitor").then(({ captureException }) => {
+      captureException(error, {
+        kind: "react_error_boundary_alt",
+        componentStack: errorInfo.componentStack ?? undefined,
+      });
+    });
   }
 
   public render() {

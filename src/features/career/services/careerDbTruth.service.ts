@@ -5,7 +5,7 @@
  * When auth off: callers keep demo/E2E LS-only paths.
  */
 
-import { getCurrentActorId, identityBridge } from "../../../app/identity/identity.adapter";
+import { resolveActorStorageId } from "../../../app/identity/identity.adapter";
 import { employeeProfileStorage } from "../../employee/profile/storage/employeeProfile.storage";
 import {
   CAREER_APPS_KEY,
@@ -40,14 +40,7 @@ function writeLocalApps(apps: CareerApplication[]): boolean {
 }
 
 function getCurrentEmployeeId(): string {
-  const profile = employeeProfileStorage.get();
-  const legacyId = profile.uniqueId?.trim() || "employee_demo";
-  const actor = getCurrentActorId("employee");
-  const realLegacy = profile.uniqueId?.trim();
-  if (actor.source === "auth" && actor.authUserId && realLegacy) {
-    identityBridge.upsert("employee", realLegacy, actor.authUserId);
-  }
-  return legacyId;
+  return resolveActorStorageId("employee", "employee_demo");
 }
 
 function parseIsoMs(value: string, fallback: number): number {

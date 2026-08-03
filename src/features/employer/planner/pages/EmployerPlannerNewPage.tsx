@@ -1,5 +1,6 @@
 // Job Mitra | EmployerPlannerNewPage.tsx | Gig Projects 3-step wizard
 // Ultra-Enterprise U5 — TrustStrip for stale concurrency
+// Wave-4: Resume Draft / Start Fresh prompt
 
 import { NoticeModal } from "../../../../shared/components/NoticeModal";
 import { TrustStrip } from "../../../../shared/components/enterprise";
@@ -17,6 +18,37 @@ export function EmployerPlannerNewPage() {
     Boolean(state.notice) &&
     state.notice?.confirmLabel === "Reload" &&
     (state.notice?.title.includes("updated elsewhere") ?? false);
+
+  if (state.draftPromptOpen) {
+    return (
+      <div className="wm-er-vPlanner wm-planner-page">
+        <div className="wm-planner-quartz wm-planner-card" style={{ marginTop: 14, padding: 20 }}>
+          <h2 style={{ margin: "0 0 8px", fontSize: 18 }}>Unsaved Demand Planner draft</h2>
+          <p style={{ margin: "0 0 16px", opacity: 0.85 }}>
+            A draft was autosaved on this device. Resume where you left off, or start fresh.
+          </p>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <button
+              type="button"
+              className="wm-planner-btnPrimary"
+              data-testid="planner-resume-draft"
+              onClick={state.resumeWizardDraft}
+            >
+              Resume Draft
+            </button>
+            <button
+              type="button"
+              className="wm-planner-btnGhost"
+              data-testid="planner-start-fresh"
+              onClick={state.startFreshWizard}
+            >
+              Start Fresh
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="wm-er-vPlanner wm-planner-page">

@@ -1,5 +1,6 @@
 import type { PoolClient } from "pg";
 import { getPool } from "../../../db/pool.js";
+import { withResilientTransaction } from "../../../db/resilient.js";
 import type {
   ShiftApplicationRow,
   ShiftEventRow,
@@ -129,19 +130,77 @@ export const employerShiftRepository = {
     return Number(result.rows[0]?.count ?? 0);
   },
 
+  /** Wave-1: lock post row so vacancy checks and confirms cannot TOCTOU. */
+  async lockPostForUpdateTx(client: PoolClient, postId: string): Promise<ShiftPostRow | null> {
+    const result = await client.query<ShiftPostRow>(
+      `SELECT ${POST_SELECT}
+       FROM shift_posts
+       WHERE id = $1
+       FOR UPDATE`,
+      [postId],
+    );
+    return result.rows[0] ?? null;
+  },
+
+  async countConfirmedForPostTx(client: PoolClient, postId: string): Promise<number> {
+    const result = await client.query<{ count: string }>(
+      `SELECT COUNT(*)::text AS count
+       FROM shift_applications
+       WHERE post_id = $1 AND status = 'confirmed'`,
+      [postId],
+    );
+    return Number(result.rows[0]?.count ?? 0);
+  },
+
+  async findApplicationByIdTx(
+    client: PoolClient,
+    appId: string,
+  ): Promise<ShiftApplicationRow | null> {
+    const result = await client.query<ShiftApplicationRow>(
+      `SELECT ${APP_SELECT}
+       FROM shift_applications
+       WHERE id = $1
+       FOR UPDATE`,
+      [appId],
+    );
+    return result.rows[0] ?? null;
+  },
+
+  async findApplicationByPostAndWorkerTx(
+    client: PoolClient,
+    postId: string,
+    workerWmId: string,
+  ): Promise<ShiftApplicationRow | null> {
+    const result = await client.query<ShiftApplicationRow>(
+      `SELECT ${APP_SELECT}
+       FROM shift_applications
+       WHERE post_id = $1 AND upper(worker_wm_id) = upper($2)
+       FOR UPDATE`,
+      [postId, workerWmId],
+    );
+    return result.rows[0] ?? null;
+  },
+
+  async createApplicationTx(
+    client: PoolClient,
+    params: {
+      postId: string;
+      workerWmId: string;
+      details: Record<string, unknown>;
+    },
+  ): Promise<ShiftApplicationRow> {
+    const result = await client.query<ShiftApplicationRow>(
+      `INSERT INTO shift_applications (post_id, worker_wm_id, status, details)
+       VALUES ($1, $2, 'applied', $3::jsonb)
+       RETURNING ${APP_SELECT}`,
+      [params.postId, params.workerWmId, JSON.stringify(params.details)],
+    );
+    return result.rows[0];
+  },
+
   async withTransaction<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {
-    const client = await getPool().connect();
-    try {
-      await client.query("BEGIN");
-      const result = await fn(client);
-      await client.query("COMMIT");
-      return result;
-    } catch (err) {
-      await client.query("ROLLBACK");
-      throw err;
-    } finally {
-      client.release();
-    }
+    // Layer 5: lock/statement timeouts + deadlock retry (vacancy CAS safe)
+    return withResilientTransaction(fn, { retryOnDeadlock: true });
   },
 
   async updateApplicationStatusTx(
@@ -159,21 +218,81 @@ export const employerShiftRepository = {
     return result.rows[0] ?? null;
   },
 
+  /**
+   * Wave-1 CAS: only flip to target status when current status is confirmable.
+   * Prevents double-confirm races under concurrent writers.
+   */
+  async updateApplicationStatusIfConfirmableTx(
+    client: PoolClient,
+    appId: string,
+    status: string,
+    allowedFrom: readonly string[],
+  ): Promise<ShiftApplicationRow | null> {
+    const result = await client.query<ShiftApplicationRow>(
+      `UPDATE shift_applications
+       SET status = $2, updated_at = NOW()
+       WHERE id = $1 AND status = ANY($3::text[])
+       RETURNING ${APP_SELECT}`,
+      [appId, status, [...allowedFrom]],
+    );
+    return result.rows[0] ?? null;
+  },
+
   async createWorkspaceTx(
     client: PoolClient,
     params: { postId: string; appId: string; workerWmId: string },
   ): Promise<ShiftWorkspaceRow> {
-    const result = await client.query<ShiftWorkspaceRow>(
+    // Wave-5: never remap app_id on conflict — prevents workspace hijack across workers/apps
+    const inserted = await client.query<ShiftWorkspaceRow>(
       `INSERT INTO shift_workspaces (post_id, app_id, worker_wm_id, status)
        VALUES ($1, $2, $3, 'active')
-       ON CONFLICT (post_id, worker_wm_id) DO UPDATE
-         SET app_id = EXCLUDED.app_id,
-             status = 'active',
-             updated_at = NOW()
+       ON CONFLICT (post_id, worker_wm_id) DO NOTHING
        RETURNING id, post_id, app_id, worker_wm_id, status, created_at, updated_at`,
       [params.postId, params.appId, params.workerWmId],
     );
-    return result.rows[0];
+    if (inserted.rows[0]) return inserted.rows[0];
+
+    const existing = await client.query<ShiftWorkspaceRow>(
+      `SELECT id, post_id, app_id, worker_wm_id, status, created_at, updated_at
+       FROM shift_workspaces
+       WHERE post_id = $1 AND upper(worker_wm_id) = upper($2)
+       FOR UPDATE`,
+      [params.postId, params.workerWmId],
+    );
+    const row = existing.rows[0];
+    if (!row) {
+      throw Object.assign(new Error("Workspace conflict — insert failed"), {
+        code: "WORKSPACE_CONFLICT",
+        httpStatus: 409,
+      });
+    }
+    if (row.app_id !== params.appId) {
+      throw Object.assign(
+        new Error("Workspace already bound to a different application for this worker"),
+        { code: "WORKSPACE_APP_MISMATCH", httpStatus: 409 },
+      );
+    }
+    if (row.status !== "active") {
+      const reactivated = await client.query<ShiftWorkspaceRow>(
+        `UPDATE shift_workspaces
+         SET status = 'active', updated_at = NOW()
+         WHERE id = $1 AND app_id = $2
+         RETURNING id, post_id, app_id, worker_wm_id, status, created_at, updated_at`,
+        [row.id, params.appId],
+      );
+      if (reactivated.rows[0]) return reactivated.rows[0];
+    }
+    return row;
+  },
+
+  async findWorkspaceById(workspaceId: string): Promise<ShiftWorkspaceRow | null> {
+    const result = await getPool().query<ShiftWorkspaceRow>(
+      `SELECT id, post_id, app_id, worker_wm_id, status, created_at, updated_at
+       FROM shift_workspaces
+       WHERE id = $1`,
+      [workspaceId],
+    );
+    return result.rows[0] ?? null;
   },
 
   async findWorkspaceByPostAndApp(

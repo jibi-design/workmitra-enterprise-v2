@@ -2,7 +2,7 @@
 // File name: useShiftPostApplyState.ts
 // Live LS subscriptions for post / applications / workspace (P1-2)
 
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../../app/router/routePaths";
 import type { ConfirmData } from "../../../../../shared/components/ConfirmModal";
@@ -43,6 +43,8 @@ export function useShiftPostApplyState(postId: string) {
   const [toast, setToast] = useState("");
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(() => new Set(getFavoriteShiftIds()));
   const [now] = useState(() => Date.now());
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
 
   const postsRaw = useSyncExternalStore(subscribeShiftPosts, getPostsRawSnapshot, () => null);
   const appsRaw = useSyncExternalStore(subscribeShiftApps, getAppsRawSnapshot, () => null);
@@ -173,6 +175,8 @@ export function useShiftPostApplyState(postId: string) {
     setWithdrawConfirm,
     setDoubleBookingPending,
     setAttendanceConfirmPending,
+    isSubmittingRef,
+    setIsSubmitting,
   });
 
   function handleToggleSaved() {
@@ -187,6 +191,7 @@ export function useShiftPostApplyState(postId: string) {
 
   function submit() {
     if (!post) return;
+    if (isSubmittingRef.current) return;
 
     if (isClosedOrExpired) {
       showToast("This shift is no longer accepting applications.");
@@ -249,6 +254,7 @@ export function useShiftPostApplyState(postId: string) {
     isClosedOrExpired,
     canSubmit,
     submitBlockReason,
+    isSubmitting,
     cardStatus,
     isSavedShift,
     setQuickAnswers,

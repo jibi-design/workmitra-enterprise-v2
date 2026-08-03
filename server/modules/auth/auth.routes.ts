@@ -7,21 +7,24 @@ import { extractRequestMeta } from "./request-meta.js";
 import { SESSION_ABSOLUTE_TTL_SEC } from "./constants.js";
 import type { AuthUser } from "./types.js";
 import { issueCsrfForSession, revokeCsrfForSession, parseCookies } from "../../middleware/csrf.js";
-import { mintSupabaseSessionForJobMitraUser } from "./supabaseBridge.service.js";
+import {
+  mintSupabaseSessionForJobMitraUser,
+  revokeSupabaseSessionForUser,
+} from "./supabaseBridge.service.js";
+import { resolveClientIp } from "../../middleware/clientIp.js";
+import { logSecurityEvent } from "../../observability/securityEvents.js";
+import { parseWithSchema } from "../../validation/zodParse.js";
+import {
+  loginBodySchema,
+  supabaseBridgeBodySchema,
+} from "../../validation/schemas/auth.schemas.js";
 
 const LOGIN_ATTEMPT_LIMIT = 5;
 const LOGIN_LOCKOUT_MS = 60_000;
 const loginAttempts = new Map<string, { count: number; resetAt: number }>();
 
 function getClientIp(req: IncomingMessage): string {
-  const forwarded = req.headers["x-forwarded-for"];
-  if (typeof forwarded === "string" && forwarded.trim()) {
-    return forwarded.split(",")[0].trim();
-  }
-  if (Array.isArray(forwarded) && forwarded[0]) {
-    return forwarded[0].split(",")[0].trim();
-  }
-  return req.socket.remoteAddress ?? "unknown";
+  return resolveClientIp(req);
 }
 
 function isRateLimited(ip: string): { blocked: boolean; retryAfterSec: number } {
@@ -74,9 +77,31 @@ function sendJson(res: ServerResponse, status: number, body: unknown): void {
   res.end(JSON.stringify(body));
 }
 
-function buildSessionCookie(token: string, maxAgeSec: number): string {
-  const secure = secureCookiesEnabled() ? "; Secure" : "";
-  return `${SESSION_COOKIE}=${encodeURIComponent(token)}; HttpOnly; Path=/; Max-Age=${maxAgeSec}; SameSite=Strict${secure}`;
+/**
+ * Sprint 2 — Capacitor WebView (https://localhost) is cross-site vs API host.
+ * SameSite=Strict would drop wm_session; use None+Secure on HTTPS / when opted in.
+ */
+function resolveSessionSameSite(req?: IncomingMessage): "Strict" | "None" | "Lax" {
+  const forced = process.env.WM_COOKIE_SAMESITE?.trim();
+  if (forced === "None" || forced === "Strict" || forced === "Lax") {
+    return forced;
+  }
+  const origin = String(req?.headers?.origin ?? "").toLowerCase();
+  if (
+    origin.includes("localhost") ||
+    origin.startsWith("capacitor://") ||
+    origin.startsWith("ionic://") ||
+    origin.includes("android_asset")
+  ) {
+    return secureCookiesEnabled() ? "None" : "Lax";
+  }
+  return "Strict";
+}
+
+function buildSessionCookie(token: string, maxAgeSec: number, req?: IncomingMessage): string {
+  const sameSite = resolveSessionSameSite(req);
+  const secure = secureCookiesEnabled() || sameSite === "None" ? "; Secure" : "";
+  return `${SESSION_COOKIE}=${encodeURIComponent(token)}; HttpOnly; Path=/; Max-Age=${maxAgeSec}; SameSite=${sameSite}${secure}`;
 }
 
 function appendSetCookie(res: ServerResponse, value: string): void {
@@ -92,12 +117,12 @@ function appendSetCookie(res: ServerResponse, value: string): void {
   res.setHeader("Set-Cookie", [String(existing), value]);
 }
 
-function setSessionCookie(res: ServerResponse, token: string): void {
-  appendSetCookie(res, buildSessionCookie(token, SESSION_ABSOLUTE_TTL_SEC));
+function setSessionCookie(res: ServerResponse, token: string, req?: IncomingMessage): void {
+  appendSetCookie(res, buildSessionCookie(token, SESSION_ABSOLUTE_TTL_SEC, req));
 }
 
-function clearSessionCookie(res: ServerResponse): void {
-  appendSetCookie(res, buildSessionCookie("", 0));
+function clearSessionCookie(res: ServerResponse, req?: IncomingMessage): void {
+  appendSetCookie(res, buildSessionCookie("", 0, req));
 }
 
 async function readSessionUser(
@@ -169,10 +194,8 @@ export async function handleAuthRoutes(
       return true;
     }
 
-    const email = typeof body.email === "string" ? body.email : "";
-    const password = typeof body.password === "string" ? body.password : "";
-
-    if (!email || !password) {
+    const parsed = parseWithSchema(loginBodySchema, body);
+    if (!parsed.ok) {
       const err = errorEnvelope(
         "VALIDATION_ERROR",
         "Email and password are required",
@@ -183,10 +206,22 @@ export async function handleAuthRoutes(
       return true;
     }
 
+    const email = parsed.data.email;
+    const password = parsed.data.password;
+
     const ip = getClientIp(req);
     const rateLimit = isRateLimited(ip);
     if (rateLimit.blocked) {
       res.setHeader("Retry-After", String(rateLimit.retryAfterSec));
+      logSecurityEvent({
+        event: "RATE_LIMIT_HIT",
+        path: pathname,
+        method,
+        httpStatus: 429,
+        rateClass: "auth",
+        clientKey: ip,
+        meta: { source: "login_lockout", retryAfterSec: rateLimit.retryAfterSec },
+      });
       const err = errorEnvelope(
         "TOO_MANY_REQUESTS",
         "Too many login attempts. Please try again later.",
@@ -215,8 +250,8 @@ export async function handleAuthRoutes(
     } else {
       rawToken = sessionStore.create(loginResult.user.id);
     }
-    setSessionCookie(res, rawToken);
-    const csrfToken = issueCsrfForSession(res, rawToken, SESSION_ABSOLUTE_TTL_SEC);
+    setSessionCookie(res, rawToken, req);
+    const csrfToken = await issueCsrfForSession(res, rawToken, SESSION_ABSOLUTE_TTL_SEC, req);
     sendJson(res, 200, envelope({ user: loginResult.user, csrfToken }, requestId));
     return true;
   }
@@ -225,14 +260,24 @@ export async function handleAuthRoutes(
     const cookies = parseCookies(req.headers.cookie);
     const rawToken = cookies[SESSION_COOKIE];
     if (rawToken) {
+      // CRIT-1 — revoke bridged Supabase session before destroying Node session
+      const sessionUser = await readSessionUser(req);
+      if (sessionUser) {
+        await revokeSupabaseSessionForUser(sessionUser.user).catch((err) => {
+          console.warn(
+            "[Job Mitra Auth] Supabase session revoke on logout failed:",
+            err instanceof Error ? err.message : "unknown",
+          );
+        });
+      }
       if (isDbAuthEnabled()) {
         await sessionStore.deleteDb(rawToken, meta);
       } else {
         sessionStore.delete(rawToken);
       }
     }
-    revokeCsrfForSession(res, rawToken);
-    clearSessionCookie(res);
+    await revokeCsrfForSession(res, rawToken, req);
+    clearSessionCookie(res, req);
     sendJson(res, 200, envelope({ ok: true }, requestId));
     return true;
   }
@@ -257,11 +302,13 @@ export async function handleAuthRoutes(
       return true;
     }
     const body = (await readJsonBody(req)) ?? {};
+    const parsed = parseWithSchema(supabaseBridgeBodySchema, body);
+    const safe = parsed.ok ? parsed.data : {};
     const mitraLabId =
-      typeof body.mitraLabId === "string"
-        ? body.mitraLabId
-        : typeof body.jobmitra_ml_id === "string"
-          ? body.jobmitra_ml_id
+      typeof safe.mitraLabId === "string"
+        ? safe.mitraLabId
+        : typeof safe.jobmitra_ml_id === "string"
+          ? safe.jobmitra_ml_id
           : undefined;
     const minted = await mintSupabaseSessionForJobMitraUser(result.user, { mitraLabId });
     if (!minted.ok) {

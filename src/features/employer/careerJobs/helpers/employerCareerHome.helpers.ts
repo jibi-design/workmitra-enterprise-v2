@@ -3,7 +3,8 @@
 // Home KPI snapshot — posts + apps reactive (Wave 2)
 
 import type { CareerJobPost } from "../types/careerTypes";
-import { CAREER_APPS_CHANGED, CAREER_APPS_KEY, CAREER_POSTS_KEY } from "./careerStorageUtils";
+import { CAREER_APPS_CHANGED, CAREER_APPS_KEY } from "./careerStorageUtils";
+import { resolveCareerEmployerScopedKey } from "../../../shared/career/careerEmployerScope";
 import { readCareerApps, readCareerPosts } from "./careerNormalizers";
 import { recomputePostAnalytics } from "./careerValidation";
 import { CAREER_EVENTS } from "../services/careerPipelineService";
@@ -24,7 +25,7 @@ function recomputeHomePosts(): CareerJobPost[] {
 }
 
 export function getCareerHomePostsSnapshot(): CareerJobPost[] {
-  const postsRaw = localStorage.getItem(CAREER_POSTS_KEY);
+  const postsRaw = localStorage.getItem(resolveCareerEmployerScopedKey("career_posts_v1"));
   const appsRaw = localStorage.getItem(CAREER_APPS_KEY);
 
   if (postsRaw !== cachedPostsRaw || appsRaw !== cachedAppsRaw) {

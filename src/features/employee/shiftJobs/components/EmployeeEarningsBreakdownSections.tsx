@@ -17,7 +17,7 @@ export function EmployeeEarningsBreakdownSections({
     <>
       {summary.byMonth.length > 0 && (
         <div className="wm-ee-card" style={{ marginTop: 14 }}>
-          <SectionTitle title="Monthly Earnings" />
+          <SectionTitle title="Estimated Monthly Earnings" />
           <EmployeeEarningsMiniBarChart data={summary.byMonth} />
         </div>
       )}

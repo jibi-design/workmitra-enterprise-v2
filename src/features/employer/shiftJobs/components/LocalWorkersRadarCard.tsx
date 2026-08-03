@@ -1,11 +1,14 @@
 // App name: Job Mitra
 // Local Workers Radar — read-only dual-count (Anti-Leakage). No browse, no click action.
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import {
   readLocalWorkersRadarMetricsSnapshot,
   subscribeLocalWorkersRadarMetrics,
 } from "../helpers/localWorkersRadar.helpers";
+import { availabilityStorage } from "../../../shared/shift/availability.reader";
+import { AvailabilitySyncDebugChip } from "./AvailabilitySyncDebugChip";
+import { ensureAvailabilitySyncDebugListener } from "../../../shared/shift/availabilitySyncDebug";
 
 function RadarIcon() {
   return (
@@ -23,6 +26,10 @@ function readMetrics() {
 }
 
 export function LocalWorkersRadarCard() {
+  useEffect(() => {
+    ensureAvailabilitySyncDebugListener();
+  }, []);
+
   const { totalAvailableCount, favoriteAvailableCount } = useSyncExternalStore(
     subscribeLocalWorkersRadarMetrics,
     readMetrics,
@@ -32,6 +39,7 @@ export function LocalWorkersRadarCard() {
   const hasMatches = totalAvailableCount > 0;
   const hasFavoriteMatches = favoriteAvailableCount > 0;
   const workerLabel = totalAvailableCount === 1 ? "worker" : "workers";
+  const poolIds = availabilityStorage.getAllActive().map((b) => b.workerMlId);
 
   return (
     <section
@@ -71,6 +79,16 @@ export function LocalWorkersRadarCard() {
           )}
         </div>
       </div>
+
+      <AvailabilitySyncDebugChip
+        label="Local Workers Radar"
+        lines={[
+          `total=${totalAvailableCount}`,
+          `favoritesFree=${favoriteAvailableCount}`,
+          `pool=[${poolIds.slice(0, 5).join(",")}${poolIds.length > 5 ? "…" : ""}]`,
+          `event=${availabilityStorage.CHANGED_EVENT}`,
+        ]}
+      />
     </section>
   );
 }

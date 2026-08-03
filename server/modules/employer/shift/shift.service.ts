@@ -274,6 +274,30 @@ export const employerShiftService = {
     return { ok: true, workspace };
   },
 
+  async getOwnedPost(postId: string, employer: AuthUser): Promise<ShiftPostMutationResult> {
+    if (!isShiftUuid(postId)) {
+      return {
+        ok: false,
+        code: "VALIDATION_ERROR",
+        message: "postId must be a valid UUID",
+        httpStatus: 400,
+      };
+    }
+    const post = await employerShiftRepository.findPostById(postId);
+    if (!post) {
+      return { ok: false, code: "NOT_FOUND", message: "Shift post not found", httpStatus: 404 };
+    }
+    if (post.employer_id !== employer.id) {
+      return {
+        ok: false,
+        code: "FORBIDDEN",
+        message: "You do not own this shift post",
+        httpStatus: 403,
+      };
+    }
+    return { ok: true, post };
+  },
+
   async getPublishedPost(postId: string): Promise<ShiftPostRow | null> {
     if (!isShiftUuid(postId)) return null;
     const post = await employerShiftRepository.findPostById(postId);

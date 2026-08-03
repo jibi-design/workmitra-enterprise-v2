@@ -145,7 +145,7 @@ export function aggregateCareerRatings(): {
   const coveredJobIds = new Set<string>();
   const normalizedWorkerId = workerMlId.toUpperCase();
 
-  for (const entry of getVaultCareerHistory()) {
+  for (const entry of getVaultCareerHistory(workerMlId)) {
     if (entry.employeeMlId.trim().toUpperCase() !== normalizedWorkerId) continue;
 
     const employerRating = entry.employerRating;

@@ -1,9 +1,10 @@
 import { hash, verify } from "@node-rs/argon2";
 
+/** MED-5 — OWASP Password Storage Cheat Sheet (2023) Argon2id minimums. */
 const ARGON2_OPTIONS = {
-  memoryCost: 19456,
-  timeCost: 2,
-  parallelism: 1,
+  memoryCost: 65536, // 64 MiB
+  timeCost: 3,
+  parallelism: 4,
   algorithm: 2 as const, // argon2id
 };
 
@@ -13,7 +14,8 @@ export async function hashPassword(plain: string): Promise<string> {
 
 export async function verifyPassword(plain: string, passwordHash: string): Promise<boolean> {
   try {
-    return await verify(passwordHash, plain, ARGON2_OPTIONS);
+    // Params are embedded in the encoded hash — legacy hashes still verify.
+    return await verify(passwordHash, plain);
   } catch {
     return false;
   }

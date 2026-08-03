@@ -115,7 +115,7 @@ export function ShiftSearchPage() {
       </div>
 
       {showSmartMatches ? (
-        <Section eyebrow="Intelligence" title="Smart Matches">
+        <Section eyebrow="Discovery" title="Profile Fit Score">
           <ShiftSearchSmartMatches
             matches={page.smartMatches}
             matchQuality={page.matchQuality}

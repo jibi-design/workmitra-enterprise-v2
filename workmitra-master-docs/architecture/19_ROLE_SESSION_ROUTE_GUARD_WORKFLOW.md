@@ -135,6 +135,7 @@ Rules:
 - do not call it secure login
 - do not claim backend account ownership
 - do not treat local role as server permission
+- Wave-3: dual-tab Employer + Employee with shared localStorage is a Phase-0 lab harness only — not tenant/user isolation. Production AUTH-on syncs peer tabs to one account/session.
 
 Safe wording:
 

@@ -4,8 +4,16 @@
 
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { notifyCrossRole } from "../../../../features/pulse/pulseEventBridge";
+import { mergeServerApplicationIntoLsCache } from "../../../career/services/careerDbTruth.service";
+import {
+  careerGateApi,
+  isCareerApiSyncEnabled,
+  resolveCareerGateApplicationId,
+  resolveCareerGatePostId,
+} from "../../../career/services/careerGateApi.service";
 import { readCareerApps, writeCareerApps } from "../helpers/careerNormalizers";
 import { hasSimilarCareerNote, pushCareerActivity } from "../helpers/careerNotifications";
+import { canTransition } from "../helpers/careerValidation";
 import type { InterviewScheduleInput, RoundResult, RoundResultStatus } from "../types/careerTypes";
 import { getCareerPost } from "./careerPostService";
 
@@ -58,16 +66,51 @@ function canRecordScheduledRound(round: RoundResult): boolean {
   return scheduledAt !== null && scheduledAt <= Date.now();
 }
 
-export function scheduleInterview(
+async function syncInterviewServerStatus(params: {
+  postId: string;
+  appId: string;
+  priorApps: ReturnType<typeof readCareerApps>;
+  serverStatus: "interview_scheduled" | "rejected";
+}): Promise<boolean> {
+  if (!isCareerApiSyncEnabled()) return true;
+
+  const serverPostId = resolveCareerGatePostId(params.postId);
+  const serverAppId = resolveCareerGateApplicationId(params.appId);
+
+  if (!serverPostId || !serverAppId) {
+    writeCareerApps(params.priorApps);
+    return false;
+  }
+
+  try {
+    const dto = await careerGateApi.updateApplicationStatus(
+      serverPostId,
+      serverAppId,
+      params.serverStatus,
+    );
+    mergeServerApplicationIntoLsCache(dto, params.appId);
+    return true;
+  } catch {
+    writeCareerApps(params.priorApps);
+    return false;
+  }
+}
+
+export async function scheduleInterview(
   postId: string,
   appId: string,
   roundNumber: number,
   details: InterviewScheduleInput,
-): boolean {
+): Promise<boolean> {
   const apps = readCareerApps();
   const app = apps.find((item) => item.id === appId && item.jobId === postId);
   if (!app) return false;
-  if (app.stage !== "shortlisted" && app.stage !== "interview") return false;
+  // C-INT-2: use canTransition for first move into interview; re-schedule stays on interview.
+  if (app.stage === "interview") {
+    /* already interviewing — additional round OK */
+  } else if (!canTransition(app.stage, "interview")) {
+    return false;
+  }
   if (!isValidInterviewSchedule(details)) return false;
 
   const post = getCareerPost(postId);
@@ -90,6 +133,7 @@ export function scheduleInterview(
   };
 
   const now = Date.now();
+  const priorApps = apps;
 
   const updatedResults = [
     ...app.roundResults.filter((round) => round.round !== roundNumber),
@@ -111,6 +155,14 @@ export function scheduleInterview(
   );
 
   if (!writeResult.ok) return false;
+
+  const synced = await syncInterviewServerStatus({
+    postId,
+    appId,
+    priorApps,
+    serverStatus: "interview_scheduled",
+  });
+  if (!synced) return false;
 
   pushCareerActivity({
     postId,
@@ -137,13 +189,13 @@ export function scheduleInterview(
   return true;
 }
 
-export function recordInterviewResult(
+export async function recordInterviewResult(
   postId: string,
   appId: string,
   roundNumber: number,
   result: "passed" | "failed",
   feedback: string,
-): boolean {
+): Promise<boolean> {
   const apps = readCareerApps();
   const app = apps.find((item) => item.id === appId && item.jobId === postId);
   if (!app || app.stage !== "interview") return false;
@@ -161,6 +213,7 @@ export function recordInterviewResult(
   if (!post) return false;
 
   const now = Date.now();
+  const priorApps = apps;
 
   const updatedResults = app.roundResults.map((round) =>
     round.round === roundNumber
@@ -196,6 +249,16 @@ export function recordInterviewResult(
   );
 
   if (!writeResult.ok) return false;
+
+  if (shouldAutoReject) {
+    const synced = await syncInterviewServerStatus({
+      postId,
+      appId,
+      priorApps,
+      serverStatus: "rejected",
+    });
+    if (!synced) return false;
+  }
 
   const roundConfig = post.roundConfigs.find((round) => round.round === roundNumber);
   const roundLabel = roundConfig?.label ?? `Round ${roundNumber}`;

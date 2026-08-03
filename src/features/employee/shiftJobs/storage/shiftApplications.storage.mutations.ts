@@ -208,8 +208,8 @@ export function confirmAttendance(applicationId: string): ConfirmShiftAttendance
         postId: notifiedPostId,
         appId: applicationId,
         severity: "success",
-        title: "Worker confirmed attendance intent",
-        body: "A confirmed worker marked that they plan to attend (intent only — not QR check-in).",
+        title: "Worker saved attendance intent",
+        body: "A confirmed worker marked that they plan to attend (Attendance Intent / Check-in Signal — not a legal timecard).",
         route: ROUTE_PATHS.employerShiftPostDashboard.replace(":postId", notifiedPostId),
       });
     } catch {

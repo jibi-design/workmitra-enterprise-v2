@@ -199,7 +199,8 @@ export function CareerPostCandidateList({
             tab={tab}
             isBusy={isBusy}
             isBackupSuggestion={
-              (tab === "applied" || tab === "backup") && backupSuggestionIds.has(app.id)
+              (tab === "applied" || tab === "backup") &&
+              (app.backupReserved === true || backupSuggestionIds.has(app.id))
             }
             onShortlist={onShortlist}
             onRemoveFromShortlist={onRemoveFromShortlist}

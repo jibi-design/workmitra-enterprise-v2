@@ -1,8 +1,10 @@
 import type { NavigateFunction } from "react-router-dom";
-import { getCurrentActorId, identityBridge } from "../../../../app/identity/identity.adapter";
+import {
+  AuthIdentityRequiredError,
+  resolveActorStorageId,
+} from "../../../../app/identity/identity.adapter";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import type { NoticeData } from "../../../../shared/components/NoticeModal";
-import { employerSettingsStorage } from "../../company/storage/employerSettings.storage";
 import type { ScreeningQuestion } from "../components/CareerCreateScreeningSection";
 import type { StepBasicData } from "../components/CareerCreateStepBasic";
 import type { StepInterviewData } from "../components/CareerCreateStepInterview";
@@ -35,12 +37,20 @@ export async function publishEmployerCareerPost({
       ? clampInt(Number(req.noticePeriodCustomDays) || 0, 0, 365)
       : clampInt(Number(req.noticePeriodDays) || 0, 0, 365);
 
-  const employerProfile = employerSettingsStorage.get();
-  const legacyEmployerId = employerProfile.uniqueId?.trim() || "employer_demo";
-  const actor = getCurrentActorId("employer");
-  const realLegacy = employerProfile.uniqueId?.trim();
-  if (actor.source === "auth" && actor.authUserId && realLegacy) {
-    identityBridge.upsert("employer", realLegacy, actor.authUserId);
+  let legacyEmployerId: string;
+  try {
+    legacyEmployerId = resolveActorStorageId("employer", "employer_demo");
+  } catch (err) {
+    if (err instanceof AuthIdentityRequiredError) {
+      setNotice({
+        title: "Cannot Publish Job",
+        message:
+          "Sign in as an employer is required to publish. Demo employer id is disabled when AUTH is on.",
+        tone: "warn",
+      });
+      return;
+    }
+    throw err;
   }
 
   const postId = await createCareerPost({

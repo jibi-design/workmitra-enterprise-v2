@@ -181,6 +181,17 @@ export const careerGateApi = {
     return res.data.application;
   },
 
+  async withdrawApplication(applicationId: string): Promise<ServerCareerApplicationDto> {
+    syncActorIdentityBridge("employee");
+    const res = await apiService.post<ApiEnvelope<{ application: unknown }>>(
+      `${EMPLOYEE_CAREER}/applications/${encodeURIComponent(applicationId)}/withdraw`,
+      {},
+    );
+    const application = asServerApplication(res.data.application);
+    if (!application) throw new Error("Invalid withdraw response: missing application");
+    return application;
+  },
+
   async listPublishedJobs(): Promise<ServerCareerPostDto[]> {
     syncActorIdentityBridge("employee");
     const res = await apiService.get<ApiEnvelope<{ posts: unknown }>>(`${EMPLOYEE_CAREER}/jobs`);

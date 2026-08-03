@@ -42,19 +42,23 @@ export function ShiftPostApplyStatusCards({
 
       {isConfirmed ? (
         <StatusCard
-          title={attendanceConfirmed ? "Intent confirmed" : "Confirm you will attend"}
+          title={
+            attendanceConfirmed
+              ? "Attendance intent saved"
+              : "Confirm Attendance Intent / Check-in Signal"
+          }
           helper={
             attendanceConfirmed
-              ? "You confirmed you plan to attend. Keep checking the workspace and arrive on time."
-              : "You are selected for this shift. Confirm only if you are available and will attend on time."
+              ? "Your check-in signal is saved. Keep checking the workspace and arrive on time."
+              : "You are selected for this shift. Save attendance intent only if you plan to attend on time."
           }
           tone={attendanceConfirmed ? "success" : "info"}
-          actionLabel={attendanceConfirmed ? undefined : "I will attend"}
+          actionLabel={attendanceConfirmed ? undefined : "Save attendance intent"}
           onAction={attendanceConfirmed ? undefined : onConfirmAttendance}
           footer={
             attendanceConfirmed
-              ? "This is attendance intent only — not QR punch-in, timers, or payroll (those are planned for v2.1)."
-              : "This is not QR check-in, a timer, or payment. It only confirms your intention to attend."
+              ? "Attendance Intent / Check-in Signal only — not a legal timecard, QR punch-in, timer, or payroll (v2.1)."
+              : "This is a check-in signal only — not a legal timecard, QR check-in, timer, or payroll punch-in."
           }
         />
       ) : null}

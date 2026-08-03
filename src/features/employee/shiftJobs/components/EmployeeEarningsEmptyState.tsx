@@ -15,11 +15,11 @@ export function EmployeeEarningsEmptyState({ domain = "shift" }: Props) {
   return (
     <EnterpriseEmpty
       domain={isPlanner ? "planner" : "shift"}
-      title="No earnings yet"
+      title="No estimated earnings yet"
       subtitle={
         isPlanner
-          ? "Estimated gig pay appears after confirmed plan days. Direct payouts are planned for a later release."
-          : "Estimated totals appear after you are confirmed. Direct payout and settlement are planned for v2.1."
+          ? "Estimated gig pay appears after confirmed plan days. These are estimates only — not payroll. Direct payouts are planned for a later release."
+          : "Estimated Earnings appear after you are confirmed. These figures are planning estimates only — not payroll, payout, or settlement (planned for v2.1)."
       }
       primaryLabel={isPlanner ? "Browse Projects" : "Find Shifts"}
       onPrimary={() =>

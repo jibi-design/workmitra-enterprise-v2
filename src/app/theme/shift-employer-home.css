@@ -1495,4 +1495,18 @@
   .wm-shiftOpsActionPill:active:not(:disabled) {
     transform: none;
   }
+
+  /* Wave-3: Shift Ops ready toggle */
+  .wm-shiftOpsReadyToggle,
+  .wm-shiftOpsReadyToggleKnob {
+    transition: none !important;
+  }
+}
+
+.wm-shiftOpsReadyToggle {
+  transition: background 160ms ease;
+}
+
+.wm-shiftOpsReadyToggleKnob {
+  transition: transform 160ms ease;
 }

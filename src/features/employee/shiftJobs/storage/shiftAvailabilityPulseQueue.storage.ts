@@ -76,14 +76,14 @@ export const shiftAvailabilityPulseQueueStorage = {
 
   /** Returns postId and removes the pending pulse for this worker. */
   consumeForWorker(workerMlId: string): string | null {
-    const id = workerMlId.trim();
+    const id = workerMlId.trim().toUpperCase();
     if (!id) return null;
 
     const existing = read();
-    const match = existing.find((entry) => entry.workerMlId === id);
+    const match = existing.find((entry) => entry.workerMlId.trim().toUpperCase() === id);
     if (!match) return null;
 
-    write(existing.filter((entry) => entry.workerMlId !== id));
+    write(existing.filter((entry) => entry.workerMlId.trim().toUpperCase() !== id));
     return match.postId;
   },
 

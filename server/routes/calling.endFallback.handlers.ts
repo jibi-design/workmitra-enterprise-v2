@@ -11,6 +11,11 @@ import { initiatePhoneCallFallback } from "../modules/calling/twilioFallback.ser
 import type { CallSessionStatus } from "../modules/calling/calling.types.js";
 import { envelope, readJsonBody, sendJson } from "../utils/http.js";
 import { asString, isParty, normalizeMl } from "./calling.httpHelpers.js";
+import { parseWithSchema } from "../validation/zodParse.js";
+import {
+  callEndBodySchema,
+  callFallbackBodySchema,
+} from "../validation/schemas/calling.schemas.js";
 
 export async function handleEnd(req: AuthenticatedRequest, res: ServerResponse): Promise<void> {
   const { requestId } = req;
@@ -22,9 +27,17 @@ export async function handleEnd(req: AuthenticatedRequest, res: ServerResponse):
     return;
   }
 
-  const callSessionId = asString(body.callSessionId ?? body.call_session_id);
-  const partyMl = normalizeMl(asString(body.partyMl ?? body.party_ml));
-  const rawStatus = asString(body.status).toLowerCase();
+  const parsed = parseWithSchema(callEndBodySchema, body);
+  if (!parsed.ok) {
+    sendJson(res, 400, {
+      error: { code: "VALIDATION_ERROR", message: "Invalid call end body", requestId },
+    });
+    return;
+  }
+
+  const callSessionId = asString(parsed.data.callSessionId ?? parsed.data.call_session_id);
+  const partyMl = normalizeMl(asString(parsed.data.partyMl ?? parsed.data.party_ml));
+  const rawStatus = asString(parsed.data.status).toLowerCase();
   const nextStatus: CallSessionStatus =
     rawStatus === "declined" || rawStatus === "failed" ? rawStatus : "ended";
 
@@ -84,9 +97,19 @@ export async function handleFallback(
     return;
   }
 
-  const callSessionId = asString(body.callSessionId ?? body.call_session_id);
-  const partyMl = normalizeMl(asString(body.partyMl ?? body.party_ml ?? body.initiatorMl));
-  const toE164 = asString(body.toE164 ?? body.to_e164 ?? body.to);
+  const parsed = parseWithSchema(callFallbackBodySchema, body);
+  if (!parsed.ok) {
+    sendJson(res, 400, {
+      error: { code: "VALIDATION_ERROR", message: "Invalid call fallback body", requestId },
+    });
+    return;
+  }
+
+  const callSessionId = asString(parsed.data.callSessionId ?? parsed.data.call_session_id);
+  const partyMl = normalizeMl(
+    asString(parsed.data.partyMl ?? parsed.data.party_ml ?? parsed.data.initiatorMl),
+  );
+  const toE164 = asString(parsed.data.toE164 ?? parsed.data.to_e164 ?? parsed.data.to);
 
   if (!callSessionId || !partyMl || !toE164) {
     sendJson(res, 400, {

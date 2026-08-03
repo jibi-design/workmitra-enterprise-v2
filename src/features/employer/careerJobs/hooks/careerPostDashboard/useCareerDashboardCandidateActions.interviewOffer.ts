@@ -55,8 +55,11 @@ export function createCareerDashboardInterviewOfferActions(ctx: CareerCandidateA
       return;
     }
 
-    busy(() => {
-      const ok = scheduleInterview(postId, scheduleTarget.appId, scheduleTarget.roundNumber, data);
+    const target = scheduleTarget;
+    setScheduleTarget(null);
+
+    busy(async () => {
+      const ok = await scheduleInterview(postId, target.appId, target.roundNumber, data);
 
       if (ok) {
         setTab("interview");
@@ -64,8 +67,6 @@ export function createCareerDashboardInterviewOfferActions(ctx: CareerCandidateA
         setNotice({ title: "Cannot schedule", message: "Interview could not be scheduled." });
       }
     });
-
-    setScheduleTarget(null);
   }
 
   function handleResultOpen(appId: string, roundNumber: number) {
@@ -99,11 +100,14 @@ export function createCareerDashboardInterviewOfferActions(ctx: CareerCandidateA
       return;
     }
 
-    busy(() => {
-      const ok = recordInterviewResult(
+    const target = resultTarget;
+    setResultTarget(null);
+
+    busy(async () => {
+      const ok = await recordInterviewResult(
         postId,
-        resultTarget.appId,
-        resultTarget.roundNumber,
+        target.appId,
+        target.roundNumber,
         result,
         feedback,
       );
@@ -115,8 +119,6 @@ export function createCareerDashboardInterviewOfferActions(ctx: CareerCandidateA
         });
       }
     });
-
-    setResultTarget(null);
   }
 
   function handleSendOfferOpen(appId: string) {
