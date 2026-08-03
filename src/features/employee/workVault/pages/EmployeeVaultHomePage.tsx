@@ -157,6 +157,12 @@ function EmployeeVaultHomeContent({ initialTab }: { initialTab: TabId }) {
 
   const deletingFolder = folders.find((f) => f.id === deletingFolderId);
 
+  const [shellReady, setShellReady] = useState(false);
+  useEffect(() => {
+    const id = window.requestAnimationFrame(() => setShellReady(true));
+    return () => window.cancelAnimationFrame(id);
+  }, []);
+
   return (
     <div className="wm-vault-home wm-stackGrid">
       {/* Header — L-V1 slate luxury hero */}
@@ -186,35 +192,46 @@ function EmployeeVaultHomeContent({ initialTab }: { initialTab: TabId }) {
         ))}
       </div>
 
-      {/* Active session banner */}
-      {sessionInfo && (
-        <div style={{ marginTop: "var(--wm-stack-gap)" }}>
-          <ActiveSessionBanner
-            employerName={sessionInfo.employerName}
-            onRevoke={handleRevokeSession}
-            getRemainingMs={
-              sessionInfo.source === "vault"
-                ? () => getSessionRemainingMs(sessionInfo.sessionId)
-                : undefined
-            }
-          />
+      {!shellReady ? (
+        <div className="wm-vault-skeleton" aria-hidden="true" data-testid="vault-home-skeleton">
+          <div className="wm-vault-skeleton__block wm-vault-skeleton__block--sm" />
+          <div className="wm-vault-skeleton__block wm-vault-skeleton__block--lg" />
+          <div className="wm-vault-skeleton__block" />
+          <div className="wm-vault-skeleton__block" />
         </div>
-      )}
+      ) : (
+        <>
+          {/* Active session banner */}
+          {sessionInfo && (
+            <div style={{ marginTop: "var(--wm-stack-gap)" }}>
+              <ActiveSessionBanner
+                employerName={sessionInfo.employerName}
+                onRevoke={handleRevokeSession}
+                getRemainingMs={
+                  sessionInfo.source === "vault"
+                    ? () => getSessionRemainingMs(sessionInfo.sessionId)
+                    : undefined
+                }
+              />
+            </div>
+          )}
 
-      {/* Tab content */}
-      {activeTab === "profile" && <VaultProfileTab data={vaultData} />}
-      {activeTab === "documents" && (
-        <VaultDocumentsTab
-          folders={folders}
-          docCounts={docCounts}
-          totalDocs={totalDocs}
-          onCreateFolder={() => setShowCreateModal(true)}
-          onDeleteFolder={setDeletingFolderId}
-          onToggleVisibility={handleToggleVisibility}
-          onBulkVisibility={handleBulkVisibility}
-        />
+          {/* Tab content */}
+          {activeTab === "profile" && <VaultProfileTab data={vaultData} />}
+          {activeTab === "documents" && (
+            <VaultDocumentsTab
+              folders={folders}
+              docCounts={docCounts}
+              totalDocs={totalDocs}
+              onCreateFolder={() => setShowCreateModal(true)}
+              onDeleteFolder={setDeletingFolderId}
+              onToggleVisibility={handleToggleVisibility}
+              onBulkVisibility={handleBulkVisibility}
+            />
+          )}
+          {activeTab === "verify" && <VaultVerifyEmployerTab />}
+        </>
       )}
-      {activeTab === "verify" && <VaultVerifyEmployerTab />}
 
       <div style={{ height: 88 }} />
 

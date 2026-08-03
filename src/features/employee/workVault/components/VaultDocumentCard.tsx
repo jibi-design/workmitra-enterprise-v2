@@ -2,11 +2,8 @@
 
 import { useState } from "react";
 import type { VaultDocument } from "../types/vaultTypes";
-import { VAULT_ACCENT, vaultAccentMix } from "../constants/vaultConstants";
+import { VAULT_ACCENT } from "../constants/vaultConstants";
 
-/* ------------------------------------------------ */
-/* Icons                                            */
-/* ------------------------------------------------ */
 function IconPdf() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
@@ -29,22 +26,49 @@ function IconImage() {
   );
 }
 
-/* ------------------------------------------------ */
-/* Props                                            */
-/* ------------------------------------------------ */
+type DocCredentialStatus = "valid" | "expiring" | "expired" | "locked";
+
+const STATUS_LABEL: Record<DocCredentialStatus, string> = {
+  valid: "Valid",
+  expiring: "Expiring",
+  expired: "Expired",
+  locked: "Locked",
+};
+
+function resolveDocCredentialStatus(
+  doc: VaultDocument,
+  folderLocked: boolean,
+  now: number,
+): DocCredentialStatus {
+  if (folderLocked) return "locked";
+  if (!doc.expiryDate) return "valid";
+
+  const expiryMs = new Date(`${doc.expiryDate}T00:00:00`).getTime();
+  if (Number.isNaN(expiryMs)) return "valid";
+  if (expiryMs < now) return "expired";
+
+  const daysLeft = (expiryMs - now) / (1000 * 60 * 60 * 24);
+  if (daysLeft <= 30) return "expiring";
+  return "valid";
+}
+
 type VaultDocumentCardProps = {
   doc: VaultDocument;
   onView: (docId: string) => void;
   onDelete: (docId: string) => void;
+  /** When folder is OTP-hidden, treat credentials as Locked in the UI. */
+  folderLocked?: boolean;
 };
 
-/* ------------------------------------------------ */
-/* Component                                        */
-/* ------------------------------------------------ */
-export function VaultDocumentCard({ doc, onView, onDelete }: VaultDocumentCardProps) {
+export function VaultDocumentCard({
+  doc,
+  onView,
+  onDelete,
+  folderLocked = false,
+}: VaultDocumentCardProps) {
   const [now] = useState(() => Date.now());
-
-  const isExpired = doc.expiryDate ? new Date(doc.expiryDate + "T00:00:00").getTime() < now : false;
+  const [revealed, setRevealed] = useState(false);
+  const status = resolveDocCredentialStatus(doc, folderLocked, now);
 
   const uploadDate = new Date(doc.uploadedAt).toLocaleDateString(undefined, {
     year: "numeric",
@@ -52,10 +76,13 @@ export function VaultDocumentCard({ doc, onView, onDelete }: VaultDocumentCardPr
     day: "numeric",
   });
 
+  const hasImagePreview = Boolean(doc.thumbnailBase64 && doc.fileType === "image");
+
   return (
     <div
       role="button"
       tabIndex={0}
+      className={`wm-vault-doc-card${revealed ? " wm-vault-doc-card--revealed" : ""}`}
       onClick={() => onView(doc.id)}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -63,39 +90,31 @@ export function VaultDocumentCard({ doc, onView, onDelete }: VaultDocumentCardPr
           onView(doc.id);
         }
       }}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 12,
-        padding: "12px 14px",
-        borderRadius: "var(--wm-radius-button)",
-        border: "1px solid var(--wm-emp-border, rgba(15, 23, 42, 0.08))",
-        background: "#fff",
-        cursor: "pointer",
-      }}
+      onFocus={() => setRevealed(true)}
+      onBlur={() => setRevealed(false)}
+      onMouseEnter={() => setRevealed(true)}
+      onMouseLeave={() => setRevealed(false)}
     >
-      {/* Left: thumbnail + info */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-        {/* Thumbnail */}
+      <div className="wm-vault-doc-card__main">
         <div
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: "var(--wm-radius-10)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            overflow: "hidden",
-            flexShrink: 0,
-            background: doc.fileType === "pdf" ? "rgba(220, 38, 38, 0.08)" : `${vaultAccentMix(6)}`,
-          }}
+          className={`wm-vault-doc-card__thumb${
+            status === "locked" ? " wm-vault-doc-card__thumb--locked" : ""
+          }`}
+          style={
+            !hasImagePreview
+              ? {
+                  background:
+                    doc.fileType === "pdf" ? "rgba(220, 38, 38, 0.08)" : "rgba(15, 23, 42, 0.04)",
+                }
+              : undefined
+          }
         >
-          {doc.thumbnailBase64 && doc.fileType === "image" ? (
+          {hasImagePreview ? (
             <img
               src={doc.thumbnailBase64}
-              alt={doc.name}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              alt=""
+              className="wm-vault-doc-card__thumb-img"
+              draggable={false}
             />
           ) : doc.fileType === "pdf" ? (
             <span style={{ color: "#dc2626" }}>
@@ -106,87 +125,34 @@ export function VaultDocumentCard({ doc, onView, onDelete }: VaultDocumentCardPr
               <IconImage />
             </span>
           )}
+          {(status === "locked" || (hasImagePreview && !revealed)) && (
+            <span className="wm-vault-doc-card__thumb-veil" aria-hidden="true">
+              {status === "locked" ? "Locked" : "Secure"}
+            </span>
+          )}
         </div>
 
-        {/* Info */}
-        <div style={{ minWidth: 0 }}>
-          <div
-            style={{
-              fontWeight: 700,
-              fontSize: 13,
-              color: "var(--wm-emp-text)",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {doc.name}
-          </div>
-          <div
-            style={{
-              display: "flex",
-              gap: 8,
-              marginTop: 3,
-              flexWrap: "wrap",
-              alignItems: "center",
-            }}
-          >
-            <span style={{ fontSize: 11, color: "var(--wm-emp-muted)" }}>{uploadDate}</span>
-            <span
-              style={{
-                fontSize: 11,
-                color: "var(--wm-emp-muted)",
-                textTransform: "uppercase",
-                fontWeight: 800,
-              }}
-            >
-              {doc.fileType}
+        <div className="wm-vault-doc-card__copy">
+          <div className="wm-vault-doc-card__title">{doc.name}</div>
+          <div className="wm-vault-doc-card__meta">
+            <span className="wm-vault-doc-card__meta-text">{uploadDate}</span>
+            <span className="wm-vault-doc-card__meta-type">{doc.fileType}</span>
+            <span className={`wm-vault-doc-status wm-vault-doc-status--${status}`}>
+              {STATUS_LABEL[status]}
+              {status === "expiring" && doc.expiryDate ? ` · ${doc.expiryDate}` : ""}
             </span>
-            {doc.expiryDate && (
-              <span
-                style={{
-                  fontSize: 10,
-                  fontWeight: 800,
-                  padding: "1px 6px",
-                  borderRadius: "var(--wm-radius-pill)",
-                  background: isExpired ? "rgba(220, 38, 38, 0.08)" : "rgba(22, 163, 74, 0.08)",
-                  color: isExpired ? "#dc2626" : "#15803d",
-                  border: isExpired
-                    ? "1px solid rgba(220, 38, 38, 0.20)"
-                    : "1px solid rgba(22, 163, 74, 0.20)",
-                }}
-              >
-                {isExpired ? "Expired" : `Exp: ${doc.expiryDate}`}
-              </span>
-            )}
           </div>
         </div>
       </div>
 
-      {/* Right: delete */}
       <button
         type="button"
+        className="wm-vault-doc-card__delete"
         onClick={(e) => {
           e.stopPropagation();
           onDelete(doc.id);
         }}
         aria-label={`Delete ${doc.name}`}
-        style={{
-          width: 30,
-          height: 30,
-          borderRadius: "var(--wm-radius-8)",
-          border: "none",
-          background: "rgba(220, 38, 38, 0.08)",
-          color: "#dc2626",
-          fontSize: 15,
-          fontWeight: 900,
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexShrink: 0,
-          lineHeight: 1,
-        }}
       >
         ×
       </button>

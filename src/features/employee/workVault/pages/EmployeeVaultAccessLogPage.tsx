@@ -1,12 +1,12 @@
 // src/features/employee/workVault/pages/EmployeeVaultAccessLogPage.tsx
 //
 // Access History — HR vault sessions (DB when auth on) + Shift/Career doc access.
+// L-V audit polish: searchable security timeline (presentation only).
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DomainHero } from "../../../../shared/components/layout/DomainHero";
 import { VaultEmptyState } from "../../../vault/components/VaultEmptyState";
-import { VAULT_ACCENT, vaultAccentMix } from "../constants/vaultConstants";
 import type { VaultAccessEntry } from "../types/vaultTypes";
 import {
   getAccessLogSorted,
@@ -18,9 +18,6 @@ import { isVaultApiSyncEnabled } from "../services/vaultGateApi.service";
 import { docAccessSessionStorage } from "../../../../shared/docAccess/docAccessSessionStorage";
 import type { DocAccessLogEntry } from "../../../../shared/docAccess/docAccessSessionStorage";
 
-/* ------------------------------------------------ */
-/* Icons                                            */
-/* ------------------------------------------------ */
 function IconBack() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
@@ -29,71 +26,57 @@ function IconBack() {
   );
 }
 
-/* ------------------------------------------------ */
-/* Status Badge                                     */
-/* ------------------------------------------------ */
 type StatusType = "active" | "viewed" | "expired" | "revoked";
 
 function StatusBadge({ status }: { status: StatusType }) {
-  const config: Record<
-    StatusType,
-    { bg: string; border: string; color: string; label: string; icon: string }
-  > = {
-    active: {
-      bg: "rgba(22,163,74,0.08)",
-      border: "rgba(22,163,74,0.25)",
-      color: "#15803d",
-      label: "Active",
-      icon: "⚡",
-    },
-    viewed: {
-      bg: "rgba(22,163,74,0.08)",
-      border: "rgba(22,163,74,0.25)",
-      color: "#15803d",
-      label: "Viewed",
-      icon: "✅",
-    },
-    expired: {
-      bg: "rgba(107,114,128,0.08)",
-      border: "rgba(107,114,128,0.2)",
-      color: "#6b7280",
-      label: "Expired",
-      icon: "⏰",
-    },
-    revoked: {
-      bg: "rgba(220,38,38,0.08)",
-      border: "rgba(220,38,38,0.2)",
-      color: "#dc2626",
-      label: "Revoked",
-      icon: "🚫",
-    },
-  };
-  const c = config[status];
+  const label =
+    status === "active"
+      ? "Active"
+      : status === "viewed"
+        ? "Viewed"
+        : status === "expired"
+          ? "Expired"
+          : "Revoked";
+  const toneClass =
+    status === "active" || status === "viewed"
+      ? "wm-vault-doc-status--valid"
+      : status === "revoked"
+        ? "wm-vault-doc-status--expired"
+        : "wm-vault-doc-status--locked";
+
+  return <span className={`wm-vault-doc-status ${toneClass}`}>{label}</span>;
+}
+
+type UnifiedEntry =
+  | { kind: "hr"; entry: VaultAccessEntry; ts: number }
+  | { kind: "doc"; entry: DocAccessLogEntry; ts: number };
+
+function formatAccessStamp(ts: number): string {
+  const accessDate = new Date(ts).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+  const accessTime = new Date(ts).toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return `${accessDate} at ${accessTime}`;
+}
+
+/** Honest local-context badges — no fabricated IP/device telemetry. */
+function ContextBadges({ domainLabel, sessionKind }: { domainLabel: string; sessionKind: string }) {
   return (
-    <span
-      style={{
-        height: 22,
-        padding: "0 8px",
-        borderRadius: "var(--wm-radius-pill)",
-        fontSize: 10,
-        fontWeight: 700,
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 4,
-        background: c.bg,
-        border: `1px solid ${c.border}`,
-        color: c.color,
-        flexShrink: 0,
-      }}
-    >
-      {c.icon} {c.label}
-    </span>
+    <div className="wm-vault-timeline-item__badges">
+      <span className="wm-vault-ctx-badge wm-vault-ctx-badge--domain">{domainLabel}</span>
+      <span className="wm-vault-ctx-badge wm-vault-ctx-badge--device">Device · Local app</span>
+      <span className="wm-vault-ctx-badge wm-vault-ctx-badge--network">
+        Network · Scope-bound ({sessionKind})
+      </span>
+    </div>
   );
 }
 
-/* ------------------------------------------------ */
-/* HR Access Entry Row                              */
-/* ------------------------------------------------ */
 function HrAccessRow({
   entry,
   onRevoke,
@@ -104,160 +87,95 @@ function HrAccessRow({
   revoking?: boolean;
 }) {
   const allFolders = useMemo(() => getAllFolders(), []);
-
-  const accessDate = new Date(entry.accessedAt).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-  const accessTime = new Date(entry.accessedAt).toLocaleTimeString(undefined, {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
   const folderNames = entry.visibleFolderIds
     .map((id) => allFolders.find((f) => f.id === id)?.name)
     .filter(Boolean);
 
+  const dotClass =
+    entry.status === "active"
+      ? "wm-vault-timeline-item__dot--active"
+      : entry.status === "revoked"
+        ? "wm-vault-timeline-item__dot--revoked"
+        : "";
+
   return (
-    <div
-      style={{
-        padding: "14px 16px",
-        borderRadius: "var(--wm-radius-button)",
-        border: "1px solid var(--wm-emp-border, rgba(15,23,42,0.08))",
-        background: "#fff",
-      }}
-    >
-      <div
-        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}
-      >
-        <div style={{ fontWeight: 700, fontSize: 14, color: "var(--wm-emp-text)" }}>
-          {entry.employerName || "Unknown Employer"}
+    <article className="wm-vault-timeline-item" role="listitem">
+      <span className={`wm-vault-timeline-item__dot ${dotClass}`} aria-hidden="true" />
+      <div className="wm-vault-timeline-item__head">
+        <div>
+          <div className="wm-vault-timeline-item__title">
+            {entry.employerName || "Unknown Employer"}
+          </div>
+          <div className="wm-vault-timeline-item__time">{formatAccessStamp(entry.accessedAt)}</div>
         </div>
         <StatusBadge status={entry.status as StatusType} />
       </div>
-      <div
-        style={{
-          marginTop: 4,
-          fontSize: 10,
-          fontWeight: 600,
-          color: "var(--wm-er-accent-career)",
-          marginBottom: 4,
-        }}
-      >
-        HR Verification
-      </div>
-      <div style={{ fontSize: 12, color: "var(--wm-emp-muted)" }}>
-        {accessDate} at {accessTime}
-      </div>
+
+      <ContextBadges domainLabel="HR Verification" sessionKind="vault OTP" />
+
       {folderNames.length > 0 && (
-        <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 4 }}>
+        <div className="wm-vault-timeline-item__badges">
           {folderNames.map((name) => (
-            <span
-              key={name}
-              style={{
-                height: 22,
-                padding: "0 8px",
-                borderRadius: "var(--wm-radius-pill)",
-                fontSize: 11,
-                fontWeight: 600,
-                background: `${vaultAccentMix(4)}`,
-                border: `1px solid ${vaultAccentMix(10)}`,
-                color: VAULT_ACCENT,
-                display: "inline-flex",
-                alignItems: "center",
-              }}
-            >
+            <span key={name} className="wm-vault-ctx-badge">
               {name}
             </span>
           ))}
         </div>
       )}
-      {entry.employerIdentifier && (
-        <div style={{ marginTop: 6, fontSize: 11, color: "var(--wm-emp-muted)" }}>
+
+      {entry.employerIdentifier ? (
+        <div className="wm-vault-timeline-item__time" style={{ marginTop: 8 }}>
           ID: {entry.employerIdentifier}
         </div>
-      )}
-      {entry.status === "active" && onRevoke && (
+      ) : null}
+
+      {entry.status === "active" && onRevoke ? (
         <div style={{ marginTop: 10 }}>
           <button
             type="button"
             className="wm-vault-revoke"
             disabled={revoking}
             onClick={() => onRevoke(entry.id)}
-            style={{
-              cursor: revoking ? "wait" : "pointer",
-              opacity: revoking ? 0.7 : 1,
-            }}
+            style={{ cursor: revoking ? "wait" : "pointer", opacity: revoking ? 0.7 : 1 }}
           >
             {revoking ? "Revoking…" : "Revoke session"}
           </button>
         </div>
-      )}
-    </div>
+      ) : null}
+    </article>
   );
 }
 
-/* ------------------------------------------------ */
-/* Doc Access Entry Row (Shift/Career)              */
-/* ------------------------------------------------ */
 function DocAccessRow({ entry }: { entry: DocAccessLogEntry }) {
-  const accessDate = new Date(entry.accessedAt).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-  const accessTime = new Date(entry.accessedAt).toLocaleTimeString(undefined, {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
   const domainLabel = entry.domain === "shift" ? "Shift Jobs" : "Career Jobs";
-  const domainColor = entry.domain === "shift" ? "#16a34a" : "#1d4ed8";
 
   return (
-    <div
-      style={{
-        padding: "14px 16px",
-        borderRadius: "var(--wm-radius-button)",
-        border: "1px solid var(--wm-emp-border, rgba(15,23,42,0.08))",
-        background: "#fff",
-      }}
-    >
-      <div
-        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}
-      >
-        <div style={{ fontWeight: 700, fontSize: 14, color: "var(--wm-emp-text)" }}>
-          {entry.employerName || "Unknown Employer"}
+    <article className="wm-vault-timeline-item" role="listitem">
+      <span
+        className={`wm-vault-timeline-item__dot${
+          entry.status === "revoked" ? " wm-vault-timeline-item__dot--revoked" : ""
+        }`}
+        aria-hidden="true"
+      />
+      <div className="wm-vault-timeline-item__head">
+        <div>
+          <div className="wm-vault-timeline-item__title">
+            {entry.employerName || "Unknown Employer"}
+          </div>
+          <div className="wm-vault-timeline-item__time">{formatAccessStamp(entry.accessedAt)}</div>
         </div>
         <StatusBadge status={entry.status as StatusType} />
       </div>
-      <div
-        style={{ marginTop: 4, fontSize: 10, fontWeight: 600, color: domainColor, marginBottom: 4 }}
-      >
-        {domainLabel} · Document Access
-      </div>
-      <div style={{ fontSize: 12, color: "var(--wm-emp-muted)" }}>
-        {accessDate} at {accessTime}
-      </div>
-    </div>
+      <ContextBadges domainLabel={`${domainLabel} · Doc Access`} sessionKind="HMAC grant" />
+    </article>
   );
 }
 
-/* ------------------------------------------------ */
-/* Unified log item                                 */
-/* ------------------------------------------------ */
-type UnifiedEntry =
-  | { kind: "hr"; entry: VaultAccessEntry; ts: number }
-  | { kind: "doc"; entry: DocAccessLogEntry; ts: number };
-
-/* ------------------------------------------------ */
-/* Component                                        */
-/* ------------------------------------------------ */
 export function EmployeeVaultAccessLogPage() {
   const nav = useNavigate();
   const [hrLog, setHrLog] = useState<VaultAccessEntry[]>(() => getAccessLogSorted());
   const [revokingId, setRevokingId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
 
   const refresh = useCallback(() => {
     setHrLog(getAccessLogSorted());
@@ -283,6 +201,23 @@ export function EmployeeVaultAccessLogPage() {
       .map((e): UnifiedEntry => ({ kind: "doc", entry: e, ts: e.accessedAt }));
     return [...hrEntries, ...docEntries].sort((a, b) => b.ts - a.ts);
   }, [hrLog]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return unified;
+    return unified.filter((item) => {
+      if (item.kind === "hr") {
+        const e = item.entry;
+        const haystack =
+          `${e.employerName} ${e.employerIdentifier} ${e.status} hr verification vault`.toLowerCase();
+        return haystack.includes(q);
+      }
+      const e = item.entry;
+      const haystack =
+        `${e.employerName} ${e.employerId} ${e.status} ${e.domain} doc access`.toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [unified, query]);
 
   async function handleRevoke(sessionId: string) {
     setRevokingId(sessionId);
@@ -314,51 +249,51 @@ export function EmployeeVaultAccessLogPage() {
           </button>
         }
         title="Access History"
-        subtitle={`${unified.length} ${unified.length === 1 ? "record" : "records"} · Who viewed your documents`}
+        subtitle={`${filtered.length} of ${unified.length} ${unified.length === 1 ? "record" : "records"} · Security timeline`}
         description="Review and revoke vault access sessions for your documents."
       />
 
-      {/* Info Note */}
-      <div
-        style={{
-          padding: "10px 14px",
-          borderRadius: "var(--wm-radius-10)",
-          background: `${vaultAccentMix(3)}`,
-          border: `1px solid ${vaultAccentMix(7)}`,
-          fontSize: 12,
-          color: "var(--wm-emp-muted)",
-          fontWeight: 600,
-          lineHeight: 1.5,
-        }}
-      >
-        Access history is permanent. This ensures full transparency of who has viewed your
-        documents.
+      <div className="wm-vault-audit-note">
+        Access history is permanent. Device and network badges reflect local vault context — they do
+        not invent IP telemetry that was not recorded.
       </div>
 
-      {/* Entries */}
-      <div style={{ marginTop: 16 }}>
-        {unified.length === 0 ? (
-          <VaultEmptyState
-            title="No access records yet"
-            subtitle="When an employer views your documents, it will appear here."
-          />
-        ) : (
-          <div style={{ display: "grid", gap: 8 }}>
-            {unified.map((item) =>
-              item.kind === "hr" ? (
-                <HrAccessRow
-                  key={`hr-${item.entry.id}`}
-                  entry={item.entry}
-                  onRevoke={handleRevoke}
-                  revoking={revokingId === item.entry.id}
-                />
-              ) : (
-                <DocAccessRow key={`doc-${item.entry.id}`} entry={item.entry} />
-              ),
-            )}
-          </div>
-        )}
+      <div className="wm-vault-audit-search">
+        <input
+          type="search"
+          className="wm-vault-audit-search__input"
+          placeholder="Search employer, status, or domain…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          aria-label="Search access history"
+        />
       </div>
+
+      {filtered.length === 0 ? (
+        <VaultEmptyState
+          title={unified.length === 0 ? "No access records yet" : "No matching records"}
+          subtitle={
+            unified.length === 0
+              ? "When an employer views your documents, it will appear here."
+              : "Try a different employer name, status, or domain keyword."
+          }
+        />
+      ) : (
+        <div className="wm-vault-timeline" role="list">
+          {filtered.map((item) =>
+            item.kind === "hr" ? (
+              <HrAccessRow
+                key={`hr-${item.entry.id}`}
+                entry={item.entry}
+                onRevoke={handleRevoke}
+                revoking={revokingId === item.entry.id}
+              />
+            ) : (
+              <DocAccessRow key={`doc-${item.entry.id}`} entry={item.entry} />
+            ),
+          )}
+        </div>
+      )}
 
       <div style={{ height: 80 }} />
     </div>

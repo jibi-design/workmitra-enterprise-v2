@@ -23,9 +23,9 @@ export function OtpFolderVisibility({
     <section className="wm-vault-otp-folders" data-testid="vault-otp-folders">
       <div className="wm-vault-otp-folders__head">
         <div>
-          <div className="wm-vault-otp-folders__label">Folder visibility</div>
-          <div className="wm-vault-otp-folders__count">
-            {visibleCount} visible · {hiddenCount} hidden
+          <div className="wm-vault-acl-card__title">Access grant folders</div>
+          <div className="wm-vault-acl-card__sub">
+            {visibleCount} granted · {hiddenCount} locked from OTP share
           </div>
         </div>
         <div className="wm-vault-otp-folders__actions">
@@ -34,15 +34,26 @@ export function OtpFolderVisibility({
             className="wm-vault-docs-chip-btn wm-vault-docs-chip-btn--show"
             onClick={() => onBulkVisibility("visible")}
           >
-            Show All
+            Grant All
           </button>
           <button
             type="button"
             className="wm-vault-docs-chip-btn wm-vault-docs-chip-btn--hide"
             onClick={() => onBulkVisibility("hidden")}
           >
-            Hide All
+            Lock All
           </button>
+        </div>
+      </div>
+
+      <div className="wm-vault-acl-card__counters">
+        <div className="wm-vault-acl-counter">
+          <div className="wm-vault-acl-counter__value">{visibleCount}</div>
+          <div className="wm-vault-acl-counter__label">Visible</div>
+        </div>
+        <div className="wm-vault-acl-counter">
+          <div className="wm-vault-acl-counter__value">{hiddenCount}</div>
+          <div className="wm-vault-acl-counter__label">Locked</div>
         </div>
       </div>
 
@@ -59,7 +70,7 @@ export function OtpFolderVisibility({
                 }`}
                 onClick={() => onToggleFolder(folder.id)}
               >
-                {isVisible ? "Visible" : "Hidden"}
+                {isVisible ? "Granted" : "Locked"}
               </button>
             </div>
           );

@@ -4,28 +4,23 @@
 
 import { formatDate, timeAgo } from "../../helpers/vaultHomeHelpers";
 import type { VaultSectionData } from "../../services/vaultDataAggregator";
-import { SectionCard } from "./VaultProfileSharedUi";
 
 export function ActivitySection({ data }: { data: VaultSectionData["activity"] }) {
   return (
-    <SectionCard>
-      <div style={{ display: "grid", gap: 6 }}>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <span style={{ fontSize: 12, color: "var(--wm-emp-muted)" }}>Member since</span>
-
-          <span style={{ fontSize: 12, fontWeight: 700, color: "var(--wm-emp-text)" }}>
+    <div className="wm-vault-activity-overview" data-testid="vault-activity-overview">
+      <div className="wm-vault-activity-overview__title">Activity overview</div>
+      <div className="wm-vault-activity-overview__pills">
+        <div className="wm-vault-activity-overview__pill">
+          <div className="wm-vault-activity-overview__pill-label">Member since</div>
+          <div className="wm-vault-activity-overview__pill-value">
             {formatDate(data.memberSince)}
-          </span>
+          </div>
         </div>
-
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <span style={{ fontSize: 12, color: "var(--wm-emp-muted)" }}>Last active</span>
-
-          <span style={{ fontSize: 12, fontWeight: 700, color: "var(--wm-emp-text)" }}>
-            {timeAgo(data.lastActive)}
-          </span>
+        <div className="wm-vault-activity-overview__pill">
+          <div className="wm-vault-activity-overview__pill-label">Last active</div>
+          <div className="wm-vault-activity-overview__pill-value">{timeAgo(data.lastActive)}</div>
         </div>
       </div>
-    </SectionCard>
+    </div>
   );
 }

@@ -5,16 +5,8 @@
 // src/features/employer/workVault/components/EmployerVaultOtpInput.tsx
 
 import { useRef, useState } from "react";
-import {
-  OTP_CODE_LENGTH,
-  validateOtpFormat,
-  VAULT_ACCENT,
-  vaultAccentMix,
-} from "../../../shared/workVault/vaultPublic";
+import { OTP_CODE_LENGTH, validateOtpFormat } from "../../../shared/workVault/vaultPublic";
 
-/* ------------------------------------------------ */
-/* Props                                            */
-/* ------------------------------------------------ */
 type EmployerVaultOtpInputProps = {
   employeeName: string;
   onSubmit: (code: string) => void | Promise<void>;
@@ -22,9 +14,6 @@ type EmployerVaultOtpInputProps = {
   error: string;
 };
 
-/* ------------------------------------------------ */
-/* Component                                        */
-/* ------------------------------------------------ */
 export function EmployerVaultOtpInput({
   employeeName,
   onSubmit,
@@ -75,25 +64,20 @@ export function EmployerVaultOtpInput({
   }
 
   const isFilled = digits.every((d) => d !== "");
+  const hasError = Boolean(error);
 
   return (
-    <div style={{ textAlign: "center" }}>
-      <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-er-text)", marginBottom: 4 }}>
-        Enter Access Code
+    <div className="wm-vault-otp-verify" data-testid="employer-vault-otp-input">
+      <div className="wm-vault-otp-verify__badge">
+        <span aria-hidden="true">▣</span> Enterprise OTP · Argon2 path ready
       </div>
-      <div style={{ fontSize: 12, color: "var(--wm-er-muted)", marginBottom: 20, lineHeight: 1.5 }}>
+      <div className="wm-vault-otp-verify__title">Enter Access Code</div>
+      <div className="wm-vault-otp-verify__sub">
         Ask <strong>{employeeName}</strong> to share their 6-digit access code from the Job Mitra
         app.
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: 8,
-          marginBottom: 12,
-        }}
-      >
+      <div className="wm-vault-otp-verify__digits">
         {digits.map((digit, i) => (
           <input
             key={i}
@@ -104,49 +88,31 @@ export function EmployerVaultOtpInput({
             inputMode="numeric"
             maxLength={1}
             value={digit}
+            aria-label={`OTP digit ${i + 1}`}
             onChange={(e) => handleChange(i, e.target.value)}
             onKeyDown={(e) => handleKeyDown(i, e.key)}
             onPaste={i === 0 ? handlePaste : undefined}
             autoFocus={i === 0}
-            style={{
-              width: 44,
-              height: 52,
-              borderRadius: "var(--wm-radius-button)",
-              border: digit
-                ? `2px solid ${VAULT_ACCENT}`
-                : "2px solid var(--wm-er-divider, rgba(15, 23, 42, 0.12))",
-              background: digit ? `${vaultAccentMix(3)}` : "#fff",
-              fontSize: 24,
-              fontWeight: 900,
-              textAlign: "center",
-              color: VAULT_ACCENT,
-              outline: "none",
-            }}
+            className={`wm-vault-otp-verify__digit${digit ? " wm-vault-otp-verify__digit--filled" : ""}${
+              hasError ? " wm-vault-otp-verify__digit--error" : ""
+            }`}
           />
         ))}
       </div>
 
-      {error && (
-        <div style={{ fontSize: 12, color: "var(--wm-error)", fontWeight: 600, marginBottom: 12 }}>
-          {error}
-        </div>
-      )}
+      <div className="wm-vault-otp-verify__error" role={hasError ? "alert" : undefined}>
+        {error || "\u00A0"}
+      </div>
 
-      <div style={{ display: "flex", justifyContent: "center", gap: 10, marginTop: 16 }}>
+      <div className="wm-vault-otp-verify__actions">
         <button className="wm-outlineBtn" type="button" onClick={onCancel}>
           Cancel
         </button>
         <button
           type="button"
-          className="wm-vault-cta"
+          className="wm-vault-cta wm-vault-otp-verify__submit"
           onClick={handleSubmit}
           disabled={!isFilled}
-          style={{
-            minHeight: 52,
-            opacity: isFilled ? 1 : 0.5,
-            cursor: isFilled ? "pointer" : "not-allowed",
-            background: isFilled ? undefined : "var(--wm-er-muted)",
-          }}
         >
           Verify
         </button>

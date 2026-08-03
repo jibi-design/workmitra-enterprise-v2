@@ -8,107 +8,42 @@ type EmployerVaultAccessLogCardProps = {
   entry: VaultAccessEntry;
 };
 
-const VAULT_PURPLE = "#7c3aed";
-
 export function EmployerVaultAccessLogCard({ entry }: EmployerVaultAccessLogCardProps) {
+  const statusClass =
+    entry.status === "active"
+      ? "wm-vault-doc-status--valid"
+      : entry.status === "revoked"
+        ? "wm-vault-doc-status--expired"
+        : "wm-vault-doc-status--locked";
+
   return (
-    <article
-      style={{
-        padding: 13,
-        borderRadius: "var(--wm-radius-chip)",
-        border: "1px solid rgba(226,232,240,0.9)",
-        background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          gap: 10,
-          alignItems: "flex-start",
-        }}
-      >
+    <article className="wm-vault-session-card">
+      <div className="wm-vault-session-card__head">
         <div style={{ minWidth: 0 }}>
-          <div
-            style={{ fontSize: 13, fontWeight: 950, color: "var(--wm-er-text)", lineHeight: 1.3 }}
-          >
+          <div className="wm-vault-session-card__title">
             {entry.employerName || "Employer access"}
           </div>
-
-          <div
-            style={{
-              marginTop: 4,
-              fontSize: 10.5,
-              color: "var(--wm-er-muted)",
-              fontWeight: 850,
-              fontFamily: "monospace",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
+          <div className="wm-vault-session-card__id">
             {entry.employerIdentifier || "Local employer"}
           </div>
         </div>
-
         <span
-          style={{
-            padding: "5px 8px",
-            borderRadius: "var(--wm-radius-pill)",
-            background: getStatusBg(entry.status),
-            border: "1px solid rgba(226,232,240,0.9)",
-            color: getStatusColor(entry.status),
-            fontSize: 10,
-            fontWeight: 950,
-            whiteSpace: "nowrap",
-            textTransform: "capitalize",
-          }}
+          className={`wm-vault-doc-status ${statusClass}`}
+          style={{ textTransform: "capitalize" }}
         >
           {entry.status}
         </span>
       </div>
 
-      <div
-        style={{
-          marginTop: 8,
-          fontSize: 11,
-          color: "var(--wm-er-muted)",
-          fontWeight: 800,
-          lineHeight: 1.45,
-        }}
-      >
+      <div className="wm-vault-session-card__meta">
         Opened: {formatDateTime(entry.accessedAt)}
-      </div>
-
-      <div
-        style={{
-          marginTop: 3,
-          fontSize: 11,
-          color: "var(--wm-er-muted)",
-          fontWeight: 800,
-          lineHeight: 1.45,
-        }}
-      >
+        <br />
         Expires: {formatDateTime(entry.expiredAt)}
-      </div>
-
-      <div style={{ marginTop: 8, fontSize: 11, color: VAULT_PURPLE, fontWeight: 900 }}>
-        Visible folders: {entry.visibleFolderIds.length}
+        <br />
+        Visible folders: <strong>{entry.visibleFolderIds.length}</strong>
       </div>
     </article>
   );
-}
-
-function getStatusColor(status: VaultAccessEntry["status"]): string {
-  if (status === "active") return VAULT_PURPLE;
-  if (status === "revoked") return "#dc2626";
-  return "var(--wm-er-muted)";
-}
-
-function getStatusBg(status: VaultAccessEntry["status"]): string {
-  if (status === "active") return "rgba(124,58,237,0.08)";
-  if (status === "revoked") return "rgba(220,38,38,0.07)";
-  return "rgba(148,163,184,0.12)";
 }
 
 function formatDateTime(value: number): string {

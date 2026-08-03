@@ -12,6 +12,8 @@ type Props = {
   onAddDocument: () => void;
   onViewDocument: (docId: string) => void;
   onDeleteDocument: (docId: string) => void;
+  /** Folder OTP-hidden → credential cards show Locked. */
+  folderLocked?: boolean;
 };
 
 export function EmployeeVaultFolderDocuments({
@@ -19,9 +21,10 @@ export function EmployeeVaultFolderDocuments({
   onAddDocument,
   onViewDocument,
   onDeleteDocument,
+  folderLocked = false,
 }: Props) {
   return (
-    <div style={{ marginTop: 16 }}>
+    <div className="wm-vault-docs-list">
       <VaultSensitiveUploadDisclaimer />
 
       {docs.length === 0 ? (
@@ -32,18 +35,17 @@ export function EmployeeVaultFolderDocuments({
           onCta={onAddDocument}
         />
       ) : (
-        <div style={{ display: "grid", gap: 8 }}>
-          {[...docs]
-            .sort((a, b) => b.uploadedAt - a.uploadedAt)
-            .map((doc) => (
-              <VaultDocumentCard
-                key={doc.id}
-                doc={doc}
-                onView={onViewDocument}
-                onDelete={onDeleteDocument}
-              />
-            ))}
-        </div>
+        [...docs]
+          .sort((a, b) => b.uploadedAt - a.uploadedAt)
+          .map((doc) => (
+            <VaultDocumentCard
+              key={doc.id}
+              doc={doc}
+              folderLocked={folderLocked}
+              onView={onViewDocument}
+              onDelete={onDeleteDocument}
+            />
+          ))
       )}
     </div>
   );

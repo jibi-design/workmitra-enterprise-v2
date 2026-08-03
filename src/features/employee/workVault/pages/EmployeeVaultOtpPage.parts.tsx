@@ -16,6 +16,11 @@ export function VaultOtpSection({
 }: VaultOtpSectionProps) {
   return (
     <section className="wm-vault-otp-card" data-testid="vault-otp-card">
+      <div style={{ marginBottom: 10 }}>
+        <span className="wm-vault-otp-security-badge">
+          <span aria-hidden="true">▣</span> Secure share · Argon2 OTP
+        </span>
+      </div>
       {otp ? (
         <>
           <div className="wm-vault-otp-card__eyebrow">Live access code</div>

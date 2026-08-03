@@ -22,15 +22,14 @@ export function VaultStorageMeter({ usedBytes }: Props) {
   const pct = Math.min(100, Math.round((safeUsed / MAX_VAULT_STORAGE_BYTES) * 100));
   const remaining = Math.max(0, MAX_VAULT_STORAGE_BYTES - safeUsed);
   const tone = pct >= 90 ? "critical" : pct >= 70 ? "warning" : "active";
+  const fillTone = tone === "active" ? "active" : tone;
 
   return (
     <div className="wm-vault-storage-meter" data-testid="vault-storage-meter">
       <div className="wm-vault-storage-meter__head">
         <div>
           <div className="wm-vault-storage-meter__title">Vault storage</div>
-          <div className="wm-vault-storage-meter__sub">
-            {formatMb(safeUsed)} MB of {MAX_VAULT_STORAGE_MB} MB · {formatMb(remaining)} MB free
-          </div>
+          <div className="wm-vault-storage-meter__sub">Secured local capacity · glass overview</div>
         </div>
         <StatusBadge label={`${pct}% used`} tone={tone} />
       </div>
@@ -44,9 +43,24 @@ export function VaultStorageMeter({ usedBytes }: Props) {
         aria-label="Vault storage used"
       >
         <div
-          className={`wm-vault-storage-meter__fill wm-vault-storage-meter__fill--${tone}`}
+          className={`wm-vault-storage-meter__fill wm-vault-storage-meter__fill--${fillTone}`}
           style={{ width: `${pct}%` }}
         />
+      </div>
+
+      <div className="wm-vault-storage-meter__metrics">
+        <div className="wm-vault-storage-meter__metric">
+          <div className="wm-vault-storage-meter__metric-label">Used</div>
+          <div className="wm-vault-storage-meter__metric-value">{formatMb(safeUsed)} MB</div>
+        </div>
+        <div className="wm-vault-storage-meter__metric">
+          <div className="wm-vault-storage-meter__metric-label">Free</div>
+          <div className="wm-vault-storage-meter__metric-value">{formatMb(remaining)} MB</div>
+        </div>
+        <div className="wm-vault-storage-meter__metric">
+          <div className="wm-vault-storage-meter__metric-label">Cap</div>
+          <div className="wm-vault-storage-meter__metric-value">{MAX_VAULT_STORAGE_MB} MB</div>
+        </div>
       </div>
 
       <div className="wm-vault-storage-meter__hint">

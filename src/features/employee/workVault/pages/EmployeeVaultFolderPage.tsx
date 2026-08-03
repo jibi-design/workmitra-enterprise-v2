@@ -2,7 +2,7 @@
 // File: EmployeeVaultFolderPage.tsx
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\workVault\pages\EmployeeVaultFolderPage.tsx
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ConfirmModal } from "../../../../shared/components/ConfirmModal";
 import { FullscreenDocViewer } from "../../../../shared/components/FullscreenDocViewer";
@@ -25,6 +25,7 @@ import {
   getDocumentCount,
   getDocumentsByFolder,
   getVaultStorageUsedBytes,
+  hydrateVaultDocumentsPlaintext,
 } from "../services/vaultDocumentService";
 import { getFolderById, renameFolder, setFolderVisibility } from "../services/vaultFolderService";
 import type { VaultDocument, VaultFileType } from "../types/vaultTypes";
@@ -36,6 +37,17 @@ export function EmployeeVaultFolderPage() {
 
   const [folder, setFolder] = useState(() => getFolderById(folderId ?? ""));
   const [docs, setDocs] = useState<VaultDocument[]>(() => getDocumentsByFolder(folderId ?? ""));
+
+  useEffect(() => {
+    let cancelled = false;
+    void hydrateVaultDocumentsPlaintext().then(() => {
+      if (cancelled) return;
+      setDocs(getDocumentsByFolder(folderId ?? ""));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [folderId]);
 
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
@@ -181,6 +193,7 @@ export function EmployeeVaultFolderPage() {
 
       <EmployeeVaultFolderDocuments
         docs={docs}
+        folderLocked={folder.visibility === "hidden"}
         onAddDocument={() => setShowUploadModal(true)}
         onViewDocument={handleViewDoc}
         onDeleteDocument={setDeletingDocId}

@@ -2,7 +2,7 @@
 // File name: EmployerVaultAccessSessions.tsx
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\workVault\components\accessSessions\EmployerVaultAccessSessions.tsx
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   endEmployerLocalSession,
   getAccessLogSorted,
@@ -30,6 +30,8 @@ export function EmployerVaultAccessSessions() {
   }, []);
 
   const remainingText = getRemainingText(activeSession);
+  const activeCount = activeSession ? 1 : 0;
+  const recentCount = useMemo(() => accessLog.length, [accessLog.length]);
 
   function handleEndSession() {
     if (!activeSession) return;
@@ -41,47 +43,26 @@ export function EmployerVaultAccessSessions() {
   }
 
   return (
-    <section style={{ display: "grid", gap: 12 }}>
-      <div
-        style={{
-          padding: 14,
-          borderRadius: "var(--wm-radius-employee-card)",
-          border: "1px solid rgba(124,58,237,0.15)",
-          background:
-            "linear-gradient(135deg, rgba(124,58,237,0.09), rgba(255,255,255,0.98) 54%, rgba(245,243,255,0.68))",
-          boxShadow: "0 14px 32px rgba(15,23,42,0.055)",
-        }}
-      >
-        <div style={{ fontSize: 13, fontWeight: 950, color: "var(--wm-er-text)" }}>
-          Access Sessions
-        </div>
-
-        <div
-          style={{
-            marginTop: 4,
-            fontSize: 11,
-            color: "var(--wm-er-muted)",
-            fontWeight: 750,
-            lineHeight: 1.45,
-          }}
-        >
+    <section className="wm-vault-acl-stack" data-testid="employer-vault-access-sessions">
+      <div className="wm-vault-acl-card">
+        <div className="wm-vault-acl-card__title">Access grant manager</div>
+        <div className="wm-vault-acl-card__sub">
           Local record of worker profile access sessions opened through employee-shared access
           codes.
         </div>
 
-        <div
-          style={{
-            marginTop: 10,
-            padding: "9px 10px",
-            borderRadius: "var(--wm-radius-chip)",
-            background: "rgba(255,255,255,0.78)",
-            border: "1px solid rgba(226,232,240,0.9)",
-            color: "var(--wm-er-muted)",
-            fontSize: 11,
-            fontWeight: 800,
-            lineHeight: 1.45,
-          }}
-        >
+        <div className="wm-vault-acl-card__counters">
+          <div className="wm-vault-acl-counter">
+            <div className="wm-vault-acl-counter__value">{activeCount}</div>
+            <div className="wm-vault-acl-counter__label">Active</div>
+          </div>
+          <div className="wm-vault-acl-counter">
+            <div className="wm-vault-acl-counter__value">{recentCount}</div>
+            <div className="wm-vault-acl-counter__label">History</div>
+          </div>
+        </div>
+
+        <div className="wm-vault-acl-card__note">
           Phase-0 local session record only. This is not cloud security, official verification, or
           compliance validation.
         </div>
@@ -93,25 +74,11 @@ export function EmployerVaultAccessSessions() {
         onEndSession={handleEndSession}
       />
 
-      <div style={{ display: "grid", gap: 10 }}>
+      <div className="wm-vault-acl-stack">
         {accessLog.length === 0 ? (
-          <div
-            style={{
-              padding: "22px 16px",
-              borderRadius: "var(--wm-radius-employee-card)",
-              textAlign: "center",
-              background: "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.97))",
-              border: "1px solid rgba(226,232,240,0.9)",
-              boxShadow: "0 10px 24px rgba(15,23,42,0.04)",
-            }}
-          >
-            <div style={{ fontSize: 14, fontWeight: 950, color: "var(--wm-er-text)" }}>
-              No access sessions yet
-            </div>
-
-            <div
-              style={{ marginTop: 6, fontSize: 12, color: "var(--wm-er-muted)", lineHeight: 1.5 }}
-            >
+          <div className="wm-vault-session-card">
+            <div className="wm-vault-session-card__title">No access sessions yet</div>
+            <div className="wm-vault-session-card__sub">
               Worker profile access history will appear here after a successful access-code unlock.
             </div>
           </div>
