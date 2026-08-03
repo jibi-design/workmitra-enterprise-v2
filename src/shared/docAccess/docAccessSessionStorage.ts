@@ -5,10 +5,11 @@
 //
 // Document Access Session Storage — Shift Jobs + Career Jobs.
 // 30 minute session after OTP verified.
-// Access log for both employer and employee sides.
-// SEPARATE from HR session system.
+// B-P0-2: HMAC-signed + bound to (employerScopeId, workerMlId); forgeable LS rejected.
 
 import { DOC_ACCESS_SESSION_DURATION_MS } from "./docAccessConstants";
+import { docAccessOtpService } from "./docAccessOtpService";
+import { signDocAccessSession, verifyDocAccessSessionSignature } from "./docAccessSessionCrypto";
 
 /* ------------------------------------------------ */
 /* Storage Keys                                     */
@@ -22,13 +23,21 @@ const CHANGED_EVENT = "wm:doc-access-session-changed";
 /* ------------------------------------------------ */
 export type DocAccessSession = {
   id: string;
+  /** Tenant bind — same as employerScopeId when scoped. */
   employerId: string;
+  employerScopeId: string;
   employerName: string;
   workerMlId: string;
   domain: "shift" | "career";
   startedAt: number;
   expiresAt: number;
   revoked: boolean;
+  /** OTP challenge hash binding. */
+  challengeHash: string;
+  /** HMAC-SHA256 hex over canonical session payload. */
+  sig: string;
+  /** Auth UUID HMAC-bound when AUTH backend is on (STEP 2 ACL). */
+  authUserId?: string;
 };
 
 export type DocAccessLogEntry = {
@@ -49,7 +58,6 @@ function uid(): string {
 }
 
 function pickWorkerMlId(rec: Record<string, unknown>): string {
-  // Dual-read: prefer workerMlId; accept legacy workerWmId from older localStorage JSON.
   const ml = rec.workerMlId;
   if (typeof ml === "string" && ml.trim()) return ml;
   const legacy = rec.workerWmId;
@@ -61,7 +69,51 @@ function normalizeSession(raw: unknown): DocAccessSession | null {
   const rec = raw as Record<string, unknown>;
   const workerMlId = pickWorkerMlId(rec);
   if (!workerMlId) return null;
-  return { ...(raw as DocAccessSession), workerMlId };
+
+  const employerId = typeof rec.employerId === "string" ? rec.employerId : "";
+  const employerScopeId =
+    typeof rec.employerScopeId === "string" && rec.employerScopeId.trim()
+      ? rec.employerScopeId.trim()
+      : employerId;
+  const challengeHash = typeof rec.challengeHash === "string" ? rec.challengeHash : "";
+  const sig = typeof rec.sig === "string" ? rec.sig : "";
+  const authUserId =
+    typeof rec.authUserId === "string" && rec.authUserId.trim() ? rec.authUserId.trim() : undefined;
+
+  // Unsigned / legacy sessions are never trusted (B-P0-2).
+  if (!challengeHash || !sig || !employerScopeId) return null;
+  if (typeof rec.id !== "string" || !rec.id) return null;
+
+  return {
+    id: rec.id,
+    employerId: employerId || employerScopeId,
+    employerScopeId,
+    employerName: typeof rec.employerName === "string" ? rec.employerName : "",
+    workerMlId,
+    domain: rec.domain === "shift" || rec.domain === "career" ? rec.domain : "career",
+    startedAt: typeof rec.startedAt === "number" ? rec.startedAt : 0,
+    expiresAt: typeof rec.expiresAt === "number" ? rec.expiresAt : 0,
+    revoked: rec.revoked === true,
+    challengeHash,
+    sig,
+    ...(authUserId ? { authUserId } : {}),
+  };
+}
+
+function isSessionSignatureValid(session: DocAccessSession): boolean {
+  return verifyDocAccessSessionSignature(
+    {
+      id: session.id,
+      employerScopeId: session.employerScopeId,
+      workerMlId: session.workerMlId,
+      domain: session.domain,
+      startedAt: session.startedAt,
+      expiresAt: session.expiresAt,
+      challengeHash: session.challengeHash,
+      ...(session.authUserId ? { authUserId: session.authUserId } : {}),
+    },
+    session.sig,
+  );
 }
 
 function normalizeLogEntry(raw: unknown): DocAccessLogEntry | null {
@@ -147,20 +199,59 @@ function pushEmployeeNotification(title: string, body: string, domain: "shift" |
 /* Public API                                       */
 /* ------------------------------------------------ */
 export const docAccessSessionStorage = {
+  /**
+   * Create a signed session. Requires a pending OTP grant from docAccessOtpService.verify.
+   * Returns null if grant missing/mismatched (no forgeable session).
+   */
   createSession(params: {
     employerId: string;
+    employerScopeId: string;
     employerName: string;
     workerMlId: string;
     domain: "shift" | "career";
-  }): DocAccessSession {
+    /** Required when AUTH backend is on — bound into HMAC for server ACL. */
+    authUserId?: string;
+  }): DocAccessSession | null {
+    const employerScopeId = params.employerScopeId.trim() || params.employerId.trim();
+    const workerMlId = params.workerMlId.trim();
+    if (!employerScopeId || !workerMlId) return null;
+
+    const grant = docAccessOtpService.consumeSessionGrant({
+      employerScopeId,
+      workerMlId,
+      domain: params.domain,
+    });
+    if (!grant) return null;
+
     const now = Date.now();
+    const id = uid();
+    const expiresAt = Math.min(grant.expiresAt, now + DOC_ACCESS_SESSION_DURATION_MS);
+    const authUserId = params.authUserId?.trim() || undefined;
+
+    const signPayload = {
+      id,
+      employerScopeId,
+      workerMlId,
+      domain: params.domain,
+      startedAt: now,
+      expiresAt,
+      challengeHash: grant.challengeHash,
+      ...(authUserId ? { authUserId } : {}),
+    };
 
     const session: DocAccessSession = {
-      id: uid(),
-      ...params,
+      id,
+      employerId: params.employerId.trim() || employerScopeId,
+      employerScopeId,
+      employerName: params.employerName,
+      workerMlId,
+      domain: params.domain,
       startedAt: now,
-      expiresAt: now + DOC_ACCESS_SESSION_DURATION_MS,
+      expiresAt,
       revoked: false,
+      challengeHash: grant.challengeHash,
+      sig: signDocAccessSession(signPayload),
+      ...(authUserId ? { authUserId } : {}),
     };
 
     safeWriteSession(session);
@@ -172,9 +263,9 @@ export const docAccessSessionStorage = {
     );
 
     pushLog({
-      employerId: params.employerId,
+      employerId: session.employerId,
       employerName: params.employerName,
-      workerMlId: params.workerMlId,
+      workerMlId,
       domain: params.domain,
       accessedAt: now,
       status: "viewed",
@@ -194,6 +285,11 @@ export const docAccessSessionStorage = {
       return null;
     }
 
+    if (!isSessionSignatureValid(session)) {
+      safeWriteSession(null);
+      return null;
+    }
+
     return session;
   },
 
@@ -202,12 +298,9 @@ export const docAccessSessionStorage = {
   },
 
   getRemainingMs(): number {
-    const session = safeReadSession();
-
-    if (!session || session.revoked) return 0;
-
+    const session = this.getActiveSession();
+    if (!session) return 0;
     const remainingMs = session.expiresAt - Date.now();
-
     return remainingMs > 0 ? remainingMs : 0;
   },
 

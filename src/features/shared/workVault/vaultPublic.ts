@@ -46,7 +46,12 @@ export { validateOtpFormat } from "../../employee/workVault/helpers/vaultValidat
 // ── Services ──
 export { getVaultSectionData } from "../../employee/workVault/services/vaultDataAggregator";
 
-export { getAllDocuments } from "../../employee/workVault/services/vaultDocumentService";
+export {
+  getAllDocuments,
+  hydrateVaultDocumentsPlaintext,
+  vaultDocumentsAreSealedAtRest,
+  canRevealVaultDocumentPayloads,
+} from "../../employee/workVault/services/vaultDocumentService";
 export { getVisibleFolders } from "../../employee/workVault/services/vaultFolderService";
 
 export { verifyOtp, verifyOtpViaApi } from "../../employee/workVault/services/vaultOtpService";

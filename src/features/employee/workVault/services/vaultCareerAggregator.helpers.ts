@@ -1,11 +1,25 @@
 // vaultCareerAggregator.helpers.ts
 
 import type { VaultWorkExperienceEntry, WorkExperienceStatus } from "../types/vaultProfileTypes";
+import {
+  getCareerEmployeeAppsStorageKey,
+  getCareerEmployeeWorkspacesStorageKey,
+} from "../../../career/helpers/careerStoragePublic";
 
 export const CAREER_POSTS_KEY = "wm_employer_career_posts_v1";
+/** @deprecated Prefer getCareerEmployeeAppsStorageKey() — legacy global key */
 export const CAREER_APPS_KEY = "wm_employee_career_applications_v1";
+/** @deprecated Prefer getCareerEmployeeWorkspacesStorageKey() — legacy global key */
 export const CAREER_WORKSPACES_KEY = "wm_employee_career_workspaces_v1";
 export const EMPLOYMENT_KEY = "wm_employment_lifecycle_v1";
+
+export function resolveVaultCareerAppsKey(): string {
+  return getCareerEmployeeAppsStorageKey();
+}
+
+export function resolveVaultCareerWorkspacesKey(): string {
+  return getCareerEmployeeWorkspacesStorageKey();
+}
 
 type Rec = Record<string, unknown>;
 

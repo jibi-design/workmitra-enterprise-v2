@@ -67,8 +67,11 @@ export function DocAccessOtpStep({
 
         <div style={{ display: "grid", gap: 9 }}>
           <GuideRow number="1" text={`Call or contact ${workerName}.`} />
-          <GuideRow number="2" text="Ask the employee to open Work Vault in their app." />
-          <GuideRow number="3" text="The employee should tap Generate Access Code." />
+          <GuideRow number="2" text="Ask the employee to open Work Vault → Share Access." />
+          <GuideRow
+            number="3"
+            text="A request was sent automatically. The employee taps Generate Access Code."
+          />
           <GuideRow number="4" text="Ask the employee to tell you the 6-digit code." />
           <GuideRow number="5" text="Type that code below and tap Verify & View Documents." />
         </div>

@@ -14,12 +14,12 @@ import {
   aggregateFullHRActive,
   aggregateFullHRCompleted,
   bool,
-  CAREER_APPS_KEY,
   CAREER_POSTS_KEY,
-  CAREER_WORKSPACES_KEY,
   EMPLOYMENT_KEY,
   num,
   parse,
+  resolveVaultCareerAppsKey,
+  resolveVaultCareerWorkspacesKey,
   str,
 } from "./vaultCareerAggregator.helpers";
 
@@ -29,7 +29,7 @@ export function aggregateCareerExperience(): VaultWorkExperienceEntry[] {
   const miniHRCompleted = aggregateMiniHRCompleted();
   const miniHRActive = aggregateMiniHRActive();
 
-  const apps = parse<Record<string, unknown>>(CAREER_APPS_KEY);
+  const apps = parse<Record<string, unknown>>(resolveVaultCareerAppsKey());
   const posts = parse<Record<string, unknown>>(CAREER_POSTS_KEY);
   const postMap = new Map<string, Record<string, unknown>>();
   for (const p of posts) {
@@ -87,7 +87,7 @@ export function aggregateCareerStats(): {
   verifiedPositions: number;
   uniqueCompanies: string[];
 } {
-  const apps = parse<Record<string, unknown>>(CAREER_APPS_KEY);
+  const apps = parse<Record<string, unknown>>(resolveVaultCareerAppsKey());
   const posts = parse<Record<string, unknown>>(CAREER_POSTS_KEY);
   const employment = parse<Record<string, unknown>>(EMPLOYMENT_KEY);
   const postMap = new Map<string, Record<string, unknown>>();
@@ -203,7 +203,7 @@ export function detectCareerEmploymentStatus(): {
     };
   }
 
-  const active = parse<Record<string, unknown>>(CAREER_WORKSPACES_KEY).find(
+  const active = parse<Record<string, unknown>>(resolveVaultCareerWorkspacesKey()).find(
     (w) => str(w, "status") === "active" || str(w, "status") === "onboarding",
   );
   if (active) {

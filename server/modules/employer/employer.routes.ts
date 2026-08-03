@@ -4,6 +4,7 @@ import { requireAuth, requireEmployerRole } from "../../middleware/index.js";
 import { handleEmployerCareerRoutes } from "./career/career.routes.js";
 import { handleEmployerShiftRoutes } from "./shift/shift.routes.js";
 import { handleEmployerVaultRoutes } from "./vault/vault.routes.js";
+import { handleEmployerDocAccessRoutes } from "./docAccess/docAccess.routes.js";
 import { handleEmployerHrRoutes } from "./hr/hr.routes.js";
 import { handleEmployerWorkforceRoutes } from "./workforce/workforce.routes.js";
 import { sendNotFound } from "../../utils/http.js";
@@ -50,6 +51,9 @@ export async function handleEmployerRoutes(
 
           const handledVault = await handleEmployerVaultRoutes(authedReq, res, url, method);
           if (handledVault) return;
+
+          const handledDocAccess = await handleEmployerDocAccessRoutes(authedReq, res, url, method);
+          if (handledDocAccess) return;
 
           const handledHr = await handleEmployerHrRoutes(authedReq, res, url, method);
           if (handledHr) return;

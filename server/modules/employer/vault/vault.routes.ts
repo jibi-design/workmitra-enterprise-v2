@@ -136,5 +136,100 @@ export async function handleEmployerVaultRoutes(
     return true;
   }
 
+  /* ── POST /employer/vault/documents/access ───────────────────────────── */
+  // Session ACL: folderId must be in visibleFolderIds; employeeId must match session.
+  // Never accepts or returns document byte payloads.
+  if (method === "POST" && path === `${EMPLOYER_VAULT_PREFIX}/documents/access`) {
+    await requireVaultSession(
+      req,
+      res,
+      requestId,
+      async (sessionReq) => {
+        const session = sessionReq.vaultSession!;
+        const body = await readJsonBody(req);
+
+        if (!body || typeof body !== "object") {
+          sendJson(res, 400, {
+            error: { code: "INVALID_BODY", message: "Request body must be valid JSON", requestId },
+          });
+          return;
+        }
+
+        const rec = body as Record<string, unknown>;
+        if (
+          rec.base64Data != null ||
+          rec.thumbnailBase64 != null ||
+          rec.payload != null ||
+          rec.bytes != null ||
+          rec.dataUrl != null
+        ) {
+          sendJson(res, 400, {
+            error: {
+              code: "VAULT_BYTES_FORBIDDEN",
+              message: "Document byte payloads are not accepted on this route",
+              requestId,
+            },
+          });
+          return;
+        }
+
+        const documentId = typeof rec.documentId === "string" ? rec.documentId.trim() : "";
+        const folderId = typeof rec.folderId === "string" ? rec.folderId.trim() : "";
+        const employeeId = typeof rec.employeeId === "string" ? rec.employeeId.trim() : "";
+
+        if (!documentId) {
+          sendJson(res, 400, {
+            error: {
+              code: "VAULT_DOCUMENT_REQUIRED",
+              message: "documentId is required",
+              requestId,
+            },
+          });
+          return;
+        }
+
+        if (employeeId && employeeId !== session.employeeId) {
+          sendJson(res, 403, {
+            error: {
+              code: "VAULT_EMPLOYEE_MISMATCH",
+              message: "employeeId does not match vault session",
+              requestId,
+            },
+          });
+          return;
+        }
+
+        if (folderId && !session.visibleFolderIds.includes(folderId)) {
+          sendJson(res, 403, {
+            error: {
+              code: "VAULT_FOLDER_OUT_OF_SCOPE",
+              message: "folderId is not in the vault session visibleFolderIds",
+              requestId,
+            },
+          });
+          return;
+        }
+
+        sendJson(
+          res,
+          200,
+          envelope(
+            {
+              allowed: true,
+              documentId,
+              folderId: folderId || null,
+              employeeId: session.employeeId,
+              visibleFolderIds: session.visibleFolderIds,
+              bytes: null,
+            },
+            requestId,
+          ),
+        );
+      },
+      url,
+    );
+    return true;
+  }
+
   return false;
 }

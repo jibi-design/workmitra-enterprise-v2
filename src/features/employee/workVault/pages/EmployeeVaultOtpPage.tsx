@@ -1,6 +1,7 @@
 // src/features/employee/workVault/pages/EmployeeVaultOtpPage.tsx — facade
+// B-P0-4: Generate Access Code wires docAccessOtpService for Career/Shift Doc Access.
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { VaultFolder, VaultOTP } from "../types/vaultTypes";
 import { generateOtp, getCurrentOtp, isOtpActive, clearOtp } from "../services/vaultOtpService";
@@ -14,13 +15,35 @@ import { TrustStrip } from "../../../../shared/components/enterprise/TrustStrip"
 import { OtpFolderVisibility } from "../components/OtpFolderVisibility";
 import { IconBack, IconShield } from "./EmployeeVaultOtpPage.icons";
 import { VaultOtpSection } from "./EmployeeVaultOtpPage.parts";
+import { docAccessOtpService } from "../../../../shared/docAccess/docAccessOtpService";
+import { AUTH_BACKEND_ENABLED } from "../../../../shared/config/authConfig";
+import { getCurrentVaultWorkerScopeId } from "../../../shared/workVault/vaultWorkerScope";
+
+function toDisplayOtp(params: { code: string; generatedAt: number; expiresAt: number }): VaultOTP {
+  return {
+    code: params.code,
+    generatedAt: params.generatedAt,
+    expiresAt: params.expiresAt,
+    used: false,
+  };
+}
+
+function readInitialDisplayOtp(): VaultOTP | null {
+  const docCurrent = docAccessOtpService.getCurrent();
+  if (docCurrent && docAccessOtpService.isActive()) {
+    return toDisplayOtp(docCurrent);
+  }
+  const vaultCurrent = getCurrentOtp();
+  return vaultCurrent && isOtpActive() ? vaultCurrent : null;
+}
 
 export function EmployeeVaultOtpPage() {
   const nav = useNavigate();
 
-  const [otp, setOtp] = useState<VaultOTP | null>(() => {
-    const current = getCurrentOtp();
-    return current && isOtpActive() ? current : null;
+  const [otp, setOtp] = useState<VaultOTP | null>(() => readInitialDisplayOtp());
+  const [pendingEmployer, setPendingEmployer] = useState<string | null>(() => {
+    const workerId = getCurrentVaultWorkerScopeId();
+    return docAccessOtpService.getPendingRequestForWorker(workerId)?.employerName ?? null;
   });
 
   const [folders, setFolders] = useState<VaultFolder[]>(() => getAllFolders());
@@ -28,6 +51,21 @@ export function EmployeeVaultOtpPage() {
 
   const refreshFolders = useCallback(() => {
     setFolders(getAllFolders());
+  }, []);
+
+  useEffect(() => {
+    const refreshPending = () => {
+      const workerId = getCurrentVaultWorkerScopeId();
+      setPendingEmployer(
+        docAccessOtpService.getPendingRequestForWorker(workerId)?.employerName ?? null,
+      );
+      const docCurrent = docAccessOtpService.getCurrent();
+      if (docCurrent && docAccessOtpService.isActive() && docCurrent.code) {
+        setOtp(toDisplayOtp(docCurrent));
+      }
+    };
+    refreshPending();
+    return docAccessOtpService.subscribe(refreshPending);
   }, []);
 
   const visibleCount = folders.filter((f) => f.visibility === "visible").length;
@@ -42,6 +80,45 @@ export function EmployeeVaultOtpPage() {
       });
       return;
     }
+
+    const workerMlId = getCurrentVaultWorkerScopeId();
+    const pending = docAccessOtpService.getPendingRequestForWorker(workerMlId);
+
+    // B-P0-4 / B-P1-5: Prefer Doc Access OTP when an employer requested Career/Shift review.
+    // AUTH on: generateForPendingWorker uses server Argon2 vault OTP (single code).
+    if (pending) {
+      try {
+        const docOtp = await docAccessOtpService.generateForPendingWorker(workerMlId);
+        setOtp(toDisplayOtp(docOtp));
+        setPendingEmployer(null);
+
+        // AUTH off only: also mint local HR vault OTP for EmployerVaultViewPage demo path.
+        if (!AUTH_BACKEND_ENABLED) {
+          const vaultResult = await generateOtp();
+          if (!vaultResult.ok && !docOtp.code) {
+            setNotice({
+              title: "Partial Success",
+              message:
+                "Document access code was created. HR vault OTP could not be saved — Doc Access still works.",
+              tone: "warn",
+            });
+          }
+        }
+        return;
+      } catch (err) {
+        setNotice({
+          title: "Document Access Error",
+          message:
+            err instanceof Error
+              ? err.message.replace(/^\[WorkMitra\]\s*/, "")
+              : "Could not generate document access code.",
+          tone: "error",
+        });
+        return;
+      }
+    }
+
+    // No pending Doc Access request — HR vault OTP only.
     const result = await generateOtp();
     if (!result.ok) {
       const message =
@@ -52,7 +129,9 @@ export function EmployeeVaultOtpPage() {
             : "Could not save the access code. Free up browser storage and try again.";
       setNotice({
         title: result.reason === "api_error" ? "Server Error" : "Storage Error",
-        message,
+        message:
+          message +
+          " If a Career employer is waiting, ask them to open Profile & Documents review first so a request is sent.",
         tone: "error",
       });
       return;
@@ -62,6 +141,7 @@ export function EmployeeVaultOtpPage() {
 
   function handleCancelOtp() {
     clearOtp();
+    docAccessOtpService.clear();
     setOtp(null);
     setNotice({
       title: "OTP Cancelled",
@@ -99,10 +179,22 @@ export function EmployeeVaultOtpPage() {
           </div>
           <div className="wm-vault-page-hero__title">Share Access</div>
           <div className="wm-vault-page-hero__sub">
-            Generate a one-time code for an employer to view your documents.
+            {pendingEmployer
+              ? `${pendingEmployer} requested document access. Generate a one-time code to share.`
+              : "Generate a one-time code for an employer to view your documents."}
           </div>
         </div>
       </div>
+
+      {pendingEmployer && !otp ? (
+        <TrustStrip
+          kind="info"
+          tone="pending"
+          title="Pending employer request"
+          message={`${pendingEmployer} is waiting. Tap Generate Access Code, then tell them the 6-digit code.`}
+          badgeLabel="Action"
+        />
+      ) : null}
 
       <VaultOtpSection
         otp={otp}
