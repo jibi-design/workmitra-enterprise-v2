@@ -33,23 +33,21 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         this.props.fallback || (
-          <div
-            className="wm-route-guard-denied"
-            role="alert"
-            style={{ fontFamily: "var(--wm-font-sans, system-ui, sans-serif)" }}
-          >
-            <h2 className="wm-route-guard-denied__title">Something went wrong.</h2>
-            <p className="wm-route-guard-denied__body">
-              The application encountered an unexpected error. Please try refreshing.
-            </p>
-            <div className="wm-route-guard-denied__actions">
-              <button
-                type="button"
-                className="wm-primarybtn"
-                onClick={() => window.location.reload()}
-              >
-                Refresh App
-              </button>
+          <div className="wm-errorFallback" role="alert">
+            <div className="wm-errorFallback__card">
+              <h2 className="wm-errorFallback__title">Something went wrong.</h2>
+              <p className="wm-errorFallback__body">
+                The application encountered an unexpected error. Please try refreshing.
+              </p>
+              <div className="wm-errorFallback__actions">
+                <button
+                  type="button"
+                  className="wm-primarybtn"
+                  onClick={() => window.location.reload()}
+                >
+                  Refresh App
+                </button>
+              </div>
             </div>
           </div>
         )

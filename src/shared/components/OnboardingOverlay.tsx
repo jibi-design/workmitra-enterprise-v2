@@ -84,135 +84,46 @@ export function OnboardingOverlay({
   }
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 2000,
-        background: "#fff",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "24px 20px",
-      }}
-    >
-      {!isLast && (
-        <button
-          type="button"
-          onClick={finish}
-          style={{
-            position: "absolute",
-            top: 16,
-            right: 16,
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            fontSize: 13,
-            fontWeight: 600,
-            color: "var(--wm-er-muted, #6b7280)",
-            padding: "6px 12px",
-          }}
-        >
-          Skip
-        </button>
-      )}
-
-      <div
-        style={{
-          width: 80,
-          height: 80,
-          borderRadius: 20,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "rgba(29,78,216,0.08)",
-          color: "var(--wm-brand-600, #1d4ed8)",
-          marginBottom: 24,
-        }}
-      >
-        {ICONS[slide.icon]}
-      </div>
-
-      <div
-        style={{
-          fontSize: 20,
-          fontWeight: 700,
-          color: "var(--wm-er-text, #111827)",
-          textAlign: "center",
-          lineHeight: 1.3,
-        }}
-      >
-        {slide.title}
-      </div>
-
-      <div
-        style={{
-          marginTop: 12,
-          fontSize: 14,
-          color: "var(--wm-er-muted, #6b7280)",
-          textAlign: "center",
-          lineHeight: 1.6,
-          maxWidth: 300,
-        }}
-      >
-        {slide.message}
-      </div>
-
-      <div style={{ marginTop: 32, display: "flex", gap: 8 }}>
-        {slides.map((_, itemIndex) => (
-          <div
-            key={itemIndex}
-            style={{
-              width: itemIndex === index ? 20 : 8,
-              height: 8,
-              borderRadius: 999,
-              background:
-                itemIndex === index ? "var(--wm-brand-600, #1d4ed8)" : "rgba(29,78,216,0.15)",
-              transition: "width 0.2s, background 0.2s",
-            }}
-          />
-        ))}
-      </div>
-
-      <div style={{ marginTop: 32, width: "100%", maxWidth: 300 }}>
-        {isLast ? (
-          <button
-            type="button"
-            onClick={finish}
-            style={{
-              width: "100%",
-              padding: "14px 0",
-              borderRadius: 12,
-              border: "none",
-              background: "var(--wm-brand-600, #1d4ed8)",
-              color: "#fff",
-              fontSize: 15,
-              fontWeight: 700,
-              cursor: "pointer",
-            }}
-          >
-            {ctaLabel}
+    <div className="wm-onboard-overlay" role="dialog" aria-modal="true" aria-label="Welcome">
+      <div className="wm-onboard-panel">
+        {!isLast ? (
+          <button type="button" className="wm-onboard-skip" onClick={finish}>
+            Skip
           </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setIndex((currentIndex) => currentIndex + 1)}
-            style={{
-              width: "100%",
-              padding: "14px 0",
-              borderRadius: 12,
-              border: "none",
-              background: "var(--wm-brand-600, #1d4ed8)",
-              color: "#fff",
-              fontSize: 15,
-              fontWeight: 700,
-              cursor: "pointer",
-            }}
-          >
-            Next
-          </button>
-        )}
+        ) : null}
+
+        <div className="wm-onboard-stage" aria-live="polite">
+          <div className="wm-onboard-icon" aria-hidden="true">
+            {ICONS[slide.icon]}
+          </div>
+          <div className="wm-onboard-title">{slide.title}</div>
+          <div className="wm-onboard-message">{slide.message}</div>
+        </div>
+
+        <div className="wm-onboard-dots" aria-hidden="true">
+          {slides.map((_, itemIndex) => (
+            <div
+              key={itemIndex}
+              className={`wm-onboard-dot${itemIndex === index ? " wm-onboard-dot--active" : ""}`}
+            />
+          ))}
+        </div>
+
+        <div className="wm-onboard-actions">
+          {isLast ? (
+            <button type="button" className="wm-press-btn wm-onboard-cta" onClick={finish}>
+              {ctaLabel}
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="wm-press-btn wm-onboard-cta"
+              onClick={() => setIndex((currentIndex) => currentIndex + 1)}
+            >
+              Next
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -6,33 +6,14 @@ import { JobMitraLandingLogo } from "./JobMitraLandingLogo";
 
 export function LandingRoleHero() {
   return (
-    <div style={{ display: "flex", flexDirection: "column", width: "100%", marginBottom: 32 }}>
-      <JobMitraLandingLogo size="large" />
+    <div className="wm-auth-hero">
+      <div className="wm-auth-hero__logo">
+        <JobMitraLandingLogo size="large" />
+      </div>
 
-      <h1
-        style={{
-          marginTop: 24,
-          fontSize: 22 /* Professional size */,
-          fontWeight: 700,
-          color: "#0F172A",
-          lineHeight: 1.2,
-          letterSpacing: "-0.03em",
-        }}
-      >
-        Sign in to your workspace
-      </h1>
+      <h1 className="wm-auth-hero__title">Sign in to your workspace</h1>
 
-      <p
-        style={{
-          marginTop: 6,
-          fontSize: 14,
-          fontWeight: 400,
-          color: "#64748B",
-          lineHeight: 1.5,
-        }}
-      >
-        Select the role that matches your account type.
-      </p>
+      <p className="wm-auth-hero__sub">Select the role that matches your account type.</p>
     </div>
   );
 }

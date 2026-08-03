@@ -57,8 +57,8 @@ export function EmployerSettingsAccountSection({
         <span
           style={{
             ...comingSoonBadgeStyle,
-            background: "rgba(139,92,246,0.10)",
-            color: "#7c3aed",
+            background: "color-mix(in srgb, var(--wm-brand-600, #2563eb) 12%, transparent)",
+            color: "var(--wm-brand-700, #1d4ed8)",
           }}
         >
           1 Active

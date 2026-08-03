@@ -84,35 +84,15 @@ function FaqItem({
         aria-expanded={open}
         aria-label={q}
       >
+        <span className="wm-helpFaqRow__q">{q}</span>
         <span
-          style={{ fontSize: 14, fontWeight: 600, color: "var(--wm-er-text)", lineHeight: 1.4 }}
-        >
-          {q}
-        </span>
-        <span
-          style={{
-            fontSize: 16,
-            color: "var(--wm-er-muted)",
-            flexShrink: 0,
-            transform: open ? "rotate(180deg)" : "rotate(0deg)",
-            transition: "transform 0.2s",
-          }}
+          className={`wm-helpFaqRow__chevron${open ? " wm-helpFaqRow__chevron--open" : ""}`}
+          aria-hidden="true"
         >
           &#9662;
         </span>
       </button>
-      {open ? (
-        <div
-          style={{
-            padding: "0 0 12px",
-            fontSize: 13,
-            color: "var(--wm-er-muted)",
-            lineHeight: 1.7,
-          }}
-        >
-          {a}
-        </div>
-      ) : null}
+      {open ? <div className="wm-helpFaqAnswer">{a}</div> : null}
     </div>
   );
 }
@@ -143,17 +123,10 @@ export function HelpSupportPage() {
       />
 
       <section className="wm-helpFaqCard" aria-label="Frequently Asked Questions">
-        <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-er-text)" }}>
-          Frequently Asked Questions
-        </div>
-        <div style={{ marginTop: 8 }}>
+        <div className="wm-helpSectionTitle">Frequently Asked Questions</div>
+        <div className="wm-helpFaqList">
           {FAQ_ITEMS.length === 0 ? (
-            <div
-              className="wm-ent-empty"
-              style={{ fontSize: 14, color: "var(--wm-er-muted)", padding: "12px 0" }}
-            >
-              No FAQ items available yet.
-            </div>
+            <div className="wm-ent-empty">No FAQ items available yet.</div>
           ) : (
             FAQ_ITEMS.map((item, i) => (
               <FaqItem
@@ -169,45 +142,44 @@ export function HelpSupportPage() {
       </section>
 
       <section className="wm-helpContactCard" aria-label="Contact Us">
-        <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-er-text)" }}>Contact Us</div>
-        <div style={{ fontSize: 12, color: "var(--wm-er-muted)", marginTop: 4, lineHeight: 1.5 }}>
+        <div className="wm-helpSectionTitle">Contact Us</div>
+        <div className="wm-helpSectionSub">
           Having trouble or want to share feedback? Reach out to us.
         </div>
 
-        <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
+        <div className="wm-helpContactGrid">
           <a href={buildMailtoUrl("Job Mitra — Report a Problem")} className="wm-helpContactLink">
-            <span style={{ fontSize: 16 }}>&#9888;</span>
+            <span aria-hidden="true">&#9888;</span>
             Report a problem
           </a>
           <a href={buildMailtoUrl("Job Mitra — Feature Suggestion")} className="wm-helpContactLink">
-            <span style={{ fontSize: 16 }}>&#128161;</span>
+            <span aria-hidden="true">&#128161;</span>
             Suggest a feature
           </a>
           <a href={buildMailtoUrl("Job Mitra — General Enquiry")} className="wm-helpContactLink">
-            <span style={{ fontSize: 16 }}>&#9993;</span>
+            <span aria-hidden="true">&#9993;</span>
             {SUPPORT_EMAIL}
           </a>
         </div>
       </section>
 
-      <section className="wm-helpContactCard" style={{ marginBottom: 24 }} aria-label="App Info">
-        <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-er-text)" }}>App Info</div>
-        <div style={{ marginTop: 8, display: "grid", gap: 6 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
-            <span style={{ color: "var(--wm-er-muted)" }}>Version</span>
-            <span style={{ fontWeight: 700, color: "var(--wm-er-text)" }}>1.0.0</span>
+      <section className="wm-helpContactCard wm-helpContactCard--last" aria-label="App Info">
+        <div className="wm-helpSectionTitle">App Info</div>
+        <div className="wm-helpInfoRows">
+          <div className="wm-helpInfoRow">
+            <span className="wm-helpInfoRow__label">Version</span>
+            <span className="wm-helpInfoRow__value">1.0.0</span>
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
-            <span style={{ color: "var(--wm-er-muted)" }}>Build</span>
-            <span style={{ fontWeight: 700, color: "var(--wm-er-text)" }}>Beta</span>
+          <div className="wm-helpInfoRow">
+            <span className="wm-helpInfoRow__label">Build</span>
+            <span className="wm-helpInfoRow__value">Beta</span>
           </div>
         </div>
 
         <button
           type="button"
-          className="wm-outlineBtn"
+          className="wm-outlineBtn wm-helpTutorialBtn"
           onClick={handleTutorialReset}
-          style={{ marginTop: 12, width: "100%" }}
           aria-label={tutorialReset ? "Tutorial will show on next visit" : "View tutorial again"}
         >
           {tutorialReset ? "Tutorial will show on next visit!" : "View tutorial again"}

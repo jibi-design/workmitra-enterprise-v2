@@ -77,144 +77,37 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     }
 
     return (
-      <div
-        role="alert"
-        aria-live="assertive"
-        style={{
-          minHeight: "60vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: 24,
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: 400,
-            background: "#fff",
-            border: "1px solid var(--wm-er-border, #e5e7eb)",
-            borderRadius: "var(--wm-radius-14, 14px)",
-            padding: 24,
-            textAlign: "center",
-          }}
-        >
-          <div
-            style={{
-              width: 48,
-              height: 48,
-              margin: "0 auto 16px",
-              borderRadius: 12,
-              background: "rgba(220, 38, 38, 0.08)",
-              border: "1px solid rgba(220, 38, 38, 0.16)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+      <div className="wm-errorFallback" role="alert" aria-live="assertive">
+        <div className="wm-errorFallback__card">
+          <div className="wm-errorFallback__icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24">
               <path
-                fill="rgba(220, 38, 38, 0.85)"
+                fill="currentColor"
                 d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2Zm1 15h-2v-2h2v2Zm0-4h-2V7h2v6Z"
               />
             </svg>
           </div>
 
-          <div
-            style={{
-              fontSize: 16,
-              fontWeight: 800,
-              color: "var(--wm-er-text, #111827)",
-              marginBottom: 8,
-            }}
-          >
-            Something went wrong
-          </div>
-
-          <div
-            style={{
-              fontSize: 13,
-              color: "var(--wm-er-muted, #6b7280)",
-              lineHeight: 1.5,
-              marginBottom: 20,
-            }}
-          >
+          <div className="wm-errorFallback__title">Something went wrong</div>
+          <div className="wm-errorFallback__body">
             An unexpected error occurred. You can try again or return to the home screen.
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              gap: 10,
-              justifyContent: "center",
-            }}
-          >
-            <button
-              type="button"
-              onClick={this.handleRetry}
-              style={{
-                height: 40,
-                borderRadius: "var(--wm-radius-14, 14px)",
-                border: "1px solid var(--wm-er-border, #e5e7eb)",
-                background: "#fff",
-                padding: "0 16px",
-                fontWeight: 800,
-                fontSize: 13,
-                cursor: "pointer",
-                color: "var(--wm-er-text, #111827)",
-              }}
-            >
+          <div className="wm-errorFallback__actions">
+            <button type="button" className="wm-outlineBtn" onClick={this.handleRetry}>
               Try Again
             </button>
-
-            <button
-              type="button"
-              onClick={this.handleGoHome}
-              style={{
-                height: 40,
-                borderRadius: "var(--wm-radius-14, 14px)",
-                border: 0,
-                background: "var(--wm-brand-600, #1d4ed8)",
-                padding: "0 16px",
-                fontWeight: 800,
-                fontSize: 13,
-                cursor: "pointer",
-                color: "#fff",
-              }}
-            >
+            <button type="button" className="wm-primarybtn" onClick={this.handleGoHome}>
               Go Home
             </button>
           </div>
 
-          {this.state.error && import.meta.env.DEV && (
-            <details
-              style={{
-                marginTop: 16,
-                textAlign: "left",
-                fontSize: 11,
-                color: "var(--wm-er-muted, #6b7280)",
-              }}
-            >
-              <summary style={{ cursor: "pointer", fontWeight: 700 }}>Error details</summary>
-              <pre
-                style={{
-                  marginTop: 8,
-                  padding: 10,
-                  background: "#f9fafb",
-                  borderRadius: 8,
-                  border: "1px solid #e5e7eb",
-                  overflow: "auto",
-                  maxHeight: 120,
-                  fontSize: 11,
-                  lineHeight: 1.4,
-                  whiteSpace: "pre-wrap",
-                  wordBreak: "break-word",
-                }}
-              >
-                {this.state.error.message}
-              </pre>
+          {this.state.error && import.meta.env.DEV ? (
+            <details className="wm-errorFallback__details">
+              <summary>Error details</summary>
+              <pre className="wm-errorFallback__pre">{this.state.error.message}</pre>
             </details>
-          )}
+          ) : null}
         </div>
       </div>
     );

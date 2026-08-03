@@ -16,6 +16,9 @@ import { logSecurityEvent } from "../../observability/securityEvents.js";
 import { parseWithSchema } from "../../validation/zodParse.js";
 import {
   loginBodySchema,
+  registerBodySchema,
+  forgotPasswordBodySchema,
+  resetPasswordBodySchema,
   supabaseBridgeBodySchema,
 } from "../../validation/schemas/auth.schemas.js";
 
@@ -318,6 +321,100 @@ export async function handleAuthRoutes(
       return true;
     }
     sendJson(res, 200, envelope({ session: minted.session }, requestId));
+    return true;
+  }
+
+  if (method === "POST" && subpath === "/register") {
+    const body = await readJsonBody(req);
+    if (body === null) {
+      const err = errorEnvelope("PAYLOAD_TOO_LARGE", "Request body too large", requestId, 413);
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+    const parsed = parseWithSchema(registerBodySchema, body);
+    if (!parsed.ok) {
+      const err = errorEnvelope(
+        "VALIDATION_ERROR",
+        "Full name, email, password (8+), and role are required",
+        requestId,
+        400,
+      );
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+    const result = await authService.register(parsed.data);
+    if (!result.ok) {
+      const err = errorEnvelope(result.code, result.message, requestId, result.httpStatus ?? 400);
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+    let rawToken: string;
+    if (isDbAuthEnabled()) {
+      rawToken = await sessionStore.createDb(result.user.id, meta);
+    } else {
+      rawToken = sessionStore.create(result.user.id);
+    }
+    setSessionCookie(res, rawToken, req);
+    const csrfToken = await issueCsrfForSession(res, rawToken, SESSION_ABSOLUTE_TTL_SEC, req);
+    sendJson(res, 201, envelope({ user: result.user, csrfToken }, requestId));
+    return true;
+  }
+
+  if (method === "POST" && subpath === "/forgot-password") {
+    const body = await readJsonBody(req);
+    if (body === null) {
+      const err = errorEnvelope("PAYLOAD_TOO_LARGE", "Request body too large", requestId, 413);
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+    const parsed = parseWithSchema(forgotPasswordBodySchema, body);
+    if (!parsed.ok) {
+      const err = errorEnvelope("VALIDATION_ERROR", "A valid email is required", requestId, 400);
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+    const result = await authService.requestPasswordReset(parsed.data.email);
+    sendJson(
+      res,
+      200,
+      envelope(
+        {
+          ok: true,
+          message:
+            "If an account exists for that email, password reset instructions have been sent.",
+          ...(result.debugToken ? { debugResetToken: result.debugToken } : {}),
+        },
+        requestId,
+      ),
+    );
+    return true;
+  }
+
+  if (method === "POST" && subpath === "/reset-password") {
+    const body = await readJsonBody(req);
+    if (body === null) {
+      const err = errorEnvelope("PAYLOAD_TOO_LARGE", "Request body too large", requestId, 413);
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+    const parsed = parseWithSchema(resetPasswordBodySchema, body);
+    if (!parsed.ok) {
+      const err = errorEnvelope(
+        "VALIDATION_ERROR",
+        "Reset token and a new password (8+) are required",
+        requestId,
+        400,
+      );
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+    const result = await authService.resetPassword(parsed.data.token, parsed.data.password);
+    if (!result.ok) {
+      const err = errorEnvelope(result.code, result.message, requestId, result.httpStatus ?? 400);
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+    sendJson(res, 200, envelope({ ok: true, user: result.user }, requestId));
     return true;
   }
 

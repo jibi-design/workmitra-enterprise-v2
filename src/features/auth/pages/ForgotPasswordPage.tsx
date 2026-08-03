@@ -1,64 +1,61 @@
-/** Job Mitra | LoginPage.tsx | src/features/auth/pages/LoginPage.tsx */
+/** Job Mitra | ForgotPasswordPage.tsx | Apple-grade password recovery request */
 
 import { useState, type FormEvent } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../app/router/routePaths";
-import { resolvePostAuthRoute, sanitizeAppRoute } from "../../../app/router/pendingRoute";
-import { useAuthStore } from "../../../shared/store/authStore";
-import type { UserRole } from "../../../shared/store/authStore";
+import { AUTH_BACKEND_ENABLED } from "../../../shared/config/authConfig";
+import { authService } from "../services/authService";
 import { JobMitraLandingLogo } from "../components/JobMitraLandingLogo";
 import { LandingFooterLinks } from "../components/LandingFooterLinks";
 
 const SUPPORT_EMAIL = "support@mitralabs.app";
 const PRIVACY_POLICY_URL = "https://jibi-design.github.io/workmitra-privacy/";
 
-function homeForRole(role: UserRole): string {
-  if (role === "employee") return ROUTE_PATHS.employeeHome;
-  if (role === "employer") return ROUTE_PATHS.employerHome;
-  return ROUTE_PATHS.adminHome;
-}
-
-export function LoginPage() {
-  const nav = useNavigate();
-  const location = useLocation();
-  const loginWithCredentials = useAuthStore((s) => s.loginWithCredentials);
-
+export function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [debugToken, setDebugToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    setSuccess(null);
+    setDebugToken(null);
+
+    if (!AUTH_BACKEND_ENABLED) {
+      setError("Password recovery requires auth backend.");
+      return;
+    }
+
     setLoading(true);
     try {
-      const user = await loginWithCredentials(email.trim(), password);
-      const stateFrom = (location.state as { from?: string } | null)?.from;
-      const fallback = homeForRole(user.role);
-      const rawTarget =
-        stateFrom && stateFrom.startsWith(`/${user.role}`)
-          ? stateFrom
-          : resolvePostAuthRoute(user.role, fallback);
-      const target = sanitizeAppRoute(rawTarget, user.role, fallback);
-      nav(target, { replace: true });
+      const result = await authService.requestPasswordReset(email.trim());
+      setSuccess(
+        result.message ||
+          "If an account exists for that email, password reset instructions have been sent.",
+      );
+      if (result.debugResetToken) {
+        setDebugToken(result.debugResetToken);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? err.message : "Could not start password recovery");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="wm-auth-stage wm-auth-login">
+    <div className="wm-auth-stage">
       <div className="wm-auth-panel">
         <div className="wm-auth-hero">
           <div className="wm-auth-hero__logo">
             <JobMitraLandingLogo />
           </div>
-          <h1 className="wm-auth-hero__title wm-auth-hero__title--center">Sign in</h1>
+          <h1 className="wm-auth-hero__title wm-auth-hero__title--center">Forgot password</h1>
           <p className="wm-auth-hero__sub wm-auth-hero__sub--center">
-            Email and password — verified by server session.
+            Enter your email and we&apos;ll send a secure reset link if an account exists.
           </p>
         </div>
 
@@ -75,21 +72,24 @@ export function LoginPage() {
             />
           </label>
 
-          <label className="wm-auth-label">
-            Password
-            <input
-              className="wm-auth-input"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </label>
-
           {error ? (
             <p className="wm-auth-error" role="alert">
               {error}
+            </p>
+          ) : null}
+
+          {success ? (
+            <p className="wm-auth-success" role="status">
+              {success}
+            </p>
+          ) : null}
+
+          {debugToken ? (
+            <p className="wm-auth-dev-hint">
+              Dev reset token:{" "}
+              <Link to={`${ROUTE_PATHS.resetPassword}?token=${encodeURIComponent(debugToken)}`}>
+                Open reset form
+              </Link>
             </p>
           ) : null}
 
@@ -102,25 +102,18 @@ export function LoginPage() {
             {loading ? (
               <>
                 <span className="wm-auth-submit__spinner" aria-hidden="true" />
-                Signing in…
+                Sending…
               </>
             ) : (
-              "Sign in"
+              "Send reset link"
             )}
           </button>
         </form>
 
         <div className="wm-auth-nav-links">
-          <Link to={ROUTE_PATHS.forgotPassword}>Forgot password?</Link>
+          <Link to={ROUTE_PATHS.login}>Back to sign in</Link>
           <Link to={ROUTE_PATHS.register}>Create account</Link>
         </div>
-
-        {import.meta.env.DEV ? (
-          <p className="wm-auth-dev-hint">
-            Dev demo: employee@demo.jobmitra.app / employer@demo.jobmitra.app — password{" "}
-            <code>demo1234</code>
-          </p>
-        ) : null}
       </div>
 
       <div className="wm-auth-footer">

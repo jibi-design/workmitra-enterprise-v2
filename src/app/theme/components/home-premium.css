@@ -126,6 +126,102 @@
   align-self: center;
 }
 
+.wm-homeGlassCard__chevron {
+  color: #cbd5e1;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.wm-homeGlassCard__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  color: #0f172a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.wm-homeStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wm-stack-gap, 16px);
+}
+
+/* CLS-safe home skeleton — reserved heights, no layout jump */
+.wm-homeSkeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wm-stack-gap, 16px);
+  min-height: 420px;
+  box-sizing: border-box;
+}
+
+.wm-homeSkeleton__hero {
+  min-height: 112px;
+  border-radius: var(--wm-radius-employer-card, 24px);
+}
+
+.wm-homeSkeleton__tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.wm-homeSkeleton__tile {
+  min-height: 110px;
+  border-radius: var(--wm-radius-employee-card, 20px);
+}
+
+.wm-homeSkeleton__card {
+  min-height: 76px;
+  border-radius: var(--wm-radius-employee-card, 20px);
+}
+
+.wm-homeSkeleton__card--employer {
+  border-radius: var(--wm-radius-employer-card, 24px);
+  min-height: 80px;
+}
+
+.wm-homeHero__badge {
+  margin-top: 12px;
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.wm-homeHero__avatar--employeeLive {
+  border-color: rgba(22, 163, 74, 0.45);
+  box-shadow:
+    0 0 0 3px rgba(22, 163, 74, 0.22),
+    0 0 14px rgba(22, 163, 74, 0.28);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.wm-homeQuickTile__value--shift {
+  color: var(--wm-shift-accent, #2563eb);
+}
+
+.wm-homeQuickTile__value--alerts {
+  color: var(--wm-shift-accent, #27ae60);
+}
+
+.wm-homeQuickTile__label--strong {
+  color: var(--wm-neutral-900, #0f172a);
+  font-weight: 700;
+}
+
 .wm-homeHero {
   position: relative;
   overflow: hidden;

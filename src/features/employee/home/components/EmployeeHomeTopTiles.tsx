@@ -32,44 +32,17 @@ export function EmployeeHomeTopTiles({
   const initial = userName.trim().charAt(0).toUpperCase() || "U";
 
   return (
-    <div className="wm-homePage" style={{ gap: 16 }}>
+    <div className="wm-homeStack">
       <header className="wm-homeHero wm-homeHero--employee wm-homeCardEnter">
         <div className="wm-homeHero__orb wm-homeHero__orb--employee" aria-hidden="true" />
         <div className="wm-homeHero__content">
-          <div
-            className="wm-homeHero__subtitle"
-            style={{ margin: 0, color: "rgba(255,255,255,0.8)" }}
-          >
+          <div className="wm-homeHero__subtitle" style={{ color: "rgba(255,255,255,0.8)" }}>
             {greeting},
           </div>
-          <h1 className="wm-homeHero__title wm-typeHero" style={{ marginTop: 4 }}>
-            {userName}
-          </h1>
-          <div
-            style={{
-              marginTop: 12,
-              display: "inline-block",
-              padding: "4px 10px",
-              background: "rgba(255, 255, 255, 0.15)",
-              borderRadius: 100,
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: "0.5px",
-              textTransform: "uppercase",
-            }}
-          >
-            {statusBadge}
-          </div>
+          <h1 className="wm-homeHero__title wm-typeHero">{userName}</h1>
+          <div className="wm-homeHero__badge">{statusBadge}</div>
         </div>
-        <div
-          className="wm-homeHero__avatar"
-          style={{
-            borderColor: "rgba(22, 163, 74, 0.45)",
-            boxShadow: "0 0 0 3px rgba(22, 163, 74, 0.22), 0 0 14px rgba(22, 163, 74, 0.28)",
-            background: "rgba(255,255,255,0.2)",
-          }}
-          aria-hidden="true"
-        >
+        <div className="wm-homeHero__avatar wm-homeHero__avatar--employeeLive" aria-hidden="true">
           {initial}
         </div>
       </header>
@@ -81,19 +54,11 @@ export function EmployeeHomeTopTiles({
           onClick={onShiftTile}
           aria-label={`${upcomingShiftDisplay} upcoming shifts`}
         >
-          <div
-            className="wm-homeQuickTile__value"
-            style={{ color: "var(--wm-shift-accent, #2563EB)" }}
-          >
+          <div className="wm-homeQuickTile__value wm-homeQuickTile__value--shift">
             {upcomingShiftDisplay}
           </div>
           <div>
-            <div
-              className="wm-homeQuickTile__label"
-              style={{ color: "var(--wm-neutral-900)", fontWeight: 700 }}
-            >
-              Shifts
-            </div>
+            <div className="wm-homeQuickTile__label wm-homeQuickTile__label--strong">Shifts</div>
             <div className="wm-homeQuickTile__label">Upcoming</div>
           </div>
         </button>
@@ -104,19 +69,11 @@ export function EmployeeHomeTopTiles({
           onClick={onBroadcastTile}
           aria-label={`${shiftBroadcastUnreadDisplay} broadcast alerts`}
         >
-          <div
-            className="wm-homeQuickTile__value"
-            style={{ color: "var(--wm-shift-accent, #27AE60)" }}
-          >
+          <div className="wm-homeQuickTile__value wm-homeQuickTile__value--alerts">
             {shiftBroadcastUnreadDisplay}
           </div>
           <div>
-            <div
-              className="wm-homeQuickTile__label"
-              style={{ color: "var(--wm-neutral-900)", fontWeight: 700 }}
-            >
-              Alerts
-            </div>
+            <div className="wm-homeQuickTile__label wm-homeQuickTile__label--strong">Alerts</div>
             <div className="wm-homeQuickTile__label">Broadcasts</div>
           </div>
         </button>

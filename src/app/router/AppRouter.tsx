@@ -15,6 +15,9 @@ import { ErrorBoundary } from "../../shared/components/ErrorBoundary";
 import { RequireRole } from "./guards/RequireRole";
 import { LandingRolePickPage } from "../../features/auth/pages/LandingRolePickPage";
 import { LoginPage } from "../../features/auth/pages/LoginPage";
+import { RegisterPage } from "../../features/auth/pages/RegisterPage";
+import { ForgotPasswordPage } from "../../features/auth/pages/ForgotPasswordPage";
+import { ResetPasswordPage } from "../../features/auth/pages/ResetPasswordPage";
 import { PublicLandingPage } from "../../features/public/pages/PublicLandingPage";
 import { AUTH_BACKEND_ENABLED } from "../../shared/config/authConfig";
 import { EmployeeShell } from "../shells/EmployeeShell";
@@ -46,6 +49,30 @@ const appRouter = createHashRouter(
         element={
           <ErrorBoundary homePath={ROUTE_PATHS.login}>
             <LoginPage />
+          </ErrorBoundary>
+        }
+      />
+      <Route
+        path={ROUTE_PATHS.register}
+        element={
+          <ErrorBoundary homePath={ROUTE_PATHS.login}>
+            <RegisterPage />
+          </ErrorBoundary>
+        }
+      />
+      <Route
+        path={ROUTE_PATHS.forgotPassword}
+        element={
+          <ErrorBoundary homePath={ROUTE_PATHS.login}>
+            <ForgotPasswordPage />
+          </ErrorBoundary>
+        }
+      />
+      <Route
+        path={ROUTE_PATHS.resetPassword}
+        element={
+          <ErrorBoundary homePath={ROUTE_PATHS.login}>
+            <ResetPasswordPage />
           </ErrorBoundary>
         }
       />

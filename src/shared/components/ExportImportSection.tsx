@@ -13,9 +13,6 @@ import {
 } from "../utils/dataExportService";
 import type { ImportValidation } from "../utils/dataExportService";
 
-/* ------------------------------------------------ */
-/* Icons                                            */
-/* ------------------------------------------------ */
 function IconDownload() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
@@ -32,9 +29,6 @@ function IconUpload() {
   );
 }
 
-/* ------------------------------------------------ */
-/* Component                                        */
-/* ------------------------------------------------ */
 export function ExportImportSection() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [exportDone, setExportDone] = useState(false);
@@ -43,14 +37,12 @@ export function ExportImportSection() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
 
-  /* ---- Export ---- */
   function handleExport() {
     exportData();
     setExportDone(true);
     setTimeout(() => setExportDone(false), 3000);
   }
 
-  /* ---- File select ---- */
   async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     setError("");
     setValidation(null);
@@ -68,7 +60,6 @@ export function ExportImportSection() {
     setValidation(result);
   }
 
-  /* ---- Import confirm ---- */
   async function handleImportConfirm() {
     if (!selectedFile) return;
     setImporting(true);
@@ -83,7 +74,6 @@ export function ExportImportSection() {
     window.location.reload();
   }
 
-  /* ---- Cancel ---- */
   function handleCancel() {
     setValidation(null);
     setSelectedFile(null);
@@ -92,116 +82,71 @@ export function ExportImportSection() {
   }
 
   return (
-    <div style={{
-      marginTop: 14, padding: "16px", borderRadius: 14,
-      border: "1px solid var(--wm-er-border)", background: "var(--wm-er-card, #fff)",
-    }}>
-      <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-er-text)" }}>
-        Backup and restore
-      </div>
-      <div style={{ fontSize: 12, color: "var(--wm-er-muted)", marginTop: 4, lineHeight: 1.5 }}>
+    <section className="wm-settingsGroup">
+      <div className="wm-settingsGroup__title">Backup and restore</div>
+      <div className="wm-helpSectionSub">
         Export your data as a backup file. Import to restore on a new device.
       </div>
-      <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginTop: 4, fontStyle: "italic" }}>
-        Documents are not included in backup. Please keep copies of your uploaded documents separately.
+      <div className="wm-settingsBackupNote">
+        Documents are not included in backup. Please keep copies of your uploaded documents
+        separately.
       </div>
 
-      {/* Export */}
-      <button
-        type="button"
-        onClick={handleExport}
-        style={{
-          marginTop: 12, width: "100%", padding: "11px 16px", borderRadius: 10,
-          border: "1px solid var(--wm-er-accent-career, #1d4ed8)",
-          background: "rgba(29,78,216,0.06)",
-          color: "var(--wm-er-accent-career, #1d4ed8)",
-          fontSize: 13, fontWeight: 700, cursor: "pointer",
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-        }}
-      >
-        <IconDownload />
-        {exportDone ? "Downloaded!" : "Export my data"}
-      </button>
+      <div className="wm-settingsBackupActions">
+        <button
+          type="button"
+          className="wm-settingsBackupBtn wm-settingsBackupBtn--export"
+          onClick={handleExport}
+        >
+          <IconDownload />
+          {exportDone ? "Downloaded!" : "Export my data"}
+        </button>
 
-      {/* Import */}
-      <input
-        ref={fileRef}
-        type="file"
-        accept=".json"
-        onChange={handleFileSelect}
-        style={{ display: "none" }}
-      />
-      <button
-        type="button"
-        onClick={() => fileRef.current?.click()}
-        style={{
-          marginTop: 8, width: "100%", padding: "11px 16px", borderRadius: 10,
-          border: "1px solid var(--wm-er-border)",
-          background: "#fff",
-          color: "var(--wm-er-text)",
-          fontSize: 13, fontWeight: 700, cursor: "pointer",
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-        }}
-      >
-        <IconUpload />
-        Import backup
-      </button>
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".json"
+          onChange={handleFileSelect}
+          style={{ display: "none" }}
+        />
+        <button
+          type="button"
+          className="wm-settingsBackupBtn wm-settingsBackupBtn--import"
+          onClick={() => fileRef.current?.click()}
+        >
+          <IconUpload />
+          Import backup
+        </button>
+      </div>
 
-      {/* Error */}
-      {error && (
-        <div style={{
-          marginTop: 10, padding: "10px 14px", borderRadius: 10,
-          background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.18)",
-          fontSize: 12, fontWeight: 600, color: "var(--wm-error, #dc2626)",
-        }}>
-          {error}
-        </div>
-      )}
+      {error ? <div className="wm-settingsBackupError">{error}</div> : null}
 
-      {/* Import confirmation */}
-      {validation && selectedFile && (
-        <div style={{
-          marginTop: 10, padding: "14px", borderRadius: 10,
-          background: "rgba(217,119,6,0.06)", border: "1px solid rgba(217,119,6,0.25)",
-        }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#92400e" }}>
-            Confirm import
+      {validation && selectedFile ? (
+        <div className="wm-settingsBackupConfirm">
+          <div className="wm-settingsBackupConfirm__title">Confirm import</div>
+          <div className="wm-settingsBackupConfirm__body">
+            This backup is from <b>{formatExportDate(validation.exportedAt)}</b>. Importing will
+            replace ALL your current data with this backup. Any data added after this date will be
+            lost.
           </div>
-          <div style={{ fontSize: 12, color: "#92400e", marginTop: 6, lineHeight: 1.6 }}>
-            This backup is from <b>{formatExportDate(validation.exportedAt)}</b>.
-            Importing will replace ALL your current data with this backup.
-            Any data added after this date will be lost.
-          </div>
-          <div style={{ fontSize: 11, color: "#92400e", marginTop: 4 }}>
+          <div className="wm-settingsBackupConfirm__meta">
             {validation.keyCount} data entries will be restored.
           </div>
-          <div style={{ marginTop: 10, display: "flex", gap: 8, justifyContent: "flex-end" }}>
-            <button
-              type="button"
-              onClick={handleCancel}
-              style={{
-                padding: "8px 16px", borderRadius: 8,
-                border: "1px solid var(--wm-er-border)", background: "#fff",
-                fontSize: 12, fontWeight: 600, color: "var(--wm-er-text)", cursor: "pointer",
-              }}
-            >
+          <div className="wm-settingsBackupConfirm__actions">
+            <button type="button" className="wm-outlineBtn" onClick={handleCancel}>
               Cancel
             </button>
             <button
               type="button"
+              className="wm-dangerBtn"
               onClick={handleImportConfirm}
               disabled={importing}
-              style={{
-                padding: "8px 16px", borderRadius: 8, border: "none",
-                background: "#dc2626", color: "#fff",
-                fontSize: 12, fontWeight: 600, cursor: "pointer",
-              }}
             >
               {importing ? "Restoring..." : "Replace all data"}
             </button>
           </div>
         </div>
-      )}
-    </div>
+      ) : null}
+    </section>
   );
 }

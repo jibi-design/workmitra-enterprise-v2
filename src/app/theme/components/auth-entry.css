@@ -1,0 +1,579 @@
+/* src/app/theme/components/auth-entry.css
+   Apple-grade auth entry stage — Splash → Role Pick → Login continuity.
+   Uses WorkMitra slate + splash teal/royal wash (no purple dialect).
+*/
+
+:root {
+  --wm-auth-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --wm-auth-glass-border: rgba(255, 255, 255, 0.55);
+  --wm-auth-glass-bg: color-mix(in srgb, #ffffff 78%, transparent);
+  --wm-auth-stage-deep: #020617;
+  --wm-auth-teal: var(--wm-splash-teal, #0891b2);
+  --wm-auth-royal: var(--wm-splash-royal, #2563eb);
+}
+
+/* ---------- Atmospheric stage (Splash continuity) ---------- */
+.wm-auth-stage {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 20px 16px 28px;
+  overflow: hidden;
+  font-family: var(--wm-font-sans, system-ui, -apple-system, "SF Pro Text", "Segoe UI", sans-serif);
+  color: var(--wm-neutral-900, #0f172a);
+  background: var(--wm-auth-stage-deep);
+  -webkit-font-smoothing: antialiased;
+}
+
+.wm-auth-stage::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      55% 45% at 18% 12%,
+      color-mix(in srgb, var(--wm-auth-teal) 42%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      50% 40% at 88% 18%,
+      color-mix(in srgb, var(--wm-auth-royal) 28%, transparent),
+      transparent 55%
+    ),
+    radial-gradient(70% 55% at 50% 100%, rgba(15, 23, 42, 0.9), transparent 55%),
+    linear-gradient(165deg, #020617 0%, #0b1220 42%, #152238 100%);
+}
+
+.wm-auth-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+
+.wm-auth-stage > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- Glass panel ---------- */
+.wm-auth-panel {
+  width: 100%;
+  max-width: 440px;
+  padding: 32px 22px 28px;
+  border-radius: 28px;
+  border: 1px solid var(--wm-auth-glass-border);
+  background: var(--wm-auth-glass-bg);
+  box-shadow:
+    0 28px 64px rgba(2, 6, 23, 0.45),
+    0 0 0 1px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(22px) saturate(1.35);
+  -webkit-backdrop-filter: blur(22px) saturate(1.35);
+  animation: wm-auth-panel-rise 520ms var(--wm-auth-ease) both;
+}
+
+.wm-auth-panel--wide {
+  max-width: 520px;
+}
+
+@keyframes wm-auth-panel-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ---------- Hero copy ---------- */
+.wm-auth-hero {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 28px;
+}
+
+.wm-auth-hero__logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.wm-auth-hero__title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 750;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+  color: var(--wm-neutral-900, #0f172a);
+  text-align: left;
+}
+
+.wm-auth-hero__title--center {
+  text-align: center;
+}
+
+.wm-auth-hero__sub {
+  margin: 8px 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  color: var(--wm-text-muted, #64748b);
+}
+
+.wm-auth-hero__sub--center {
+  text-align: center;
+}
+
+/* ---------- Role bento (side-by-side) ---------- */
+.wm-auth-bento {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.wm-auth-role-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  min-height: 148px;
+  min-width: 0;
+  padding: 16px 14px 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: color-mix(in srgb, #ffffff 88%, transparent);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  transition:
+    border-color 180ms var(--wm-auth-ease),
+    background 180ms var(--wm-auth-ease),
+    box-shadow 180ms var(--wm-auth-ease),
+    transform 160ms var(--wm-auth-ease);
+}
+
+.wm-auth-role-card:hover {
+  border-color: rgba(15, 23, 42, 0.18);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.wm-auth-role-card:focus-visible {
+  outline: 2px solid rgba(8, 145, 178, 0.55);
+  outline-offset: 2px;
+}
+
+.wm-auth-role-card--selected {
+  border-color: color-mix(in srgb, var(--wm-auth-teal) 55%, rgba(15, 23, 42, 0.35));
+  background:
+    linear-gradient(165deg, color-mix(in srgb, var(--wm-auth-teal) 8%, #fff), #fff 55%),
+    color-mix(in srgb, #ffffff 92%, transparent);
+  box-shadow:
+    0 12px 28px rgba(8, 145, 178, 0.12),
+    0 0 0 1px color-mix(in srgb, var(--wm-auth-teal) 22%, transparent);
+}
+
+.wm-auth-role-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.05);
+  color: var(--wm-neutral-700, #334155);
+  flex-shrink: 0;
+}
+
+.wm-auth-role-card--selected .wm-auth-role-card__icon {
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--wm-neutral-900, #0f172a);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.wm-auth-role-card__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.wm-auth-role-card__title {
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: var(--wm-neutral-900, #0f172a);
+}
+
+.wm-auth-role-card__desc {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  color: var(--wm-text-muted, #64748b);
+}
+
+.wm-auth-role-card__radio {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(148, 163, 184, 0.9);
+  background: #fff;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition:
+    border-width 160ms var(--wm-auth-ease),
+    border-color 160ms var(--wm-auth-ease),
+    box-shadow 160ms var(--wm-auth-ease);
+}
+
+.wm-auth-role-card--selected .wm-auth-role-card__radio {
+  border: 5px solid var(--wm-neutral-900, #0f172a);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+}
+
+.wm-auth-banner-slot {
+  margin-bottom: 20px;
+}
+
+.wm-auth-continue {
+  width: 100%;
+  margin-top: 22px;
+  min-height: 48px;
+  padding: 14px 22px;
+  border: none;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: #fff;
+  background: var(--wm-neutral-900, #0f172a);
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.22);
+  transition:
+    transform 140ms var(--wm-auth-ease),
+    background 160ms var(--wm-auth-ease),
+    opacity 160ms var(--wm-auth-ease);
+}
+
+.wm-auth-continue:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--wm-auth-teal) 70%, #fff);
+  outline-offset: 3px;
+}
+
+.wm-auth-continue:active {
+  transform: scale(0.985);
+}
+
+.wm-auth-footer {
+  margin-top: 28px;
+}
+
+.wm-auth-stage .wm-auth-footer a,
+.wm-auth-stage .wm-auth-footer span {
+  color: rgba(226, 232, 240, 0.78) !important;
+}
+
+.wm-auth-stage .wm-auth-footer a:hover {
+  color: #fff !important;
+}
+
+/* ---------- Login form ---------- */
+.wm-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.wm-auth-label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--wm-neutral-700, #334155);
+}
+
+.wm-auth-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: color-mix(in srgb, #ffffff 92%, transparent);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--wm-neutral-900, #0f172a);
+  box-sizing: border-box;
+  transition:
+    border-color 160ms var(--wm-auth-ease),
+    box-shadow 160ms var(--wm-auth-ease),
+    background 160ms var(--wm-auth-ease);
+}
+
+.wm-auth-input:hover {
+  border-color: rgba(15, 23, 42, 0.2);
+}
+
+.wm-auth-input:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--wm-auth-teal) 55%, rgba(15, 23, 42, 0.35));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--wm-auth-teal) 22%, transparent);
+  background: #fff;
+}
+
+.wm-auth-input:focus-visible {
+  outline: none;
+}
+
+.wm-auth-error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(185, 28, 28, 0.22);
+  background: rgba(254, 242, 242, 0.92);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #b91c1c;
+}
+
+.wm-auth-submit {
+  margin-top: 6px;
+  width: 100%;
+  min-height: 48px;
+  padding: 14px 22px;
+  border: none;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: #fff;
+  background: var(--wm-neutral-900, #0f172a);
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.22);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition:
+    transform 140ms var(--wm-auth-ease),
+    background 160ms var(--wm-auth-ease),
+    opacity 160ms var(--wm-auth-ease);
+}
+
+.wm-auth-submit:hover:not(:disabled) {
+  background: #020617;
+}
+
+.wm-auth-submit:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--wm-auth-teal) 70%, #fff);
+  outline-offset: 3px;
+}
+
+.wm-auth-submit:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+.wm-auth-submit:disabled,
+.wm-auth-submit--loading {
+  cursor: wait;
+  opacity: 0.72;
+  background: var(--wm-neutral-600, #475569);
+}
+
+.wm-auth-submit__spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  animation: wm-auth-spin 0.7s linear infinite;
+}
+
+@keyframes wm-auth-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.wm-auth-nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 14px;
+  margin-top: 18px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.wm-auth-nav-links a {
+  color: var(--wm-neutral-700, #334155);
+  text-decoration: none;
+}
+
+.wm-auth-nav-links a:hover {
+  color: var(--wm-neutral-900, #0f172a);
+  text-decoration: underline;
+}
+
+.wm-auth-nav-links a:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--wm-auth-teal) 55%, transparent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.wm-auth-role-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.wm-auth-role-toggle__btn {
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: color-mix(in srgb, #fff 90%, transparent);
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--wm-text-muted, #64748b);
+  cursor: pointer;
+}
+
+.wm-auth-role-toggle__btn--active {
+  border-color: rgba(15, 23, 42, 0.28);
+  background: #fff;
+  color: var(--wm-neutral-900, #0f172a);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.wm-auth-success {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(22, 163, 74, 0.22);
+  background: rgba(240, 253, 244, 0.95);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #15803d;
+}
+
+.wm-auth-dev-hint {
+  margin: 18px 0 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--wm-neutral-400, #94a3b8);
+}
+
+.wm-auth-dev-hint code {
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--wm-neutral-600, #475569);
+}
+
+/* ---------- Dark theme scaffold ---------- */
+html[data-theme="dark"] .wm-auth-panel,
+:root[data-theme="dark"] .wm-auth-panel {
+  background: color-mix(
+    in srgb,
+    var(--wm-er-card-scaffold, rgba(15, 23, 42, 0.92)) 88%,
+    transparent
+  );
+  border-color: var(--wm-er-border-scaffold, rgba(148, 163, 184, 0.28));
+  color: var(--wm-er-text-scaffold, #e8eef9);
+}
+
+html[data-theme="dark"] .wm-auth-hero__title,
+html[data-theme="dark"] .wm-auth-role-card__title,
+:root[data-theme="dark"] .wm-auth-hero__title,
+:root[data-theme="dark"] .wm-auth-role-card__title {
+  color: var(--wm-er-text-scaffold, #e8eef9);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 420px) {
+  .wm-auth-panel {
+    padding: 28px 16px 24px;
+    border-radius: 24px;
+  }
+
+  .wm-auth-bento {
+    gap: 8px;
+  }
+
+  .wm-auth-role-card {
+    min-height: 136px;
+    padding: 14px 12px 12px;
+  }
+
+  .wm-auth-role-card__desc {
+    font-size: 11.5px;
+  }
+}
+
+@media (max-width: 340px) {
+  .wm-auth-bento {
+    grid-template-columns: 1fr;
+  }
+
+  .wm-auth-role-card {
+    min-height: 0;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .wm-auth-role-card__radio {
+    position: static;
+    margin-left: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wm-auth-panel {
+    animation: none;
+  }
+
+  .wm-auth-role-card,
+  .wm-auth-continue,
+  .wm-auth-submit,
+  .wm-auth-input {
+    transition: none;
+  }
+
+  .wm-auth-submit__spinner {
+    animation: none;
+    border-top-color: rgba(255, 255, 255, 0.85);
+  }
+
+  .wm-auth-continue:active,
+  .wm-auth-submit:active:not(:disabled) {
+    transform: none;
+  }
+}

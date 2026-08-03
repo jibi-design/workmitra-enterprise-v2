@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../app/router/routePaths";
 import { requireShiftOpsChannelOtpVerify } from "../../../shared/config/featureFlags";
+import { VaultStyleOtpDigits } from "../../../shared/components/otp/VaultStyleOtpDigits";
 import { ContactVerifiedBadge, PhoneNumberField } from "../../../shared/phone";
 import { useDualVerification } from "../hooks/useDualVerification";
 import { SHIFT_OPS_CONTACT_LOCKED_MESSAGE } from "../privacy";
@@ -41,6 +42,8 @@ export function ShiftOpsDualVerifyPage({ onComplete }: Props) {
     }
     nav(ROUTE_PATHS.employeeShiftOpsInvite);
   }
+
+  const otpError = Boolean(flow.error);
 
   return (
     <section
@@ -88,7 +91,7 @@ export function ShiftOpsDualVerifyPage({ onComplete }: Props) {
 
       {!flow.loading ? (
         <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
-          <div style={{ display: "grid", gap: 6 }}>
+          <div style={{ display: "grid", gap: 8 }}>
             <span style={{ fontSize: 12, fontWeight: 700 }}>Work mobile</span>
             {flow.mobileVerified ? (
               <ContactVerifiedBadge channel="phone" testId="dual-verify-phone-badge" />
@@ -101,38 +104,44 @@ export function ShiftOpsDualVerifyPage({ onComplete }: Props) {
                   placeholder="Mobile number"
                   testId="dual-verify-mobile"
                 />
-                <div style={{ display: "grid", gap: 8 }}>
-                  <button
-                    type="button"
-                    className="wm-primarybtn"
-                    disabled={flow.busy || mobile.replace(/\D/g, "").length < 8}
-                    onClick={() => void flow.registerMobile(mobile)}
-                  >
-                    Send mobile OTP
-                  </button>
-                  <input
-                    className="wm-input"
+                <button
+                  type="button"
+                  className="wm-primarybtn"
+                  disabled={flow.busy || mobile.replace(/\D/g, "").length < 8}
+                  onClick={() => void flow.registerMobile(mobile)}
+                >
+                  Send mobile OTP
+                </button>
+                <div
+                  className="wm-vault-otp-verify wm-vault-otp-verify--compact"
+                  data-testid="dual-verify-mobile-otp"
+                >
+                  <div className="wm-vault-otp-verify__badge">
+                    <span aria-hidden="true">▣</span> Mobile OTP
+                  </div>
+                  <VaultStyleOtpDigits
                     value={mobileOtp}
-                    onChange={(e) => setMobileOtp(e.target.value)}
-                    placeholder="Enter 6-digit OTP"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    aria-label="Mobile OTP"
+                    onChange={setMobileOtp}
+                    error={otpError}
+                    disabled={flow.busy}
+                    labelPrefix="Mobile OTP digit"
                   />
-                  <button
-                    type="button"
-                    className="wm-outlineBtn"
-                    disabled={flow.busy || mobileOtp.trim().length < 4}
-                    onClick={() => void flow.confirmOtp("work_mobile", mobileOtp)}
-                  >
-                    Verify mobile
-                  </button>
+                  <div className="wm-vault-otp-verify__actions" style={{ marginTop: 10 }}>
+                    <button
+                      type="button"
+                      className="wm-vault-cta wm-vault-otp-verify__submit"
+                      disabled={flow.busy || mobileOtp.trim().length < 4}
+                      onClick={() => void flow.confirmOtp("work_mobile", mobileOtp)}
+                    >
+                      Verify mobile
+                    </button>
+                  </div>
                 </div>
               </>
             )}
           </div>
 
-          <div style={{ display: "grid", gap: 6 }}>
+          <div style={{ display: "grid", gap: 8 }}>
             <span style={{ fontSize: 12, fontWeight: 700 }}>Work email</span>
             {flow.emailVerified ? (
               <ContactVerifiedBadge channel="email" testId="dual-verify-email-badge" />
@@ -148,32 +157,38 @@ export function ShiftOpsDualVerifyPage({ onComplete }: Props) {
                   disabled={flow.busy}
                   aria-label="Work email"
                 />
-                <div style={{ display: "grid", gap: 8 }}>
-                  <button
-                    type="button"
-                    className="wm-primarybtn"
-                    disabled={flow.busy || !email.includes("@")}
-                    onClick={() => void flow.registerEmail(email)}
-                  >
-                    Send email OTP
-                  </button>
-                  <input
-                    className="wm-input"
+                <button
+                  type="button"
+                  className="wm-primarybtn"
+                  disabled={flow.busy || !email.includes("@")}
+                  onClick={() => void flow.registerEmail(email)}
+                >
+                  Send email OTP
+                </button>
+                <div
+                  className="wm-vault-otp-verify wm-vault-otp-verify--compact"
+                  data-testid="dual-verify-email-otp"
+                >
+                  <div className="wm-vault-otp-verify__badge">
+                    <span aria-hidden="true">▣</span> Email OTP
+                  </div>
+                  <VaultStyleOtpDigits
                     value={emailOtp}
-                    onChange={(e) => setEmailOtp(e.target.value)}
-                    placeholder="Enter 6-digit OTP"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    aria-label="Email OTP"
+                    onChange={setEmailOtp}
+                    error={otpError}
+                    disabled={flow.busy}
+                    labelPrefix="Email OTP digit"
                   />
-                  <button
-                    type="button"
-                    className="wm-outlineBtn"
-                    disabled={flow.busy || emailOtp.trim().length < 4}
-                    onClick={() => void flow.confirmOtp("work_email", emailOtp)}
-                  >
-                    Verify email
-                  </button>
+                  <div className="wm-vault-otp-verify__actions" style={{ marginTop: 10 }}>
+                    <button
+                      type="button"
+                      className="wm-vault-cta wm-vault-otp-verify__submit"
+                      disabled={flow.busy || emailOtp.trim().length < 4}
+                      onClick={() => void flow.confirmOtp("work_email", emailOtp)}
+                    >
+                      Verify email
+                    </button>
+                  </div>
                 </div>
               </>
             )}

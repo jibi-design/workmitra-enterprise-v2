@@ -42,7 +42,7 @@ export function WorkVaultCard() {
         color: "var(--wm-vault-accent, #9333ea)",
       }}
       trailing={
-        <span aria-hidden="true" style={{ color: "#CBD5E1", fontSize: 20 }}>
+        <span className="wm-homeGlassCard__chevron" aria-hidden="true">
           →
         </span>
       }

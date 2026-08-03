@@ -4,7 +4,6 @@
 
 import { useCallback } from "react";
 import type { MouseEvent } from "react";
-import { EMPLOYEE_STATUS_COLORS } from "../helpers/employeeStatusCardStyles";
 
 type SimpleModalProps = {
   title: string;
@@ -23,40 +22,20 @@ export function SimpleModal(props: SimpleModalProps) {
 
   return (
     <div
+      className="wm-modal-backdrop"
       role="dialog"
       aria-modal="true"
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.55)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 16,
-        zIndex: 50,
-      }}
+      aria-label={props.title}
       onClick={props.onClose}
     >
-      <div className="wm-ee-card" style={{ width: "100%", maxWidth: 420 }} onClick={stopProp}>
-        <div style={{ fontWeight: 700, color: EMPLOYEE_STATUS_COLORS.text, fontSize: 16 }}>
-          {props.title}
-        </div>
+      <div className="wm-modal-card wm-simpleModal__card" onClick={stopProp}>
+        <div className="wm-simpleModal__title">{props.title}</div>
 
         {props.body ? (
-          <div className="wm-ee-helperText" style={{ marginTop: 8 }}>
-            {props.body}
-          </div>
+          <div className="wm-ee-helperText wm-simpleModal__body">{props.body}</div>
         ) : null}
 
-        <div
-          style={{
-            marginTop: 14,
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: 10,
-            flexWrap: "wrap",
-          }}
-        >
+        <div className="wm-simpleModal__actions">
           {props.secondaryText ? (
             <button
               className="wm-secondarybtn"

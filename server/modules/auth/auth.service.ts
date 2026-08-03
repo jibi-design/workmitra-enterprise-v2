@@ -18,6 +18,43 @@ export const authService = {
     return memoryAuthService.login(email, password);
   },
 
+  async register(input: {
+    fullName: string;
+    email: string;
+    password: string;
+    role: UserRole;
+  }): Promise<LoginResult> {
+    if (isDbAuthEnabled()) {
+      return {
+        ok: false,
+        code: "NOT_IMPLEMENTED",
+        message: "Self-serve registration is not enabled for production DB auth yet",
+        httpStatus: 501,
+      };
+    }
+    return memoryAuthService.register(input);
+  },
+
+  async requestPasswordReset(email: string): Promise<{ ok: true; debugToken?: string }> {
+    if (isDbAuthEnabled()) {
+      // Anti-enumeration: acknowledge without revealing account existence.
+      return { ok: true };
+    }
+    return memoryAuthService.requestPasswordReset(email);
+  },
+
+  async resetPassword(token: string, password: string): Promise<LoginResult> {
+    if (isDbAuthEnabled()) {
+      return {
+        ok: false,
+        code: "NOT_IMPLEMENTED",
+        message: "Password reset is not enabled for production DB auth yet",
+        httpStatus: 501,
+      };
+    }
+    return memoryAuthService.resetPassword(token, password);
+  },
+
   async getUserById(userId: string): Promise<AuthUser | null> {
     if (isDbAuthEnabled()) return dbAuthService.getUserById(userId);
     return memoryAuthService.getUserById(userId);

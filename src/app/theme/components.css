@@ -11,6 +11,9 @@
 @import "./components/domain-hero.css";
 @import "./components/pending-actions-hub.css";
 @import "./components/splash-screen.css";
+@import "./components/auth-entry.css";
+@import "./components/onboarding-overlay.css";
+@import "./components/account-sheet.css";
 @import "./components/premium-polish.css";
 @import "./components/enterprise-system.css";
 @import "./components/route-guard.css";

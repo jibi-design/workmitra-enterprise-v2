@@ -65,56 +65,26 @@ export function EmployeeSettingsNotificationsSection({
       </div>
 
       {/* Pulse Navigation toggle — CRITICAL: blocks at pulseStore level */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          marginTop: 8,
-          marginBottom: 4,
-          padding: "10px 12px",
-          borderRadius: "var(--wm-radius-10)",
-          background: pulseEnabled ? "rgba(99,102,241,0.05)" : "rgba(100,116,139,0.04)",
-          border: pulseEnabled ? "1px solid rgba(99,102,241,0.16)" : "1px solid rgba(0,0,0,0.07)",
-          transition: "background 0.2s ease, border-color 0.2s ease",
-        }}
-      >
+      <div className={`wm-settingsPulseRow${pulseEnabled ? " wm-settingsPulseRow--on" : ""}`}>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--wm-text, #1e293b)" }}>
-            Pulse Navigation
-          </div>
-          <div
-            style={{
-              fontSize: 11,
-              color: "var(--wm-muted, #64748b)",
-              marginTop: 2,
-              lineHeight: 1.4,
-            }}
-          >
+          <div className="wm-settingsPulseRow__title">Pulse Navigation</div>
+          <div className="wm-settingsPulseRow__sub">
             Glowing LED indicators that guide you step-by-step through workflows.
-            {!pulseEnabled && (
-              <span
-                style={{
-                  display: "block",
-                  marginTop: 3,
-                  color: "var(--wm-error)",
-                  fontWeight: 600,
-                }}
-              >
+            {!pulseEnabled ? (
+              <span className="wm-settingsPulseRow__warn">
                 Navigation lights are OFF — no pulses will fire.
               </span>
-            )}
+            ) : null}
           </div>
         </div>
         <button
           type="button"
-          className={`wm-press-btn${popKey === "pulseNav" ? " wm-popSaved" : ""}`}
+          className={`wm-press-btn wm-settingsToggle${pulseEnabled ? " wm-settingsToggle--on" : ""}${popKey === "pulseNav" ? " wm-popSaved" : ""}`}
           onClick={handlePulseToggle}
           onAnimationEnd={clearPop}
-          style={toggleTrackStyle(pulseEnabled)}
           aria-label={pulseEnabled ? "Disable pulse navigation" : "Enable pulse navigation"}
         >
-          <div style={toggleThumbStyle(pulseEnabled)} />
+          <span className="wm-settingsToggle__thumb" />
         </button>
       </div>
 
@@ -219,36 +189,4 @@ export function EmployeeSettingsNotificationsSection({
       </div>
     </section>
   );
-}
-
-/* ------------------------------------------------ */
-/* Inline toggle styles (matches employer pattern)   */
-/* ------------------------------------------------ */
-function toggleTrackStyle(enabled: boolean): React.CSSProperties {
-  return {
-    width: 44,
-    height: 24,
-    borderRadius: "var(--wm-radius-pill)",
-    border: "1px solid rgba(0,0,0,0.12)",
-    background: enabled ? "var(--wm-indigo-500)" : "rgba(0,0,0,0.10)",
-    position: "relative",
-    cursor: "pointer",
-    transition: "background 0.2s ease",
-    flexShrink: 0,
-    marginLeft: 12,
-  };
-}
-
-function toggleThumbStyle(enabled: boolean): React.CSSProperties {
-  return {
-    width: 18,
-    height: 18,
-    borderRadius: "var(--wm-radius-pill)",
-    background: "#fff",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
-    position: "absolute",
-    top: 2,
-    left: enabled ? 22 : 3,
-    transition: "left 0.2s ease",
-  };
 }

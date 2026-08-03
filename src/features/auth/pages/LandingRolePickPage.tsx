@@ -83,43 +83,19 @@ export function LandingRolePickPage() {
   const selectedCard = roleCards.find((card) => card.role === selectedRole) ?? roleCards[0];
 
   return (
-    <div
-      className="wm-landing-role-pick"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "100dvh",
-        background: "var(--wm-neutral-100)",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 16,
-        fontFamily: "var(--wm-font-sans, system-ui, -apple-system, sans-serif)",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: 420,
-          background: "var(--wm-neutral-25, #fff)",
-          borderRadius: "var(--wm-radius-24, 24px)",
-          boxShadow:
-            "0 24px 48px -12px color-mix(in srgb, var(--wm-neutral-900) 12%, transparent), 0 0 0 1px color-mix(in srgb, var(--wm-neutral-900) 4%, transparent)",
-          padding: "36px 20px",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
+    <div className="wm-auth-stage wm-landing-role-pick">
+      <div className="wm-auth-panel wm-auth-panel--wide">
         <LandingRoleHero />
 
-        {existing && (
-          <div style={{ marginBottom: 24 }}>
+        {existing ? (
+          <div className="wm-auth-banner-slot">
             <LandingExistingWorkspaceBanner
               existing={existing}
               onContinue={() => goTo(existing)}
               onClear={clearExistingWorkspace}
             />
           </div>
-        )}
+        ) : null}
 
         <LandingRoleSelectionPanel
           roleCards={roleCards}
@@ -129,26 +105,14 @@ export function LandingRolePickPage() {
 
         <button
           type="button"
-          className="wm-press-btn wm-primarybtn"
+          className="wm-press-btn wm-auth-continue"
           onClick={() => goTo(selectedRole)}
-          style={{
-            width: "100%",
-            marginTop: 28,
-            padding: "14px 24px",
-            borderRadius: "var(--wm-radius-12, 12px)",
-            fontSize: 15,
-            fontWeight: 600,
-            color: "var(--wm-neutral-25, #fff)",
-            background: "var(--wm-neutral-900)",
-            border: "none",
-            cursor: "pointer",
-          }}
         >
           Continue to {selectedCard.title}
         </button>
       </div>
 
-      <div style={{ marginTop: 32 }}>
+      <div className="wm-auth-footer">
         <LandingFooterLinks supportEmail={SUPPORT_EMAIL} privacyPolicyUrl={PRIVACY_POLICY_URL} />
       </div>
     </div>

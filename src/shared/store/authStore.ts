@@ -66,6 +66,12 @@ interface AuthState {
   updateProfile: (updates: Partial<UserProfile>) => void;
   hydrateSession: () => Promise<void>;
   loginWithCredentials: (email: string, password: string) => Promise<UserProfile>;
+  registerWithCredentials: (input: {
+    fullName: string;
+    email: string;
+    password: string;
+    role: Exclude<UserRole, "admin">;
+  }) => Promise<UserProfile>;
   logoutSession: () => Promise<void>;
 }
 
@@ -142,6 +148,15 @@ const createAuthSlice: AuthStoreSlice = (set, get) => ({
 
   loginWithCredentials: async (email, password) => {
     const user = await authService.login({ email, password });
+    get().setAuth(user, null);
+    void ensureShiftOpsAuthSession().catch(() => {
+      /* bridge optional until server env configured */
+    });
+    return user;
+  },
+
+  registerWithCredentials: async (input) => {
+    const user = await authService.register(input);
     get().setAuth(user, null);
     void ensureShiftOpsAuthSession().catch(() => {
       /* bridge optional until server env configured */

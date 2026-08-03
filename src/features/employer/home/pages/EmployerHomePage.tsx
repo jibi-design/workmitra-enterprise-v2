@@ -1,9 +1,10 @@
 /** Job Mitra | EmployerHomePage.tsx | src/features/employer/home/pages/EmployerHomePage.tsx */
 
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingOverlay } from "../../../../shared/components/OnboardingOverlay";
 import { PendingActionsHub } from "../../../../shared/components/PendingActionsHub";
+import { HomePageSkeleton } from "../../../../shared/components/layout/HomePageSkeleton";
 import { HomeSectionPanel } from "../../../../shared/components/layout/HomeSectionPanel";
 import { useEmployerRoleHomePendingActions } from "../../../../shared/pendingActions/hooks/useEmployerRoleHomePendingActions";
 import { useEmployerOfferPendingHubItems } from "../../../../shared/pendingActions/hooks/useEmployerOfferPendingHubItems";
@@ -42,6 +43,12 @@ export function EmployerHomePage() {
       localStorage.getItem(EMPLOYER_ONBOARDING_KEY) !== "1" &&
       localStorage.getItem(ONBOARDING_KEY) !== "1",
   );
+  const [chromeReady, setChromeReady] = useState(false);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setChromeReady(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   const data = useSyncExternalStore(subscribeDashboard, getDashboardSnapshot, getDashboardSnapshot);
 
@@ -50,6 +57,14 @@ export function EmployerHomePage() {
     return profile.companyName || profile.fullName || "Partner";
   }, []);
 
+  if (!chromeReady) {
+    return (
+      <div className="wm-homePage">
+        <HomePageSkeleton audience="employer" />
+      </div>
+    );
+  }
+
   return (
     <div className="wm-homePage">
       <EmployerHomeHero companyName={companyDisplayName} />
@@ -57,7 +72,7 @@ export function EmployerHomePage() {
       <PendingActionsHub items={allPendingActions} />
 
       <HomeSectionPanel eyebrow="Hiring" title="Recruitment Hub">
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--wm-stack-gap)" }}>
+        <div className="wm-homeStack">
           <div className="wm-homeCardEnter wm-homeCardEnter--1">
             <CareerJobsCard data={data} />
           </div>
@@ -78,7 +93,7 @@ export function EmployerHomePage() {
 
       {showPhase2Features ? (
         <HomeSectionPanel eyebrow="Operations" title="Workforce & HR (Beta)">
-          <div style={{ display: "flex", flexDirection: "column", gap: "var(--wm-stack-gap)" }}>
+          <div className="wm-homeStack">
             <WorkforceCard data={data} />
             <HRManagementCard />
             <ManagerConsoleCard />

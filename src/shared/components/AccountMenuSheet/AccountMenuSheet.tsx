@@ -6,12 +6,6 @@
 
 import { useCallback, useEffect, useRef } from "react";
 import type { AccountMenuSheetInnerProps, AccountMenuSheetProps } from "./AccountMenuSheet.types";
-import {
-  getOverlayStyle,
-  getSheetStyle,
-  HANDLE_BAR_STYLE,
-  HANDLE_WRAP_STYLE,
-} from "./AccountMenuSheet.styles";
 import { AccountMenuHeader } from "./AccountMenuHeader";
 import { AccountMenuItems } from "./AccountMenuItems";
 
@@ -85,19 +79,30 @@ function AccountMenuSheetInner({
     }
   };
 
+  const sheetRoleClass =
+    currentRole === "employer" ? "wm-accountSheet--employer" : "wm-accountSheet--employee";
+
   return (
     <>
-      <div ref={overlayRef} style={getOverlayStyle()} onClick={dismiss} />
+      <div
+        ref={overlayRef}
+        className="wm-accountSheet__overlay"
+        onClick={dismiss}
+        aria-hidden="true"
+      />
 
       <div
         ref={sheetRef}
-        style={getSheetStyle(currentRole)}
+        className={`wm-accountSheet ${sheetRoleClass}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Account menu"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <div style={HANDLE_WRAP_STYLE}>
-          <div style={HANDLE_BAR_STYLE} />
+        <div className="wm-accountSheet__handleWrap">
+          <div className="wm-accountSheet__handle" />
         </div>
 
         <AccountMenuHeader

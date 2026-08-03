@@ -94,8 +94,8 @@ export function EmployerSettingsPage() {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 6,
-                color: "var(--wm-er-accent-hr)",
-                borderColor: "var(--wm-er-accent-hr-border)",
+                color: "var(--wm-brand-700, #1d4ed8)",
+                borderColor: "color-mix(in srgb, var(--wm-brand-600, #2563eb) 28%, transparent)",
               }}
             >
               <IconEdit />
@@ -116,45 +116,19 @@ export function EmployerSettingsPage() {
 
       <button
         type="button"
+        className="wm-settingsLinkCard"
         onClick={() => nav(ROUTE_PATHS.employerProfile)}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 14,
-          width: "100%",
-          marginTop: 12,
-          padding: "14px 16px",
-          borderRadius: "var(--wm-radius-chip)",
-          background: "rgba(124,58,237,0.04)",
-          border: "1px solid rgba(124,58,237,0.15)",
-          cursor: "pointer",
-          textAlign: "left",
-        }}
       >
-        <div
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: "var(--wm-radius-10)",
-            background: "rgba(124,58,237,0.1)",
-            color: "var(--wm-er-accent-hr, #7c3aed)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
+        <div className="wm-settingsLinkCard__icon">
           <IconCompany />
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-er-accent-hr, #7c3aed)" }}>
-            Company Profile
-          </div>
-          <div style={{ fontSize: 12, color: "var(--wm-er-muted)", marginTop: 2, fontWeight: 500 }}>
-            Identity, branding, logo, location
-          </div>
+        <div className="wm-settingsLinkCard__copy">
+          <div className="wm-settingsLinkCard__title">Company Profile</div>
+          <div className="wm-settingsLinkCard__sub">Identity, branding, logo, location</div>
         </div>
-        <span style={{ fontSize: 18, color: "var(--wm-er-muted)", flexShrink: 0 }}>›</span>
+        <span className="wm-settingsLinkCard__chevron" aria-hidden="true">
+          ›
+        </span>
       </button>
 
       <EmployerSettingsAccountSection

@@ -1,16 +1,17 @@
-/** Job Mitra | LoginPage.tsx | src/features/auth/pages/LoginPage.tsx */
+/** Job Mitra | RegisterPage.tsx | Apple-grade account creation */
 
 import { useState, type FormEvent } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../app/router/routePaths";
-import { resolvePostAuthRoute, sanitizeAppRoute } from "../../../app/router/pendingRoute";
-import { useAuthStore } from "../../../shared/store/authStore";
-import type { UserRole } from "../../../shared/store/authStore";
+import { AUTH_BACKEND_ENABLED } from "../../../shared/config/authConfig";
+import { useAuthStore, type UserRole } from "../../../shared/store/authStore";
 import { JobMitraLandingLogo } from "../components/JobMitraLandingLogo";
 import { LandingFooterLinks } from "../components/LandingFooterLinks";
 
 const SUPPORT_EMAIL = "support@mitralabs.app";
 const PRIVACY_POLICY_URL = "https://jibi-design.github.io/workmitra-privacy/";
+
+type RegisterRole = Exclude<UserRole, "admin">;
 
 function homeForRole(role: UserRole): string {
   if (role === "employee") return ROUTE_PATHS.employeeHome;
@@ -18,51 +19,90 @@ function homeForRole(role: UserRole): string {
   return ROUTE_PATHS.adminHome;
 }
 
-export function LoginPage() {
+export function RegisterPage() {
   const nav = useNavigate();
-  const location = useLocation();
-  const loginWithCredentials = useAuthStore((s) => s.loginWithCredentials);
+  const registerWithCredentials = useAuthStore((s) => s.registerWithCredentials);
 
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState<RegisterRole>("employee");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (!AUTH_BACKEND_ENABLED) {
+      setError("Account creation requires auth backend. Use role pick in demo mode.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+
     setLoading(true);
     try {
-      const user = await loginWithCredentials(email.trim(), password);
-      const stateFrom = (location.state as { from?: string } | null)?.from;
-      const fallback = homeForRole(user.role);
-      const rawTarget =
-        stateFrom && stateFrom.startsWith(`/${user.role}`)
-          ? stateFrom
-          : resolvePostAuthRoute(user.role, fallback);
-      const target = sanitizeAppRoute(rawTarget, user.role, fallback);
-      nav(target, { replace: true });
+      const user = await registerWithCredentials({
+        fullName: fullName.trim(),
+        email: email.trim(),
+        password,
+        role,
+      });
+      nav(homeForRole(user.role), { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? err.message : "Could not create account");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="wm-auth-stage wm-auth-login">
+    <div className="wm-auth-stage">
       <div className="wm-auth-panel">
         <div className="wm-auth-hero">
           <div className="wm-auth-hero__logo">
             <JobMitraLandingLogo />
           </div>
-          <h1 className="wm-auth-hero__title wm-auth-hero__title--center">Sign in</h1>
+          <h1 className="wm-auth-hero__title wm-auth-hero__title--center">Create account</h1>
           <p className="wm-auth-hero__sub wm-auth-hero__sub--center">
-            Email and password — verified by server session.
+            Join Job Mitra as an employee or employer.
           </p>
         </div>
 
         <form className="wm-auth-form" onSubmit={onSubmit}>
+          <div className="wm-auth-role-toggle" role="group" aria-label="Account type">
+            <button
+              type="button"
+              className={`wm-auth-role-toggle__btn${role === "employee" ? " wm-auth-role-toggle__btn--active" : ""}`}
+              onClick={() => setRole("employee")}
+            >
+              Employee
+            </button>
+            <button
+              type="button"
+              className={`wm-auth-role-toggle__btn${role === "employer" ? " wm-auth-role-toggle__btn--active" : ""}`}
+              onClick={() => setRole("employer")}
+            >
+              Employer
+            </button>
+          </div>
+
+          <label className="wm-auth-label">
+            Full name
+            <input
+              className="wm-auth-input"
+              type="text"
+              autoComplete="name"
+              required
+              minLength={2}
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+            />
+          </label>
+
           <label className="wm-auth-label">
             Email
             <input
@@ -80,8 +120,9 @@ export function LoginPage() {
             <input
               className="wm-auth-input"
               type="password"
-              autoComplete="current-password"
+              autoComplete="new-password"
               required
+              minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
@@ -102,25 +143,17 @@ export function LoginPage() {
             {loading ? (
               <>
                 <span className="wm-auth-submit__spinner" aria-hidden="true" />
-                Signing in…
+                Creating…
               </>
             ) : (
-              "Sign in"
+              "Create account"
             )}
           </button>
         </form>
 
         <div className="wm-auth-nav-links">
-          <Link to={ROUTE_PATHS.forgotPassword}>Forgot password?</Link>
-          <Link to={ROUTE_PATHS.register}>Create account</Link>
+          <Link to={ROUTE_PATHS.login}>Already have an account? Sign in</Link>
         </div>
-
-        {import.meta.env.DEV ? (
-          <p className="wm-auth-dev-hint">
-            Dev demo: employee@demo.jobmitra.app / employer@demo.jobmitra.app — password{" "}
-            <code>demo1234</code>
-          </p>
-        ) : null}
       </div>
 
       <div className="wm-auth-footer">

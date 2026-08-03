@@ -2,48 +2,32 @@
 
 export function EmployerSettingsHelpLegalSection() {
   return (
-    <div className="wm-er-card" style={{ marginTop: 12 }}>
-      <div style={{ fontSize: 14, fontWeight: 700, color: "var(--wm-er-text)" }}>
-        Help &amp; Legal
-      </div>
-      <div style={{ marginTop: 8, display: "grid", gap: 4 }}>
-        <button
-          type="button"
-          className="wm-settingsLinkBtn"
-          onClick={() => {
-            window.location.hash = "#/employer/help";
-          }}
-          style={{
-            background: "none",
-            border: "none",
-            padding: "8px 0",
-            textAlign: "left",
-            fontSize: 13,
-            fontWeight: 600,
-            color: "var(--wm-er-accent-hr)",
-            cursor: "pointer",
-          }}
-        >
-          Help &amp; Support →
-        </button>
-        <button
-          type="button"
-          className="wm-settingsLinkBtn"
-          onClick={() => window.open("https://jibi-design.github.io/workmitra-privacy/", "_blank")}
-          style={{
-            background: "none",
-            border: "none",
-            padding: "8px 0",
-            textAlign: "left",
-            fontSize: 13,
-            fontWeight: 600,
-            color: "var(--wm-er-muted)",
-            cursor: "pointer",
-          }}
-        >
-          Privacy Policy →
-        </button>
-      </div>
-    </div>
+    <section className="wm-settingsGroup">
+      <div className="wm-settingsGroup__title">Help &amp; Legal</div>
+      <button
+        type="button"
+        className="wm-settingsRow"
+        onClick={() => {
+          window.location.hash = "#/employer/help";
+        }}
+      >
+        <span className="wm-settingsRow__label" style={{ color: "var(--wm-brand-700, #1d4ed8)" }}>
+          Help &amp; Support
+        </span>
+        <span className="wm-settingsRow__chevron" aria-hidden="true">
+          ›
+        </span>
+      </button>
+      <button
+        type="button"
+        className="wm-settingsRow"
+        onClick={() => window.open("https://jibi-design.github.io/workmitra-privacy/", "_blank")}
+      >
+        <span className="wm-settingsRow__label">Privacy Policy</span>
+        <span className="wm-settingsRow__chevron" aria-hidden="true">
+          ›
+        </span>
+      </button>
+    </section>
   );
 }

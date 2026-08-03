@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { OnboardingOverlay } from "../../../../shared/components/OnboardingOverlay";
 import { PendingActionsHub } from "../../../../shared/components/PendingActionsHub";
+import { HomePageSkeleton } from "../../../../shared/components/layout/HomePageSkeleton";
 import { useEmployeeRoleHomePendingActions } from "../../../../shared/pendingActions/hooks/useEmployeeRoleHomePendingActions";
 import { useEmployeeUrgentPendingHubItems } from "../../../../shared/pendingActions/hooks/useEmployeeUrgentPendingHubItems";
 import {
@@ -79,6 +80,12 @@ export function EmployeeHomePage() {
 
   const [showWelcome, setShowWelcome] = useState(() => !hasSeenEmployeeHomeWelcome());
   const [welcomeFading, setWelcomeFading] = useState(false);
+  const [chromeReady, setChromeReady] = useState(false);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setChromeReady(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   const userDisplayName = useMemo(() => {
     const profile = employeeProfileStorage.get();
@@ -130,10 +137,18 @@ export function EmployeeHomePage() {
     nav(ROUTE_PATHS.employeeCareerSearch);
   }, [nav]);
 
+  if (!chromeReady) {
+    return (
+      <div className="wm-homePage">
+        <HomePageSkeleton audience="employee" />
+      </div>
+    );
+  }
+
   return (
     <div className="wm-homePage">
       {hasPendingGroupJoin() ? (
-        <div style={{ marginBottom: "var(--wm-stack-gap)" }}>
+        <div className="wm-homeStack">
           <PendingGroupJoinBanner />
         </div>
       ) : null}
@@ -155,7 +170,7 @@ export function EmployeeHomePage() {
 
       <PendingActionsHub items={allPendingActions} />
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "var(--wm-stack-gap)" }}>
+      <div className="wm-homeStack">
         {isFirstTime && showWelcome && (
           <EmployeeHomeWelcomeCard
             userDisplayName={userDisplayName}

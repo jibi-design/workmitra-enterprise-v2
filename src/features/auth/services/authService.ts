@@ -2,7 +2,7 @@
 
 import { AUTH_API_PREFIX } from "../../../shared/config/authConfig";
 import { apiService, setStoredCsrfToken } from "../../../shared/services/apiService";
-import type { UserProfile } from "../../../shared/store/authStore";
+import type { UserProfile, UserRole } from "../../../shared/store/authStore";
 
 interface ApiEnvelope<T> {
   data: T;
@@ -14,6 +14,19 @@ interface LoginBody {
   password: string;
 }
 
+export type RegisterBody = {
+  fullName: string;
+  email: string;
+  password: string;
+  role: Exclude<UserRole, "admin">;
+};
+
+export type ForgotPasswordResult = {
+  ok: true;
+  message: string;
+  debugResetToken?: string;
+};
+
 export const authService = {
   async login(body: LoginBody): Promise<UserProfile> {
     const res = await apiService.post<ApiEnvelope<{ user: UserProfile; csrfToken?: string }>>(
@@ -24,6 +37,32 @@ export const authService = {
       setStoredCsrfToken(res.data.csrfToken.trim());
     }
     return res.data.user;
+  },
+
+  async register(body: RegisterBody): Promise<UserProfile> {
+    const res = await apiService.post<ApiEnvelope<{ user: UserProfile; csrfToken?: string }>>(
+      `${AUTH_API_PREFIX}/register`,
+      body,
+    );
+    if (typeof res.data.csrfToken === "string" && res.data.csrfToken.trim()) {
+      setStoredCsrfToken(res.data.csrfToken.trim());
+    }
+    return res.data.user;
+  },
+
+  async requestPasswordReset(email: string): Promise<ForgotPasswordResult> {
+    const res = await apiService.post<ApiEnvelope<ForgotPasswordResult>>(
+      `${AUTH_API_PREFIX}/forgot-password`,
+      { email },
+    );
+    return res.data;
+  },
+
+  async resetPassword(token: string, password: string): Promise<void> {
+    await apiService.post<ApiEnvelope<{ ok: boolean }>>(`${AUTH_API_PREFIX}/reset-password`, {
+      token,
+      password,
+    });
   },
 
   async logout(): Promise<void> {

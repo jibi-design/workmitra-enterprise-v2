@@ -20,39 +20,30 @@ export function NotFoundPage() {
   const homeTarget = role ? getHomeForRole(role) : workspaceTarget;
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--wm-bg, #0b1220)" }}>
-      <div className="wm-container" style={{ paddingTop: 18 }}>
-        <div
-          style={{
-            borderRadius: 16,
-            border: "1px solid rgba(255,255,255,0.10)",
-            background: "rgba(255,255,255,0.04)",
-            padding: 16,
-          }}
-        >
-          <h1 style={{ margin: 0, fontSize: 18, letterSpacing: 0.2 }}>Page not found</h1>
-          <p style={{ marginTop: 8, opacity: 0.85, lineHeight: 1.5 }}>
-            This route doesn’t exist.
-            <br />
-            <span style={{ opacity: 0.75, fontSize: 13 }}>Path: {loc.pathname}</span>
-          </p>
+    <div className="wm-notFound">
+      <div className="wm-notFound__card">
+        <div className="wm-notFound__eyebrow">404</div>
+        <h1 className="wm-notFound__title">Page not found</h1>
+        <p className="wm-notFound__body">
+          This route doesn&apos;t exist.
+          <span className="wm-notFound__path">Path: {loc.pathname}</span>
+        </p>
 
-          <div style={{ display: "flex", gap: 10, marginTop: 14, flexWrap: "wrap" }}>
-            <button
-              className="wm-btn wm-btnPrimary"
-              type="button"
-              onClick={() => nav(homeTarget, { replace: true })}
-            >
-              Go Home
-            </button>
-            <button
-              className="wm-btn wm-btnOutline"
-              type="button"
-              onClick={() => nav(workspaceTarget, { replace: true })}
-            >
-              {AUTH_BACKEND_ENABLED ? "Sign in" : "Choose Workspace"}
-            </button>
-          </div>
+        <div className="wm-notFound__actions">
+          <button
+            className="wm-btn wm-btnPrimary"
+            type="button"
+            onClick={() => nav(homeTarget, { replace: true })}
+          >
+            Go Home
+          </button>
+          <button
+            className="wm-btn wm-btnOutline"
+            type="button"
+            onClick={() => nav(workspaceTarget, { replace: true })}
+          >
+            {AUTH_BACKEND_ENABLED ? "Sign in" : "Choose Workspace"}
+          </button>
         </div>
       </div>
     </div>

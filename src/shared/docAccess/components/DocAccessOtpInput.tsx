@@ -1,9 +1,10 @@
 // App: Job Mitra / WorkMitra_Enterprise_v2
 // File: DocAccessOtpInput.tsx
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\shared\docAccess\components\DocAccessOtpInput.tsx
+// Step 2: Unified onto wm-vault-otp-verify recipe (presentation only).
 
 import { useRef, useState } from "react";
-import { DOC_ACCESS_ACCENT, DOC_ACCESS_OTP_CODE_LENGTH } from "../docAccessConstants";
+import { DOC_ACCESS_OTP_CODE_LENGTH } from "../docAccessConstants";
 
 type DocAccessOtpInputProps = {
   onSubmit: (code: string) => void;
@@ -15,6 +16,7 @@ export function DocAccessOtpInput({ onSubmit, error }: DocAccessOtpInputProps) {
   const refs = useRef<(HTMLInputElement | null)[]>([]);
 
   const isFilled = digits.every((digit) => digit !== "");
+  const hasError = Boolean(error);
 
   function handleChange(index: number, value: string) {
     if (!/^\d?$/.test(value)) return;
@@ -61,8 +63,16 @@ export function DocAccessOtpInput({ onSubmit, error }: DocAccessOtpInputProps) {
   }
 
   return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 12 }}>
+    <div className="wm-vault-otp-verify" data-testid="doc-access-otp-input">
+      <div className="wm-vault-otp-verify__badge">
+        <span aria-hidden="true">▣</span> Doc Access · Argon2 / HMAC
+      </div>
+      <div className="wm-vault-otp-verify__title">Enter access code</div>
+      <div className="wm-vault-otp-verify__sub">
+        6-digit one-time code from the employee Work Vault.
+      </div>
+
+      <div className="wm-vault-otp-verify__digits">
         {digits.map((digit, index) => (
           <input
             key={index}
@@ -73,58 +83,32 @@ export function DocAccessOtpInput({ onSubmit, error }: DocAccessOtpInputProps) {
             inputMode="numeric"
             maxLength={1}
             value={digit}
+            aria-label={`OTP digit ${index + 1}`}
             onChange={(event) => handleChange(index, event.target.value)}
             onKeyDown={(event) => handleKeyDown(index, event.key)}
             onPaste={index === 0 ? handlePaste : undefined}
             autoFocus={index === 0}
-            style={{
-              width: 44,
-              height: 52,
-              borderRadius: 12,
-              border: digit ? `2px solid ${DOC_ACCESS_ACCENT}` : "2px solid var(--wm-er-border)",
-              background: digit ? `${DOC_ACCESS_ACCENT}06` : "#fff",
-              fontSize: 22,
-              fontWeight: 700,
-              textAlign: "center",
-              color: DOC_ACCESS_ACCENT,
-              outline: "none",
-            }}
+            className={`wm-vault-otp-verify__digit${digit ? " wm-vault-otp-verify__digit--filled" : ""}${
+              hasError ? " wm-vault-otp-verify__digit--error" : ""
+            }`}
           />
         ))}
       </div>
 
-      {error && (
-        <div
-          style={{
-            fontSize: 12,
-            color: "#dc2626",
-            fontWeight: 600,
-            marginBottom: 10,
-            textAlign: "center",
-          }}
-        >
-          {error}
-        </div>
-      )}
+      <div className="wm-vault-otp-verify__error" role={hasError ? "alert" : undefined}>
+        {error || "\u00A0"}
+      </div>
 
-      <button
-        type="button"
-        onClick={handleSubmit}
-        disabled={!isFilled}
-        style={{
-          width: "100%",
-          padding: "12px 0",
-          borderRadius: 10,
-          border: "none",
-          background: isFilled ? DOC_ACCESS_ACCENT : "#e5e7eb",
-          color: isFilled ? "#fff" : "#9ca3af",
-          fontWeight: 600,
-          fontSize: 13,
-          cursor: isFilled ? "pointer" : "not-allowed",
-        }}
-      >
-        Verify &amp; View Documents
-      </button>
+      <div className="wm-vault-otp-verify__actions">
+        <button
+          type="button"
+          className="wm-vault-cta wm-vault-otp-verify__submit"
+          onClick={handleSubmit}
+          disabled={!isFilled}
+        >
+          Verify &amp; View Documents
+        </button>
+      </div>
     </div>
   );
 }

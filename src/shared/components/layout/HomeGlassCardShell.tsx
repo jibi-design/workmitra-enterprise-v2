@@ -1,6 +1,6 @@
 /** HomeGlassCardShell — unified frosted card chrome for home domain tiles */
 
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
 
 type HomeGlassCardShellProps = {
   readonly title: string;
@@ -8,6 +8,8 @@ type HomeGlassCardShellProps = {
   readonly icon?: ReactNode;
   readonly trailing?: ReactNode;
   readonly onClick?: () => void;
+  /** Use a div host when trailing embeds nested buttons (valid HTML). */
+  readonly asDiv?: boolean;
   readonly audience?: "employee" | "employer";
   readonly tone?: "glass" | "dark";
   readonly iconStyle?: CSSProperties;
@@ -16,12 +18,19 @@ type HomeGlassCardShellProps = {
   readonly children?: ReactNode;
 };
 
+function runOnEnterOrSpace(event: KeyboardEvent<HTMLElement>, action: () => void): void {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  event.preventDefault();
+  action();
+}
+
 export function HomeGlassCardShell({
   title,
   subtitle,
   icon,
   trailing,
   onClick,
+  asDiv = false,
   audience = "employee",
   tone = "glass",
   iconStyle,
@@ -54,6 +63,21 @@ export function HomeGlassCardShell({
       {trailing ? <div className="wm-homeGlassCard__trailing">{trailing}</div> : null}
     </>
   );
+
+  if (onClick && asDiv) {
+    return (
+      <div
+        role="button"
+        tabIndex={0}
+        className={classes}
+        onClick={onClick}
+        onKeyDown={(event) => runOnEnterOrSpace(event, onClick)}
+        aria-label={ariaLabel ?? title}
+      >
+        {content}
+      </div>
+    );
+  }
 
   if (onClick) {
     return (
