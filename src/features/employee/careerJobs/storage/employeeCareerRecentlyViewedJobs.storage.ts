@@ -1,14 +1,14 @@
 // App name: Job Mitra
 // File name: employeeCareerRecentlyViewedJobs.storage.ts
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\careerJobs\storage\employeeCareerRecentlyViewedJobs.storage.ts
+// P1: worker-scoped wm_employee_{workerMlId}_career_recent_jobs_v1
 
 import {
   EMPLOYEE_CAREER_RECENT_JOBS_CHANGED,
-  EMPLOYEE_CAREER_RECENT_JOBS_KEY,
   notifyEmployeeCareerRecentJobsChanged,
   safeRead,
   safeWrite,
 } from "../../../career/helpers/careerStoragePublic";
+import { resolveCareerEmployeeScopedKey } from "../../../shared/career/careerEmployeeScope";
 
 const MAX_RECENT_JOBS = 3;
 const MAX_POST_ID_LENGTH = 120;
@@ -17,6 +17,10 @@ export type EmployeeCareerRecentJobRecord = {
   postId: string;
   viewedAt: number;
 };
+
+function recentJobsKey(): string {
+  return resolveCareerEmployeeScopedKey("career_recent_jobs_v1");
+}
 
 function normalizePostId(value: string): string | null {
   const cleanId = value.trim();
@@ -81,11 +85,11 @@ function parseRecentJobs(raw: string | null): EmployeeCareerRecentJobRecord[] {
 }
 
 function getAll(): EmployeeCareerRecentJobRecord[] {
-  return parseRecentJobs(safeRead(EMPLOYEE_CAREER_RECENT_JOBS_KEY));
+  return parseRecentJobs(safeRead(recentJobsKey()));
 }
 
 function writeAll(records: EmployeeCareerRecentJobRecord[]): void {
-  safeWrite(EMPLOYEE_CAREER_RECENT_JOBS_KEY, normalizeRecords(records));
+  safeWrite(recentJobsKey(), normalizeRecords(records));
   notifyEmployeeCareerRecentJobsChanged();
 }
 
@@ -101,7 +105,7 @@ function getIds(): string[] {
 }
 
 function getSnapshotKey(): string {
-  return safeRead(EMPLOYEE_CAREER_RECENT_JOBS_KEY) ?? "";
+  return safeRead(recentJobsKey()) ?? "";
 }
 
 function subscribe(cb: () => void): () => void {

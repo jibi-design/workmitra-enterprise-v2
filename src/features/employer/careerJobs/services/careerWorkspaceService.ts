@@ -13,7 +13,10 @@ function findCareerWorkspaceByJobId(jobId: string): CareerWorkspace | null {
   return readCareerWorkspaces().find((workspace) => workspace.jobId === jobId) ?? null;
 }
 
-export function createCareerWorkspace(post: CareerJobPost): CreateCareerWorkspaceResult {
+export function createCareerWorkspace(
+  post: CareerJobPost,
+  options?: { employeeId?: string },
+): CreateCareerWorkspaceResult {
   const existing = findCareerWorkspaceByJobId(post.id);
   if (existing) return { ok: true, workspaceId: existing.id, created: false };
 
@@ -42,7 +45,9 @@ export function createCareerWorkspace(post: CareerJobPost): CreateCareerWorkspac
     hiredAt: now,
   };
 
-  const writeResult = writeCareerWorkspaces([workspace, ...readCareerWorkspaces()].slice(0, 100));
+  const writeResult = writeCareerWorkspaces([workspace, ...readCareerWorkspaces()].slice(0, 100), {
+    employeeId: options?.employeeId,
+  });
   if (!writeResult.ok) return { ok: false, reason: "storage_error" };
 
   return { ok: true, workspaceId, created: true };

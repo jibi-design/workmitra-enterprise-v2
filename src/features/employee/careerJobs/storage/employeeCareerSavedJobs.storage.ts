@@ -1,14 +1,14 @@
 // App name: Job Mitra
 // File name: employeeCareerSavedJobs.storage.ts
-// Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\careerJobs\storage\employeeCareerSavedJobs.storage.ts
+// P1: worker-scoped wm_employee_{workerMlId}_career_saved_v1
 
 import {
   EMPLOYEE_CAREER_SAVED_JOBS_CHANGED,
-  EMPLOYEE_CAREER_SAVED_JOBS_KEY,
   notifyEmployeeCareerSavedJobsChanged,
   safeRead,
   safeWrite,
 } from "../../../career/helpers/careerStoragePublic";
+import { resolveCareerEmployeeScopedKey } from "../../../shared/career/careerEmployeeScope";
 
 export type EmployeeCareerSavedJobRecord = {
   postId: string;
@@ -17,6 +17,10 @@ export type EmployeeCareerSavedJobRecord = {
 
 const MAX_SAVED_JOBS = 50;
 const MAX_POST_ID_LENGTH = 120;
+
+function savedJobsKey(): string {
+  return resolveCareerEmployeeScopedKey("career_saved_v1");
+}
 
 function normalizePostId(value: string): string | null {
   const cleanId = value.trim();
@@ -79,11 +83,11 @@ function parseSavedJobs(raw: string | null): EmployeeCareerSavedJobRecord[] {
 }
 
 function getAll(): EmployeeCareerSavedJobRecord[] {
-  return parseSavedJobs(safeRead(EMPLOYEE_CAREER_SAVED_JOBS_KEY));
+  return parseSavedJobs(safeRead(savedJobsKey()));
 }
 
 function writeAll(records: EmployeeCareerSavedJobRecord[]): void {
-  safeWrite(EMPLOYEE_CAREER_SAVED_JOBS_KEY, normalizeRecords(records));
+  safeWrite(savedJobsKey(), normalizeRecords(records));
   notifyEmployeeCareerSavedJobsChanged();
 }
 
@@ -114,7 +118,7 @@ function toggle(postId: string): { saved: boolean } {
 }
 
 function getSnapshotKey(): string {
-  return safeRead(EMPLOYEE_CAREER_SAVED_JOBS_KEY) ?? "";
+  return safeRead(savedJobsKey()) ?? "";
 }
 
 function subscribe(cb: () => void): () => void {

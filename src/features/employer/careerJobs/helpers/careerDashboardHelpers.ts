@@ -18,6 +18,7 @@ import {
 
 import { resolveCareerEmployerScopedKey } from "../../../shared/career/careerEmployerScope";
 import { readCareerPosts, readCareerApps, readCareerActivityAll } from "./careerNormalizers";
+import { getCareerEmployerAppsStorageKey } from "./careerPersistence";
 
 import { recomputePostAnalytics } from "./careerValidation";
 
@@ -25,7 +26,9 @@ import { recomputePostAnalytics } from "./careerValidation";
 // localStorage Keys (read-only references for cache comparison)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const APPS_LS_KEY = "wm_employee_career_applications_v1";
+function appsLsKey(): string {
+  return getCareerEmployerAppsStorageKey();
+}
 
 function postsLsKey(): string {
   return resolveCareerEmployerScopedKey("career_posts_v1");
@@ -45,7 +48,7 @@ let postsCacheList: CareerJobPost[] = [];
 
 export function getCareerPostsSnapshot(): CareerJobPost[] {
   const raw = localStorage.getItem(postsLsKey());
-  const appsRaw = localStorage.getItem(APPS_LS_KEY);
+  const appsRaw = localStorage.getItem(appsLsKey());
 
   if (raw === postsCacheRaw && appsRaw === postsAppsCacheRaw) {
     return postsCacheList;
@@ -65,7 +68,7 @@ let appsCacheRaw: string | null = null;
 let appsCacheList: CareerApplication[] = [];
 
 export function getCareerAppsSnapshot(): CareerApplication[] {
-  const raw = localStorage.getItem(APPS_LS_KEY);
+  const raw = localStorage.getItem(appsLsKey());
   if (raw === appsCacheRaw) return appsCacheList;
   appsCacheRaw = raw;
   appsCacheList = readCareerApps();

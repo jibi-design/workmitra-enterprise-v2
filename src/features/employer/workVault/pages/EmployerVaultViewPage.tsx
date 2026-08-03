@@ -12,6 +12,7 @@ import {
   expireOldSessions,
   getActiveSession,
   getAllDocuments,
+  hydrateVaultDocumentsPlaintext,
   getVaultSectionData,
   getVisibleFolders,
   isSessionValid,
@@ -75,18 +76,20 @@ export function EmployerVaultViewPage() {
 
   const loadVaultData = useCallback(
     (visibleFolderIds?: string[]) => {
-      setSectionData(getVaultSectionData());
+      void hydrateVaultDocumentsPlaintext(workerScopeId).then(() => {
+        setSectionData(getVaultSectionData());
 
-      const visibleFolders = getVisibleFolders(workerScopeId);
-      const scoped =
-        visibleFolderIds && visibleFolderIds.length > 0
-          ? visibleFolders.filter((f) => visibleFolderIds.includes(f.id))
-          : visibleFolders;
-      const allDocs = getAllDocuments(workerScopeId);
-      const visibleIds = scoped.map((folder) => folder.id);
+        const visibleFolders = getVisibleFolders(workerScopeId);
+        const scoped =
+          visibleFolderIds && visibleFolderIds.length > 0
+            ? visibleFolders.filter((f) => visibleFolderIds.includes(f.id))
+            : visibleFolders;
+        const allDocs = getAllDocuments(workerScopeId);
+        const visibleIds = scoped.map((folder) => folder.id);
 
-      setFolders(scoped);
-      setDocuments(allDocs.filter((document) => visibleIds.includes(document.folderId)));
+        setFolders(scoped);
+        setDocuments(allDocs.filter((document) => visibleIds.includes(document.folderId)));
+      });
     },
     [workerScopeId],
   );

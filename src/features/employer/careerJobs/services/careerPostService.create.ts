@@ -122,7 +122,12 @@ export async function createCareerPost(input: CareerPostCreateInput): Promise<st
   const next = [post, ...posts];
   const writeResult = writeCareerPosts(next);
   if (!writeResult.ok) return null;
-  syncToEmployeeCareerSearch(next);
+
+  const searchWrite = syncToEmployeeCareerSearch(next);
+  if (!searchWrite.ok) {
+    writeCareerPosts(prior);
+    return null;
+  }
 
   if (isCareerApiSyncEnabled()) {
     try {
@@ -141,8 +146,10 @@ export async function createCareerPost(input: CareerPostCreateInput): Promise<st
 
       return finalId;
     } catch {
-      writeCareerPosts(prior);
-      syncToEmployeeCareerSearch(prior);
+      const rollback = writeCareerPosts(prior);
+      if (rollback.ok) {
+        syncToEmployeeCareerSearch(prior);
+      }
       return null;
     }
   }
@@ -207,6 +214,6 @@ export function saveCareerPostAsTemplate(postId: string, templateName: string): 
   const next = posts.map((p) =>
     p.id === postId ? { ...p, isTemplate: true, templateName, updatedAt: Date.now() } : p,
   );
-  writeCareerPosts(next);
-  return true;
+  const writeResult = writeCareerPosts(next);
+  return writeResult.ok;
 }

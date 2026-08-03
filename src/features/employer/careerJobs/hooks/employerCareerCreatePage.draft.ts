@@ -55,13 +55,28 @@ export function saveEmployerCareerCreateDraft(params: {
   setHasLoadedDraft: (value: boolean) => void;
   setNotice: (notice: NoticeData | null) => void;
 }): void {
-  careerCreateDraftStorage.save({
+  const result = careerCreateDraftStorage.save({
     step: params.step,
     basic: params.basic,
     req: params.req,
     interview: params.interview,
     screeningQuestions: params.screeningQuestions,
   });
+
+  if (!result.ok) {
+    if (params.showNotice) {
+      params.setNotice({
+        title: "Draft Not Saved",
+        message:
+          result.reason === "no_scope"
+            ? "Complete your company profile before saving a Career Job draft."
+            : "Browser storage is unavailable. Your draft could not be saved on this device.",
+        tone: "warn",
+      });
+    }
+    return;
+  }
+
   params.setHasLoadedDraft(true);
   if (params.showNotice) {
     params.setNotice({ title: "Draft Saved", message: "Your Career Job draft is saved." });

@@ -24,6 +24,8 @@ export type CareerSearchPost = {
   closingDate: number;
   createdAt: number;
   screeningQuestions?: { id: string; text: string }[];
+  /** Employer tenant id for dual-write projection (B-P0-1). */
+  employerId?: string;
 };
 
 export type CareerApplicationStageLite =

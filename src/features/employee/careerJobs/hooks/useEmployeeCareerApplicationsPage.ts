@@ -7,7 +7,10 @@ import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { usePulseStore } from "../../../../features/pulse/pulseStore";
 import { hydrateCareerApplicationsFromServer } from "../../../career/services/careerDbTruth.service";
 import { isCareerApiSyncEnabled } from "../../../career/services/careerGateApi.service";
-import { CAREER_WORKSPACES_KEY, safeParse } from "../../../career/helpers/careerStoragePublic";
+import {
+  getCareerEmployeeWorkspacesStorageKey,
+  safeParse,
+} from "../../../career/helpers/careerStoragePublic";
 import type { CareerWorkspace } from "../../../career/types/careerDomainTypes";
 import {
   computeKpi,
@@ -111,7 +114,9 @@ export function useEmployeeCareerApplicationsPage() {
       return;
     }
 
-    const workspaces = safeParse<CareerWorkspace>(localStorage.getItem(CAREER_WORKSPACES_KEY));
+    const workspaces = safeParse<CareerWorkspace>(
+      localStorage.getItem(getCareerEmployeeWorkspacesStorageKey()),
+    );
     const workspace = workspaces.find((item) => item.jobId === jobId);
 
     if (workspace) {

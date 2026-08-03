@@ -41,16 +41,25 @@ const appRouter = createHashRouter(
         </PulseTrailProvider>
       }
     >
-      <Route path={ROUTE_PATHS.login} element={<LoginPage />} />
+      <Route
+        path={ROUTE_PATHS.login}
+        element={
+          <ErrorBoundary homePath={ROUTE_PATHS.login}>
+            <LoginPage />
+          </ErrorBoundary>
+        }
+      />
 
       <Route
         path={ROUTE_PATHS.landing}
         element={
-          AUTH_BACKEND_ENABLED ? (
-            <Navigate to={ROUTE_PATHS.login} replace />
-          ) : (
-            <LandingRolePickPage />
-          )
+          <ErrorBoundary homePath={AUTH_BACKEND_ENABLED ? ROUTE_PATHS.login : ROUTE_PATHS.landing}>
+            {AUTH_BACKEND_ENABLED ? (
+              <Navigate to={ROUTE_PATHS.login} replace />
+            ) : (
+              <LandingRolePickPage />
+            )}
+          </ErrorBoundary>
         }
       />
 
@@ -60,7 +69,14 @@ const appRouter = createHashRouter(
         element={<Navigate to={ROUTE_PATHS.landing} replace />}
       />
 
-      <Route path={ROUTE_PATHS.publicSite} element={<PublicWebsiteShell />}>
+      <Route
+        path={ROUTE_PATHS.publicSite}
+        element={
+          <ErrorBoundary homePath={ROUTE_PATHS.publicSite}>
+            <PublicWebsiteShell />
+          </ErrorBoundary>
+        }
+      >
         <Route index element={<PublicLandingPage />} />
       </Route>
 

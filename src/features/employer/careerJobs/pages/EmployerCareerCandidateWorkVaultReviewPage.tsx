@@ -13,12 +13,12 @@ import { getVaultSectionData } from "../../../shared/workVault/vaultPublic";
 import { useDocAccessModalState } from "../docAccess/useDocAccessModalState";
 import {
   CAREER_APPS_CHANGED,
-  CAREER_APPS_KEY,
   CAREER_POSTS_CHANGED,
   safeParse,
   safeRead,
 } from "../helpers/careerStorageUtils";
 import { resolveCareerEmployerScopedKey } from "../../../shared/career/careerEmployerScope";
+import { getCareerEmployerAppsStorageKey } from "../helpers/careerPersistence";
 import type { CareerApplication, CareerJobPost } from "../types/careerTypes";
 import {
   buildCareerEmployerVaultData,
@@ -51,7 +51,7 @@ function getCareerPostsRawSnapshot(): string | null {
 }
 
 function getCareerAppsRawSnapshot(): string | null {
-  return safeRead(CAREER_APPS_KEY);
+  return safeRead(getCareerEmployerAppsStorageKey());
 }
 
 export function EmployerCareerCandidateWorkVaultReviewPage() {

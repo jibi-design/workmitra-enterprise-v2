@@ -39,25 +39,28 @@ export function goEmployerCareerCreateBack(params: {
 export function handleEmployerCareerCreateCancel(params: {
   isDirty: () => boolean;
   nav: NavigateFunction;
-  saveDraft: (showNotice?: boolean) => void;
+  discardDraft: () => void;
   setConfirmData: (value: ConfirmData | null) => void;
   setConfirmAction: (value: (() => void) | null) => void;
 }): void {
   if (params.isDirty()) {
     params.setConfirmData({
-      title: "Save draft before leaving?",
-      message: "Save this as a draft to continue later, or leave without saving.",
-      warning: "Leaving without saving will lose the current form changes.",
+      title: "Leave without saving?",
+      message:
+        "Unsaved Career Job changes and the temporary draft will be cleared. Use Save Draft on the form if you want to keep them.",
+      warning: "Discarding removes the create draft for this employer tenant.",
       tone: "warn",
-      confirmLabel: "Save Draft",
-      cancelLabel: "Leave",
+      confirmLabel: "Discard & Leave",
+      cancelLabel: "Keep Editing",
     });
     params.setConfirmAction(() => () => {
-      params.saveDraft(false);
+      params.discardDraft();
       params.nav(ROUTE_PATHS.employerCareerHome);
     });
     return;
   }
+
+  params.discardDraft();
   params.nav(ROUTE_PATHS.employerCareerHome);
 }
 

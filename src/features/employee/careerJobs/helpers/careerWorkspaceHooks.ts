@@ -5,7 +5,7 @@
 
 import type { CareerWorkspace } from "../../../career/types/careerDomainTypes";
 import {
-  CAREER_WORKSPACES_KEY,
+  getCareerEmployeeWorkspacesStorageKey,
   CAREER_WORKSPACES_CHANGED,
   safeParse,
 } from "../../../career/helpers/careerStoragePublic";
@@ -16,7 +16,7 @@ let cacheRaw: string | null = "__init__";
 let cacheList: CareerWorkspace[] = [];
 
 export function getCareerWorkspacesSnapshot(): CareerWorkspace[] {
-  const raw = localStorage.getItem(CAREER_WORKSPACES_KEY);
+  const raw = localStorage.getItem(getCareerEmployeeWorkspacesStorageKey());
   if (raw !== cacheRaw) {
     cacheRaw = raw;
     cacheList = safeParse<CareerWorkspace>(raw).filter(

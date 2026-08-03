@@ -12,9 +12,9 @@ import {
   declineCareerOffer,
 } from "../../../features/employee/careerJobs/services/careerApplyService";
 import {
-  readCareerApps,
+  readCareerAppsForEmployee,
   readCareerPosts,
-} from "../../../features/employer/careerJobs/helpers/careerNormalizers";
+} from "../../../features/career/helpers/careerStoragePublic";
 import type {
   CareerApplication,
   RoundResult,
@@ -55,7 +55,7 @@ function findPendingInterviewRound(app: CareerApplication): RoundResult | null {
 }
 
 function getCareerAppsSnapshot(): string {
-  return JSON.stringify(readCareerApps());
+  return JSON.stringify(readCareerAppsForEmployee());
 }
 
 function subscribeCareerApps(callback: () => void): () => void {
@@ -135,7 +135,7 @@ export function useEmployeeUrgentPendingHubItems(navigate: NavigateFunction): Pe
     void pendingDismissedRevision;
 
     const employeeId = getCurrentEmployeeId();
-    const careerApps = readCareerApps().filter((app) => app.employeeId === employeeId);
+    const careerApps = readCareerAppsForEmployee().filter((app) => app.employeeId === employeeId);
     const careerPostMap = new Map(readCareerPosts().map((post) => [post.id, post]));
 
     const interviewSources: InterviewRsvpHubSource[] = [];

@@ -22,6 +22,7 @@ import {
   QA_MULTI_EMPLOYER_COUNT,
 } from "../features/shared/shift/qaMultiEmployer.seed";
 import { applyUltraHeavySuiteSeed } from "../features/shared/shift/qaUltraHeavySuite.seed";
+import { applyVisualStressSeed } from "../features/shared/shift/qaVisualStress.seed";
 
 /* ------------------------------------------------ */
 /* Public shell — hard production guard             */
@@ -105,6 +106,17 @@ function GodModePanelInner() {
       location.hash = "#/employer/shift/favorites";
       location.reload();
     }, 600);
+  }
+
+  function handleVisualStressSuite() {
+    const result = applyVisualStressSeed();
+    flash(
+      `🎬 VisualStress: emp=${result.employers}×${result.appsPerEmployer}=${result.totalApplications} apps · vaultWorkers=${result.vaultWorkersTouched} · pulses=${result.pulseEventsQueued}`,
+    );
+    window.setTimeout(() => {
+      location.hash = `#/employer/shift/post/${result.samplePostId}`;
+      location.reload();
+    }, 700);
   }
 
   function handleAssumeEmployer(index1Based: number) {
@@ -252,6 +264,12 @@ function GodModePanelInner() {
               icon="🚀"
               color="#dc2626"
               onClick={handleUltraHeavySuite}
+            />
+            <PanelButton
+              label="Visual Stress 10k+ Apps"
+              icon="🎬"
+              color="#b91c1c"
+              onClick={handleVisualStressSuite}
             />
             <PanelButton
               label="Assume Employer #1"

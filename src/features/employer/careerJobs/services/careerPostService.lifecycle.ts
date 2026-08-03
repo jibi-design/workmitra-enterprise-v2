@@ -1,4 +1,6 @@
 // careerPostService.lifecycle.ts — Pause, resume, close, delete
+// B-P1-3: never treat LS write as success without writeCareerPosts(...).ok
+// before AUTH dual-write / activity / cascade side effects.
 
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import {
@@ -16,6 +18,25 @@ import { pushCareerActivity } from "../helpers/careerNotifications";
 import { syncToEmployeeCareerSearch } from "../helpers/careerValidation";
 import { cascadeRejectOpenCareerApplications } from "./careerApplicationCascade.service";
 
+/** Persist post list + search projection; roll back posts if search sync fails. */
+function commitCareerPostsLocally(next: CareerJobPost[], prior: CareerJobPost[]): boolean {
+  const write = writeCareerPosts(next);
+  if (!write.ok) return false;
+
+  const search = syncToEmployeeCareerSearch(next);
+  if (!search.ok) {
+    writeCareerPosts(prior);
+    return false;
+  }
+
+  return true;
+}
+
+function restoreCareerPostsLocally(prior: CareerJobPost[]): void {
+  writeCareerPosts(prior);
+  syncToEmployeeCareerSearch(prior);
+}
+
 async function dualWritePostUpdate(
   localPost: CareerJobPost,
   prior: CareerJobPost[],
@@ -24,7 +45,7 @@ async function dualWritePostUpdate(
 
   const serverPostId = resolveCareerGatePostId(localPost.id);
   if (!serverPostId) {
-    writeCareerPosts(prior);
+    restoreCareerPostsLocally(prior);
     return false;
   }
 
@@ -36,7 +57,7 @@ async function dualWritePostUpdate(
     mergeServerPostIntoLsCache(dto, localPost.id);
     return true;
   } catch {
-    writeCareerPosts(prior);
+    restoreCareerPostsLocally(prior);
     return false;
   }
 }
@@ -49,14 +70,11 @@ export async function pauseCareerPost(postId: string): Promise<boolean> {
   const prior = posts;
   const updated: CareerJobPost = { ...post, status: "paused", updatedAt: Date.now() };
   const next = posts.map((p) => (p.id === postId ? updated : p));
-  writeCareerPosts(next);
-  syncToEmployeeCareerSearch(next);
+
+  if (!commitCareerPostsLocally(next, prior)) return false;
 
   const ok = await dualWritePostUpdate(updated, prior);
-  if (!ok) {
-    syncToEmployeeCareerSearch(prior);
-    return false;
-  }
+  if (!ok) return false;
 
   pushCareerActivity({
     postId,
@@ -80,14 +98,11 @@ export async function resumeCareerPost(postId: string): Promise<boolean> {
   const prior = posts;
   const updated: CareerJobPost = { ...post, status: "active", updatedAt: now };
   const next = posts.map((p) => (p.id === postId ? updated : p));
-  writeCareerPosts(next);
-  syncToEmployeeCareerSearch(next);
+
+  if (!commitCareerPostsLocally(next, prior)) return false;
 
   const ok = await dualWritePostUpdate(updated, prior);
-  if (!ok) {
-    syncToEmployeeCareerSearch(prior);
-    return false;
-  }
+  if (!ok) return false;
 
   pushCareerActivity({
     postId,
@@ -109,14 +124,11 @@ export async function closeCareerPost(postId: string): Promise<boolean> {
   const prior = posts;
   const updated: CareerJobPost = { ...post, status: "closed", updatedAt: now };
   const next = posts.map((p) => (p.id === postId ? updated : p));
-  writeCareerPosts(next);
-  syncToEmployeeCareerSearch(next);
+
+  if (!commitCareerPostsLocally(next, prior)) return false;
 
   const ok = await dualWritePostUpdate(updated, prior);
-  if (!ok) {
-    syncToEmployeeCareerSearch(prior);
-    return false;
-  }
+  if (!ok) return false;
 
   pushCareerActivity({
     postId,
@@ -126,12 +138,18 @@ export async function closeCareerPost(postId: string): Promise<boolean> {
     route: ROUTE_PATHS.employerCareerPostDashboard.replace(":postId", postId),
   });
 
-  cascadeRejectOpenCareerApplications({
+  const cascade = await cascadeRejectOpenCareerApplications({
     postId,
     jobTitle: post.jobTitle,
     companyName: post.companyName,
     reason: "This job posting was closed by the employer.",
   });
+
+  // Post is already closed (AUTH dual-write succeeded). Cascade failure means
+  // open apps may remain on server — surface as close failure so UI can retry.
+  if (!cascade.ok && cascade.reason === "api_error") {
+    return false;
+  }
 
   return true;
 }
@@ -162,14 +180,11 @@ export async function extendCareerPostClosingDate(postId: string, days = 30): Pr
     updatedAt: now,
   };
   const next = posts.map((p) => (p.id === postId ? updated : p));
-  writeCareerPosts(next);
-  syncToEmployeeCareerSearch(next);
+
+  if (!commitCareerPostsLocally(next, prior)) return false;
 
   const ok = await dualWritePostUpdate(updated, prior);
-  if (!ok) {
-    syncToEmployeeCareerSearch(prior);
-    return false;
-  }
+  if (!ok) return false;
 
   pushCareerActivity({
     postId,
@@ -189,14 +204,13 @@ export async function deleteCareerPost(postId: string): Promise<boolean> {
 
   const prior = posts;
   const next = posts.filter((p) => p.id !== postId);
-  writeCareerPosts(next);
-  syncToEmployeeCareerSearch(next);
+
+  if (!commitCareerPostsLocally(next, prior)) return false;
 
   if (isCareerApiSyncEnabled()) {
     const serverPostId = resolveCareerGatePostId(postId);
     if (!serverPostId) {
-      writeCareerPosts(prior);
-      syncToEmployeeCareerSearch(prior);
+      restoreCareerPostsLocally(prior);
       return false;
     }
 
@@ -204,8 +218,7 @@ export async function deleteCareerPost(postId: string): Promise<boolean> {
       await careerGateApi.deleteCareerPost(serverPostId);
       return true;
     } catch {
-      writeCareerPosts(prior);
-      syncToEmployeeCareerSearch(prior);
+      restoreCareerPostsLocally(prior);
       return false;
     }
   }

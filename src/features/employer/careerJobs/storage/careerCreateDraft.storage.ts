@@ -1,13 +1,14 @@
 // App name: Job Mitra
 // File name: careerCreateDraft.storage.ts
 // Layer 4 completion: XSS sanitize all user text before LocalStorage drafts.
+// P2: soft-fail when employer scope missing or storage is unavailable (incognito / quota).
 
 import type { ScreeningQuestion } from "../components/CareerCreateScreeningSection";
 import type { StepBasicData } from "../components/CareerCreateStepBasic";
 import type { StepInterviewData } from "../components/CareerCreateStepInterview";
 import type { StepRequirementsData } from "../components/CareerCreateStepRequirements";
 import { sanitizeUserText } from "../../../../shared/security/sanitizeUserText";
-import { resolveCareerEmployerScopedKey } from "../../../shared/career/careerEmployerScope";
+import { tryResolveCareerEmployerScopedKey } from "../../../shared/career/careerEmployerScope";
 
 export type CareerCreateDraft = {
   id: "career_create_draft";
@@ -20,14 +21,21 @@ export type CareerCreateDraft = {
   updatedAt: number;
 };
 
-function draftStorageKey(): string {
-  return resolveCareerEmployerScopedKey("career_create_draft_v1");
+export type CareerCreateDraftWriteResult =
+  { ok: true; draft: CareerCreateDraft } | { ok: false; reason: "no_scope" | "storage_error" };
+
+function draftStorageKey(): string | null {
+  return tryResolveCareerEmployerScopedKey("career_create_draft_v1");
 }
 
 const CHANGED_EVENT = "wm:employer-career-create-draft-changed";
 
 function emitChange(): void {
-  window.dispatchEvent(new Event(CHANGED_EVENT));
+  try {
+    window.dispatchEvent(new Event(CHANGED_EVENT));
+  } catch {
+    /* ignore */
+  }
 }
 
 function normalizeStep(step: number): number {
@@ -101,7 +109,10 @@ function sanitizeDraft(draft: CareerCreateDraft): CareerCreateDraft {
 export const careerCreateDraftStorage = {
   get(): CareerCreateDraft | null {
     try {
-      const raw = localStorage.getItem(draftStorageKey());
+      const key = draftStorageKey();
+      if (!key || typeof localStorage === "undefined") return null;
+
+      const raw = localStorage.getItem(key);
       if (!raw) return null;
 
       const parsed = JSON.parse(raw) as CareerCreateDraft;
@@ -119,29 +130,46 @@ export const careerCreateDraftStorage = {
     }
   },
 
-  save(data: Omit<CareerCreateDraft, "id" | "savedAt" | "updatedAt">): CareerCreateDraft {
-    const existing = this.get();
-    const now = Date.now();
+  save(
+    data: Omit<CareerCreateDraft, "id" | "savedAt" | "updatedAt">,
+  ): CareerCreateDraftWriteResult {
+    try {
+      const key = draftStorageKey();
+      if (!key || typeof localStorage === "undefined") {
+        return { ok: false, reason: "no_scope" };
+      }
 
-    const draft = sanitizeDraft({
-      id: "career_create_draft",
-      step: normalizeStep(data.step),
-      basic: data.basic,
-      req: data.req,
-      interview: data.interview,
-      screeningQuestions: data.screeningQuestions,
-      savedAt: existing?.savedAt ?? now,
-      updatedAt: now,
-    });
+      const existing = this.get();
+      const now = Date.now();
 
-    localStorage.setItem(draftStorageKey(), JSON.stringify(draft));
-    emitChange();
+      const draft = sanitizeDraft({
+        id: "career_create_draft",
+        step: normalizeStep(data.step),
+        basic: data.basic,
+        req: data.req,
+        interview: data.interview,
+        screeningQuestions: data.screeningQuestions,
+        savedAt: existing?.savedAt ?? now,
+        updatedAt: now,
+      });
 
-    return draft;
+      localStorage.setItem(key, JSON.stringify(draft));
+      emitChange();
+      return { ok: true, draft };
+    } catch {
+      return { ok: false, reason: "storage_error" };
+    }
   },
 
   clear(): void {
-    localStorage.removeItem(draftStorageKey());
+    try {
+      const key = draftStorageKey();
+      if (key && typeof localStorage !== "undefined") {
+        localStorage.removeItem(key);
+      }
+    } catch {
+      /* incognito / blocked storage */
+    }
     emitChange();
   },
 
@@ -151,7 +179,8 @@ export const careerCreateDraftStorage = {
 
   subscribe(callback: () => void): () => void {
     const handleStorage = (event: StorageEvent) => {
-      if (event.key === draftStorageKey()) callback();
+      const key = draftStorageKey();
+      if (key && event.key === key) callback();
     };
 
     window.addEventListener(CHANGED_EVENT, callback);

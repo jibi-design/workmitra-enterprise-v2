@@ -8,6 +8,7 @@ import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { hydrateCareerPostsFromServer } from "../../../career/services/careerPostDbTruth.service";
 import { hydrateEmploymentsFromDb } from "../../../career/services/employmentDbTruth.service";
 import { isCareerApiSyncEnabled } from "../../../career/services/careerGateApi.service";
+import { hasValidCareerEmployerScope } from "../../../shared/career/careerEmployerScope";
 import {
   careerEmploymentFeedbackStorage,
   type CareerEmploymentFeedbackTask,
@@ -70,7 +71,9 @@ function isPastPost(post: CareerJobPost): boolean {
 
 export function useEmployerCareerHomeState() {
   const nav = useNavigate();
-  const [isHydrating, setIsHydrating] = useState(() => isCareerApiSyncEnabled());
+  const [isHydrating, setIsHydrating] = useState(
+    () => isCareerApiSyncEnabled() && hasValidCareerEmployerScope(),
+  );
   const [loadError, setLoadError] = useState<string | null>(null);
   const [retryToken, setRetryToken] = useState(0);
 
@@ -80,7 +83,7 @@ export function useEmployerCareerHomeState() {
   }, []);
 
   useEffect(() => {
-    if (!isCareerApiSyncEnabled()) {
+    if (!isCareerApiSyncEnabled() || !hasValidCareerEmployerScope()) {
       return;
     }
 

@@ -27,6 +27,7 @@
     "test:e2e": "playwright test --ui",
     "test:e2e:headless": "playwright test",
     "test:e2e:visual-walkthrough": "playwright test --project=chromium --headed tests/e2e/visual-e2e-shift-walkthrough.spec.ts",
+    "test:e2e:visual-stress": "playwright test --config=playwright.visual-stress.config.ts --project=chromium-visual-stress",
     "test:e2e:cdp": "playwright test --project=chromium tests/e2e/shift-cdp-benchmark.spec.ts",
     "test:security": "node tests/security/rate-limit.probe.mjs && node tests/security/pii-isolation.probe.mjs",
     "test:load:k6": "node tests/load/run-shift-load.mjs",

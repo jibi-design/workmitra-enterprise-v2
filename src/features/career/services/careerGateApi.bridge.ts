@@ -3,6 +3,7 @@ import { AUTH_BACKEND_ENABLED } from "../../../shared/config/authConfig";
 import { employeeProfileStorage } from "../../employee/profile/storage/employeeProfile.storage";
 import { employerSettingsStorage } from "../../../shared/employerProfile/employerSettingsPublic";
 import { CAREER_APPS_KEY, safeRead } from "../helpers/careerStoragePublic";
+import { getCareerEmployeeAppsStorageKey } from "../helpers/careerStoragePublic";
 import { careerAppIdBridge, isCareerServerUuid } from "../utils/careerAppIdBridge";
 import { careerPostIdBridge } from "../utils/careerPostIdBridge";
 import type { ServerCareerApplicationDto } from "./careerGateApi.types";
@@ -42,7 +43,7 @@ export function mergeServerApplicationsIntoBridges(
 ): void {
   let localApps: unknown[] = [];
   try {
-    const raw = safeRead(CAREER_APPS_KEY);
+    const raw = safeRead(getCareerEmployeeAppsStorageKey()) ?? safeRead(CAREER_APPS_KEY);
     if (raw) {
       const parsed: unknown = JSON.parse(raw);
       if (Array.isArray(parsed)) localApps = parsed;

@@ -6,7 +6,7 @@ const MAX_OFFER_SALARY = 999_999_999;
 const ALLOWED_OFFER_NOTICE_DAYS = new Set([0, 7, 14, 30]);
 
 export type HireCandidateSagaResult =
-  | { ok: true; workspaceId: string }
+  | { ok: true; workspaceId: string; cascadeRejectFailed?: boolean }
   | {
       ok: false;
       reason:

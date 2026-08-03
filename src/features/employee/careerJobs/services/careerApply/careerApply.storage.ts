@@ -1,12 +1,11 @@
 // Career apply — localStorage read/write + employee identity helpers.
 // Candidate-side draft/app persistence: XSS-sanitize free text on read/write.
+// B-P0-1: worker-scoped apps via writeCareerAppsForEmployee dual-write.
 
 import { resolveActorStorageId } from "../../../../../app/identity/identity.adapter";
 import {
-  CAREER_APPS_KEY,
-  notifyCareerAppsChanged,
-  safeParse,
-  safeWrite,
+  readCareerAppsForEmployee,
+  writeCareerAppsForEmployee,
   type CareerStorageWriteResult,
 } from "../../../../career/helpers/careerStoragePublic";
 import { employeeProfileStorage } from "../../../profile/storage/employeeProfile.storage";
@@ -29,15 +28,11 @@ function sanitizeApp(app: CareerApplication): CareerApplication {
 }
 
 export function readAllApps(): CareerApplication[] {
-  const raw = localStorage.getItem(CAREER_APPS_KEY);
-  return safeParse<CareerApplication>(raw).map(sanitizeApp);
+  return readCareerAppsForEmployee().map(sanitizeApp);
 }
 
 export function writeAllApps(apps: CareerApplication[]): CareerStorageWriteResult {
-  const result = safeWrite(CAREER_APPS_KEY, apps.map(sanitizeApp));
-  if (!result.ok) return result;
-  notifyCareerAppsChanged();
-  return { ok: true };
+  return writeCareerAppsForEmployee(apps.map(sanitizeApp));
 }
 
 export function getCurrentEmployeeId(): string {

@@ -5,12 +5,15 @@
 import { resolveActorStorageId } from "../../../../app/identity/identity.adapter";
 import { hydrateCareerApplicationsFromServer } from "../../../career/services/careerDbTruth.service";
 import { isCareerApiSyncEnabled } from "../../../career/services/careerGateApi.service";
-import { CAREER_APPS_KEY, safeRead } from "../../../career/helpers/careerStoragePublic";
+import {
+  getCareerEmployeeAppsStorageKey,
+  safeRead,
+} from "../../../career/helpers/careerStoragePublic";
 import { cleanText, clampNumber, isRec, num, str } from "./careerSearchSanitizers";
 import type { CareerApplicationStageLite, CareerSearchApplicationState } from "./careerSearchTypes";
 
 export function getCareerApplicationsRawSnapshot(): string {
-  return safeRead(CAREER_APPS_KEY) ?? "";
+  return safeRead(getCareerEmployeeAppsStorageKey()) ?? "";
 }
 
 function clampCareerApplicationStageLite(x: unknown): CareerApplicationStageLite | null {
@@ -78,7 +81,7 @@ export async function loadMyCareerApplicationStatusMap(): Promise<
 function buildStatusMapFromLsCache(): Record<string, CareerSearchApplicationState> {
   try {
     const currentEmployeeId = getCurrentEmployeeId();
-    const raw = safeRead(CAREER_APPS_KEY);
+    const raw = safeRead(getCareerEmployeeAppsStorageKey());
 
     if (!raw || !currentEmployeeId) return {};
 

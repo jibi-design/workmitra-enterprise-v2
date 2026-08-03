@@ -8,11 +8,8 @@
 import { resolveActorStorageId } from "../../../app/identity/identity.adapter";
 import { employeeProfileStorage } from "../../employee/profile/storage/employeeProfile.storage";
 import {
-  CAREER_APPS_KEY,
-  notifyCareerAppsChanged,
-  safeParse,
-  safeRead,
-  safeWrite,
+  readCareerAppsForEmployee,
+  writeCareerAppsForEmployee,
 } from "../helpers/careerStoragePublic";
 import type { CareerApplication, CareerApplicationStage } from "../types/careerDomainTypes";
 import { careerAppIdBridge, isCareerServerUuid } from "../utils/careerAppIdBridge";
@@ -29,14 +26,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function readLocalApps(): CareerApplication[] {
-  return safeParse<CareerApplication>(safeRead(CAREER_APPS_KEY));
+  return readCareerAppsForEmployee();
 }
 
 function writeLocalApps(apps: CareerApplication[]): boolean {
-  const result = safeWrite(CAREER_APPS_KEY, apps);
-  if (!result.ok) return false;
-  notifyCareerAppsChanged();
-  return true;
+  return writeCareerAppsForEmployee(apps).ok;
 }
 
 function getCurrentEmployeeId(): string {

@@ -1,5 +1,8 @@
 import { clampApplicationStage } from "../../../career/helpers/careerStoragePublic";
-import { CAREER_APPS_CHANGED, CAREER_APPS_KEY } from "../../../career/helpers/careerStoragePublic";
+import {
+  CAREER_APPS_CHANGED,
+  getCareerEmployeeAppsStorageKey,
+} from "../../../career/helpers/careerStoragePublic";
 import type { AppLite, ScheduledInterviewSummary } from "../types/careerApplicationTypes";
 
 type Rec = Record<string, unknown>;
@@ -115,7 +118,7 @@ let _appsCacheRaw: string | null = "__init__";
 let _appsCacheList: AppLite[] = [];
 
 export function getAppsSnapshot(): AppLite[] {
-  const raw = localStorage.getItem(CAREER_APPS_KEY);
+  const raw = localStorage.getItem(getCareerEmployeeAppsStorageKey());
   if (raw !== _appsCacheRaw) {
     _appsCacheRaw = raw;
     _appsCacheList = parseAppsLite(raw);

@@ -185,6 +185,7 @@ export function parseSearchPosts(raw: string | null): CareerSearchPost[] {
         closingDate,
         createdAt: clampNumber(num(item, "createdAt"), 0, Number.MAX_SAFE_INTEGER, 0),
         screeningQuestions: screeningQuestions(item),
+        employerId: cleanText(str(item, "employerId"), 120) || undefined,
       };
 
       const existing = byId.get(id);

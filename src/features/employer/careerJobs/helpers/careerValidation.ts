@@ -10,10 +10,14 @@ import type {
 
 import {
   safeWrite,
-  EMPLOYEE_SEARCH_CAREER_KEY,
   notifyEmployeeCareerSearchChanged,
   type CareerStorageWriteResult,
 } from "./careerStorageUtils";
+import {
+  getCareerEmployerSearchStorageKey,
+  migrateLegacyCareerSearchIntoEmployerOnce,
+} from "../../../shared/career/careerSearchIndex.scope";
+import { tryGetCareerEmployerScopeId } from "../../../shared/career/careerEmployerScope";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Stage Transition Rules (forward + documented reverse: shortlist↔applied, interview↔shortlist)
@@ -89,9 +93,15 @@ export function syncToEmployeeCareerSearch(posts: CareerJobPost[]): CareerStorag
       closingDate: p.closingDate,
       createdAt: p.createdAt,
       screeningQuestions: p.screeningQuestions ?? [],
+      employerId: p.employerId,
     }));
 
-  const result = safeWrite(EMPLOYEE_SEARCH_CAREER_KEY, searchable);
+  const scopeId = tryGetCareerEmployerScopeId();
+  if (!scopeId) {
+    return { ok: false, reason: "storage_error" };
+  }
+  migrateLegacyCareerSearchIntoEmployerOnce(scopeId);
+  const result = safeWrite(getCareerEmployerSearchStorageKey(scopeId), searchable);
   if (result.ok) {
     notifyEmployeeCareerSearchChanged();
   }

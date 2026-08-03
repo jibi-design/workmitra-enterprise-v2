@@ -57,9 +57,13 @@ test.describe("Career OTP & Document Access Locks", () => {
           });
 
           const remaining = otpSvc.docAccessOtpService.getRemainingMs();
-          const verified = await otpSvc.docAccessOtpService.verify(generated.code);
+          const verified = await otpSvc.docAccessOtpService.verify(generated.code, {
+            workerMlId: workerMlId,
+            employerScopeId: "ML-E2E-CAREER-EMP",
+          });
           const session = sessionSvc.docAccessSessionStorage.createSession({
             employerId: "ML-E2E-CAREER-EMP",
+            employerScopeId: "ML-E2E-CAREER-EMP",
             employerName: "Circuit Professional Services",
             workerMlId: workerMlId,
             domain: "career",
@@ -72,7 +76,26 @@ test.describe("Career OTP & Document Access Locks", () => {
             codeLength: generated.code.length,
             remainingMs: remaining,
             verified,
-            sessionDurationMs: session.expiresAt - session.startedAt,
+            sessionOk: Boolean(session),
+            sessionDurationMs: session ? session.expiresAt - session.startedAt : 0,
+            sessionHasSig: Boolean(session?.sig),
+            forgedRejected: (() => {
+              localStorage.setItem(
+                "wm_doc_access_session_v1",
+                JSON.stringify({
+                  id: "forged",
+                  employerId: "ML-E2E-CAREER-EMP",
+                  employerScopeId: "ML-E2E-CAREER-EMP",
+                  employerName: "X",
+                  workerMlId: workerMlId,
+                  domain: "career",
+                  startedAt: Date.now(),
+                  expiresAt: Date.now() + 30 * 60 * 1000,
+                  revoked: false,
+                }),
+              );
+              return sessionSvc.docAccessSessionStorage.getActiveSession() === null;
+            })(),
             otpKeyPresent: Boolean(storedOtpKey),
             sessionKeyPresent: Boolean(storedSessionKey),
             otpHasPlainCodeInLs: storedOtpKey ? storedOtpKey.includes(generated.code) : false,
@@ -85,7 +108,10 @@ test.describe("Career OTP & Document Access Locks", () => {
       expect(result.remainingMs).toBeGreaterThan(FIVE_MIN_MS - 5_000);
       expect(result.remainingMs).toBeLessThanOrEqual(FIVE_MIN_MS);
       expect(result.verified).toBe(true);
+      expect(result.sessionOk).toBe(true);
       expect(result.sessionDurationMs).toBe(THIRTY_MIN_MS);
+      expect(result.sessionHasSig).toBe(true);
+      expect(result.forgedRejected).toBe(true);
       expect(result.otpKeyPresent).toBe(true);
       expect(result.sessionKeyPresent).toBe(true);
       expect(result.otpHasPlainCodeInLs, "Doc OTP must not persist plaintext code").toBe(false);
@@ -109,7 +135,10 @@ test.describe("Career OTP & Document Access Locks", () => {
         challenge.expiresAt = Date.now() - 1_000;
         localStorage.setItem("wm_doc_access_otp_v1", JSON.stringify(challenge));
 
-        const verified = await otpSvc.docAccessOtpService.verify(generated.code);
+        const verified = await otpSvc.docAccessOtpService.verify(generated.code, {
+          workerMlId: "ML-WORKER",
+          employerScopeId: "ML-EXP",
+        });
         const active = otpSvc.docAccessOtpService.isActive();
         return { ok: true as const, verified, active, code: generated.code };
       });

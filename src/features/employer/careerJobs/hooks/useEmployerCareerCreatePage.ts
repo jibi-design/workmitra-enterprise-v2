@@ -171,11 +171,21 @@ export function useEmployerCareerCreatePage() {
     goEmployerCareerCreateBack({ step, setStep });
   }
 
+  function discardDraftAndResetMemory(): void {
+    clearEmployerCareerCreateDraft();
+    setHasLoadedDraft(false);
+    setStep(1);
+    setBasic(createFreshBasicState(employerDefaults));
+    setReq(createFreshRequirementsState());
+    setInterview(createFreshInterviewState());
+    setScreeningQuestions([]);
+  }
+
   function handleCancel() {
     handleEmployerCareerCreateCancel({
       isDirty,
       nav,
-      saveDraft,
+      discardDraft: discardDraftAndResetMemory,
       setConfirmData,
       setConfirmAction,
     });

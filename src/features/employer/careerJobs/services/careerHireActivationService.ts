@@ -97,7 +97,9 @@ export function activateCareerHire(
   const candidateName = resolveCareerCandidateName(app);
   const candidateUniqueId = app.profileSnapshot?.uniqueId ?? app.employeeId;
 
-  const workspaceResult = createCareerWorkspace(post);
+  const workspaceResult = createCareerWorkspace(post, {
+    employeeId: app.employeeId || candidateUniqueId,
+  });
   if (!workspaceResult.ok) {
     return { ok: false, reason: "workspace_write_error" };
   }

@@ -167,13 +167,23 @@ export async function hireCandidate(
   }
 
   if (shouldFill) {
-    cascadeRejectOpenCareerApplications({
+    const cascade = await cascadeRejectOpenCareerApplications({
       postId,
       jobTitle: post.jobTitle,
       companyName: post.companyName,
       reason: "This position has been filled.",
       excludeAppId: appId,
     });
+
+    // Hire already confirmed. If AUTH cascade fails, LS was rolled back —
+    // still return hire success but do not leave a false "filled + apps closed" UX.
+    if (!cascade.ok && cascade.reason === "api_error") {
+      return {
+        ok: true,
+        workspaceId: activation.workspaceId,
+        cascadeRejectFailed: true,
+      };
+    }
   }
 
   return { ok: true, workspaceId: activation.workspaceId };

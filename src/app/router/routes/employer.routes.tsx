@@ -6,6 +6,7 @@ import { showPhase2Features, showShiftOpsFeatures } from "../../../shared/launch
 import { LaunchModuleBoundary } from "./routerHelpers";
 import { ER } from "./routeSegments";
 import { HelpSupportPage } from "./adminLazyPages";
+import { EmployerCareerScopeGuard } from "../../../features/employer/careerJobs/components/EmployerCareerScopeGuard";
 import {
   BulkAttendancePage,
   BulkNotificationsPage,
@@ -72,16 +73,18 @@ export const employerRouteTree = (
         <LaunchModuleBoundary enabled runtimeKill="career" fallback={ROUTE_PATHS.employerHome} />
       }
     >
-      <Route path={ER.career} element={<EmployerCareerHomePage />} />
-      <Route path={ER.careerPosts} element={<EmployerCareerPostsPage />} />
-      <Route path={ER.careerCompletedRecords} element={<EmployerCareerCompletedRecordsPage />} />
-      <Route path={ER.careerCreate} element={<EmployerCareerCreatePage />} />
-      <Route path={ER.careerPostDashboard} element={<EmployerCareerPostDashboardPage />} />
-      <Route path={ER.careerCandidateDetail} element={<EmployerCareerCandidateDetailPage />} />
-      <Route
-        path={ER.careerCandidateWorkVaultReview}
-        element={<EmployerCareerCandidateWorkVaultReviewPage />}
-      />
+      <Route element={<EmployerCareerScopeGuard />}>
+        <Route path={ER.career} element={<EmployerCareerHomePage />} />
+        <Route path={ER.careerPosts} element={<EmployerCareerPostsPage />} />
+        <Route path={ER.careerCompletedRecords} element={<EmployerCareerCompletedRecordsPage />} />
+        <Route path={ER.careerCreate} element={<EmployerCareerCreatePage />} />
+        <Route path={ER.careerPostDashboard} element={<EmployerCareerPostDashboardPage />} />
+        <Route path={ER.careerCandidateDetail} element={<EmployerCareerCandidateDetailPage />} />
+        <Route
+          path={ER.careerCandidateWorkVaultReview}
+          element={<EmployerCareerCandidateWorkVaultReviewPage />}
+        />
+      </Route>
     </Route>
     <Route
       element={

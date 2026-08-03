@@ -9,6 +9,7 @@ import { initAppHaptics } from "./shared/platform/haptics";
 import { installShiftRetryQueueDrain } from "./shared/shift/shiftRetryQueue.drain";
 import { initClientMonitor } from "./shared/observability/monitor";
 import { hydratePiiSecureStorage } from "./shared/security/piiSecureStorage";
+import { hydrateVaultDocumentsPlaintext } from "./features/employee/workVault/services/vaultDocumentService";
 
 normalizeHashRouterDeepLink();
 installIncomingCallNativeBridge();
@@ -33,8 +34,9 @@ const rootEl = document.getElementById("root")!;
 async function mount(): Promise<void> {
   try {
     await hydratePiiSecureStorage();
+    await hydrateVaultDocumentsPlaintext();
   } catch (err) {
-    console.error("[WorkMitra] PII secure storage hydrate failed", err);
+    console.error("[WorkMitra] PII / vault document hydrate failed", err);
   }
 
   let GodModePanel: ComponentType = () => null;

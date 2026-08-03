@@ -10,11 +10,16 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const CAREER_POSTS_KEY = "wm_employer_career_posts_v1"; // legacy unscoped — prefer resolveCareerEmployerScopedKey
+/** @deprecated Legacy global apps key — use getCareerEmployerAppsStorageKey / getCareerEmployeeAppsStorageKey */
 export const CAREER_APPS_KEY = "wm_employee_career_applications_v1";
+/** @deprecated Legacy global workspaces key — use scoped getters in careerPersistence */
 export const CAREER_WORKSPACES_KEY = "wm_employee_career_workspaces_v1";
 export const CAREER_ACTIVITY_KEY = "wm_employer_career_activity_log_v1"; // legacy unscoped — prefer resolveCareerEmployerScopedKey
+/** @deprecated P1 — use getCareerEmployerSearchStorageKey / merged read via careerSearchIndex.scope */
 export const EMPLOYEE_SEARCH_CAREER_KEY = "wm_employee_career_posts_search_v1";
+/** @deprecated P1 — use resolveCareerEmployeeScopedKey("career_saved_v1") */
 export const EMPLOYEE_CAREER_SAVED_JOBS_KEY = "wm_employee_career_saved_jobs_v1";
+/** @deprecated P1 — use resolveCareerEmployeeScopedKey("career_recent_jobs_v1") */
 export const EMPLOYEE_CAREER_RECENT_JOBS_KEY = "wm_employee_career_recent_jobs_v1";
 
 // ─────────────────────────────────────────────────────────────────────────────
