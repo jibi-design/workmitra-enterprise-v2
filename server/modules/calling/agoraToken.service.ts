@@ -29,6 +29,15 @@ function mapRole(role: AgoraRtcRole): 1 | 2 {
   return role === "subscriber" ? RtcRole.SUBSCRIBER : RtcRole.PUBLISHER;
 }
 
+/** Stable positive Agora uid from Mitra Lab account string. */
+function hashAccountToUid(account: string): number {
+  let hash = 0;
+  for (let i = 0; i < account.length; i += 1) {
+    hash = (hash * 31 + account.charCodeAt(i)) >>> 0;
+  }
+  return hash === 0 ? 1 : hash;
+}
+
 /**
  * Mint an Agora RTC token for a channel.
  * @param channelId Agora channel name (usually call session / workspace scoped)
@@ -57,11 +66,10 @@ export function generateRtcToken(
     Math.floor(uid),
     mapRole(role),
     expireAt,
-    expireAt,
   );
 }
 
-/** Convenience: token bound to Mitra Lab account string (Agora userAccount mode). */
+/** Convenience: token bound to Mitra Lab account string (stable uid hash). */
 export function generateRtcTokenForMlAccount(
   channelId: string,
   mlAccount: string,
@@ -73,17 +81,5 @@ export function generateRtcTokenForMlAccount(
   if (!channel) throw new Error("AGORA_CHANNEL_REQUIRED");
   if (!account) throw new Error("AGORA_ACCOUNT_REQUIRED");
 
-  const ttl = Math.max(60, Math.min(Math.floor(ttlSeconds), 86_400));
-  const { appId, appCertificate } = requireAgoraEnv();
-  const expireAt = Math.floor(Date.now() / 1000) + ttl;
-
-  return RtcTokenBuilder.buildTokenWithUserAccount(
-    appId,
-    appCertificate,
-    channel,
-    account,
-    mapRole(role),
-    expireAt,
-    expireAt,
-  );
+  return generateRtcToken(channel, hashAccountToUid(account), role, ttlSeconds);
 }

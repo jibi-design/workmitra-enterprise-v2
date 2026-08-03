@@ -175,8 +175,6 @@ export function useShiftPostApplyState(postId: string) {
     setWithdrawConfirm,
     setDoubleBookingPending,
     setAttendanceConfirmPending,
-    isSubmittingRef,
-    setIsSubmitting,
   });
 
   function handleToggleSaved() {
@@ -189,7 +187,7 @@ export function useShiftPostApplyState(postId: string) {
     showToast(nextSet.has(post.id) ? "Shift saved." : "Shift removed from saved.");
   }
 
-  function submit() {
+  async function submit() {
     if (!post) return;
     if (isSubmittingRef.current) return;
 
@@ -227,7 +225,14 @@ export function useShiftPostApplyState(postId: string) {
       return;
     }
 
-    void lifecycle.submitApplicationWithList(all);
+    isSubmittingRef.current = true;
+    setIsSubmitting(true);
+    try {
+      await lifecycle.submitApplicationWithList(all);
+    } finally {
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
+    }
   }
 
   return {

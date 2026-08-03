@@ -153,7 +153,7 @@ function buildWorkspace(empN: number, post: ShiftPost, now: number): ShiftWorksp
     workerName: workerName(workerIdx),
     companyName: post.companyName,
     jobName: post.jobName,
-    category: "warehouse",
+    category: "other",
     locationName: post.locationName,
     startAt: post.startAt,
     endAt: post.endAt,

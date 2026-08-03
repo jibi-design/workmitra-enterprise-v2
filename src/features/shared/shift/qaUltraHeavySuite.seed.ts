@@ -119,7 +119,18 @@ export function applyUltraHeavySuiteSeed(): UltraHeavySuiteResult {
   // --- Confirmed applications for earnings estimates (many workers) ---
   const apps: Record<string, unknown>[] = [];
   const appsByEmp = new Map<number, Record<string, unknown>[]>();
-  const searchPosts: unknown[] = JSON.parse(localStorage.getItem(SEARCH_KEY) || "[]");
+  const searchPosts: Record<string, unknown>[] = (() => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(SEARCH_KEY) || "[]") as unknown;
+      return Array.isArray(parsed)
+        ? parsed.filter(
+            (item): item is Record<string, unknown> => typeof item === "object" && item !== null,
+          )
+        : [];
+    } catch {
+      return [];
+    }
+  })();
   for (let i = 1; i <= QA_BULK_COUNT; i += 1) {
     const emp = ((i - 1) % 20) + 1;
     const postId = `qa_mt_post_${emp}`;
@@ -146,12 +157,12 @@ export function applyUltraHeavySuiteSeed(): UltraHeavySuiteResult {
     empApps.push(app);
     appsByEmp.set(emp, empApps);
     // Ensure post exists in search for earnings / Smart Match join
-    if (!searchPosts.some((p: { id?: string }) => p.id === postId)) {
+    if (!searchPosts.some((p) => p.id === postId)) {
       searchPosts.push({
         id: postId,
         companyName: `QA Employer Co #${emp}`,
         jobName: `Earnings Fixture Job #${i}`,
-        category: "warehouse",
+        category: "other",
         experience: "fresher_ok",
         payPerDay: pay,
         locationName: "Kochi",
@@ -162,9 +173,9 @@ export function applyUltraHeavySuiteSeed(): UltraHeavySuiteResult {
         employerScopeId: qaMultiEmployerId(emp),
       });
     } else {
-      const idx = searchPosts.findIndex((p: { id?: string }) => p.id === postId);
+      const idx = searchPosts.findIndex((p) => p.id === postId);
       if (idx >= 0) {
-        const cur = searchPosts[idx] as Record<string, unknown>;
+        const cur = searchPosts[idx];
         searchPosts[idx] = {
           ...cur,
           experience: cur.experience ?? "fresher_ok",
