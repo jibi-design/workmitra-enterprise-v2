@@ -6,6 +6,8 @@ import { ROUTE_PATHS } from "../../../app/router/routePaths";
 import { resolvePostAuthRoute, sanitizeAppRoute } from "../../../app/router/pendingRoute";
 import { useAuthStore } from "../../../shared/store/authStore";
 import type { UserRole } from "../../../shared/store/authStore";
+import { peekIntentPacket } from "../../../shared/guest/intentPacket";
+import { resumeIntentAfterAuth } from "../../../shared/guest/resumeIntent";
 import { JobMitraLandingLogo } from "../components/JobMitraLandingLogo";
 import { LandingFooterLinks } from "../components/LandingFooterLinks";
 
@@ -34,6 +36,10 @@ export function LoginPage() {
     setLoading(true);
     try {
       const user = await loginWithCredentials(email.trim(), password);
+      if (peekIntentPacket()) {
+        resumeIntentAfterAuth(nav, user.role);
+        return;
+      }
       const stateFrom = (location.state as { from?: string } | null)?.from;
       const fallback = homeForRole(user.role);
       const rawTarget =

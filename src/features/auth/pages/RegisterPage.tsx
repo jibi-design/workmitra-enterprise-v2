@@ -5,6 +5,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../app/router/routePaths";
 import { AUTH_BACKEND_ENABLED } from "../../../shared/config/authConfig";
 import { useAuthStore, type UserRole } from "../../../shared/store/authStore";
+import { peekIntentPacket } from "../../../shared/guest/intentPacket";
+import { resumeIntentAfterAuth } from "../../../shared/guest/resumeIntent";
 import { JobMitraLandingLogo } from "../components/JobMitraLandingLogo";
 import { LandingFooterLinks } from "../components/LandingFooterLinks";
 
@@ -51,6 +53,10 @@ export function RegisterPage() {
         password,
         role,
       });
+      if (peekIntentPacket()) {
+        resumeIntentAfterAuth(nav, user.role);
+        return;
+      }
       nav(homeForRole(user.role), { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not create account");

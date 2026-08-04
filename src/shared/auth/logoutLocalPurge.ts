@@ -46,6 +46,8 @@ const EXACT_PURGE_KEYS: readonly string[] = [
   "wm_workforce_attendance_v1",
   "wm_work_diary_v1",
   "wm_work_diary_settings_v1",
+  "wm_shift_availability_daily_v1",
+  "wm_employee_rest_ritual_v1",
   "wm_auth_session_epoch_v1",
   "wm_shift_confirm_lock_v1",
   "wm_shift_ops_roster_overlay_v1",

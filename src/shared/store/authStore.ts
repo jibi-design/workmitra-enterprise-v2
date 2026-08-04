@@ -46,12 +46,22 @@ try {
 }
 
 export type UserRole = "employee" | "employer" | "admin";
+export type ActiveMode = "employee" | "employer";
+
+export type WorkspaceEntitlement = {
+  readonly mode: ActiveMode;
+  readonly status: "pending" | "verified" | "suspended" | "deactivated";
+};
 
 export interface UserProfile {
   id: string;
   fullName: string;
   email: string;
   role: UserRole;
+  /** Dual-context active surface — equals role for employee/employer. */
+  activeMode?: ActiveMode | null;
+  activeOrgId?: string | null;
+  entitlements?: readonly WorkspaceEntitlement[];
   avatarUrl?: string;
 }
 
@@ -78,8 +88,12 @@ interface AuthState {
 /** Legacy UX bridge for components still reading roleStorage — not security. */
 function syncRoleBridge(user: UserProfile | null) {
   if (!AUTH_BACKEND_ENABLED) return;
-  if (user) roleStorage.set(user.role);
-  else roleStorage.clear();
+  if (user) {
+    const mode = user.activeMode ?? (user.role === "admin" ? null : user.role);
+    if (mode === "employee" || mode === "employer" || user.role === "admin") {
+      roleStorage.set(user.role === "admin" ? "admin" : mode!);
+    }
+  } else roleStorage.clear();
 }
 
 type AuthStoreSlice = (
@@ -105,7 +119,7 @@ const createAuthSlice: AuthStoreSlice = (set, get) => ({
       isAuthenticated: true,
       sessionChecked: true,
     });
-    publishAuthSessionEpoch(user.id, user.role);
+    publishAuthSessionEpoch(user.id, user.activeMode ?? user.role);
   },
 
   clearAuth: () => {
@@ -123,9 +137,18 @@ const createAuthSlice: AuthStoreSlice = (set, get) => ({
   updateProfile: (updates) =>
     set((state) => {
       if (!state.user) return {};
-      // P0/P1: role is server-owned — never allow client partials to escalate.
-      const { role: _ignoredRole, ...safeUpdates } = updates;
+      // P0/P1: role + active context are server-owned — never escalate from client partials.
+      const {
+        role: _ignoredRole,
+        activeMode: _ignoredMode,
+        activeOrgId: _ignoredOrg,
+        entitlements: _ignoredEntitlements,
+        ...safeUpdates
+      } = updates;
       void _ignoredRole;
+      void _ignoredMode;
+      void _ignoredOrg;
+      void _ignoredEntitlements;
       return { user: { ...state.user, ...safeUpdates } };
     }),
 

@@ -30,7 +30,13 @@ export const supabaseBridgeBodySchema = z.object({
   jobmitra_ml_id: z.string().min(1).max(128).optional(),
 });
 
+export const switchContextBodySchema = z.object({
+  mode: z.enum(["employee", "employer"]),
+  orgId: z.string().min(1).max(128).nullable().optional(),
+});
+
 export type LoginBody = z.infer<typeof loginBodySchema>;
 export type RegisterBody = z.infer<typeof registerBodySchema>;
 export type ForgotPasswordBody = z.infer<typeof forgotPasswordBodySchema>;
 export type ResetPasswordBody = z.infer<typeof resetPasswordBodySchema>;
+export type SwitchContextBody = z.infer<typeof switchContextBodySchema>;

@@ -1,5 +1,10 @@
 import { getPool } from "../../db/pool.js";
 import { PRODUCT_SCOPE_JOBMITRA } from "./constants.js";
+import {
+  applySessionContext,
+  defaultEntitlementsForRole,
+  initialActiveMode,
+} from "./activeContext.helpers.js";
 import type { AuthUser, UserRole } from "./types.js";
 
 export interface DbUserRow {
@@ -58,12 +63,16 @@ export const authRepository = {
   ): Promise<AuthUser | null> {
     const role = await this.getPrimaryRole(row.id, productScope);
     if (!role) return null;
-    return {
-      id: row.id,
-      email: row.email,
-      fullName: row.full_name,
-      role,
-    };
+    return applySessionContext(
+      {
+        id: row.id,
+        email: row.email,
+        fullName: row.full_name,
+        role,
+        entitlements: defaultEntitlementsForRole(role),
+      },
+      { activeMode: initialActiveMode(role), activeOrgId: null },
+    );
   },
 
   async createSession(params: {

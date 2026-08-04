@@ -3,6 +3,8 @@ import { randomUUID } from "node:crypto";
 import { sessionStore } from "../modules/auth/session.store.js";
 import { authService } from "../modules/auth/auth.service.js";
 import { isDbAuthEnabled } from "../modules/auth/env.js";
+import { applySessionContext, initialActiveMode } from "../modules/auth/activeContext.helpers.js";
+import type { ActiveMode } from "../modules/auth/types.js";
 import type { AuthenticatedRequest, RouteHandler } from "./types.js";
 
 const SESSION_COOKIE = "wm_session";
@@ -31,15 +33,11 @@ function sendUnauthorized(res: ServerResponse, requestId: string): void {
  * requireAuth — session validation gate.
  *
  * Validates the session cookie, resolves the authenticated user from the
- * session store (memory or DB), and attaches the user to the request object.
+ * session store (memory or DB), and attaches the user to the request object
+ * with session activeMode / activeOrgId applied (dual-context).
  *
  * NEVER trusts any user ID or role sent by the client in the request body or headers.
  * Identity comes exclusively from the server-side session.
- *
- * Usage:
- *   const handled = await requireAuth(req, res, requestId, async (authedReq) => {
- *     // authedReq.authenticatedUser is safe to use here
- *   });
  */
 export async function requireAuth(
   req: IncomingMessage,
@@ -57,13 +55,19 @@ export async function requireAuth(
   }
 
   let userId: string | null = null;
+  let activeMode: ActiveMode | null = null;
+  let activeOrgId: string | null = null;
 
   if (isDbAuthEnabled()) {
     const session = await sessionStore.getDb(rawToken);
     userId = session?.userId ?? null;
+    activeMode = session?.activeMode ?? null;
+    activeOrgId = session?.activeOrgId ?? null;
   } else {
     const session = sessionStore.get(rawToken);
     userId = session?.userId ?? null;
+    activeMode = session?.activeMode ?? null;
+    activeOrgId = session?.activeOrgId ?? null;
   }
 
   if (!userId) {
@@ -71,11 +75,17 @@ export async function requireAuth(
     return true;
   }
 
-  const user = await authService.getUserById(userId);
-  if (!user) {
+  const base = await authService.getUserById(userId);
+  if (!base) {
     sendUnauthorized(res, requestId);
     return true;
   }
+
+  const resolvedMode = activeMode ?? initialActiveMode(base.role);
+  const user = applySessionContext(base, {
+    activeMode: resolvedMode,
+    activeOrgId,
+  });
 
   const authedReq = req as AuthenticatedRequest;
   authedReq.authenticatedUser = user;

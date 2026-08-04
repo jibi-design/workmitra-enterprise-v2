@@ -1,7 +1,11 @@
 /** Job Mitra | authService.ts | src/features/auth/services/authService.ts */
 
 import { AUTH_API_PREFIX } from "../../../shared/config/authConfig";
-import { apiService, setStoredCsrfToken } from "../../../shared/services/apiService";
+import {
+  apiService,
+  ensureCsrfReady,
+  setStoredCsrfToken,
+} from "../../../shared/services/apiService";
 import type { UserProfile, UserRole } from "../../../shared/store/authStore";
 
 interface ApiEnvelope<T> {
@@ -29,6 +33,8 @@ export type ForgotPasswordResult = {
 
 export const authService = {
   async login(body: LoginBody): Promise<UserProfile> {
+    // Login is CSRF-exempt server-side; still warm token for post-login mutations.
+    await ensureCsrfReady();
     const res = await apiService.post<ApiEnvelope<{ user: UserProfile; csrfToken?: string }>>(
       `${AUTH_API_PREFIX}/login`,
       body,
@@ -40,6 +46,7 @@ export const authService = {
   },
 
   async register(body: RegisterBody): Promise<UserProfile> {
+    await ensureCsrfReady();
     const res = await apiService.post<ApiEnvelope<{ user: UserProfile; csrfToken?: string }>>(
       `${AUTH_API_PREFIX}/register`,
       body,
@@ -51,6 +58,7 @@ export const authService = {
   },
 
   async requestPasswordReset(email: string): Promise<ForgotPasswordResult> {
+    await ensureCsrfReady();
     const res = await apiService.post<ApiEnvelope<ForgotPasswordResult>>(
       `${AUTH_API_PREFIX}/forgot-password`,
       { email },
@@ -59,6 +67,7 @@ export const authService = {
   },
 
   async resetPassword(token: string, password: string): Promise<void> {
+    await ensureCsrfReady();
     await apiService.post<ApiEnvelope<{ ok: boolean }>>(`${AUTH_API_PREFIX}/reset-password`, {
       token,
       password,
@@ -80,5 +89,16 @@ export const authService = {
     } catch {
       return null;
     }
+  },
+
+  async switchContext(input: {
+    mode: Exclude<UserRole, "admin">;
+    orgId?: string | null;
+  }): Promise<UserProfile> {
+    const res = await apiService.post<ApiEnvelope<{ user: UserProfile }>>(
+      `${AUTH_API_PREFIX}/switch-context`,
+      { mode: input.mode, orgId: input.orgId ?? null },
+    );
+    return res.data.user;
   },
 };

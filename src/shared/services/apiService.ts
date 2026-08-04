@@ -72,13 +72,24 @@ export function setStoredCsrfToken(token: string | null): void {
 }
 
 export function getStoredCsrfToken(): string | null {
+  // Double-submit SoT is the readable wm_csrf cookie. Prefer it over sessionStorage
+  // so Soft Auth / register never send a stale X-CSRF-Token after bootstrap refresh.
+  const fromCookie = readCsrfCookie();
+  if (fromCookie) {
+    try {
+      sessionStorage.setItem(CSRF_STORAGE_KEY, fromCookie);
+    } catch {
+      /* ignore */
+    }
+    return fromCookie;
+  }
   try {
     const fromStorage = sessionStorage.getItem(CSRF_STORAGE_KEY)?.trim();
     if (fromStorage) return fromStorage;
   } catch {
     // ignore
   }
-  return readCsrfCookie();
+  return null;
 }
 
 function captureCsrfFromResponse(response: Response): void {
@@ -86,6 +97,54 @@ function captureCsrfFromResponse(response: Response): void {
   if (headerToken) {
     setStoredCsrfToken(headerToken);
   }
+}
+
+let csrfEnsureInFlight: Promise<string | null> | null = null;
+
+/**
+ * Ensure a CSRF token is available for mutating requests (register, etc.).
+ * Prefers existing wm_csrf cookie; otherwise GET /auth/csrf.
+ * Pass `{ force: true }` from Soft Auth to refresh double-submit before register.
+ */
+export async function ensureCsrfReady(options?: {
+  readonly force?: boolean;
+}): Promise<string | null> {
+  if (!AUTH_BACKEND_ENABLED) return null;
+
+  if (!options?.force) {
+    const existing = getStoredCsrfToken();
+    if (existing) return existing;
+  }
+
+  if (!csrfEnsureInFlight) {
+    csrfEnsureInFlight = (async () => {
+      try {
+        // Drop stale session cache before bootstrap so header matches Set-Cookie.
+        setStoredCsrfToken(null);
+        const url = new URL(`${API_BASE_URL}/v1/jobmitra/auth/csrf`, window.location.origin);
+        const response = await fetch(url.toString(), {
+          method: "GET",
+          credentials: "include",
+          headers: { Accept: "application/json" },
+        });
+        captureCsrfFromResponse(response);
+        if (response.ok) {
+          const body = (await response.json().catch(() => null)) as {
+            data?: { csrfToken?: string };
+          } | null;
+          const fromBody = body?.data?.csrfToken?.trim();
+          if (fromBody) setStoredCsrfToken(fromBody);
+        }
+        return getStoredCsrfToken();
+      } catch {
+        return getStoredCsrfToken();
+      } finally {
+        csrfEnsureInFlight = null;
+      }
+    })();
+  }
+
+  return csrfEnsureInFlight;
 }
 
 export const apiService = {
@@ -106,7 +165,10 @@ export const apiService = {
     const mutating =
       method === "POST" || method === "PATCH" || method === "PUT" || method === "DELETE";
     if (AUTH_BACKEND_ENABLED && mutating && !configHeaders.has("X-CSRF-Token")) {
-      const csrf = getStoredCsrfToken();
+      let csrf = getStoredCsrfToken();
+      if (!csrf) {
+        csrf = await ensureCsrfReady();
+      }
       if (csrf) {
         configHeaders.set("X-CSRF-Token", csrf);
       }

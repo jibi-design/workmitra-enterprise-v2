@@ -1,5 +1,6 @@
 /** Job Mitra | csrf.ts | CSRF validation helpers for mutating API requests */
 
+import { randomBytes } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { clearCsrfToken, issueCsrfToken, validateCsrfToken } from "../modules/auth/csrf.store.js";
 import { secureCookiesEnabled } from "../modules/auth/env.js";
@@ -83,6 +84,21 @@ export async function issueCsrfForSession(
   req?: IncomingMessage,
 ): Promise<string> {
   const token = await issueCsrfToken(sessionToken);
+  setCsrfCookie(res, token, maxAgeSec, req);
+  res.setHeader("X-CSRF-Token", token);
+  return token;
+}
+
+/**
+ * Pre-auth double-submit CSRF (no session yet).
+ * Used by GET /auth/csrf so register / forgot-password can send X-CSRF-Token.
+ */
+export function issueAnonymousCsrf(
+  res: ServerResponse,
+  maxAgeSec: number,
+  req?: IncomingMessage,
+): string {
+  const token = randomBytes(32).toString("hex");
   setCsrfCookie(res, token, maxAgeSec, req);
   res.setHeader("X-CSRF-Token", token);
   return token;

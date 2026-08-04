@@ -1,8 +1,17 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { isDemoAuthAllowed } from "./env.js";
+import {
+  applySessionContext,
+  defaultEntitlementsForRole,
+  initialActiveMode,
+} from "./activeContext.helpers.js";
 import type { AuthUser, UserRole } from "./types.js";
 
-interface StoredUser extends AuthUser {
+interface StoredUser {
+  id: string;
+  fullName: string;
+  email: string;
+  role: UserRole;
   passwordHash: string;
 }
 
@@ -50,12 +59,17 @@ const users: StoredUser[] = isDemoAuthAllowed() ? buildDemoUsers() : [];
 const passwordResetTokens = new Map<string, { userId: string; expiresAt: number }>();
 
 function toPublicUser(user: StoredUser): AuthUser {
-  return {
-    id: user.id,
-    fullName: user.fullName,
-    email: user.email,
-    role: user.role,
-  };
+  const activeMode = initialActiveMode(user.role);
+  return applySessionContext(
+    {
+      id: user.id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+      entitlements: defaultEntitlementsForRole(user.role),
+    },
+    { activeMode, activeOrgId: null },
+  );
 }
 
 export const memoryAuthService = {

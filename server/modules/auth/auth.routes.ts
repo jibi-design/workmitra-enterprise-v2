@@ -6,7 +6,12 @@ import { sessionStore } from "./session.store.js";
 import { extractRequestMeta } from "./request-meta.js";
 import { SESSION_ABSOLUTE_TTL_SEC } from "./constants.js";
 import type { AuthUser } from "./types.js";
-import { issueCsrfForSession, revokeCsrfForSession, parseCookies } from "../../middleware/csrf.js";
+import {
+  issueCsrfForSession,
+  revokeCsrfForSession,
+  parseCookies,
+  issueAnonymousCsrf,
+} from "../../middleware/csrf.js";
 import {
   mintSupabaseSessionForJobMitraUser,
   revokeSupabaseSessionForUser,
@@ -19,8 +24,16 @@ import {
   registerBodySchema,
   forgotPasswordBodySchema,
   resetPasswordBodySchema,
+  switchContextBodySchema,
   supabaseBridgeBodySchema,
 } from "../../validation/schemas/auth.schemas.js";
+import {
+  applySessionContext,
+  hasVerifiedEntitlement,
+  initialActiveMode,
+  isActiveMode,
+} from "./activeContext.helpers.js";
+import type { ActiveMode } from "./types.js";
 
 const LOGIN_ATTEMPT_LIMIT = 5;
 const LOGIN_LOCKOUT_MS = 60_000;
@@ -128,9 +141,13 @@ function clearSessionCookie(res: ServerResponse, req?: IncomingMessage): void {
   appendSetCookie(res, buildSessionCookie("", 0, req));
 }
 
-async function readSessionUser(
-  req: IncomingMessage,
-): Promise<{ user: AuthUser; sessionId: string | null } | null> {
+async function readSessionUser(req: IncomingMessage): Promise<{
+  user: AuthUser;
+  sessionId: string | null;
+  rawToken: string;
+  activeMode: ActiveMode | null;
+  activeOrgId: string | null;
+} | null> {
   const cookies = parseCookies(req.headers.cookie);
   const rawToken = cookies[SESSION_COOKIE];
   if (!rawToken) return null;
@@ -138,16 +155,35 @@ async function readSessionUser(
   if (isDbAuthEnabled()) {
     const session = await sessionStore.getDb(rawToken);
     if (!session) return null;
-    const user = await authService.getUserById(session.userId);
-    if (!user) return null;
-    return { user, sessionId: session.sessionId };
+    const base = await authService.getUserById(session.userId);
+    if (!base) return null;
+    const activeMode = session.activeMode ?? initialActiveMode(base.role);
+    const activeOrgId = session.activeOrgId;
+    // Seed overlay on first read after login if empty
+    if (session.activeMode === null && activeMode) {
+      sessionStore.updateDbContext(session.sessionId, { activeMode, activeOrgId: null });
+    }
+    const user = applySessionContext(base, { activeMode, activeOrgId });
+    return {
+      user,
+      sessionId: session.sessionId,
+      rawToken,
+      activeMode,
+      activeOrgId,
+    };
   }
 
   const session = sessionStore.get(rawToken);
   if (!session) return null;
-  const user = await authService.getUserById(session.userId);
-  if (!user) return null;
-  return { user, sessionId: null };
+  const base = await authService.getUserById(session.userId);
+  if (!base) return null;
+  const activeMode = session.activeMode ?? initialActiveMode(base.role);
+  const activeOrgId = session.activeOrgId;
+  if (session.activeMode === null && activeMode) {
+    sessionStore.updateContext(rawToken, { activeMode, activeOrgId: null });
+  }
+  const user = applySessionContext(base, { activeMode, activeOrgId });
+  return { user, sessionId: null, rawToken, activeMode, activeOrgId };
 }
 
 const MAX_BODY_BYTES = 8 * 1024;
@@ -188,6 +224,13 @@ export async function handleAuthRoutes(
   const requestId = randomUUID();
   const meta = extractRequestMeta(req, requestId);
   const subpath = pathname.slice(AUTH_PREFIX.length) || "/";
+
+  // Pre-auth CSRF bootstrap (double-submit cookie + header) for register / password flows.
+  if (method === "GET" && subpath === "/csrf") {
+    const csrfToken = issueAnonymousCsrf(res, SESSION_ABSOLUTE_TTL_SEC, req);
+    sendJson(res, 200, envelope({ csrfToken }, requestId));
+    return true;
+  }
 
   if (method === "POST" && subpath === "/login") {
     const body = await readJsonBody(req);
@@ -247,15 +290,22 @@ export async function handleAuthRoutes(
 
     clearLoginAttempts(ip);
 
+    const loginActiveMode = initialActiveMode(loginResult.user.role);
+    const sessionContext = {
+      activeMode: loginActiveMode,
+      activeOrgId: null as string | null,
+    };
+
     let rawToken: string;
     if (isDbAuthEnabled()) {
-      rawToken = await sessionStore.createDb(loginResult.user.id, meta);
+      rawToken = await sessionStore.createDb(loginResult.user.id, meta, sessionContext);
     } else {
-      rawToken = sessionStore.create(loginResult.user.id);
+      rawToken = sessionStore.create(loginResult.user.id, sessionContext);
     }
+    const user = applySessionContext(loginResult.user, sessionContext);
     setSessionCookie(res, rawToken, req);
     const csrfToken = await issueCsrfForSession(res, rawToken, SESSION_ABSOLUTE_TTL_SEC, req);
-    sendJson(res, 200, envelope({ user: loginResult.user, csrfToken }, requestId));
+    sendJson(res, 200, envelope({ user, csrfToken }, requestId));
     return true;
   }
 
@@ -293,6 +343,82 @@ export async function handleAuthRoutes(
       return true;
     }
     sendJson(res, 200, envelope({ user: result.user }, requestId));
+    return true;
+  }
+
+  // Phase 2 — Dual-context switcher
+  if (method === "POST" && subpath === "/switch-context") {
+    const session = await readSessionUser(req);
+    if (!session) {
+      const err = errorEnvelope("UNAUTHENTICATED", "Not authenticated", requestId, 401);
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+    if (
+      session.user.role === "admin" ||
+      !isActiveMode(session.user.activeMode ?? session.user.role)
+    ) {
+      const err = errorEnvelope(
+        "FORBIDDEN",
+        "Admin accounts cannot switch employee/employer workspace context.",
+        requestId,
+        403,
+      );
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+
+    const body = await readJsonBody(req);
+    if (body === null) {
+      const err = errorEnvelope("PAYLOAD_TOO_LARGE", "Request body too large", requestId, 413);
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+    const parsed = parseWithSchema(switchContextBodySchema, body);
+    if (!parsed.ok) {
+      const err = errorEnvelope(
+        "VALIDATION_ERROR",
+        "mode must be employee or employer",
+        requestId,
+        400,
+      );
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+
+    const nextMode = parsed.data.mode;
+    if (!hasVerifiedEntitlement(session.user, nextMode)) {
+      const err = errorEnvelope(
+        "ENTITLEMENT_REQUIRED",
+        `Verified ${nextMode} workspace entitlement is required before switching.`,
+        requestId,
+        403,
+      );
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+
+    const nextOrgId =
+      nextMode === "employer"
+        ? typeof parsed.data.orgId === "string" && parsed.data.orgId.trim()
+          ? parsed.data.orgId.trim()
+          : session.activeOrgId
+        : null;
+
+    const patch = { activeMode: nextMode, activeOrgId: nextOrgId };
+    if (isDbAuthEnabled() && session.sessionId) {
+      sessionStore.updateDbContext(session.sessionId, patch);
+    } else {
+      const updated = sessionStore.updateContext(session.rawToken, patch);
+      if (!updated) {
+        const err = errorEnvelope("UNAUTHENTICATED", "Session expired", requestId, 401);
+        sendJson(res, err.status, err.body);
+        return true;
+      }
+    }
+
+    const user = applySessionContext(session.user, patch);
+    sendJson(res, 200, envelope({ user }, requestId));
     return true;
   }
 
@@ -349,14 +475,19 @@ export async function handleAuthRoutes(
       return true;
     }
     let rawToken: string;
+    const registerContext = {
+      activeMode: initialActiveMode(result.user.role),
+      activeOrgId: null as string | null,
+    };
     if (isDbAuthEnabled()) {
-      rawToken = await sessionStore.createDb(result.user.id, meta);
+      rawToken = await sessionStore.createDb(result.user.id, meta, registerContext);
     } else {
-      rawToken = sessionStore.create(result.user.id);
+      rawToken = sessionStore.create(result.user.id, registerContext);
     }
+    const user = applySessionContext(result.user, registerContext);
     setSessionCookie(res, rawToken, req);
     const csrfToken = await issueCsrfForSession(res, rawToken, SESSION_ABSOLUTE_TTL_SEC, req);
-    sendJson(res, 201, envelope({ user: result.user, csrfToken }, requestId));
+    sendJson(res, 201, envelope({ user, csrfToken }, requestId));
     return true;
   }
 

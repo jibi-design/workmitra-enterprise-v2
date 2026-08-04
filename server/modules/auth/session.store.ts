@@ -1,22 +1,26 @@
 /**
- * Session store — DB-backed (Phase 2) or in-memory (Phase 1 dev demo).
- * Interface is identical; auth.routes.ts calls this without knowing which backend.
+ * Session store — DB-backed or in-memory.
+ * Phase 2: activeMode + activeOrgId live on memory sessions;
+ * DB path uses an in-process overlay until auth_sessions.active_workspace ships.
  */
 import { isDbAuthEnabled } from "./env.js";
 import { authRepository } from "./auth.repository.js";
 import { auditService } from "./audit.service.js";
 import { generateSessionToken, hashSessionToken, hashIp } from "./crypto.js";
 import { SESSION_ABSOLUTE_TTL_SEC, SESSION_IDLE_TTL_SEC } from "./constants.js";
-import type { SessionRecord } from "./types.js";
+import type { ActiveMode, SessionRecord } from "./types.js";
 import type { RequestMeta } from "./request-meta.js";
-
-// ─── In-memory store (Phase 1 / dev demo) ─────────────────────────────────────
-// MED-2: map keys are HMAC-SHA256(token) — raw cookie token never stored as key.
 
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const GC_INTERVAL_MS = 60 * 60 * 1000;
 
 const memorySessions = new Map<string, SessionRecord>();
+
+/** DB sessionId → active context (no schema migration required for Phase 2). */
+const dbContextOverlay = new Map<
+  string,
+  { activeMode: ActiveMode | null; activeOrgId: string | null }
+>();
 
 function sweepExpiredSessions(): void {
   const now = Date.now();
@@ -28,8 +32,13 @@ function sweepExpiredSessions(): void {
 const gcTimer = setInterval(sweepExpiredSessions, GC_INTERVAL_MS);
 if (typeof gcTimer.unref === "function") gcTimer.unref();
 
+export type SessionContextPatch = {
+  activeMode: ActiveMode | null;
+  activeOrgId: string | null;
+};
+
 const memoryStore = {
-  create(userId: string): string {
+  create(userId: string, context?: SessionContextPatch): string {
     const rawToken = generateSessionToken();
     const tokenHash = hashSessionToken(rawToken);
     const now = Date.now();
@@ -37,6 +46,8 @@ const memoryStore = {
       userId,
       createdAt: now,
       expiresAt: now + SESSION_TTL_MS,
+      activeMode: context?.activeMode ?? null,
+      activeOrgId: context?.activeOrgId ?? null,
     });
     return rawToken;
   },
@@ -50,6 +61,22 @@ const memoryStore = {
     }
     return record;
   },
+  updateContext(rawToken: string, patch: SessionContextPatch): SessionRecord | null {
+    const tokenHash = hashSessionToken(rawToken);
+    const record = memorySessions.get(tokenHash);
+    if (!record) return null;
+    if (record.expiresAt < Date.now()) {
+      memorySessions.delete(tokenHash);
+      return null;
+    }
+    const next: SessionRecord = {
+      ...record,
+      activeMode: patch.activeMode,
+      activeOrgId: patch.activeOrgId,
+    };
+    memorySessions.set(tokenHash, next);
+    return next;
+  },
   delete(rawToken: string): void {
     memorySessions.delete(hashSessionToken(rawToken));
   },
@@ -60,14 +87,12 @@ const memoryStore = {
   },
 };
 
-// ─── DB store (Phase 2) ────────────────────────────────────────────────────────
-
 const dbStore = {
-  /**
-   * Creates a DB session.
-   * Returns the raw opaque token (goes into cookie); hash is stored in DB.
-   */
-  async createDb(userId: string, meta: RequestMeta): Promise<string> {
+  async createDb(
+    userId: string,
+    meta: RequestMeta,
+    context?: SessionContextPatch,
+  ): Promise<string> {
     const rawToken = generateSessionToken();
     const tokenHash = hashSessionToken(rawToken);
     const now = new Date();
@@ -75,7 +100,7 @@ const dbStore = {
     const idleExpiresAt = new Date(now.getTime() + SESSION_IDLE_TTL_SEC * 1000);
     const ipHash = meta.ip ? hashIp(meta.ip) : null;
 
-    await authRepository.createSession({
+    const sessionId = await authRepository.createSession({
       userId,
       sessionTokenHash: tokenHash,
       expiresAt,
@@ -83,11 +108,22 @@ const dbStore = {
       ipHash,
       userAgent: meta.userAgent,
     });
+    if (sessionId) {
+      dbContextOverlay.set(sessionId, {
+        activeMode: context?.activeMode ?? null,
+        activeOrgId: context?.activeOrgId ?? null,
+      });
+    }
     await auditService.log("session_created", meta, { userId });
     return rawToken;
   },
 
-  async getDb(rawToken: string): Promise<{ userId: string; sessionId: string } | null> {
+  async getDb(rawToken: string): Promise<{
+    userId: string;
+    sessionId: string;
+    activeMode: ActiveMode | null;
+    activeOrgId: string | null;
+  } | null> {
     const tokenHash = hashSessionToken(rawToken);
     const row = await authRepository.findSessionByTokenHash(tokenHash);
     if (!row) return null;
@@ -98,37 +134,45 @@ const dbStore = {
       await auditService.log(
         "session_expired",
         { requestId: "gc", ip: null, userAgent: null },
-        {
-          sessionId: row.id,
-          userId: row.user_id,
-        },
+        { sessionId: row.id, userId: row.user_id },
       );
+      dbContextOverlay.delete(row.id);
       return null;
     }
     if (row.idle_expires_at < now) {
       await auditService.log(
         "session_expired",
         { requestId: "gc", ip: null, userAgent: null },
-        {
-          sessionId: row.id,
-          userId: row.user_id,
-          metadata: { reason: "idle" },
-        },
+        { sessionId: row.id, userId: row.user_id, metadata: { reason: "idle" } },
       );
+      dbContextOverlay.delete(row.id);
       return null;
     }
 
-    // Rolling renewal
     const newIdleExpiry = new Date(now.getTime() + SESSION_IDLE_TTL_SEC * 1000);
     await authRepository.renewSessionIdle(row.id, newIdleExpiry);
 
-    return { userId: row.user_id, sessionId: row.id };
+    const overlay = dbContextOverlay.get(row.id);
+    return {
+      userId: row.user_id,
+      sessionId: row.id,
+      activeMode: overlay?.activeMode ?? null,
+      activeOrgId: overlay?.activeOrgId ?? null,
+    };
+  },
+
+  updateDbContext(sessionId: string, patch: SessionContextPatch): void {
+    dbContextOverlay.set(sessionId, {
+      activeMode: patch.activeMode,
+      activeOrgId: patch.activeOrgId,
+    });
   },
 
   async deleteDb(rawToken: string, meta: RequestMeta): Promise<void> {
     const tokenHash = hashSessionToken(rawToken);
     const sessionId = await authRepository.revokeSessionByTokenHash(tokenHash);
     if (sessionId) {
+      dbContextOverlay.delete(sessionId);
       await auditService.log("logout", meta, { sessionId });
     }
   },
@@ -138,25 +182,34 @@ const dbStore = {
   },
 };
 
-// ─── Unified export ────────────────────────────────────────────────────────────
-
 export const sessionStore = {
-  /** Memory path only — used by memory (Phase 1) flow. */
-  create(userId: string): string {
-    return memoryStore.create(userId);
+  create(userId: string, context?: SessionContextPatch): string {
+    return memoryStore.create(userId, context);
   },
 
-  /** Async DB path — used by DB (Phase 2) flow. */
-  createDb(userId: string, meta: RequestMeta): Promise<string> {
-    return dbStore.createDb(userId, meta);
+  createDb(userId: string, meta: RequestMeta, context?: SessionContextPatch): Promise<string> {
+    return dbStore.createDb(userId, meta, context);
   },
 
   get(sessionId: string): SessionRecord | null {
     return memoryStore.get(sessionId);
   },
 
-  getDb(rawToken: string): Promise<{ userId: string; sessionId: string } | null> {
+  updateContext(rawToken: string, patch: SessionContextPatch): SessionRecord | null {
+    return memoryStore.updateContext(rawToken, patch);
+  },
+
+  getDb(rawToken: string): Promise<{
+    userId: string;
+    sessionId: string;
+    activeMode: ActiveMode | null;
+    activeOrgId: string | null;
+  } | null> {
     return dbStore.getDb(rawToken);
+  },
+
+  updateDbContext(sessionId: string, patch: SessionContextPatch): void {
+    dbStore.updateDbContext(sessionId, patch);
   },
 
   delete(sessionId: string): void {
