@@ -9,6 +9,7 @@ import {
   shiftSearchAppliedBadgeStyle,
   shiftSearchMiniCardStyle,
 } from "./ShiftSearchSectionStyles";
+import { EmployerTrustBadge } from "../../../../shared/employerProfile/EmployerTrustBadge";
 
 type ShiftMiniCardProps = {
   card: ShiftCardData;
@@ -105,6 +106,7 @@ export function ShiftMiniCard({ card, subtitle, footer, onOpen }: ShiftMiniCardP
           >
             {employerName}
           </div>
+          <EmployerTrustBadge variant="compact" />
         </div>
 
         {card.isApplied ? <span style={shiftSearchAppliedBadgeStyle}>Applied</span> : null}

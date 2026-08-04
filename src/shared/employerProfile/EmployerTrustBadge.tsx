@@ -1,4 +1,4 @@
-/** Job Mitra | EmployerTrustBadge.tsx | C:\projects\WorkMitra_Enterprise_v2\src\shared\employerProfile\EmployerTrustBadge.tsx */
+/** Job Mitra | EmployerTrustBadge.tsx — stars + explicit verification chips for workers */
 
 import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import {
@@ -9,18 +9,35 @@ import {
 import { getEmployerBusinessKey } from "../../features/employer/company/helpers/employerDualId.helpers";
 import { employerSettingsStorage } from "../../features/employer/company/storage/employerSettings.storage";
 import { ratingStorage } from "../rating/ratingStorage";
+import { EmployerVerificationBadges } from "./EmployerVerificationBadges";
+import {
+  listActiveVerificationBadgeKinds,
+  resolveEmployerVerificationBadges,
+  resolveLocalEmployerVerificationFlags,
+} from "./employerVerificationBadge.helpers";
 
 type Props = {
   /** Pass explicitly if available. Falls back to employerSettingsStorage. */
   employerMlId?: string;
-  /** "compact" = inline row (search cards). "full" = stacked with ID. */
-  variant?: "compact" | "full";
+  /** "compact" = cards. "full" = details. "badges" = verification chips only. */
+  variant?: "compact" | "full" | "badges";
   /** Domain accent color for star. Defaults to muted. */
   accentColor?: string;
+  /** Show "Verification pending" when no chips apply. */
+  showEmptyHint?: boolean;
 };
 
-export function EmployerTrustBadge({ employerMlId, variant = "compact", accentColor }: Props) {
-  const mlId = employerMlId || getEmployerBusinessKey(employerSettingsStorage.get()) || "";
+export function EmployerTrustBadge({
+  employerMlId,
+  variant = "compact",
+  accentColor,
+  showEmptyHint = false,
+}: Props) {
+  const profileSnap = useSyncExternalStore(
+    employerSettingsStorage.subscribe,
+    () => JSON.stringify(employerSettingsStorage.get()),
+    () => "",
+  );
 
   useSyncExternalStore(
     ratingStorage.subscribe,
@@ -28,14 +45,48 @@ export function EmployerTrustBadge({ employerMlId, variant = "compact", accentCo
     () => JSON.stringify(ratingStorage.getAllWRRatings()),
   );
 
+  const mlId = useMemo(() => {
+    void profileSnap;
+    return employerMlId || getEmployerBusinessKey(employerSettingsStorage.get()) || "";
+  }, [employerMlId, profileSnap]);
+
   const info = useMemo(() => (mlId ? getEmployerQuickInfo(mlId) : null), [mlId]);
 
-  if (!info) return null;
+  const verificationFlags = useMemo(() => {
+    if (info) {
+      return resolveEmployerVerificationBadges({
+        contactVerified: info.contactVerified,
+        identityBusinessVerified: info.identityBusinessVerified,
+        reputationTier: info.reputationTier,
+      });
+    }
+    void profileSnap;
+    return resolveLocalEmployerVerificationFlags();
+  }, [info, profileSnap]);
 
-  const levelColor = EMPLOYER_LEVEL_COLORS[info.level];
-  const levelBg = EMPLOYER_LEVEL_BG[info.level];
+  const hasVerification = listActiveVerificationBadgeKinds(verificationFlags).length > 0;
+
+  if (variant === "badges") {
+    return (
+      <EmployerVerificationBadges
+        flags={verificationFlags}
+        size="md"
+        showEmptyHint={showEmptyHint}
+        style={{ marginTop: 6 }}
+      />
+    );
+  }
+
+  if (!info && !hasVerification && !showEmptyHint) return null;
+
+  const levelColor = info ? EMPLOYER_LEVEL_COLORS[info.level] : "#64748b";
+  const levelBg = info ? EMPLOYER_LEVEL_BG[info.level] : "rgba(100,116,139,0.08)";
   const starColor = accentColor || "#f59e0b";
-  const hasRatings = info.totalRatings > 0;
+  const hasRatings = Boolean(info && info.totalRatings > 0);
+  const reputationLabel = info?.reputationLabel ?? "New";
+  const totalRatings = info?.totalRatings ?? 0;
+  const averageStars = info?.averageStars ?? 0;
+  const wmId = info?.wmId ?? mlId;
 
   if (variant === "compact") {
     return (
@@ -47,45 +98,59 @@ export function EmployerTrustBadge({ employerMlId, variant = "compact", accentCo
           flexWrap: "wrap",
           marginTop: 4,
         }}
+        data-testid="employer-trust-badge"
       >
-        <span
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 3,
-            fontSize: 12,
-            fontWeight: 700,
-            color: hasRatings ? starColor : "var(--wm-er-muted, #94a3b8)",
-          }}
-        >
-          <span style={{ fontSize: 13 }}>&#9733;</span>
-          {hasRatings ? info.averageStars.toFixed(1) : "—"}
-        </span>
+        {info ? (
+          <>
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 3,
+                fontSize: 12,
+                fontWeight: 700,
+                color: hasRatings ? starColor : "var(--wm-er-muted, #94a3b8)",
+              }}
+            >
+              <span style={{ fontSize: 13 }}>&#9733;</span>
+              {hasRatings ? averageStars.toFixed(1) : "—"}
+            </span>
 
-        <span
-          style={{
-            fontSize: 10,
-            fontWeight: 700,
-            padding: "2px 8px",
-            borderRadius: 10,
-            background: levelBg,
-            color: levelColor,
-            display: "inline-flex",
-            alignItems: "center",
-          }}
-        >
-          {info.levelLabel}
-        </span>
+            <span
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                padding: "2px 8px",
+                borderRadius: 10,
+                background: levelBg,
+                color: levelColor,
+                display: "inline-flex",
+                alignItems: "center",
+              }}
+              title="Star reputation tier (not business verification)"
+            >
+              {reputationLabel}
+            </span>
+          </>
+        ) : null}
 
-        <span style={{ fontSize: 11, color: "var(--wm-er-muted, #94a3b8)" }}>
-          {info.totalRatings} {info.totalRatings === 1 ? "rating" : "ratings"}
-        </span>
+        <EmployerVerificationBadges
+          flags={verificationFlags}
+          size="sm"
+          showEmptyHint={showEmptyHint}
+        />
+
+        {info ? (
+          <span style={{ fontSize: 11, color: "var(--wm-er-muted, #94a3b8)" }}>
+            {totalRatings} {totalRatings === 1 ? "rating" : "ratings"}
+          </span>
+        ) : null}
       </div>
     );
   }
 
   return (
-    <div style={{ marginTop: 6 }}>
+    <div style={{ marginTop: 6 }} data-testid="employer-trust-badge">
       <div
         style={{
           display: "flex",
@@ -94,39 +159,52 @@ export function EmployerTrustBadge({ employerMlId, variant = "compact", accentCo
           flexWrap: "wrap",
         }}
       >
-        <span
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 3,
-            fontSize: 13,
-            fontWeight: 700,
-            color: hasRatings ? starColor : "var(--wm-er-muted, #94a3b8)",
-          }}
-        >
-          <span style={{ fontSize: 14 }}>&#9733;</span>
-          {hasRatings ? info.averageStars.toFixed(1) : "—"}
-        </span>
+        {info ? (
+          <>
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 3,
+                fontSize: 13,
+                fontWeight: 700,
+                color: hasRatings ? starColor : "var(--wm-er-muted, #94a3b8)",
+              }}
+            >
+              <span style={{ fontSize: 14 }}>&#9733;</span>
+              {hasRatings ? averageStars.toFixed(1) : "—"}
+            </span>
 
-        <span
-          style={{
-            fontSize: 11,
-            fontWeight: 700,
-            padding: "2px 10px",
-            borderRadius: 10,
-            background: levelBg,
-            color: levelColor,
-          }}
-        >
-          {info.levelLabel}
-        </span>
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                padding: "2px 10px",
+                borderRadius: 10,
+                background: levelBg,
+                color: levelColor,
+              }}
+              title="Star reputation tier (not business verification)"
+            >
+              {reputationLabel}
+            </span>
+          </>
+        ) : null}
 
-        <span style={{ fontSize: 11, color: "var(--wm-er-muted, #94a3b8)" }}>
-          {info.totalRatings} {info.totalRatings === 1 ? "rating" : "ratings"}
-        </span>
+        <EmployerVerificationBadges
+          flags={verificationFlags}
+          size="md"
+          showEmptyHint={showEmptyHint}
+        />
+
+        {info ? (
+          <span style={{ fontSize: 11, color: "var(--wm-er-muted, #94a3b8)" }}>
+            {totalRatings} {totalRatings === 1 ? "rating" : "ratings"}
+          </span>
+        ) : null}
       </div>
 
-      <MlIdCopyable mlId={info.wmId} />
+      {wmId ? <MlIdCopyable mlId={wmId} /> : null}
     </div>
   );
 }

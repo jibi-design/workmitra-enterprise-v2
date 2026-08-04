@@ -1,10 +1,10 @@
 /** Job Mitra | featureFlags.ts — global build-time feature gates */
 
 /**
- * Phase 2 domains (Workforce, HR, Manager Console) are fully active in development
- * and hidden from production navigation, menus, and pulse routing.
+ * Phase 2 domains (Workforce, HR, Manager Console).
+ * Launch default: hidden. Opt-in only via VITE_SHOW_PHASE2=1.
  */
-export const showPhase2Features = import.meta.env.DEV;
+export const showPhase2Features = import.meta.env.VITE_SHOW_PHASE2 === "1";
 
 /**
  * Shift Ops (Field Ops) Phase 0–1 greenfield.
@@ -22,3 +22,10 @@ export const showShiftOpsFeatures = import.meta.env.PROD
  * Flip to true when live phone/email verification is enabled.
  */
 export const requireShiftOpsChannelOtpVerify = false;
+
+/**
+ * Companies House CRN lookup (Phase 3).
+ * - Default: mock registry for lab / offline
+ * - Set VITE_COMPANIES_HOUSE_MOCK=0 to disable client offline mock
+ */
+export const companiesHouseMockEnabled = import.meta.env.VITE_COMPANIES_HOUSE_MOCK !== "0";

@@ -159,7 +159,8 @@ function GodModePanelInner() {
         style={{
           position: "fixed",
           bottom: 90,
-          left: 14,
+          right: 14,
+          left: "auto",
           zIndex: 999999,
           width: 40,
           height: 40,
@@ -187,7 +188,8 @@ function GodModePanelInner() {
           style={{
             position: "fixed",
             bottom: 140,
-            left: 14,
+            right: 14,
+            left: "auto",
             zIndex: 999998,
             width: 260,
             borderRadius: 16,

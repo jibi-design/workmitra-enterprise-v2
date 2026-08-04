@@ -8,6 +8,11 @@ export const EmployeeHomePage = lazyPage(() =>
     default: m.EmployeeHomePage,
   })),
 );
+export const EmployeeDashboardPage = lazyPage(() =>
+  import("../../../features/employee/home/pages/EmployeeDashboardPage").then((m) => ({
+    default: m.EmployeeDashboardPage,
+  })),
+);
 export const EmployeePlannerHomePage = lazyPage(() =>
   ensureThemeBundle("shift-planner").then(() =>
     import("../../../features/employee/planner/pages/EmployeePlannerHomePage").then((m) => ({

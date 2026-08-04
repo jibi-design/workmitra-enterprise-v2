@@ -11,18 +11,17 @@ export function InsightsCard() {
   return (
     <HomeGlassCardShell
       audience="employer"
-      tone="dark"
       title="Analytics Dashboard"
       subtitle="Full business insights"
       ariaLabel="Open Analytics Dashboard"
       onClick={() => nav(ROUTE_PATHS.employerAnalytics)}
       icon={<IconChart />}
       iconStyle={{
-        background: "rgba(37, 99, 235, 0.15)",
-        color: "#3B82F6",
+        background: "color-mix(in srgb, var(--wm-brand-600, #2563eb) 12%, transparent)",
+        color: "var(--wm-brand-600, #2563eb)",
       }}
       trailing={
-        <span aria-hidden="true" style={{ color: "rgba(255,255,255,0.35)", fontSize: 18 }}>
+        <span className="wm-homeGlassCard__chevron" aria-hidden="true">
           →
         </span>
       }

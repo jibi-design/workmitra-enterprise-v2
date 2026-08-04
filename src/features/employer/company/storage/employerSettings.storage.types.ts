@@ -5,6 +5,11 @@ import type {
   EmployerPendingTransfer,
   OwnershipAuditEntry,
 } from "../helpers/employerIdentity.types";
+import type {
+  EmployerVerificationTrackKind,
+  EnterpriseVerificationTrack,
+  MicroVerificationTrack,
+} from "../helpers/employerVerificationTracks";
 
 export interface EmployerProfile {
   /** Stable random business org key — ratings, posts, audit. Never from company name. */
@@ -26,6 +31,10 @@ export interface EmployerProfile {
   contactVerified?: boolean;
   verificationLevel?: EmployerVerificationLevel;
   verificationAudit?: EmployerVerificationAudit;
+  /** Active dual-track verification path. */
+  verificationTrack?: EmployerVerificationTrackKind;
+  enterpriseTrack?: EnterpriseVerificationTrack;
+  microTrack?: MicroVerificationTrack;
   pendingTransfer?: EmployerPendingTransfer;
   ownershipAuditLog?: OwnershipAuditEntry[];
   createdAt?: number;
@@ -33,7 +42,7 @@ export interface EmployerProfile {
 
   /** Company details */
   companyName: string;
-  /** GST, CIN, or local trade license number for business verification. */
+  /** Legacy free-text registration (GST/CIN/license) — still accepted as document evidence. */
   registrationNo: string;
   /** Base64 data URL for company logo (max 2MB source file). */
   companyLogo?: string;

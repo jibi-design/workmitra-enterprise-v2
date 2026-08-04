@@ -7,5 +7,6 @@ export { HRManagementCard } from "./EmployerHRManagementCard";
 export { ManagerConsoleCard } from "./EmployerManagerConsoleCard";
 export { RatingHintCard } from "./EmployerRatingHintCard";
 export { WorkVaultCard } from "./EmployerWorkVaultCard";
+export { ComplianceHubCard } from "./EmployerComplianceHubCard";
 export { InsightsCard } from "./EmployerInsightsCard";
 export { EmployerEmploymentFeedbackPendingCard } from "../../careerJobs/components/feedback/EmployerEmploymentFeedbackPendingCard";

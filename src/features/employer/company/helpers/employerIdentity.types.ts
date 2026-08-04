@@ -1,5 +1,11 @@
 /** Employer identity types — no storage imports (avoids circular deps). */
 
+import type {
+  EmployerVerificationTrackKind,
+  EnterpriseVerificationTrack,
+  MicroVerificationTrack,
+} from "./employerVerificationTracks";
+
 export type EmployerVerificationLevel = 0 | 1 | 2 | 3;
 export type EmployerTransferStatus = "none" | "pending" | "completed" | "cancelled";
 export type EmployerVerificationAuditStatus = "none" | "pending" | "approved" | "rejected";
@@ -36,9 +42,14 @@ export type VerificationProfileSlice = {
   readonly registrationNo: string;
   readonly contactVerified?: boolean;
   readonly verificationAudit?: EmployerVerificationAudit;
+  readonly verificationTrack?: EmployerVerificationTrackKind;
+  readonly enterpriseTrack?: EnterpriseVerificationTrack;
+  readonly microTrack?: MicroVerificationTrack;
 };
 
 export type PublicHandleProfileSlice = {
   readonly companyName: string;
   readonly publicHandle?: string;
 };
+
+export type { EmployerVerificationTrackKind, EnterpriseVerificationTrack, MicroVerificationTrack };

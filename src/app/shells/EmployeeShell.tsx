@@ -17,6 +17,8 @@ import { useThemeBundle } from "./useThemeBundle";
 import { useAppRole } from "../router/guards/useAppRole";
 import { AUTH_BACKEND_ENABLED } from "../../shared/config/authConfig";
 import { RouteGuardLoading } from "../../shared/components/routes/RouteGuardStatus";
+import { useActiveContextSwitch } from "../../shared/auth/useActiveContextSwitch";
+import { useAuthStore } from "../../shared/store/authStore";
 
 function IconBack() {
   return (
@@ -70,6 +72,9 @@ export function EmployeeShell() {
   const [showSheet, setShowSheet] = useState(false);
   const [logoutConfirm, setLogoutConfirm] = useState<ConfirmData | null>(null);
   const [topbarScrolled, setTopbarScrolled] = useState(false);
+  const activeOrgId = useAuthStore((s) => s.user?.activeOrgId ?? null);
+  const { requestSwitch, switchConfirm, confirmSwitch, cancelSwitch } =
+    useActiveContextSwitch("employee");
 
   useThemeBundle("employee-shell");
 
@@ -233,7 +238,7 @@ export function EmployeeShell() {
       </div>
 
       <div className="wm-container pb-safe-nav">
-        <Outlet />
+        <Outlet key={`employee:${activeOrgId ?? ""}`} />
       </div>
 
       <BottomNav />
@@ -251,6 +256,10 @@ export function EmployeeShell() {
         onOpenWorkforce={
           showPhase2Features ? () => nav(ROUTE_PATHS.employeeWorkforceHome) : undefined
         }
+        onSwitchRole={() => {
+          setShowSheet(false);
+          requestSwitch();
+        }}
         onLogout={handleLogoutRequest}
       />
 
@@ -259,6 +268,8 @@ export function EmployeeShell() {
         onConfirm={handleLogoutConfirm}
         onCancel={handleCancelLogout}
       />
+
+      <ConfirmModal confirm={switchConfirm} onConfirm={confirmSwitch} onCancel={cancelSwitch} />
     </div>
   );
 }

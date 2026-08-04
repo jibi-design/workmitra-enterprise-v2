@@ -11,7 +11,7 @@ import {
   openPiiTextAsync,
   sealPiiText,
   sealPiiTextAsync,
-} from "../../../shared/security/piiCrypto";
+} from "../../../../shared/security/piiCrypto";
 
 const EMPTY = "";
 

@@ -205,6 +205,7 @@ export function EmployerProfilePage() {
         editMode={editMode}
         onFieldChange={updateDraft}
         onContactVerified={handleContactVerified}
+        onProfileRefresh={handleProfileRefresh}
         onNotice={setNotice}
       />
 

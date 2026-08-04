@@ -6,18 +6,25 @@
 
 import { employerSettingsStorage } from "../../features/employer/company/storage/employerSettings.storage";
 import { getEmployerBusinessKey } from "../../features/employer/company/helpers/employerDualId.helpers";
+import {
+  computeVerificationLevel,
+  VERIFICATION_LEVEL_LABELS,
+} from "../../features/employer/company/helpers/employerIdentity.helpers";
 import { ratingStorage } from "../rating/ratingStorage";
 import { isPublicReputationDomain } from "../rating/plannerRating.helpers";
 import { employerShiftStorage } from "../../features/employer/shiftJobs/storage/employerShift.storage";
 import { getCareerPosts } from "../../features/employer/careerJobs/services/careerPostService";
 import type { WorkerEmployerTag } from "../rating/ratingTypes";
 
-/* ── Employer Level System ─────────────────────── */
+/* ── Star reputation tier (NOT identity/business verification) ── */
 
-export type EmployerLevel = "new" | "established" | "trusted" | "verified";
+export type EmployerReputationTier = "new" | "established" | "trusted" | "proven";
+
+/** @deprecated Use EmployerReputationTier — kept as alias for gradual migration. */
+export type EmployerLevel = EmployerReputationTier;
 
 export const EMPLOYER_LEVEL_THRESHOLDS: Record<
-  EmployerLevel,
+  EmployerReputationTier,
   {
     min: number;
     max: number;
@@ -28,28 +35,32 @@ export const EMPLOYER_LEVEL_THRESHOLDS: Record<
   new: { min: 0, max: 4, label: "New", description: "Recently joined" },
   established: { min: 5, max: 14, label: "Established", description: "Building track record" },
   trusted: { min: 15, max: 29, label: "Trusted", description: "Consistently rated well" },
-  verified: { min: 30, max: Infinity, label: "Verified", description: "Proven employer" },
+  proven: { min: 30, max: Infinity, label: "Proven", description: "Strong star track record" },
 };
 
-export const EMPLOYER_LEVEL_COLORS: Record<EmployerLevel, string> = {
+export const EMPLOYER_LEVEL_COLORS: Record<EmployerReputationTier, string> = {
   new: "#64748b",
   established: "#0369a1",
   trusted: "#b45309",
-  verified: "#16a34a",
+  proven: "#16a34a",
 };
 
-export const EMPLOYER_LEVEL_BG: Record<EmployerLevel, string> = {
+export const EMPLOYER_LEVEL_BG: Record<EmployerReputationTier, string> = {
   new: "rgba(100,116,139,0.08)",
   established: "rgba(3,105,161,0.08)",
   trusted: "rgba(180,83,9,0.08)",
-  verified: "rgba(22,163,74,0.08)",
+  proven: "rgba(22,163,74,0.08)",
 };
 
-export function calculateEmployerLevel(ratingCount: number): EmployerLevel {
-  if (ratingCount >= 30) return "verified";
+export function calculateEmployerLevel(ratingCount: number): EmployerReputationTier {
+  if (ratingCount >= 30) return "proven";
   if (ratingCount >= 15) return "trusted";
   if (ratingCount >= 5) return "established";
   return "new";
+}
+
+export function calculateEmployerReputationTier(ratingCount: number): EmployerReputationTier {
+  return calculateEmployerLevel(ratingCount);
 }
 
 /* ── Public Profile Type ───────────────────────── */
@@ -62,8 +73,18 @@ export type EmployerPublicProfile = {
   locationCity: string;
   averageStars: number;
   totalRatings: number;
-  level: EmployerLevel;
+  /** Star reputation tier — never means business KYC verified. */
+  reputationTier: EmployerReputationTier;
+  reputationLabel: string;
+  /** @deprecated Alias of reputationTier for older callers. */
+  level: EmployerReputationTier;
+  /** @deprecated Alias of reputationLabel. */
   levelLabel: string;
+  /** Identity / business verification (document-approved). Distinct from stars. */
+  identityBusinessVerified: boolean;
+  identityMaturityLabel: string;
+  /** Contact OTP verified — unlocks live publish; worker-facing "Contact Verified". */
+  contactVerified: boolean;
   workAgainCount: number;
   workAgainTotal: number;
   tagCounts: Record<WorkerEmployerTag, number>;
@@ -98,7 +119,15 @@ export function getEmployerPublicProfile(employerMlId: string): EmployerPublicPr
   if (!profile.companyName.trim()) return null;
 
   const summary = ratingStorage.getEmployerSummary(employerMlId);
-  const level = calculateEmployerLevel(summary.totalRatings);
+  const reputationTier = calculateEmployerReputationTier(summary.totalRatings);
+  const identityLevel = computeVerificationLevel({
+    registrationNo: profile.registrationNo,
+    contactVerified: profile.contactVerified,
+    verificationAudit: profile.verificationAudit,
+    verificationTrack: profile.verificationTrack,
+    enterpriseTrack: profile.enterpriseTrack,
+    microTrack: profile.microTrack,
+  });
 
   const shiftPosts = employerShiftStorage.getPosts();
   const careerPosts = getCareerPosts();
@@ -119,8 +148,13 @@ export function getEmployerPublicProfile(employerMlId: string): EmployerPublicPr
     locationCity: profile.locationCity,
     averageStars: summary.averageStars,
     totalRatings: summary.totalRatings,
-    level,
-    levelLabel: EMPLOYER_LEVEL_THRESHOLDS[level].label,
+    reputationTier,
+    reputationLabel: EMPLOYER_LEVEL_THRESHOLDS[reputationTier].label,
+    level: reputationTier,
+    levelLabel: EMPLOYER_LEVEL_THRESHOLDS[reputationTier].label,
+    identityBusinessVerified: identityLevel === 3,
+    identityMaturityLabel: VERIFICATION_LEVEL_LABELS[identityLevel],
+    contactVerified: profile.contactVerified === true || identityLevel >= 1,
     workAgainCount: summary.workAgainCount,
     workAgainTotal: summary.workAgainTotal,
     tagCounts: summary.tagCounts,
@@ -159,8 +193,13 @@ export function getEmployerQuickInfo(employerMlId: string): {
   companyName: string;
   averageStars: number;
   totalRatings: number;
-  level: EmployerLevel;
+  reputationTier: EmployerReputationTier;
+  reputationLabel: string;
+  level: EmployerReputationTier;
   levelLabel: string;
+  identityBusinessVerified: boolean;
+  identityMaturityLabel: string;
+  contactVerified: boolean;
 } | null {
   if (!employerMlId) return null;
 
@@ -169,15 +208,28 @@ export function getEmployerQuickInfo(employerMlId: string): {
   if (!businessKey || businessKey !== employerMlId) return null;
 
   const summary = ratingStorage.getEmployerSummary(employerMlId);
-  const level = calculateEmployerLevel(summary.totalRatings);
+  const reputationTier = calculateEmployerReputationTier(summary.totalRatings);
+  const identityLevel = computeVerificationLevel({
+    registrationNo: profile.registrationNo,
+    contactVerified: profile.contactVerified,
+    verificationAudit: profile.verificationAudit,
+    verificationTrack: profile.verificationTrack,
+    enterpriseTrack: profile.enterpriseTrack,
+    microTrack: profile.microTrack,
+  });
 
   return {
     wmId: employerMlId,
     companyName: profile.companyName,
     averageStars: summary.averageStars,
     totalRatings: summary.totalRatings,
-    level,
-    levelLabel: EMPLOYER_LEVEL_THRESHOLDS[level].label,
+    reputationTier,
+    reputationLabel: EMPLOYER_LEVEL_THRESHOLDS[reputationTier].label,
+    level: reputationTier,
+    levelLabel: EMPLOYER_LEVEL_THRESHOLDS[reputationTier].label,
+    identityBusinessVerified: identityLevel === 3,
+    identityMaturityLabel: VERIFICATION_LEVEL_LABELS[identityLevel],
+    contactVerified: profile.contactVerified === true || identityLevel >= 1,
   };
 }
 

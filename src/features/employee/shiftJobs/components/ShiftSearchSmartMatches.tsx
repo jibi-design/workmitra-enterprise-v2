@@ -4,6 +4,7 @@
 
 import type { MatchQuality, MatchResult } from "../helpers/smartMatchEngine";
 import { formatShiftDateRange } from "../helpers/shiftSearchViewHelpers";
+import { EmployerTrustBadge } from "../../../../shared/employerProfile/EmployerTrustBadge";
 
 type Props = {
   matches: MatchResult[];
@@ -145,6 +146,10 @@ export function ShiftSearchSmartMatches({ matches, matchQuality, onOpenDetails }
                     }}
                   >
                     {employerName} · {locationName}
+                  </div>
+
+                  <div onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+                    <EmployerTrustBadge variant="compact" />
                   </div>
 
                   <div style={{ marginTop: 3, fontSize: 12, color: "var(--wm-er-muted)" }}>

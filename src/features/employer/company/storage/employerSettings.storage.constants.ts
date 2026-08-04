@@ -30,6 +30,7 @@ export const EMPTY_PROFILE: EmployerProfile = {
   previousHandles: [],
   contactVerified: false,
   verificationLevel: 0,
+  verificationTrack: "none",
 };
 
 export const INDUSTRY_OPTIONS: readonly string[] = [

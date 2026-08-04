@@ -9,6 +9,7 @@ export const MIN_LEVEL_TO_PUBLISH_POSTS = 1 as const;
 export type VerificationGateResult = {
   readonly allowed: boolean;
   readonly reason?: string;
+  readonly code?: "VERIFICATION_REQUIRED";
 };
 
 export function getEmployerVerificationLevel(profile?: EmployerProfile): number {
@@ -26,12 +27,35 @@ export function hasActiveBusinessProfile(profile: EmployerProfile): boolean {
   );
 }
 
+/**
+ * Live publish requires contact verification (level ≥ 1).
+ * Registration alone no longer unlocks publish after maturity-order fix.
+ */
 export function canPublishJobPosts(profile: EmployerProfile): VerificationGateResult {
   if (!hasActiveBusinessProfile(profile)) {
     return {
       allowed: false,
+      code: "VERIFICATION_REQUIRED",
       reason:
         "Complete your business name and location on Employer Profile before publishing job posts.",
+    };
+  }
+
+  if (profile.contactVerified !== true) {
+    const hasContact = Boolean(profile.phone.trim() || profile.email.trim());
+    if (!hasContact) {
+      return {
+        allowed: false,
+        code: "VERIFICATION_REQUIRED",
+        reason:
+          "Add your phone or email under Your account, then verify contact in the Verification section.",
+      };
+    }
+    return {
+      allowed: false,
+      code: "VERIFICATION_REQUIRED",
+      reason:
+        "Verify your phone or email in Employer Profile → Verification before publishing job posts.",
     };
   }
 
@@ -44,17 +68,9 @@ export function canPublishJobPosts(profile: EmployerProfile): VerificationGateRe
     return { allowed: true };
   }
 
-  const hasContact = Boolean(profile.phone.trim() || profile.email.trim());
-  if (!hasContact) {
-    return {
-      allowed: false,
-      reason:
-        "Add your phone or email under Your account, then verify contact in the Verification section.",
-    };
-  }
-
   return {
     allowed: false,
+    code: "VERIFICATION_REQUIRED",
     reason:
       "Verify your phone or email in Employer Profile → Verification before publishing job posts.",
   };

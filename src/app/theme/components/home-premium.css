@@ -5,6 +5,8 @@
   flex-direction: column;
   gap: var(--wm-stack-gap, 16px);
   box-sizing: border-box;
+  /* Extra clearance so last Intelligence/Reports card clears BottomNav + safe area */
+  padding-bottom: calc(48px + env(safe-area-inset-bottom, 0px));
 }
 
 .wm-homeSectionPanel {
@@ -82,6 +84,12 @@
     rgba(30, 41, 59, 0.9)
   );
   border-color: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+/* Beat .wm-typeCardTitle dark text so dark-tone cards stay readable */
+.wm-homeGlassCard--dark .wm-homeGlassCard__title,
+.wm-homeGlassCard--dark .wm-typeCardTitle {
   color: #fff;
 }
 
@@ -415,4 +423,333 @@
   .wm-homeCardEnter--5 {
     animation: none;
   }
+}
+
+/* ------------------------------------------------ */
+/* Wave 3 — Employee My Dashboard shell             */
+/* ------------------------------------------------ */
+.wm-dashPage {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+  padding-bottom: calc(48px + env(safe-area-inset-bottom, 0px));
+}
+
+.wm-dashHero {
+  padding: 16px;
+  border-radius: var(--wm-radius-employee-card, 20px);
+  border: 1px solid var(--wm-glass-border, rgba(148, 163, 184, 0.28));
+  background: var(--wm-emp-glass-bg-strong, rgba(255, 255, 255, 0.88));
+  box-shadow: var(--wm-emp-card-shadow, 0 8px 24px rgba(15, 23, 42, 0.06));
+}
+
+.wm-dashHero__back {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--wm-brand-600, #2563eb);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.wm-dashHero__kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--wm-neutral-500, #94a3b8);
+}
+
+.wm-dashHero__title {
+  margin: 6px 0 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--wm-neutral-900, #0f172a);
+  line-height: 1.2;
+}
+
+.wm-dashHero__sub {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--wm-neutral-500, #64748b);
+}
+
+.wm-dashStack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.wm-dashWidget {
+  padding: 16px;
+  border-radius: var(--wm-radius-employee-card, 20px);
+  border: 1px solid var(--wm-glass-border, rgba(148, 163, 184, 0.28));
+  background: var(--wm-emp-glass-bg-strong, rgba(255, 255, 255, 0.9));
+  box-shadow: var(--wm-emp-surface-shadow, 0 8px 20px rgba(15, 23, 42, 0.05));
+}
+
+.wm-dashWidget--muted {
+  opacity: 0.92;
+  background: color-mix(in srgb, var(--wm-neutral-50, #f8fafc) 88%, transparent);
+}
+
+.wm-dashWidget__kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--wm-neutral-500, #94a3b8);
+}
+
+.wm-dashWidget__title {
+  margin: 4px 0 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--wm-neutral-900, #0f172a);
+}
+
+.wm-dashWidget__sub {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--wm-neutral-500, #64748b);
+}
+
+.wm-dashPulseGrid {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+@media (min-width: 420px) {
+  .wm-dashPulseGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.wm-dashPulseBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+
+.wm-dashPulseBtn.isActive {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--wm-shift-accent, #27ae60) 25%, transparent);
+}
+
+.wm-dashPulseBtn--available.isActive {
+  border-color: color-mix(in srgb, #16a34a 45%, transparent);
+  background: color-mix(in srgb, #16a34a 12%, #fff);
+  box-shadow: 0 0 0 1px color-mix(in srgb, #16a34a 28%, transparent);
+}
+
+.wm-dashPulseBtn--shifted.isActive {
+  border-color: color-mix(in srgb, #2563eb 45%, transparent);
+  background: color-mix(in srgb, #2563eb 12%, #fff);
+  box-shadow: 0 0 0 1px color-mix(in srgb, #2563eb 28%, transparent);
+}
+
+.wm-dashPulseBtn--off_duty.isActive {
+  border-color: color-mix(in srgb, #64748b 45%, transparent);
+  background: color-mix(in srgb, #64748b 12%, #fff);
+  box-shadow: 0 0 0 1px color-mix(in srgb, #64748b 28%, transparent);
+}
+
+.wm-dashPulseBtn__label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--wm-neutral-900, #0f172a);
+}
+
+.wm-dashPulseBtn__hint {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--wm-neutral-500, #64748b);
+}
+
+.wm-dashRestBtn {
+  margin-top: 14px;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px dashed rgba(148, 163, 184, 0.45);
+  background: color-mix(in srgb, var(--wm-neutral-50, #f8fafc) 90%, transparent);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--wm-neutral-700, #334155);
+  cursor: pointer;
+}
+
+.wm-dashRestBtn.isActive {
+  border-style: solid;
+  border-color: color-mix(in srgb, #0ea5e9 40%, transparent);
+  background: color-mix(in srgb, #0ea5e9 10%, #fff);
+  color: #0369a1;
+}
+
+.wm-dashEarnHero {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--wm-shift-accent, #27ae60) 8%, #fff);
+  border: 1px solid color-mix(in srgb, var(--wm-shift-accent, #27ae60) 22%, transparent);
+}
+
+.wm-dashEarnHero__value {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--wm-neutral-900, #0f172a);
+}
+
+.wm-dashEarnHero__meta {
+  margin-top: 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--wm-neutral-500, #64748b);
+}
+
+.wm-dashEarnDisclaimer {
+  margin: 10px 0 0;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #92400e;
+}
+
+.wm-dashEarnList {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wm-dashEarnList__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: #fff;
+}
+
+.wm-dashEarnList__title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--wm-neutral-900, #0f172a);
+}
+
+.wm-dashEarnList__sub {
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: var(--wm-neutral-500, #64748b);
+}
+
+.wm-dashEarnList__amount {
+  flex-shrink: 0;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--wm-shift-accent, #15803d);
+}
+
+.wm-dashLinkBtn {
+  margin-top: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  background: color-mix(in srgb, var(--wm-brand-600, #2563eb) 6%, #fff);
+  color: var(--wm-brand-700, #1d4ed8);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+}
+
+.wm-dashEmptyHint {
+  margin: 12px 0 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--wm-neutral-500, #64748b);
+}
+
+.wm-dashCalList {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wm-dashCalDay__label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--wm-neutral-600, #475569);
+  margin-bottom: 6px;
+}
+
+.wm-dashCalDay__items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wm-dashCalChip {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: #fff;
+}
+
+.wm-dashCalChip.isShift {
+  border-color: color-mix(in srgb, var(--wm-shift-accent, #27ae60) 35%, transparent);
+  background: color-mix(in srgb, var(--wm-shift-accent, #27ae60) 8%, #fff);
+}
+
+.wm-dashCalChip.isRest {
+  border-color: color-mix(in srgb, #0ea5e9 35%, transparent);
+  background: color-mix(in srgb, #0ea5e9 8%, #fff);
+}
+
+.wm-dashCalChip.isAvail {
+  border-color: color-mix(in srgb, var(--wm-brand-600, #2563eb) 30%, transparent);
+  background: color-mix(in srgb, var(--wm-brand-600, #2563eb) 7%, #fff);
+}
+
+.wm-dashCalChip__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--wm-neutral-900, #0f172a);
+}
+
+.wm-dashCalChip__detail {
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: var(--wm-neutral-500, #64748b);
 }

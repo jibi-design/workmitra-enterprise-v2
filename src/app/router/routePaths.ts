@@ -8,9 +8,20 @@ export const ROUTE_PATHS = {
   forgotPassword: "/forgot-password",
   resetPassword: "/reset-password",
   rolePick: "/role-pick",
+
+  /** Phase 4 — Guest browse (no RequireActiveContext). */
+  explore: "/explore",
+  guestShifts: "/shifts",
+  guestShiftDetails: "/shifts/:postId",
+  guestCareers: "/careers",
+  guestCareerDetails: "/careers/:postId",
+
   employeeHome: "/employee",
   employerHome: "/employer",
   adminHome: "/admin",
+
+  /** Wave 3 — Employee My Dashboard (Insights & activity shell) */
+  employeeDashboard: "/employee/dashboard",
 
   // Employee domain entries
   employeeShiftCenter: "/employee/shift",
@@ -166,6 +177,8 @@ export const ROUTE_PATHS = {
 
   // Employer Profile (Identity — Phase 1+)
   employerProfile: "/employer/profile",
+  /** Wave 3 — Business Compliance Hub (employer-owned docs; not worker vault) */
+  employerCompliance: "/employer/compliance",
 
   // Shift Ops (Field Ops) — feature-flagged; SQL apply separate
   employeeShiftOpsHub: "/employee/shift-ops",

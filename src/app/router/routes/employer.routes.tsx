@@ -41,6 +41,7 @@ import {
   EmployerPlannerRosterPage,
   EmployerPlannerRosterDetailPage,
   EmployerProfilePage,
+  EmployerCompliancePage,
   EmployerReviewCenterPage,
   EmployerSettingsPage,
   EmployerShiftCreatePage,
@@ -104,6 +105,7 @@ export const employerRouteTree = (
     <Route path={ER.vault} element={<EmployerVaultLookupPage />} />
     <Route path={ER.vaultView} element={<EmployerVaultViewPage />} />
     <Route path={ER.profile} element={<EmployerProfilePage />} />
+    <Route path={ER.compliance} element={<EmployerCompliancePage />} />
     <Route path={ER.settings} element={<EmployerSettingsPage />} />
     <Route path={ER.notifications} element={<EmployerNotificationsPage />} />
     <Route path={ER.myStaff} element={<EmployerMyStaffPage />} />

@@ -1,8 +1,11 @@
-/** Section 3 — Verification ladder (progressive trust). */
+/** Section 3 — Verification ladder + dual tracks (Enterprise / Micro). */
 
+import { useNavigate } from "react-router-dom";
+import { ROUTE_PATHS } from "../../../../../app/router/routePaths";
 import type { EmployerProfile } from "../../storage/employerSettings.storage";
 import { SettingsTextField } from "../SettingsFormFields";
 import { ContactVerificationPanel } from "./ContactVerificationPanel";
+import { DualTrackVerificationPanel } from "./DualTrackVerificationPanel";
 import {
   computeVerificationLevel,
   VERIFICATION_LEVEL_LABELS,
@@ -21,6 +24,7 @@ type Props = {
   readonly editMode: boolean;
   readonly onFieldChange: (field: keyof EmployerProfile, value: string | boolean) => void;
   readonly onContactVerified?: () => void;
+  readonly onProfileRefresh?: () => void;
   readonly onNotice?: (notice: NoticeData) => void;
 };
 
@@ -31,12 +35,17 @@ export function VerificationSection({
   editMode,
   onFieldChange,
   onContactVerified,
+  onProfileRefresh,
   onNotice,
 }: Props) {
+  const nav = useNavigate();
   const level = computeVerificationLevel({
     registrationNo: data.registrationNo,
     contactVerified: data.contactVerified,
     verificationAudit: data.verificationAudit,
+    verificationTrack: data.verificationTrack,
+    enterpriseTrack: data.enterpriseTrack,
+    microTrack: data.microTrack,
   });
   const statusLabel = VERIFICATION_LEVEL_LABELS[level];
   const showVerifiedBadge = level === 3;
@@ -47,8 +56,8 @@ export function VerificationSection({
       <div style={EXECUTIVE_SECTION_KICKER}>Verification</div>
       <h2 style={EXECUTIVE_SECTION_TITLE}>Verification status</h2>
       <p style={EXECUTIVE_HELPER}>
-        Start with basic access. Add your registration number when you are ready for a trust
-        upgrade.
+        Start with contact OTP to publish. Then choose Enterprise (CRN/VAT) or Micro/Trade track for
+        stronger trust — CRN is not required for micro businesses.
       </p>
 
       <div
@@ -66,14 +75,14 @@ export function VerificationSection({
             style={{ marginTop: 6, fontSize: 11, color: "var(--wm-er-muted)", lineHeight: 1.45 }}
           >
             {auditStatus === "pending"
-              ? "Document submitted — waiting for admin review. Verified badge appears only after approval."
+              ? "Document track submitted — waiting for admin review. Verified business badge appears only after approval."
               : auditStatus === "rejected"
-                ? "Verification was not approved. Update your registration number and save to resubmit."
-                : "Verified badge appears only after document review. Unverified businesses cannot show as verified."}
+                ? "Verification was not approved. Update your track evidence and resubmit."
+                : "Verified business badge appears only after document review. Contact verification alone unlocks publishing."}
           </div>
         ) : (
           <div style={{ marginTop: 6, fontSize: 11, color: "#15803d", fontWeight: 700 }}>
-            Official verified badge active on your public profile.
+            Official verified business badge active on your public profile.
           </div>
         )}
       </div>
@@ -90,8 +99,14 @@ export function VerificationSection({
                 gap: 10,
                 padding: "8px 10px",
                 borderRadius: "var(--wm-radius-button)",
-                background: active ? "rgba(124,58,237,0.06)" : "rgba(248,250,252,0.9)",
-                border: `1px solid ${active ? "rgba(124,58,237,0.15)" : "rgba(226,232,240,0.8)"}`,
+                background: active
+                  ? "color-mix(in srgb, var(--wm-brand-600, #2563eb) 8%, #fff)"
+                  : "rgba(248,250,252,0.9)",
+                border: `1px solid ${
+                  active
+                    ? "color-mix(in srgb, var(--wm-brand-600, #2563eb) 22%, transparent)"
+                    : "rgba(226,232,240,0.8)"
+                }`,
               }}
             >
               <span
@@ -104,7 +119,7 @@ export function VerificationSection({
                   justifyContent: "center",
                   fontSize: 11,
                   fontWeight: 900,
-                  background: active ? "#7c3aed" : "#e2e8f0",
+                  background: active ? "var(--wm-brand-600, #2563eb)" : "#e2e8f0",
                   color: active ? "#fff" : "#64748b",
                   flexShrink: 0,
                 }}
@@ -129,16 +144,50 @@ export function VerificationSection({
         />
       ) : null}
 
+      {onNotice && onProfileRefresh ? (
+        <DualTrackVerificationPanel
+          profile={data}
+          editMode={editMode}
+          onProfileRefresh={onProfileRefresh}
+          onNotice={onNotice}
+        />
+      ) : null}
+
+      <button
+        type="button"
+        className="wm-compEntryBtn"
+        data-testid="open-business-compliance-hub"
+        onClick={() => nav(ROUTE_PATHS.employerCompliance)}
+        style={{
+          marginTop: 14,
+          width: "100%",
+          padding: "12px 14px",
+          borderRadius: "var(--wm-radius-button)",
+          border: "1px solid color-mix(in srgb, var(--wm-brand-600, #2563eb) 28%, transparent)",
+          background: "color-mix(in srgb, var(--wm-brand-600, #2563eb) 8%, #fff)",
+          textAlign: "left",
+          cursor: "pointer",
+        }}
+      >
+        <div style={{ fontSize: 13, fontWeight: 800, color: "#0f172a" }}>
+          Business Compliance Hub →
+        </div>
+        <div style={{ marginTop: 4, fontSize: 11.5, color: "var(--wm-er-muted)", lineHeight: 1.4 }}>
+          Insurance, H&amp;S, Companies House pack, and employer RTW audit evidence — not Worker
+          Vault.
+        </div>
+      </button>
+
       <div style={{ ...fieldGroupStyle, marginTop: 14 }}>
         <SettingsTextField
-          label="Registration / license number"
+          label="Legacy registration / license number (optional)"
           value={data.registrationNo}
           disabled={!editMode}
           onChange={(v) => onFieldChange("registrationNo", v)}
-          placeholder="GST, CIN, or local trade license"
+          placeholder="Still accepted as document evidence"
         />
         <div style={{ marginTop: 5, fontSize: 11, color: "var(--wm-er-muted)", lineHeight: 1.45 }}>
-          Optional at signup. Required later for verified badge and premium trust features.
+          Prefer Track A or Track B above. This free-text field remains for backwards compatibility.
         </div>
       </div>
     </section>

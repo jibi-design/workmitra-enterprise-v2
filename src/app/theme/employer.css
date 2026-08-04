@@ -480,3 +480,446 @@
 .wm-er-vCareer ::selection {
   background: rgba(29, 78, 216, 0.18);
 }
+
+/* ------------------------------------------------ */
+/* Wave 3 — Business Compliance Hub                 */
+/* ------------------------------------------------ */
+.wm-compPage {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: calc(48px + env(safe-area-inset-bottom, 0px));
+}
+
+.wm-compHero {
+  padding: 16px;
+  border-radius: var(--wm-radius-employer-card, 24px);
+  border: 1px solid var(--wm-glass-border, rgba(148, 163, 184, 0.28));
+  background: var(--wm-er-glass-bg-strong, rgba(255, 255, 255, 0.9));
+  box-shadow: var(--wm-er-card-shadow, 0 10px 28px rgba(15, 23, 42, 0.07));
+}
+
+.wm-compHero__back {
+  display: inline-flex;
+  margin: 0 0 10px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--wm-brand-600, #2563eb);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.wm-compHero__kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--wm-neutral-500, #94a3b8);
+}
+
+.wm-compHero__title {
+  margin: 6px 0 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--wm-neutral-900, #0f172a);
+}
+
+.wm-compHero__sub {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--wm-neutral-500, #64748b);
+}
+
+.wm-compStack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wm-compExpiry {
+  padding: 14px 16px;
+  border-radius: var(--wm-radius-employer-card, 24px);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: #fff;
+}
+
+.wm-compExpiry.isAlert {
+  border-color: color-mix(in srgb, #b45309 35%, transparent);
+  background: color-mix(in srgb, #b45309 8%, #fff);
+}
+
+.wm-compExpiry.isClear {
+  border-color: color-mix(in srgb, #15803d 28%, transparent);
+  background: color-mix(in srgb, #15803d 7%, #fff);
+}
+
+.wm-compExpiry__kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--wm-neutral-500, #64748b);
+}
+
+.wm-compExpiry__title {
+  margin: 4px 0 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--wm-neutral-900, #0f172a);
+}
+
+.wm-compExpiry__sub {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: var(--wm-neutral-500, #64748b);
+}
+
+.wm-compExpiry__list {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wm-compExpiry__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  font-size: 12.5px;
+}
+
+.wm-compExpiry__doc {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.wm-compExpiry__flag {
+  flex-shrink: 0;
+  font-weight: 700;
+  color: #92400e;
+}
+
+.wm-compShelf {
+  padding: 16px;
+  border-radius: var(--wm-radius-employer-card, 24px);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.wm-compShelf__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.wm-compShelf__sub {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+.wm-compDocList {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wm-compDocList__item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: #fff;
+}
+
+.wm-compDocList__title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.wm-compDocList__meta,
+.wm-compDocList__notes {
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: #64748b;
+}
+
+.wm-compDocList__remove {
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  color: #b91c1c;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.wm-compEmpty {
+  margin: 12px 0 0;
+  font-size: 12.5px;
+  color: #64748b;
+}
+
+.wm-compAddBtn,
+.wm-compPrimaryBtn,
+.wm-compGhostBtn {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.wm-compAddBtn,
+.wm-compPrimaryBtn {
+  width: 100%;
+  border: 1px solid color-mix(in srgb, var(--wm-brand-600, #2563eb) 28%, transparent);
+  background: color-mix(in srgb, var(--wm-brand-600, #2563eb) 8%, #fff);
+  color: #1d4ed8;
+}
+
+.wm-compGhostBtn {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: #fff;
+  color: #475569;
+}
+
+.wm-compForm {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wm-compForm__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.wm-compForm__field input,
+.wm-compForm__field textarea {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  font: inherit;
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.wm-compForm__error {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #b91c1c;
+}
+
+.wm-compForm__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.wm-compForm__actions .wm-compPrimaryBtn,
+.wm-compForm__actions .wm-compGhostBtn {
+  margin-top: 0;
+  flex: 1;
+}
+
+/* ------------------------------------------------ */
+/* Wave 3 — Employer Daily Ops home widgets         */
+/* ------------------------------------------------ */
+.wm-dailyOsCard {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 16px;
+  border-radius: var(--wm-radius-employer-card, 24px);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: var(--wm-er-surface-shadow, 0 8px 20px rgba(15, 23, 42, 0.05));
+  text-align: left;
+  color: inherit;
+  cursor: default;
+}
+
+button.wm-dailyOsCard {
+  cursor: pointer;
+}
+
+.wm-dailyOsCard.isAlert {
+  border-color: color-mix(in srgb, #b45309 35%, transparent);
+  background: color-mix(in srgb, #b45309 7%, #fff);
+}
+
+.wm-dailyOsCard.isClear {
+  border-color: color-mix(in srgb, #15803d 28%, transparent);
+  background: color-mix(in srgb, #15803d 6%, #fff);
+}
+
+.wm-dailyOsCard.isUrgent {
+  border-color: color-mix(in srgb, #dc2626 28%, transparent);
+  background: color-mix(in srgb, #dc2626 5%, #fff);
+}
+
+.wm-dailyOsCard__kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.wm-dailyOsCard__title {
+  margin-top: 4px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.wm-dailyOsCard__sub {
+  margin-top: 4px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+.wm-dailyOsCard__cta,
+.wm-dailyOsLink {
+  margin-top: 12px;
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1d4ed8;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.wm-dailyOsBadges {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.wm-dailyOsBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  border: 1px solid transparent;
+}
+
+.wm-dailyOsBadge.is-overdue {
+  color: #991b1b;
+  background: color-mix(in srgb, #dc2626 12%, #fff);
+  border-color: color-mix(in srgb, #dc2626 28%, transparent);
+}
+
+.wm-dailyOsBadge.is-d7 {
+  color: #9a3412;
+  background: color-mix(in srgb, #ea580c 12%, #fff);
+  border-color: color-mix(in srgb, #ea580c 28%, transparent);
+}
+
+.wm-dailyOsBadge.is-d14 {
+  color: #92400e;
+  background: color-mix(in srgb, #d97706 12%, #fff);
+  border-color: color-mix(in srgb, #d97706 28%, transparent);
+}
+
+.wm-dailyOsBadge.is-d30 {
+  color: #854d0e;
+  background: color-mix(in srgb, #ca8a04 10%, #fff);
+  border-color: color-mix(in srgb, #ca8a04 26%, transparent);
+}
+
+.wm-dailyOsList {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wm-dailyOsList__item {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: #fff;
+}
+
+.wm-dailyOsList__title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.wm-dailyOsList__meta {
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: #64748b;
+}
+
+.wm-dailyOsEmpty {
+  margin: 12px 0 0;
+  font-size: 12.5px;
+  color: #64748b;
+}
+
+.wm-dailyOsActions {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wm-dailyOsPrimary,
+.wm-dailyOsSecondary {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.wm-dailyOsPrimary {
+  border: 1px solid color-mix(in srgb, #dc2626 30%, transparent);
+  background: color-mix(in srgb, #dc2626 10%, #fff);
+  color: #b91c1c;
+}
+
+.wm-dailyOsSecondary {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: #fff;
+  color: #334155;
+}

@@ -17,6 +17,7 @@ export function PublicLandingPage() {
     <div className="wm-publicLanding">
       <PublicLandingHero
         enterPath={ENTER_PATH}
+        explorePath={ROUTE_PATHS.explore}
         secondaryHref={PRIVACY_POLICY_URL}
         secondaryLabel="Privacy"
       />

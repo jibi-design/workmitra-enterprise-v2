@@ -14,6 +14,8 @@ import {
   EMPLOYER_LEVEL_COLORS,
   getEmployerQuickInfo,
 } from "../../../../shared/employerProfile/employerPublicProfileService";
+import { EmployerVerificationBadges } from "../../../../shared/employerProfile/EmployerVerificationBadges";
+import { resolveEmployerVerificationBadges } from "../../../../shared/employerProfile/employerVerificationBadge.helpers";
 import { ratingStorage } from "../../../../shared/rating/ratingStorage";
 
 const PURPLE = "#7c3aed";
@@ -45,6 +47,9 @@ export function PublicProfilePreview({ profile }: PublicProfilePreviewProps) {
     registrationNo: profile.registrationNo,
     contactVerified: profile.contactVerified,
     verificationAudit: profile.verificationAudit,
+    verificationTrack: profile.verificationTrack,
+    enterpriseTrack: profile.enterpriseTrack,
+    microTrack: profile.microTrack,
   });
   const verificationLabel = VERIFICATION_LEVEL_LABELS[verificationLevel];
   const isVerifiedBadge = verificationLevel === 3;
@@ -59,6 +64,12 @@ export function PublicProfilePreview({ profile }: PublicProfilePreviewProps) {
     () => (businessKey ? getEmployerQuickInfo(businessKey) : null),
     [businessKey],
   );
+
+  const verificationFlags = resolveEmployerVerificationBadges({
+    contactVerified: profile.contactVerified === true || verificationLevel >= 1,
+    identityBusinessVerified: isVerifiedBadge,
+    reputationTier: trustInfo?.reputationTier,
+  });
 
   const companyName = profile.companyName.trim() || "Your business name";
   const category = profile.industryType.trim() || "Category not set";
@@ -197,6 +208,8 @@ export function PublicProfilePreview({ profile }: PublicProfilePreviewProps) {
           >
             {levelLabel}
           </span>
+
+          <EmployerVerificationBadges flags={verificationFlags} size="md" />
         </div>
 
         <div style={{ marginTop: 12, display: "grid", gap: 8 }}>

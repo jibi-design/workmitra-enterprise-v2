@@ -1,10 +1,19 @@
 import type { AuthUser } from "../../auth/types.js";
 import type { ShiftPostRow, ShiftWorkspaceRow } from "../../shift/types.js";
 import { employerShiftRepository, isShiftUuid } from "./shift.repository.js";
+import { isLiveShiftStatus } from "../verification/employerMaturity.policy.js";
+import { employerVerificationService } from "../verification/employerVerification.service.js";
 
 export type ShiftPostMutationResult =
   | { ok: true; post: ShiftPostRow }
-  | { ok: false; code: string; message: string; httpStatus: number };
+  | {
+      ok: false;
+      code: string;
+      message: string;
+      httpStatus: number;
+      reason?: string;
+      maturityStage?: string;
+    };
 
 export type ShiftPostListResult =
   | { ok: true; posts: ShiftPostRow[] }
@@ -39,6 +48,20 @@ function parseIsoDate(value: unknown, _field: string): Date | null {
     return Number.isNaN(d.getTime()) ? null : d;
   }
   return null;
+}
+
+function gateLivePublish(employer: AuthUser, status: string): ShiftPostMutationResult | null {
+  if (!isLiveShiftStatus(status)) return null;
+  const gate = employerVerificationService.assertEmployerCanPublishLive(employer);
+  if (gate.ok) return null;
+  return {
+    ok: false,
+    code: gate.code,
+    reason: gate.reason,
+    message: gate.message,
+    httpStatus: gate.httpStatus,
+    maturityStage: gate.maturityStage,
+  };
 }
 
 export const employerShiftService = {
@@ -95,6 +118,9 @@ export const employerShiftService = {
         httpStatus: 400,
       };
     }
+
+    const denied = gateLivePublish(employer, statusRaw);
+    if (denied) return denied;
 
     const details = isRecord(body.details) ? body.details : {};
 
@@ -181,6 +207,9 @@ export const employerShiftService = {
         httpStatus: 400,
       };
     }
+
+    const denied = gateLivePublish(employer, statusRaw);
+    if (denied) return denied;
 
     const details = isRecord(body.details)
       ? { ...(isRecord(existing.details) ? existing.details : {}), ...body.details }

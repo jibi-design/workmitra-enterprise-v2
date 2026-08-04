@@ -3,6 +3,7 @@
 // Featured Shifts Near You — low-profile discovery preview
 
 import type { ShiftControlRecord } from "../types/shiftControlCenter.types";
+import { EmployerTrustBadge } from "../../../../shared/employerProfile/EmployerTrustBadge";
 
 type ShiftControlCenterPreviewPostsProps = {
   posts: ShiftControlRecord[];
@@ -72,6 +73,13 @@ export function ShiftControlCenterPreviewPosts({
                     <div className="wm-shiftEmployeePreviewPostMeta">
                       {readString(post["locationName"]) || "Location"} -{" "}
                       {readString(post["category"]) || "General"}
+                    </div>
+                    <div
+                      className="wm-shiftEmployeePreviewPostTrust"
+                      onClick={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => e.stopPropagation()}
+                    >
+                      <EmployerTrustBadge variant="badges" />
                     </div>
                   </div>
 

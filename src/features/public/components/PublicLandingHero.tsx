@@ -4,12 +4,14 @@ import { Link } from "react-router-dom";
 
 type PublicLandingHeroProps = {
   readonly enterPath: string;
+  readonly explorePath?: string;
   readonly secondaryHref: string;
   readonly secondaryLabel: string;
 };
 
 export function PublicLandingHero({
   enterPath,
+  explorePath,
   secondaryHref,
   secondaryLabel,
 }: PublicLandingHeroProps) {
@@ -23,8 +25,16 @@ export function PublicLandingHero({
         One companion for finding work, hiring locally, and keeping records organized.
       </p>
       <div className="wm-publicLanding__ctas">
+        {explorePath ? (
+          <Link
+            className="wm-publicLanding__cta wm-publicLanding__cta--primary wm-press-btn"
+            to={explorePath}
+          >
+            Explore without signing in
+          </Link>
+        ) : null}
         <Link
-          className="wm-publicLanding__cta wm-publicLanding__cta--primary wm-press-btn"
+          className={`wm-publicLanding__cta wm-press-btn${explorePath ? " wm-publicLanding__cta--secondary" : " wm-publicLanding__cta--primary"}`}
           to={enterPath}
         >
           Enter workspace

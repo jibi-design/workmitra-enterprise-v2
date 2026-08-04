@@ -131,6 +131,26 @@ export function EmployerSettingsPage() {
         </span>
       </button>
 
+      <button
+        type="button"
+        className="wm-settingsLinkCard"
+        data-testid="settings-open-compliance-hub"
+        onClick={() => nav(ROUTE_PATHS.employerCompliance)}
+      >
+        <div className="wm-settingsLinkCard__icon">
+          <IconCompany />
+        </div>
+        <div className="wm-settingsLinkCard__copy">
+          <div className="wm-settingsLinkCard__title">Business Compliance Hub</div>
+          <div className="wm-settingsLinkCard__sub">
+            Insurance, H&amp;S, verification pack, RTW audit log
+          </div>
+        </div>
+        <span className="wm-settingsLinkCard__chevron" aria-hidden="true">
+          ›
+        </span>
+      </button>
+
       <EmployerSettingsAccountSection
         onLogoutAllDevices={() => {
           void logoutApp().then(() => {

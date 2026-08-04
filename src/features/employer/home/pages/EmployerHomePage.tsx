@@ -22,12 +22,17 @@ import {
   ShiftJobsCard,
 } from "../components/EmployerHomePrimaryCards";
 import {
+  ComplianceHubCard,
   HRManagementCard,
   InsightsCard,
   ManagerConsoleCard,
   WorkforceCard,
   WorkVaultCard,
 } from "../components/EmployerHomeSecondaryCards";
+import { ComplianceExpiryAlertCard } from "../components/dailyOs/ComplianceExpiryAlertCard";
+import { EmergencyGapFillBroadcastCard } from "../components/dailyOs/EmergencyGapFillBroadcastCard";
+import { RehireMemoryCard } from "../components/dailyOs/RehireMemoryCard";
+import { RosterRadarWidget } from "../components/dailyOs/RosterRadarWidget";
 import { getDashboardSnapshot, subscribeDashboard } from "../helpers/employerHomeDashboard";
 
 export function EmployerHomePage() {
@@ -71,6 +76,23 @@ export function EmployerHomePage() {
 
       <PendingActionsHub items={allPendingActions} />
 
+      <HomeSectionPanel eyebrow="Daily Ops" title="Work-Life OS">
+        <div className="wm-homeStack">
+          <div className="wm-homeCardEnter wm-homeCardEnter--1">
+            <ComplianceExpiryAlertCard />
+          </div>
+          <div className="wm-homeCardEnter wm-homeCardEnter--2">
+            <RosterRadarWidget />
+          </div>
+          <div className="wm-homeCardEnter wm-homeCardEnter--3">
+            <EmergencyGapFillBroadcastCard />
+          </div>
+          <div className="wm-homeCardEnter wm-homeCardEnter--4">
+            <RehireMemoryCard />
+          </div>
+        </div>
+      </HomeSectionPanel>
+
       <HomeSectionPanel eyebrow="Hiring" title="Recruitment Hub">
         <div className="wm-homeStack">
           <div className="wm-homeCardEnter wm-homeCardEnter--1">
@@ -86,8 +108,13 @@ export function EmployerHomePage() {
       </HomeSectionPanel>
 
       <HomeSectionPanel eyebrow="Organization" title="Staff & Documents">
-        <div className="wm-homeCardEnter wm-homeCardEnter--4">
-          <WorkVaultCard />
+        <div className="wm-homeStack">
+          <div className="wm-homeCardEnter wm-homeCardEnter--4">
+            <WorkVaultCard />
+          </div>
+          <div className="wm-homeCardEnter wm-homeCardEnter--5">
+            <ComplianceHubCard />
+          </div>
         </div>
       </HomeSectionPanel>
 

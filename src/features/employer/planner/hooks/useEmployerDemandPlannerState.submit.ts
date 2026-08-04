@@ -21,6 +21,8 @@ import {
   releasePublishLock,
 } from "../../../shared/planner/services/plannerConcurrency.service";
 import { notifyPublishFailed } from "../../../shared/planner/services/plannerEscalationTriggers.service";
+import { canPublishJobPosts } from "../../company/helpers/employerVerificationPolicy.helpers";
+import { employerSettingsStorage } from "../../company/storage/employerSettings.storage";
 
 export async function submitDemandPlannerPlan(input: {
   nav: NavigateFunction;
@@ -54,6 +56,16 @@ export async function submitDemandPlannerPlan(input: {
     setNotice({
       title: "Workers & pay required",
       message: "Set workers and pay for at least one day before publishing.",
+    });
+    return;
+  }
+
+  const publishGate = canPublishJobPosts(employerSettingsStorage.get());
+  if (!publishGate.allowed) {
+    setNotice({
+      title: "Verification required",
+      message: publishGate.reason ?? "Verify your contact before publishing a live plan.",
+      tone: "warn",
     });
     return;
   }

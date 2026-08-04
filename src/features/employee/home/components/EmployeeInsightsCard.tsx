@@ -1,4 +1,4 @@
-/** Job Mitra | EmployeeInsightsCard.tsx | Dark glass insights card */
+/** Job Mitra | EmployeeInsightsCard.tsx | My Dashboard entry card */
 
 import { HomeGlassCardShell } from "../../../../shared/components/layout/HomeGlassCardShell";
 
@@ -29,18 +29,17 @@ export function InsightsCard({ onViewHistory }: InsightsCardProps) {
   return (
     <HomeGlassCardShell
       audience="employee"
-      tone="dark"
-      title="Insights & Activity"
-      subtitle="Track your history"
-      ariaLabel="Open Insights and Activity"
+      title="My Dashboard"
+      subtitle="Insights & activity"
+      ariaLabel="Open My Dashboard"
       onClick={onViewHistory}
       icon={<ChartIcon />}
       iconStyle={{
-        background: "rgba(255, 255, 255, 0.1)",
-        color: "#FFFFFF",
+        background: "color-mix(in srgb, var(--wm-brand-600, #2563eb) 12%, transparent)",
+        color: "var(--wm-brand-600, #2563eb)",
       }}
       trailing={
-        <span aria-hidden="true" style={{ color: "rgba(255,255,255,0.3)", fontSize: 20 }}>
+        <span className="wm-homeGlassCard__chevron" aria-hidden="true">
           →
         </span>
       }

@@ -7,6 +7,8 @@ import { handleEmployerVaultRoutes } from "./vault/vault.routes.js";
 import { handleEmployerDocAccessRoutes } from "./docAccess/docAccess.routes.js";
 import { handleEmployerHrRoutes } from "./hr/hr.routes.js";
 import { handleEmployerWorkforceRoutes } from "./workforce/workforce.routes.js";
+import { handleEmployerVerificationRoutes } from "./verification/verification.routes.js";
+import { handleEmployerPlannerRoutes } from "./planner/planner.routes.js";
 import { sendNotFound } from "../../utils/http.js";
 
 const EMPLOYER_PREFIX = "/v1/jobmitra/employer";
@@ -43,11 +45,22 @@ export async function handleEmployerRoutes(
         res,
         requestId,
         async (authedReq) => {
+          const handledVerification = await handleEmployerVerificationRoutes(
+            authedReq,
+            res,
+            url,
+            method,
+          );
+          if (handledVerification) return;
+
           const handledCareer = await handleEmployerCareerRoutes(authedReq, res, url, method);
           if (handledCareer) return;
 
           const handledShift = await handleEmployerShiftRoutes(authedReq, res, url, method);
           if (handledShift) return;
+
+          const handledPlanner = await handleEmployerPlannerRoutes(authedReq, res, url, method);
+          if (handledPlanner) return;
 
           const handledVault = await handleEmployerVaultRoutes(authedReq, res, url, method);
           if (handledVault) return;

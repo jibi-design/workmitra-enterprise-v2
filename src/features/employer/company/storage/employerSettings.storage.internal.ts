@@ -5,6 +5,7 @@ import {
   slugifyPublicHandle,
   syncVerificationAudit,
 } from "../helpers/employerIdentity.helpers";
+import { hasDocumentEvidence } from "../helpers/employerVerificationTracks";
 import type { EmployerProfile, ValidationResult } from "./employerSettings.storage.types";
 import {
   CHANGE_EVENT,
@@ -62,15 +63,25 @@ function migrateProfile(parsed: Partial<EmployerProfile>): EmployerProfile {
     merged.publicHandle = slugifyPublicHandle(merged.companyName);
   }
 
+  const docsSlice = {
+    registrationNo: merged.registrationNo,
+    verificationTrack: merged.verificationTrack,
+    enterpriseTrack: merged.enterpriseTrack,
+    microTrack: merged.microTrack,
+  };
   const verificationAudit = syncVerificationAudit(
     merged.verificationAudit ?? parsed.verificationAudit,
     merged.registrationNo,
+    hasDocumentEvidence(docsSlice),
   );
   merged.verificationAudit = verificationAudit;
   merged.verificationLevel = computeVerificationLevel({
     registrationNo: merged.registrationNo,
     contactVerified: merged.contactVerified,
     verificationAudit,
+    verificationTrack: merged.verificationTrack,
+    enterpriseTrack: merged.enterpriseTrack,
+    microTrack: merged.microTrack,
   });
 
   return merged;
@@ -161,15 +172,23 @@ export function finalizeIdentity(
     publicHandle = nextHandle;
   }
 
+  const docsSlice = {
+    registrationNo: profile.registrationNo,
+    verificationTrack: profile.verificationTrack ?? existing.verificationTrack,
+    enterpriseTrack: profile.enterpriseTrack ?? existing.enterpriseTrack,
+    microTrack: profile.microTrack ?? existing.microTrack,
+  };
+
   const verificationAudit = syncVerificationAudit(
     profile.verificationAudit ?? existing.verificationAudit,
     profile.registrationNo,
+    hasDocumentEvidence(docsSlice),
   );
 
   const verificationLevel = computeVerificationLevel({
-    registrationNo: profile.registrationNo,
     contactVerified: profile.contactVerified ?? existing.contactVerified,
     verificationAudit,
+    ...docsSlice,
   });
 
   const uniqueId = employerOrgId ?? companyUniqueId;
@@ -185,6 +204,9 @@ export function finalizeIdentity(
     previousHandles,
     verificationAudit,
     verificationLevel,
+    verificationTrack: docsSlice.verificationTrack ?? "none",
+    enterpriseTrack: docsSlice.enterpriseTrack,
+    microTrack: docsSlice.microTrack,
     pendingTransfer: Object.hasOwn(profile, "pendingTransfer")
       ? profile.pendingTransfer
       : existing.pendingTransfer,

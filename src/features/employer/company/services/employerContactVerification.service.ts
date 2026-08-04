@@ -2,6 +2,7 @@
 
 import { hashOtpCode, otpCodesMatch } from "../../../../shared/security/otpCodeHash";
 import { employerSettingsStorage } from "../storage/employerSettings.storage";
+import { syncEmployerVerificationToServer } from "./employerVerificationSync.service";
 
 const OTP_STORAGE_KEY = "wm:employer-contact-otp";
 const OTP_CODE_LENGTH = 6;
@@ -125,6 +126,8 @@ export async function verifyContactOtp(
 
   writePending({ ...pending, used: true });
   employerSettingsStorage.savePartial({ contactVerified: true });
+  const saved = employerSettingsStorage.get();
+  void syncEmployerVerificationToServer(saved);
   return { success: true };
 }
 

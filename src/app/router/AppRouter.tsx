@@ -12,6 +12,7 @@ import {
 } from "react-router-dom";
 import { ROUTE_PATHS } from "./routePaths";
 import { ErrorBoundary } from "../../shared/components/ErrorBoundary";
+import { RequireActiveContext } from "./guards/RequireActiveContext";
 import { RequireRole } from "./guards/RequireRole";
 import { LandingRolePickPage } from "../../features/auth/pages/LandingRolePickPage";
 import { LoginPage } from "../../features/auth/pages/LoginPage";
@@ -24,7 +25,14 @@ import { EmployeeShell } from "../shells/EmployeeShell";
 import { EmployerShell } from "../shells/EmployerShell";
 import { AdminShell } from "../shells/AdminShell";
 import { PublicWebsiteShell } from "../shells/PublicWebsiteShell";
+import { GuestBrowseShell } from "../shells/GuestBrowseShell";
 import { PulseTrailProvider } from "../../features/pulse/PulseTrailProvider";
+import { SoftAuthProvider } from "../../shared/guest/SoftAuthProvider";
+import { GuestExplorePage } from "../../features/guest/pages/GuestExplorePage";
+import { GuestShiftsPage } from "../../features/guest/pages/GuestShiftsPage";
+import { GuestShiftDetailPage } from "../../features/guest/pages/GuestShiftDetailPage";
+import { GuestCareersPage } from "../../features/guest/pages/GuestCareersPage";
+import { GuestCareerDetailPage } from "../../features/guest/pages/GuestCareerDetailPage";
 import { adminDisabledRoute, adminRouteTree } from "./routes/admin.routes";
 import { NotFoundPage } from "./routes/adminLazyPages";
 import { employeeRouteTree } from "./routes/employee.routes";
@@ -36,11 +44,13 @@ const appRouter = createHashRouter(
     <Route
       element={
         <PulseTrailProvider>
-          <div className="wm-app">
-            <Suspense fallback={<PageLoader />}>
-              <Outlet />
-            </Suspense>
-          </div>
+          <SoftAuthProvider>
+            <div className="wm-app">
+              <Suspense fallback={<PageLoader />}>
+                <Outlet />
+              </Suspense>
+            </div>
+          </SoftAuthProvider>
         </PulseTrailProvider>
       }
     >
@@ -107,14 +117,29 @@ const appRouter = createHashRouter(
         <Route index element={<PublicLandingPage />} />
       </Route>
 
+      {/* Phase 4 — Guest browse (Browse = public value) */}
+      <Route
+        element={
+          <ErrorBoundary homePath={ROUTE_PATHS.explore}>
+            <GuestBrowseShell />
+          </ErrorBoundary>
+        }
+      >
+        <Route path={ROUTE_PATHS.explore} element={<GuestExplorePage />} />
+        <Route path={ROUTE_PATHS.guestShifts} element={<GuestShiftsPage />} />
+        <Route path={ROUTE_PATHS.guestShiftDetails} element={<GuestShiftDetailPage />} />
+        <Route path={ROUTE_PATHS.guestCareers} element={<GuestCareersPage />} />
+        <Route path={ROUTE_PATHS.guestCareerDetails} element={<GuestCareerDetailPage />} />
+      </Route>
+
       <Route
         path={ROUTE_PATHS.employeeHome}
         element={
-          <RequireRole role="employee">
+          <RequireActiveContext mode="employee">
             <ErrorBoundary homePath={ROUTE_PATHS.employeeHome}>
               <EmployeeShell />
             </ErrorBoundary>
-          </RequireRole>
+          </RequireActiveContext>
         }
       >
         {employeeRouteTree}
@@ -123,11 +148,11 @@ const appRouter = createHashRouter(
       <Route
         path={ROUTE_PATHS.employerHome}
         element={
-          <RequireRole role="employer">
+          <RequireActiveContext mode="employer">
             <ErrorBoundary homePath={ROUTE_PATHS.employerHome}>
               <EmployerShell />
             </ErrorBoundary>
-          </RequireRole>
+          </RequireActiveContext>
         }
       >
         {employerRouteTree}

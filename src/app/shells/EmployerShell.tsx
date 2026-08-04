@@ -27,6 +27,8 @@ import {
 } from "../../shared/components/enterprise";
 import { AUTH_BACKEND_ENABLED } from "../../shared/config/authConfig";
 import { RouteGuardLoading } from "../../shared/components/routes/RouteGuardStatus";
+import { useActiveContextSwitch } from "../../shared/auth/useActiveContextSwitch";
+import { useAuthStore } from "../../shared/store/authStore";
 
 function useEmployerUnread(): number {
   return useSyncExternalStore(
@@ -46,6 +48,9 @@ export function EmployerShell() {
   const [logoutConfirm, setLogoutConfirm] = useState<ConfirmData | null>(null);
   const [topbarScrolled, setTopbarScrolled] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
+  const activeOrgId = useAuthStore((s) => s.user?.activeOrgId ?? null);
+  const { requestSwitch, switchConfirm, confirmSwitch, cancelSwitch } =
+    useActiveContextSwitch("employer");
 
   useThemeBundle("employer-shell");
 
@@ -154,7 +159,7 @@ export function EmployerShell() {
       />
 
       <div className="wm-container pb-safe-nav">
-        <Outlet />
+        <Outlet key={`employer:${activeOrgId ?? ""}`} />
       </div>
 
       <BottomNav />
@@ -177,6 +182,10 @@ export function EmployerShell() {
         onOpenManagerConsole={
           showPhase2Features ? () => nav(ROUTE_PATHS.employerConsole) : undefined
         }
+        onSwitchRole={() => {
+          setShowSheet(false);
+          requestSwitch();
+        }}
         onLogout={handleLogoutRequest}
       />
 
@@ -185,6 +194,8 @@ export function EmployerShell() {
         onConfirm={handleLogoutConfirm}
         onCancel={() => setLogoutConfirm(null)}
       />
+
+      <ConfirmModal confirm={switchConfirm} onConfirm={confirmSwitch} onCancel={cancelSwitch} />
 
       <CommandPalette
         open={commandOpen}

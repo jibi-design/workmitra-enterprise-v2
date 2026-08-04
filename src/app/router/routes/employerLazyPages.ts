@@ -187,6 +187,11 @@ export const EmployerProfilePage = lazyPage(() =>
     default: m.EmployerProfilePage,
   })),
 );
+export const EmployerCompliancePage = lazyPage(() =>
+  import("../../../features/employer/compliance/pages/EmployerCompliancePage").then((m) => ({
+    default: m.EmployerCompliancePage,
+  })),
+);
 export const EmployerNotificationsPage = lazyPage(() =>
   import("../../../features/employer/notifications/pages/EmployerNotificationsPage").then((m) => ({
     default: m.EmployerNotificationsPage,

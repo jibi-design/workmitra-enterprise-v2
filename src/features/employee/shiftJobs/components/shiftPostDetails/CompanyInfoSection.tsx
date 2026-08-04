@@ -27,7 +27,7 @@ export function CompanyInfoSection({ companyName }: { readonly companyName: stri
       </div>
 
       <div style={{ marginTop: 8 }}>
-        <EmployerTrustBadge variant="full" />
+        <EmployerTrustBadge variant="full" showEmptyHint />
       </div>
     </section>
   );

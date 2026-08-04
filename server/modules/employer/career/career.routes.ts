@@ -44,7 +44,13 @@ export async function handleEmployerCareerRoutes(
     const result = await employerCareerService.createPost(req.authenticatedUser, body);
     if (!result.ok) {
       sendJson(res, result.httpStatus, {
-        error: { code: result.code, message: result.message, requestId },
+        error: {
+          code: result.code,
+          reason: "reason" in result ? result.reason : undefined,
+          message: result.message,
+          maturityStage: "maturityStage" in result ? result.maturityStage : undefined,
+          requestId,
+        },
       });
       return true;
     }
@@ -83,7 +89,13 @@ export async function handleEmployerCareerRoutes(
     const result = await employerCareerService.updatePost(jobId, req.authenticatedUser, body);
     if (!result.ok) {
       sendJson(res, result.httpStatus, {
-        error: { code: result.code, message: result.message, requestId },
+        error: {
+          code: result.code,
+          reason: "reason" in result ? result.reason : undefined,
+          message: result.message,
+          maturityStage: "maturityStage" in result ? result.maturityStage : undefined,
+          requestId,
+        },
       });
       return true;
     }

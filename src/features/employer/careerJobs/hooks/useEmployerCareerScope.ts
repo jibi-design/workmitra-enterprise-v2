@@ -8,8 +8,8 @@ import {
   CAREER_EMPLOYER_SCOPE_CHANGED_EVENT,
   peekCareerEmployerScopeId,
   type CareerEmployerScopeDenyReason,
-} from "../../shared/career/careerEmployerScope";
-import { employerSettingsStorage } from "../company/storage/employerSettings.storage";
+} from "../../../shared/career/careerEmployerScope";
+import { employerSettingsStorage } from "../../company/storage/employerSettings.storage";
 
 export type EmployerCareerScopeState =
   | { ready: true; scopeId: string; reason: null }

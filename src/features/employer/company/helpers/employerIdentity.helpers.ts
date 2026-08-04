@@ -7,6 +7,7 @@ import type {
   PublicHandleProfileSlice,
   VerificationProfileSlice,
 } from "./employerIdentity.types";
+import { hasDocumentEvidence } from "./employerVerificationTracks";
 
 export type { EmployerTransferStatus, EmployerVerificationLevel } from "./employerIdentity.types";
 
@@ -41,22 +42,26 @@ export function getPublicProfilePath(handle: string): string {
 export function computeVerificationLevel(
   profile: VerificationProfileSlice,
 ): EmployerVerificationLevel {
-  if (profile.verificationAudit?.status === "approved" && profile.registrationNo.trim()) {
-    return 3;
-  }
-  if (profile.registrationNo.trim()) return 2;
-  if (profile.contactVerified) return 1;
+  const contact = profile.contactVerified === true;
+  const hasDocs = hasDocumentEvidence(profile);
+  const approved = profile.verificationAudit?.status === "approved";
+
+  // Contact verification must precede registration/document credit.
+  if (contact && hasDocs && approved) return 3;
+  if (contact && hasDocs) return 2;
+  if (contact) return 1;
   return 0;
 }
 
 export function syncVerificationAudit(
   existing: EmployerVerificationAudit | undefined,
   registrationNo: string,
+  hasDocs?: boolean,
 ): EmployerVerificationAudit {
-  const reg = registrationNo.trim();
+  const evidence = hasDocs === undefined ? Boolean(registrationNo.trim()) : hasDocs;
   const current = existing ?? { status: "none" as const };
 
-  if (!reg) {
+  if (!evidence) {
     return { status: "none" };
   }
   if (current.status === "approved" || current.status === "pending") {

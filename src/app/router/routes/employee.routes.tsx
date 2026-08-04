@@ -22,6 +22,7 @@ import {
   EmployeeCareerWorkspacePage,
   EmployeeCareerWorkspacesPage,
   EmployeeCompanyWrapper,
+  EmployeeDashboardPage,
   EmployeeEarningsPage,
   EmployeeEmploymentDetailPage,
   EmployeeGroupWrapper,
@@ -64,6 +65,7 @@ export const employeeRouteTree = (
   <>
     <Route index element={<EmployeeHomePage />} />
     <Route path="home" element={<Navigate to={ROUTE_PATHS.employeeHome} replace />} />
+    <Route path={EC.dashboard} element={<EmployeeDashboardPage />} />
     <Route path="career/home" element={<Navigate to={ROUTE_PATHS.employeeCareerHome} replace />} />
     <Route path="vault/home" element={<Navigate to={ROUTE_PATHS.employeeVaultHome} replace />} />
     <Route

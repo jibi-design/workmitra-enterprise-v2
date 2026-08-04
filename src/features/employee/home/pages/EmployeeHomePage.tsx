@@ -19,8 +19,10 @@ import { employeeProfileStorage } from "../../profile/storage/employeeProfile.st
 import { EmployeeHomeMainSections } from "../components/EmployeeHomeMainSections";
 import { EmployeeHomeTopTiles } from "../components/EmployeeHomeTopTiles";
 import { EmployeeHomeWelcomeCard } from "../components/EmployeeHomeWelcomeCard";
+import { InsightsCard } from "../components/EmployeeInsightsCard";
 import { ProfileNudgeCard } from "../components/ProfileNudgeCard";
 import { formatNumber, n, readDemo } from "../helpers/employeeHomeHelpers";
+import { HomeSectionPanel } from "../../../../shared/components/layout/HomeSectionPanel";
 import {
   hasPendingGroupJoin,
   resolvePendingGroupJoinOrchestration,
@@ -137,6 +139,10 @@ export function EmployeeHomePage() {
     nav(ROUTE_PATHS.employeeCareerSearch);
   }, [nav]);
 
+  const handleInsights = useCallback(() => {
+    nav(ROUTE_PATHS.employeeDashboard);
+  }, [nav]);
+
   if (!chromeReady) {
     return (
       <div className="wm-homePage">
@@ -189,6 +195,12 @@ export function EmployeeHomePage() {
           onCareerSearch={handleCareerSearch}
         />
       </div>
+
+      <HomeSectionPanel eyebrow="Daily OS" title="My Dashboard">
+        <div className="wm-homeCardEnter wm-homeCardEnter--5">
+          <InsightsCard onViewHistory={handleInsights} />
+        </div>
+      </HomeSectionPanel>
 
       {showOnboarding && (
         <OnboardingOverlay

@@ -11,6 +11,8 @@ import {
   type EmployerPublicProfile,
   type EmployerReview,
 } from "../../../../shared/employerProfile/employerPublicProfileService";
+import { EmployerVerificationBadges } from "../../../../shared/employerProfile/EmployerVerificationBadges";
+import { resolveEmployerVerificationBadges } from "../../../../shared/employerProfile/employerVerificationBadge.helpers";
 
 /* ── Helpers ───────────────────────────────────── */
 
@@ -40,7 +42,7 @@ function starString(n: number): string {
 
 function levelTone(level: EmployerLevel): EnterpriseTone {
   switch (level) {
-    case "verified":
+    case "proven":
       return "active";
     case "trusted":
       return "warning";
@@ -58,31 +60,49 @@ function trustCopy(profile: EmployerPublicProfile): {
   message: string;
   badgeLabel: string;
 } {
-  if (profile.level === "verified") {
+  if (profile.identityBusinessVerified) {
     return {
       kind: "compliance",
       tone: "active",
-      title: "Verified employer track record",
-      message: `${profile.totalRatings} public ratings · strong history of completed work.`,
-      badgeLabel: profile.levelLabel,
+      title: "Verified Business",
+      message: `${profile.identityMaturityLabel}. Star reputation: ${profile.reputationLabel} (${profile.totalRatings} ratings).`,
+      badgeLabel: "Verified Business",
     };
   }
-  if (profile.level === "trusted") {
+  if (profile.contactVerified) {
+    return {
+      kind: "compliance",
+      tone: "pending",
+      title: "Contact Verified",
+      message: `Phone or email verified. Star reputation: ${profile.reputationLabel}. Documents may still be under review.`,
+      badgeLabel: "Contact Verified",
+    };
+  }
+  if (profile.reputationTier === "proven") {
+    return {
+      kind: "compliance",
+      tone: "active",
+      title: "Proven Reputation",
+      message: `${profile.totalRatings} public ratings · strong history of completed work. Business documents not yet verified.`,
+      badgeLabel: "Proven Reputation",
+    };
+  }
+  if (profile.reputationTier === "trusted") {
     return {
       kind: "lock",
       tone: "warning",
-      title: "Trusted employer",
+      title: "Trusted by ratings",
       message: "Consistently rated by workers. Still review recent comments before applying.",
-      badgeLabel: profile.levelLabel,
+      badgeLabel: profile.reputationLabel,
     };
   }
-  if (profile.level === "established") {
+  if (profile.reputationTier === "established") {
     return {
       kind: "info",
       tone: "pending",
       title: "Established employer",
       message: "Building a public track record. Check activity and reviews carefully.",
-      badgeLabel: profile.levelLabel,
+      badgeLabel: profile.reputationLabel,
     };
   }
   return {
@@ -90,7 +110,7 @@ function trustCopy(profile: EmployerPublicProfile): {
     tone: "neutral",
     title: "New on Job Mitra",
     message: "Limited public ratings so far. Prefer OTP document review and clear job details.",
-    badgeLabel: profile.levelLabel,
+    badgeLabel: profile.reputationLabel,
   };
 }
 
@@ -99,6 +119,11 @@ function trustCopy(profile: EmployerPublicProfile): {
 export function ProfileCard({ profile }: { profile: EmployerPublicProfile }) {
   const has = profile.totalRatings > 0;
   const trust = trustCopy(profile);
+  const verificationFlags = resolveEmployerVerificationBadges({
+    contactVerified: profile.contactVerified,
+    identityBusinessVerified: profile.identityBusinessVerified,
+    reputationTier: profile.reputationTier,
+  });
 
   return (
     <div className="wm-vault-verify-card">
@@ -120,7 +145,8 @@ export function ProfileCard({ profile }: { profile: EmployerPublicProfile }) {
           >
             ★ {has ? profile.averageStars.toFixed(1) : "—"}
           </span>
-          <StatusBadge label={profile.levelLabel} tone={levelTone(profile.level)} />
+          <StatusBadge label={profile.reputationLabel} tone={levelTone(profile.reputationTier)} />
+          <EmployerVerificationBadges flags={verificationFlags} size="md" />
           <StatusBadge
             label={`${profile.totalRatings} ${profile.totalRatings === 1 ? "rating" : "ratings"}`}
             tone="neutral"

@@ -13,6 +13,7 @@ import type {
   CareerSearchApplicationState,
   CareerSearchPost,
 } from "../helpers/careerSearchHelpers";
+import { EmployerTrustBadge } from "../../../../shared/employerProfile/EmployerTrustBadge";
 
 type EmployeeCareerJobCardProps = {
   post: CareerSearchPost;
@@ -106,6 +107,7 @@ export function EmployeeCareerJobCard({
               {post.companyName}
               {post.location ? ` • ${post.location}` : ""}
             </p>
+            <EmployerTrustBadge variant="compact" />
           </div>
         </div>
 

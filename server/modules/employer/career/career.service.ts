@@ -6,6 +6,8 @@ import type {
   CareerEmploymentRow,
   CareerPostRow,
 } from "../../career/types.js";
+import { isLiveCareerStatus } from "../verification/employerMaturity.policy.js";
+import { employerVerificationService } from "../verification/employerVerification.service.js";
 
 export type IssueOfferResult =
   | { ok: true; offer: CareerOfferRow }
@@ -17,7 +19,14 @@ export type ConfirmHireResult =
 
 export type CareerPostMutationResult =
   | { ok: true; post: CareerPostRow }
-  | { ok: false; code: string; message: string; httpStatus: number };
+  | {
+      ok: false;
+      code: string;
+      message: string;
+      httpStatus: number;
+      reason?: string;
+      maturityStage?: string;
+    };
 
 export type CareerPostListResult =
   | { ok: true; posts: CareerPostRow[] }
@@ -98,6 +107,20 @@ function normalizeCreateOrUpdateBody(body: Record<string, unknown>):
   return { ok: true, title, description, location, status: statusRaw, details };
 }
 
+function gateLivePublish(employer: AuthUser, status: string): CareerPostMutationResult | null {
+  if (!isLiveCareerStatus(status)) return null;
+  const gate = employerVerificationService.assertEmployerCanPublishLive(employer);
+  if (gate.ok) return null;
+  return {
+    ok: false,
+    code: gate.code,
+    reason: gate.reason,
+    message: gate.message,
+    httpStatus: gate.httpStatus,
+    maturityStage: gate.maturityStage,
+  };
+}
+
 export const employerCareerService = {
   async listMyPosts(employer: AuthUser): Promise<CareerPostListResult> {
     const posts = await employerCareerRepository.listPostsByEmployer(employer.id);
@@ -112,6 +135,9 @@ export const employerCareerService = {
     if (!normalized.ok) {
       return { ok: false, code: "VALIDATION_ERROR", message: normalized.message, httpStatus: 400 };
     }
+
+    const denied = gateLivePublish(employer, normalized.status);
+    if (denied) return denied;
 
     const post = await employerCareerRepository.createPost({
       employerUserId: employer.id,
@@ -147,6 +173,9 @@ export const employerCareerService = {
     if (!normalized.ok) {
       return { ok: false, code: "VALIDATION_ERROR", message: normalized.message, httpStatus: 400 };
     }
+
+    const denied = gateLivePublish(employer, normalized.status);
+    if (denied) return denied;
 
     const post = await employerCareerRepository.updatePost({
       postId,
