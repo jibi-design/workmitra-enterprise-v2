@@ -76,9 +76,43 @@ Do not start ecosystem implementation before Job Mitra and HomeFix Mitra are sta
 
 ## 6. Shared Mitra ID Boundary
 
+### 6.0. UniCard / Public Mitra Labs ID — Option A LOCKED (2026-08-08)
+
+Canonical lock document:
+
+```txt
+architecture/UNICARD_MITRA_LABS_ID_OPTION_A_LOCK_v1.0.md
+```
+
+Locked public UniCard / Mitra Labs ID format across all Mitra Labs products:
+
+```txt
+ML-XXXX-ABC-XXXX
+```
+
+Locked provenance rule:
+
+```txt
+Product codes (JM / WM / HFM / etc.) NEVER appear inside the public UniCard ID.
+Product provenance is stored as source_app (and related membership metadata) in the user DB schema.
+```
+
+Locked minting plan:
+
+```txt
+ML ID minting moves from client-side to server-side during backend DB migration.
+Auth UUID remains the security principal.
+```
+
+This Option A lock freezes the **public ID format + provenance model + minting migration plan**.
+It does **not** by itself approve the full Shared Mitra ID / Trust Profile product rollout
+(see §6.3 and §14.1).
+
 ### 6.1. What Shared Mitra ID Is
 
 Shared Mitra ID is the future common identity anchor across Mitra Labs apps.
+
+The public handle for that identity is the UniCard / Mitra Labs ID locked in §6.0.
 
 It may later connect:
 
@@ -100,12 +134,13 @@ Shared Mitra ID is not:
 - KYC system
 - public universal profile
 - replacement for app-specific role profiles
+- a product-coded public ID string (JM/WM/etc. inside the UniCard ID)
 
 ### 6.3. Implementation Timing
 
-Do not implement Shared Mitra ID now.
+Do not implement the full Shared Mitra ID / Trust Profile product now.
 
-Shared Mitra ID requires:
+Shared Mitra ID product rollout still requires:
 
 - backend login
 - account ownership model
@@ -115,6 +150,12 @@ Shared Mitra ID requires:
 - cross-app data boundary review
 - user consent model
 - Play Store data safety review
+
+Allowed under Option A without opening the full Shared Mitra ID product:
+
+- keep / enforce public format `ML-XXXX-ABC-XXXX`
+- plan and execute client → server minting during backend DB migration
+- store `source_app` provenance in user schema
 
 ### 6.4. Boundary Rule
 
@@ -451,13 +492,21 @@ No future ecosystem feature may start until these gates are passed:
 
 ## 14. Current Go / No-Go Decisions
 
-### 14.1. Shared Mitra ID
+### 14.1. Shared Mitra ID / UniCard
 
 Status:
 
 ```txt
-No-Go for implementation now.
-Roadmap only.
+Public UniCard format + provenance + mint migration plan: LOCKED (Option A).
+Canonical lock: architecture/UNICARD_MITRA_LABS_ID_OPTION_A_LOCK_v1.0.md
+
+Format: ML-XXXX-ABC-XXXX
+No product codes inside public ID.
+Provenance: source_app metadata.
+Minting: client → server during backend DB migration.
+
+Full Shared Mitra ID / Trust Profile product rollout: No-Go for implementation now.
+Roadmap only (see §6).
 ```
 
 ### 14.2. Trust Profile

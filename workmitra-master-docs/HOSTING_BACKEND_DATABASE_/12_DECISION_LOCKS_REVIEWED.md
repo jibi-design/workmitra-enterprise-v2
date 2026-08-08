@@ -28,6 +28,24 @@ Locked decision:
 Mitra Labs
 ```
 
+### 2.1A UniCard / Mitra Labs ID (Option A — 2026-08-08)
+
+Canonical lock:
+
+```txt
+../architecture/UNICARD_MITRA_LABS_ID_OPTION_A_LOCK_v1.0.md
+```
+
+Locked decisions:
+
+```txt
+Public UniCard ID format: ML-XXXX-ABC-XXXX
+No product codes (JM / WM / etc.) inside the public ID string
+Product provenance: source_app metadata in user DB schema
+ML ID minting: client → server during backend DB migration
+Auth UUID remains the security principal
+```
+
 ### 2.2 Products
 
 Locked products:

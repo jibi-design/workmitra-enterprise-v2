@@ -10,6 +10,8 @@ This folder is the official split documentation system for WorkMitra / Job Mitra
 
 **Canonical brand & domain (2026-07-16):** [`MITRA_ACCESS_HUB_BRAND_DOMAIN_AND_ADMIN_DECISION_V2.md`](./MITRA_ACCESS_HUB_BRAND_DOMAIN_AND_ADMIN_DECISION_V2.md) — Mitra Labs, Mitra Access Hub, `mitraaccesshub.com` family, Job Mitra as application, Smart Tag and Mitra Business QR as websites/services, Master Admin at `admin.mitraaccesshub.com`. In-app `/admin` routes are **deprecated-candidate**, not final production architecture.
 
+**UniCard / Mitra Labs ID — Option A LOCKED (2026-08-08):** [`UNICARD_MITRA_LABS_ID_OPTION_A_LOCK_v1.0.md`](./UNICARD_MITRA_LABS_ID_OPTION_A_LOCK_v1.0.md) — public ID format `ML-XXXX-ABC-XXXX` across all Mitra Labs products; no JM/WM (or other product codes) inside the public ID; product provenance via `source_app` metadata; ML ID minting moves client → server during backend DB migration. Cross-ref: [`22_MITRA_ECOSYSTEM_ROADMAP_AND_BOUNDARIES.md`](./22_MITRA_ECOSYSTEM_ROADMAP_AND_BOUNDARIES.md) §6 / §14.1.
+
 **Super Admin / Master Control Hub (2026-07-28 LOCKED):** Canonical **standalone app + docs** under `C:\projects\Admin\Super Admin\` — start at `docs/MASTER_CONTROL_HUB_DECISION_RECORD_v1.0.md`. Host: `admin.mitraaccesshub.com`. Role: `master_admin`. UI law: plain-English + G/Y/R gauges only; `platform_ops` RLS + BFF. **Not** inside `mithra-access-hub` or Job Mitra `src/features/admin/**`. Domain admins later under `C:\projects\Admin\<Domain>\`. Independent Co-worker (no direct DB): `C:\projects\Admin\CoWorker\` + Super Admin `docs/COWORKER_BFF_TRUST_BOUNDARY.md`.
 
 The goal is to keep the product documentation easy to understand, easy to update and safe for future development without weakening the master product truth.
