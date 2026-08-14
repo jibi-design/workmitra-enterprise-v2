@@ -35,7 +35,7 @@ export function ShiftOpsManagerApprovalsPage() {
         const raw =
           err && typeof err === "object" && "message" in err
             ? String((err as { message: string }).message)
-            : "Failed to load queue";
+            : "Couldn't load this queue. Try again.";
         if (isShiftOpsAuthConfigNoise(raw)) {
           setAuthNoise(true);
           setError(null);

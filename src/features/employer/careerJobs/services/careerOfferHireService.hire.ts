@@ -160,8 +160,8 @@ export async function hireCandidate(
       affectedUserRole: "employee",
       postId,
       appId,
-      title: "Congratulations! You are hired!",
-      body: `${signature} You have been hired as ${post.jobTitle} at ${post.companyName}. Your onboarding workspace is ready.`,
+      title: "You're hired",
+      body: `${signature} You're in as ${post.jobTitle} at ${post.companyName}. Open your workspace when you're ready.`,
       route: ROUTE_PATHS.employeeCareerWorkspace.replace(":workspaceId", activation.workspaceId),
     });
   }

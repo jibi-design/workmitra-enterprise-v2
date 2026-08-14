@@ -18,10 +18,10 @@ const EMPTY_TITLE: Record<DemandPlanStatus, string> = {
 };
 
 const EMPTY_COPY: Record<DemandPlanStatus, string> = {
-  draft: "Start a New Plan anytime.",
-  active: "Publish a plan to begin hiring.",
-  completed: "Finished crews will land here.",
-  cancelled: "Cancelled plans will land here.",
+  draft: "Start a new plan when you're ready.",
+  active: "Publish a plan when you want people to apply.",
+  completed: "Finished crews show up here.",
+  cancelled: "Cancelled plans show up here.",
 };
 
 function StatusEmptyIcon() {

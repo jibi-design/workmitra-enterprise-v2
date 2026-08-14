@@ -95,8 +95,8 @@ export async function sendOffer(
       postId,
       appId,
       severity: "urgent",
-      title: "Job offer received!",
-      body: `${signature} ${post.companyName} has offered you the role of ${offerDetails.jobTitle}. Salary: ${offerDetails.salary.toLocaleString()} (${offerDetails.salaryPeriod}). Start date: ${offerDetails.startDate}.${offerDetails.message ? ` Note: ${offerDetails.message}` : ""}`,
+      title: "You have an offer",
+      body: `${signature} ${post.companyName} offered you ${offerDetails.jobTitle}. Pay: ${offerDetails.salary.toLocaleString()} (${offerDetails.salaryPeriod}). Start: ${offerDetails.startDate}.${offerDetails.message ? ` Note: ${offerDetails.message}` : ""}`,
       route: ROUTE_PATHS.employeeCareerApplications,
     });
   }

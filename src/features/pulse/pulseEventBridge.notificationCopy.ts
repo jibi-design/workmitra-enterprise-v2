@@ -18,8 +18,8 @@ type NotificationTargetDefaults = {
 };
 
 const DEFAULT_NOTIFICATION_COPY: BellNotificationCopy = {
-  title: "Job Mitra update",
-  body: "You have a new update.",
+  title: "New update",
+  body: "There's something new in your inbox.",
 };
 
 const NOTIFICATION_COPY_BY_TYPE: Partial<Record<PulseBackendEventType, BellNotificationCopy>> = {
@@ -39,13 +39,13 @@ const NOTIFICATION_COPY_BY_TYPE: Partial<Record<PulseBackendEventType, BellNotif
     route: ROUTE_PATHS.employeeShiftApplications,
   },
   SHIFT_CONFIRMATION_REQUIRED: {
-    title: "Attendance Intent / Check-in Signal required",
-    body: "Please save attendance intent for this shift (check-in signal only — not a legal timecard).",
+    title: "Confirm you'll be there",
+    body: "Let them know you plan to show up. This isn't a clock-in.",
     route: ROUTE_PATHS.employeeShiftApplications,
   },
   SHIFT_EMPLOYEE_SELECTED: {
-    title: "You are selected",
-    body: "Your employer confirmed you for this shift. Open your workspace to get started.",
+    title: "You're confirmed for this shift",
+    body: "Open your workspace for times, updates, and who to meet.",
     route: ROUTE_PATHS.employeeShiftWorkspaces,
   },
 
@@ -108,8 +108,8 @@ const NOTIFICATION_COPY_BY_TYPE: Partial<Record<PulseBackendEventType, BellNotif
     body: "There is an update in your workspace.",
   },
   GENERAL_BROADCAST: {
-    title: "Broadcast received",
-    body: "A new general update is available.",
+    title: "Team update",
+    body: "There's a new note for your team.",
   },
   PROFILE_VIEW: {
     title: "Profile viewed",
@@ -136,13 +136,13 @@ const NOTIFICATION_COPY_BY_TYPE: Partial<Record<PulseBackendEventType, BellNotif
     route: ROUTE_PATHS.employeeCareerApplications,
   },
   SYSTEM_ALERT: {
-    title: "System alert",
-    body: "A Job Mitra system update needs your attention.",
+    title: "Please check this",
+    body: "Something in Job Mitra needs a look when you have a minute.",
   },
 
   SHIFT_WORKER_CONFIRMED: {
-    title: "Worker saved Attendance Intent / Check-in Signal",
-    body: "A confirmed worker marked plan-to-attend (intent only — not QR punch-in or a legal timecard).",
+    title: "They're planning to attend",
+    body: "A confirmed worker said they'll be there. This isn't a clock-in.",
     route: ROUTE_PATHS.employerShiftHome,
   },
   SHIFT_WORKER_CANCELLED: {
@@ -182,8 +182,8 @@ const NOTIFICATION_COPY_BY_TYPE: Partial<Record<PulseBackendEventType, BellNotif
     route: ROUTE_PATHS.employeeShiftSearch,
   },
   SHIFT_APPLICATION_REJECTED: {
-    title: "Shift application update",
-    body: "Your shift application status was updated.",
+    title: "This shift didn't go through",
+    body: "They went with someone else. Other openings are still worth a look.",
     route: ROUTE_PATHS.employeeShiftApplications,
   },
   SHIFT_ASSIGNMENT_REPLACED: {
@@ -202,8 +202,8 @@ const NOTIFICATION_COPY_BY_TYPE: Partial<Record<PulseBackendEventType, BellNotif
     route: ROUTE_PATHS.employerShiftHome,
   },
   CAREER_APPLICATION_REJECTED: {
-    title: "Application update",
-    body: "Your career application status was updated.",
+    title: "This role didn't go through",
+    body: "They chose another candidate. You can still apply to other jobs.",
     route: ROUTE_PATHS.employeeCareerApplications,
   },
   CAREER_INTERVIEW_UPDATE: {
@@ -212,8 +212,8 @@ const NOTIFICATION_COPY_BY_TYPE: Partial<Record<PulseBackendEventType, BellNotif
     route: ROUTE_PATHS.employeeCareerApplications,
   },
   CAREER_HIRED: {
-    title: "Congratulations! You are hired!",
-    body: "Your onboarding workspace is ready.",
+    title: "You're hired",
+    body: "Your onboarding workspace is ready when you are.",
     route: ROUTE_PATHS.employeeCareerApplications,
   },
 };

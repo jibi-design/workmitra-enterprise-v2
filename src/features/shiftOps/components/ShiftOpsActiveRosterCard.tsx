@@ -45,7 +45,7 @@ export function ShiftOpsActiveRosterCard({ initialGroupId = "" }: Props) {
       const raw =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Failed to load roster";
+          : "Couldn't load who's on today.";
       // Auth-bridge noise is shown once on Group Access — skip duplicate strips here.
       if (!isShiftOpsAuthConfigNoise(raw)) {
         setError(raw);
@@ -70,7 +70,7 @@ export function ShiftOpsActiveRosterCard({ initialGroupId = "" }: Props) {
         const raw =
           err && typeof err === "object" && "message" in err
             ? String((err as { message: string }).message)
-            : "Failed to load groups";
+            : "Couldn't load groups.";
         if (!isShiftOpsAuthConfigNoise(raw)) {
           setError(raw);
         }

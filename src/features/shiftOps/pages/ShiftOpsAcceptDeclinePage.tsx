@@ -36,7 +36,7 @@ export function ShiftOpsAcceptDeclinePage({ assignmentId: assignmentIdProp, onDo
           setError(
             err && typeof err === "object" && "message" in err
               ? String((err as { message: string }).message)
-              : "Failed to load assignment",
+              : "Couldn't load this assignment. Try again.",
           );
         }
       }

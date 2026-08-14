@@ -1,4 +1,9 @@
-// App name: Job Mitra | ShiftPostApplyStatusCards.tsx — glass + pressable (post-details polish)
+import {
+  ATTENDANCE_INTENT_ACTION,
+  ATTENDANCE_INTENT_HELPER,
+  ATTENDANCE_INTENT_SAVED,
+  ATTENDANCE_INTENT_TITLE,
+} from "../helpers/attendanceIntentCopy";
 
 type ShiftPostApplyStatusCardsProps = {
   isShortlisted: boolean;
@@ -42,24 +47,16 @@ export function ShiftPostApplyStatusCards({
 
       {isConfirmed ? (
         <StatusCard
-          title={
-            attendanceConfirmed
-              ? "Attendance intent saved"
-              : "Confirm Attendance Intent / Check-in Signal"
-          }
+          title={attendanceConfirmed ? "You're down as attending" : ATTENDANCE_INTENT_TITLE}
           helper={
             attendanceConfirmed
-              ? "Your check-in signal is saved. Keep checking the workspace and arrive on time."
-              : "You are selected for this shift. Save attendance intent only if you plan to attend on time."
+              ? ATTENDANCE_INTENT_SAVED
+              : "You're confirmed. Save this only if you plan to arrive on time."
           }
           tone={attendanceConfirmed ? "success" : "info"}
-          actionLabel={attendanceConfirmed ? undefined : "Save attendance intent"}
+          actionLabel={attendanceConfirmed ? undefined : ATTENDANCE_INTENT_ACTION}
           onAction={attendanceConfirmed ? undefined : onConfirmAttendance}
-          footer={
-            attendanceConfirmed
-              ? "Attendance Intent / Check-in Signal only — not a legal timecard, QR punch-in, timer, or payroll (v2.1)."
-              : "This is a check-in signal only — not a legal timecard, QR check-in, timer, or payroll punch-in."
-          }
+          footer={ATTENDANCE_INTENT_HELPER}
         />
       ) : null}
 

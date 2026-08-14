@@ -1,5 +1,7 @@
 /** Job Mitra | latestUnreadInboxPreview.ts | Shift/Career unread ticker pick */
 
+import { stripNotificationDedupeSignature } from "../../../shared/notifications/guards";
+
 export const INBOX_TICKER_DOMAINS = ["shift", "career"] as const;
 
 export type InboxTickerDomain = (typeof INBOX_TICKER_DOMAINS)[number];
@@ -42,7 +44,7 @@ export function pickLatestUnreadShiftCareer(
       id: item.id,
       domain: item.domain,
       title,
-      body: item.body?.trim() || undefined,
+      body: item.body ? stripNotificationDedupeSignature(item.body) || undefined : undefined,
       createdAt: item.createdAt,
       route: item.route?.trim() || undefined,
     };

@@ -35,9 +35,9 @@ export class ErrorBoundary extends Component<Props, State> {
         this.props.fallback || (
           <div className="wm-errorFallback" role="alert">
             <div className="wm-errorFallback__card">
-              <h2 className="wm-errorFallback__title">Something went wrong.</h2>
+              <h2 className="wm-errorFallback__title">This screen didn’t load</h2>
               <p className="wm-errorFallback__body">
-                The application encountered an unexpected error. Please try refreshing.
+                Refresh the page and we’ll try to open it again.
               </p>
               <div className="wm-errorFallback__actions">
                 <button

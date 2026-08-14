@@ -55,9 +55,11 @@ export function EmployerAnalyticsPage() {
   return (
     <div className="wm-analyticsPage">
       <section className="wm-analyticsHero">
-        <div className="wm-analyticsHeroKicker">Executive Snapshot</div>
-        <h1 className="wm-analyticsHeroTitle">Business Intelligence</h1>
-        <p className="wm-analyticsHeroSub">Local hiring and workforce activity snapshot.</p>
+        <div className="wm-analyticsHeroKicker">This week</div>
+        <h1 className="wm-analyticsHeroTitle">How hiring is going</h1>
+        <p className="wm-analyticsHeroSub">
+          A quick look at posts, applications, and people you’ve hired or confirmed.
+        </p>
 
         <div className="wm-analyticsHeroMetrics">
           <MetricBlock label="Total Posts" value={data.totalPosts} tone="neutral" hero />
@@ -73,9 +75,9 @@ export function EmployerAnalyticsPage() {
 
       <div className="wm-analyticsGrid">
         <section className="wm-analyticsCard isCareer">
-          <div className="wm-analyticsSectionKicker isCareer">Career Operations</div>
-          <h2 className="wm-analyticsSectionTitle">Permanent Hiring Funnel</h2>
-          <p className="wm-analyticsSectionSub">Permanent hiring pipeline.</p>
+          <div className="wm-analyticsSectionKicker isCareer">Career</div>
+          <h2 className="wm-analyticsSectionTitle">Permanent roles</h2>
+          <p className="wm-analyticsSectionSub">From post to offer, in one place.</p>
 
           <div className="wm-analyticsFunnelList">
             <FunnelRow
@@ -109,9 +111,7 @@ export function EmployerAnalyticsPage() {
           </div>
 
           {!hasCareerActivity && (
-            <NoDataHint tone="career">
-              Post your first career job to see pipeline analytics.
-            </NoDataHint>
+            <NoDataHint tone="career">Post a career job to see these numbers fill in.</NoDataHint>
           )}
 
           <div className="wm-analyticsActionRow">
@@ -133,9 +133,11 @@ export function EmployerAnalyticsPage() {
         </section>
 
         <section className="wm-analyticsCard isShift">
-          <div className="wm-analyticsSectionKicker isShift">Shift Operations</div>
-          <h2 className="wm-analyticsSectionTitle">Daily / Weekly Activity</h2>
-          <p className="wm-analyticsSectionSub">Daily and weekly shift activity.</p>
+          <div className="wm-analyticsSectionKicker isShift">Shift</div>
+          <h2 className="wm-analyticsSectionTitle">Day-to-day shifts</h2>
+          <p className="wm-analyticsSectionSub">
+            Who applied, who’s confirmed, and which groups are live.
+          </p>
 
           <div className="wm-analyticsFunnelList">
             <FunnelRow
@@ -169,9 +171,7 @@ export function EmployerAnalyticsPage() {
           </div>
 
           {!hasShiftActivity && (
-            <NoDataHint tone="shift">
-              Create your first shift to see daily activity analytics.
-            </NoDataHint>
+            <NoDataHint tone="shift">Create a shift to see this activity.</NoDataHint>
           )}
 
           <div className="wm-analyticsActionRow">

@@ -97,8 +97,8 @@ const COPY: Record<GroupJoinErrorCode, Omit<GroupJoinErrorInfo, "code">> = {
     terminal: true,
   },
   unknown: {
-    title: "Something went wrong",
-    message: "Join failed. Check your link and daily code, then try again.",
+    title: "Couldn't join this group",
+    message: "Check the link and today's code, then try again.",
     terminal: false,
   },
 };

@@ -101,7 +101,7 @@ export function useEmployerCareerHomeState() {
       } catch {
         if (!cancelled) {
           setIsHydrating(false);
-          setLoadError("Unable to refresh Career posts from the server.");
+          setLoadError("Couldn't refresh career posts. Try again in a moment.");
         }
       }
     })();

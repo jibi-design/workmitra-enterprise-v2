@@ -175,8 +175,8 @@ export async function rejectCandidate(
       affectedUserRole: "employee",
       postId,
       appId,
-      title: "Application update",
-      body: `${signature} Your application for ${post.jobTitle} at ${post.companyName} was not successful.${finalReason ? ` Reason: ${finalReason}` : ""}`,
+      title: "This role didn't go through",
+      body: `${signature} They didn't move forward with ${post.jobTitle} at ${post.companyName}.${finalReason ? ` ${finalReason}` : " Other roles are still worth a look."}`,
       route: ROUTE_PATHS.employeeCareerApplications,
     });
   }

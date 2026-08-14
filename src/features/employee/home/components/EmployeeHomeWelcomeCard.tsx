@@ -15,12 +15,10 @@ export function EmployeeHomeWelcomeCard({ userDisplayName, welcomeFading }: Prop
         border: "1px solid var(--wm-success-border, #86efac)",
         background:
           "color-mix(in srgb, var(--wm-success-wash, #f0fdf4) 70%, var(--wm-emp-glass-bg-strong, #fff))",
-        backdropFilter: "blur(var(--wm-blur-md)) var(--wm-glass-saturate)",
-        WebkitBackdropFilter: "blur(var(--wm-blur-md)) var(--wm-glass-saturate)",
         boxShadow: "var(--wm-emp-surface-shadow, 0 8px 20px rgba(15, 23, 42, 0.05))",
         textAlign: "center",
         opacity: welcomeFading ? 0 : 1,
-        transition: "opacity 0.5s ease-out",
+        transition: "opacity 0.5s var(--wm-motion-spring, ease-out)",
       }}
       role="status"
     >
@@ -41,7 +39,7 @@ export function EmployeeHomeWelcomeCard({ userDisplayName, welcomeFading }: Prop
           color: "var(--wm-text-muted, #6b7280)",
         }}
       >
-        Your complete work companion is here. Find jobs, track your work, and stay organized.
+        Find work, keep track of what's next, and stay organised.
       </div>
     </div>
   );

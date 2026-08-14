@@ -8,6 +8,11 @@ import { employeeProfileStorage } from "../../../profile/storage/employeeProfile
 import { APPS_KEY, newId } from "../../helpers/shiftApplyHelpers";
 import { safeParseAllShiftApplications } from "../../storage/shiftPostApply.storage";
 import { shiftApplicationsStorage } from "../../storage/shiftApplications.storage";
+import {
+  ATTENDANCE_INTENT_ACTION,
+  ATTENDANCE_INTENT_HELPER,
+  ATTENDANCE_INTENT_TITLE,
+} from "../../helpers/attendanceIntentCopy";
 import type { ShiftApplicationRecord } from "../../types/shiftPostApply.types";
 import type { ShiftPostData } from "../../types/shiftApplicationTypes";
 import type { ShiftAnswerMap, ShiftNoteMap, ShiftQuickAnswerMap } from "./shiftPostApply.types";
@@ -101,11 +106,10 @@ export function useShiftPostApplyLifecycle({
     setAttendanceConfirmPending(true);
 
     setWithdrawConfirm({
-      title: "Confirm attendance intent?",
-      message:
-        "Saves Attendance Intent / Check-in Signal only — not a legal timecard, QR check-in, live timer, or payroll punch-in.",
+      title: ATTENDANCE_INTENT_TITLE,
+      message: ATTENDANCE_INTENT_HELPER,
       tone: "warn",
-      confirmLabel: "Save attendance intent",
+      confirmLabel: ATTENDANCE_INTENT_ACTION,
       cancelLabel: "Not now",
     });
   }

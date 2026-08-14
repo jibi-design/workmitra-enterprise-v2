@@ -44,7 +44,7 @@ function mapError(err: unknown): string {
   if (err && typeof err === "object" && "message" in err) {
     return String((err as { message: string }).message);
   }
-  return "Something went wrong";
+  return "Couldn't finish that. Try again.";
 }
 
 export function useDualVerification() {

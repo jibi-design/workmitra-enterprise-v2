@@ -290,7 +290,7 @@ export async function recordInterviewResult(
           postId,
           appId,
           title: "You cleared the interview!",
-          body: `${clearedSignature} Congratulations! You cleared all interviews for ${post.jobTitle} at ${post.companyName}. Your employer will send you an offer soon.`,
+          body: `${clearedSignature} You made it through interviews for ${post.jobTitle} at ${post.companyName}. An offer should follow soon.`,
           route: ROUTE_PATHS.employeeCareerApplications,
         });
       }

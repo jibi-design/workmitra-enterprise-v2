@@ -8,6 +8,7 @@
 import { useCallback, useRef, useState, type CSSProperties } from "react";
 import { formatNotificationTime } from "./notificationHelpers";
 import { type NotificationDomainStyle } from "./notificationTypes";
+import { stripNotificationDedupeSignature } from "../../notifications/guards";
 
 /* ------------------------------------------------ */
 /* Props                                            */
@@ -212,7 +213,9 @@ export function NotificationCard({
           <span className="wm-notificationCardBadge">{domainStyle.label}</span>
         </div>
 
-        {body && <div className="wm-notificationCardBody">{body}</div>}
+        {body ? (
+          <div className="wm-notificationCardBody">{stripNotificationDedupeSignature(body)}</div>
+        ) : null}
 
         <div className="wm-notificationCardTime">{formatNotificationTime(createdAt)}</div>
       </div>

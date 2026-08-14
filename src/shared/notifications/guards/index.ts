@@ -10,7 +10,11 @@ export {
   DEFAULT_NOTIFICATION_TEXT_LIMITS,
 } from "./notificationGuardTypes";
 
-export { cleanNotificationText, cleanOptionalNotificationText } from "./notificationTextGuards";
+export {
+  cleanNotificationText,
+  cleanOptionalNotificationText,
+  stripNotificationDedupeSignature,
+} from "./notificationTextGuards";
 
 export { cleanNotificationRoute } from "./notificationRouteGuards";
 

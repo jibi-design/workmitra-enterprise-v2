@@ -27,8 +27,8 @@ export function createCareerWorkspace(
     id: uid("cu"),
     createdAt: now,
     kind: "system",
-    title: "Welcome to your new role",
-    body: `Congratulations! You have been hired as ${post.jobTitle} at ${post.companyName}. This workspace is your official channel for onboarding and communication.`,
+    title: "You're hired",
+    body: `You're in as ${post.jobTitle} at ${post.companyName}. Open your workspace when you're ready to start.`,
   };
 
   const workspace: CareerWorkspace = {

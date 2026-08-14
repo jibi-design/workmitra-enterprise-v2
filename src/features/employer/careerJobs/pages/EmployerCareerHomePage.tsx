@@ -29,8 +29,8 @@ export function EmployerCareerHomePage() {
       <div className="wm-er-vCareer wm-stackGrid" data-testid="employer-career-home-error">
         <EnterpriseEmpty
           domain="career"
-          title="Career home could not load"
-          subtitle={state.loadError || "Something went wrong while loading Career data."}
+          title="Couldn't open Career"
+          subtitle={state.loadError || "We couldn't load this page. Try again in a moment."}
           primaryLabel="Retry"
           onPrimary={state.retryLoad}
           testId="career-home-error"
@@ -117,7 +117,6 @@ export function EmployerCareerHomePage() {
             <EmployerCareerPostListCard
               summary={state.postSummary}
               onOpenPosts={state.openCareerPosts}
-              onCreate={state.openCreate}
             />
           </div>
         </PulseTargetCard>

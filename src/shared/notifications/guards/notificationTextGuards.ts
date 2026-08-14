@@ -16,3 +16,8 @@ export function cleanOptionalNotificationText(
 
   return clean || undefined;
 }
+
+/** Hide internal dedupe tokens like [CAREER_HIRED:uuid:uuid] from people. */
+export function stripNotificationDedupeSignature(value: string): string {
+  return value.replace(/\[[A-Z][A-Z0-9_]+:[^\]]+\]\s*/g, "").trim();
+}

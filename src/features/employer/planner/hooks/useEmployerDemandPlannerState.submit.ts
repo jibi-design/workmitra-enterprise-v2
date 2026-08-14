@@ -81,6 +81,7 @@ export async function submitDemandPlannerPlan(input: {
         name: step1.name.trim(),
         companyName: step1.companyName.trim(),
         locationName: step1.locationName.trim(),
+        locationPincode: step1.locationPincode.trim(),
         category: step1.category,
         experience: step1.experience,
         startDate: step1.startDate,
@@ -122,6 +123,7 @@ export async function submitDemandPlannerPlan(input: {
         name: step1.name.trim(),
         companyName: step1.companyName.trim(),
         locationName: step1.locationName.trim(),
+        locationPincode: step1.locationPincode.trim(),
         category: step1.category,
         experience: step1.experience,
         startDate: step1.startDate,
@@ -215,7 +217,7 @@ export async function submitDemandPlannerPlan(input: {
     }
     setNotice({
       title: "Publish failed",
-      message: "Something went wrong. Please try again.",
+      message: "That didn't save. Try once more.",
     });
   } finally {
     if (lockPlanId && lockToken) {

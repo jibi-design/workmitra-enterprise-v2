@@ -2,6 +2,11 @@ import type {
   ShiftApplicationStatusTimelineProps,
   ShiftTimelineAction,
 } from "./shiftTimeline.types";
+import {
+  ATTENDANCE_INTENT_ACTION,
+  ATTENDANCE_INTENT_HELPER,
+  ATTENDANCE_INTENT_SAVED,
+} from "../../helpers/attendanceIntentCopy";
 
 export function createTimelineActions({
   status,
@@ -90,18 +95,16 @@ export function createTimelineActions({
       attendanceConfirmedAt === undefined
         ? {
             id: "confirm-attendance",
-            label: "Confirm attendance intent",
-            helper:
-              "Attendance Intent / Check-in Signal only — not a legal timecard, QR punch-in, or payroll.",
+            label: ATTENDANCE_INTENT_ACTION,
+            helper: ATTENDANCE_INTENT_HELPER,
             variant: "success",
             onClick: onConfirmAttendance,
             disabled: !onConfirmAttendance,
           }
         : {
             id: "attendance-confirmed",
-            label: "Attendance intent saved",
-            helper:
-              "Check-in signal recorded (plan to attend) — not live punch-in or a legal timecard.",
+            label: "You're down as attending",
+            helper: ATTENDANCE_INTENT_SAVED,
             variant: "muted",
             disabled: true,
           };

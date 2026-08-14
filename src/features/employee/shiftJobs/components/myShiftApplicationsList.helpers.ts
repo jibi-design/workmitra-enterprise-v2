@@ -24,15 +24,15 @@ export function getNextStepText(application: ShiftApplicationData): string {
     }
 
     if (application.attendanceConfirmedAt !== undefined) {
-      return "Attendance intent saved (check-in signal). This is not a legal timecard — open your workspace and attend on time.";
+      return "You said you'll be there. Open the workspace and arrive on time.";
     }
 
-    return "Confirmed. Please confirm Attendance Intent / Check-in Signal for this shift.";
+    return "You're confirmed. Tell them you'll be there when you're sure.";
   }
 
   if (application.status === "withdrawn") return "Application withdrawn.";
   if (application.status === "rejected")
-    return "Not selected for this shift. You can apply for other available shifts.";
+    return "They went with someone else. Other shifts are still worth a look.";
   if (application.status === "replaced") return "This assignment was replaced by the employer.";
   if (application.status === "exited") return "You exited this shift workspace.";
   return "Application status updated.";

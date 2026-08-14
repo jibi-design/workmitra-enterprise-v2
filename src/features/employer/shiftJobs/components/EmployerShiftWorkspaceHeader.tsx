@@ -19,7 +19,7 @@ export function EmployerShiftWorkspaceHeader({ workspace }: EmployerShiftWorkspa
       icon={<WorkspaceHeroIcon />}
       title={title}
       subtitle={`${workspace.locationName} · ${range}`}
-      description="Confirmed work group — updates, workers, and Attendance Intent / Check-in Signal live here (not a legal timecard)."
+      description="Confirmed crew — updates and who’s coming live here. Saying they’ll attend isn’t a clock-in."
       trailing={<span className="wm-domainHeroBadge">{statusLabel(workspace.status)}</span>}
     >
       <div

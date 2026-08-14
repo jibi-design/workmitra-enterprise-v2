@@ -56,6 +56,16 @@ export function withdrawApplication(applicationId: string): WithdrawShiftApplica
   try {
     localStorage.setItem(APPS_KEY, JSON.stringify(nextItems));
     window.dispatchEvent(new Event(APPS_CHANGED));
+    void import("../../../shift/services/shiftGateApi.service").then(
+      ({ isShiftApiSyncEnabled, shiftGateApi }) => {
+        if (!isShiftApiSyncEnabled()) return;
+        return import("../../../shift/utils/shiftIdBridge").then(({ shiftAppIdBridge }) => {
+          const serverId = shiftAppIdBridge.resolveServerId(applicationId);
+          if (!serverId) return;
+          return shiftGateApi.withdrawApplication(serverId).catch(() => undefined);
+        });
+      },
+    );
     return { ok: true };
   } catch {
     return { ok: false, reason: "storage_error" };
@@ -208,8 +218,8 @@ export function confirmAttendance(applicationId: string): ConfirmShiftAttendance
         postId: notifiedPostId,
         appId: applicationId,
         severity: "success",
-        title: "Worker saved attendance intent",
-        body: "A confirmed worker marked that they plan to attend (Attendance Intent / Check-in Signal — not a legal timecard).",
+        title: "They're planning to attend",
+        body: "A confirmed worker said they'll be there. This isn't a clock-in.",
         route: ROUTE_PATHS.employerShiftPostDashboard.replace(":postId", notifiedPostId),
       });
     } catch {

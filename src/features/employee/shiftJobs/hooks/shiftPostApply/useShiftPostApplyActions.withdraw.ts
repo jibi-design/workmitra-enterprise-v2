@@ -8,6 +8,11 @@ import { APPS_KEY } from "../../helpers/shiftApplyHelpers";
 import { safeParseAllShiftApplications } from "../../storage/shiftPostApply.storage";
 import { shiftApplicationsStorage } from "../../storage/shiftApplications.storage";
 import {
+  ATTENDANCE_INTENT_ACTION,
+  ATTENDANCE_INTENT_HELPER,
+  ATTENDANCE_INTENT_TITLE,
+} from "../../helpers/attendanceIntentCopy";
+import {
   getShiftDetailCancelConfirmedMessage,
   getShiftDetailCancelConfirmedTitle,
   getShiftDetailWithdrawMessage,
@@ -55,11 +60,10 @@ export function createShiftPostApplyWithdrawActions(input: {
     setAttendanceConfirmPending(true);
 
     setWithdrawConfirm({
-      title: "Confirm attendance intent?",
-      message:
-        "Saves Attendance Intent / Check-in Signal only — not a legal timecard, QR check-in, live timer, or payroll punch-in.",
+      title: ATTENDANCE_INTENT_TITLE,
+      message: ATTENDANCE_INTENT_HELPER,
       tone: "warn",
-      confirmLabel: "Save attendance intent",
+      confirmLabel: ATTENDANCE_INTENT_ACTION,
       cancelLabel: "Not now",
     });
   }

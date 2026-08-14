@@ -1,6 +1,7 @@
 /** Job Mitra | HomeInboxTicker.tsx | Home unread notification preview */
 
 import type { InboxTickerItem } from "../helpers/latestUnreadInboxPreview";
+import { stripNotificationDedupeSignature } from "../../../shared/notifications/guards";
 
 type Props = {
   readonly item: InboxTickerItem | null;
@@ -22,7 +23,8 @@ function TickerIcon() {
 export function HomeInboxTicker({ item, onOpen, testId }: Props) {
   if (!item) return null;
 
-  const line = item.body ? `${item.title} · ${item.body}` : item.title;
+  const cleanBody = item.body ? stripNotificationDedupeSignature(item.body) : "";
+  const line = cleanBody ? `${item.title} · ${cleanBody}` : item.title;
 
   return (
     <button
