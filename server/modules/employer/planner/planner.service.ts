@@ -1,6 +1,7 @@
 import type { AuthUser } from "../../auth/types.js";
 import { isLivePlannerStatus } from "../verification/employerMaturity.policy.js";
 import { employerVerificationService } from "../verification/employerVerification.service.js";
+import { parsePincode } from "../../location/pincode.js";
 import { employerPlannerStore, type PlannerPlanRow } from "./planner.store.js";
 
 export type PlannerMutationResult =
@@ -28,6 +29,21 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function mergePlannerDetails(
+  body: Record<string, unknown>,
+  existing?: Record<string, unknown>,
+): Record<string, unknown> {
+  const details = {
+    ...(existing ?? {}),
+    ...(isRecord(body.details) ? body.details : {}),
+  };
+  const pin =
+    parsePincode(typeof body.locationPincode === "string" ? body.locationPincode : null) ??
+    parsePincode(typeof details.locationPincode === "string" ? details.locationPincode : null);
+  if (pin) details.locationPincode = pin;
+  return details;
+}
+
 function gateLivePublish(employer: AuthUser, status: string): PlannerMutationResult | null {
   if (!isLivePlannerStatus(status)) return null;
   const gate = employerVerificationService.assertEmployerCanPublishLive(employer);
@@ -44,7 +60,7 @@ function gateLivePublish(employer: AuthUser, status: string): PlannerMutationRes
 
 export const employerPlannerService = {
   async listMyPlans(employer: AuthUser): Promise<PlannerListResult> {
-    return { ok: true, plans: employerPlannerStore.listByEmployer(employer.id) };
+    return { ok: true, plans: await employerPlannerStore.listByEmployer(employer.id) };
   },
 
   async createPlan(
@@ -74,8 +90,8 @@ export const employerPlannerService = {
     const denied = gateLivePublish(employer, statusRaw);
     if (denied) return denied;
 
-    const details = isRecord(body.details) ? body.details : {};
-    const plan = employerPlannerStore.create({
+    const details = mergePlannerDetails(body);
+    const plan = await employerPlannerStore.create({
       employerUserId: employer.id,
       name,
       status: statusRaw,
@@ -89,7 +105,7 @@ export const employerPlannerService = {
     employer: AuthUser,
     body: Record<string, unknown>,
   ): Promise<PlannerMutationResult> {
-    const existing = employerPlannerStore.findById(planId);
+    const existing = await employerPlannerStore.findById(planId);
     if (!existing) {
       return { ok: false, code: "NOT_FOUND", message: "Plan not found", httpStatus: 404 };
     }
@@ -116,16 +132,14 @@ export const employerPlannerService = {
     const denied = gateLivePublish(employer, statusRaw);
     if (denied) return denied;
 
-    const details = isRecord(body.details)
-      ? { ...(isRecord(existing.details) ? existing.details : {}), ...body.details }
-      : existing.details;
+    const details = mergePlannerDetails(body, isRecord(existing.details) ? existing.details : {});
 
-    const plan = employerPlannerStore.update({
+    const plan = await employerPlannerStore.update({
       planId,
       employerUserId: employer.id,
       name,
       status: statusRaw,
-      details: isRecord(details) ? details : {},
+      details,
     });
     if (!plan) {
       return { ok: false, code: "NOT_FOUND", message: "Plan not found", httpStatus: 404 };

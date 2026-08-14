@@ -12,8 +12,11 @@ import {
 } from "../../../validation/schemas/shift.schemas.js";
 import { confirmShiftCandidate } from "./shift.saga.js";
 import { employerShiftService } from "./shift.service.js";
+import { handleWorkersRadarRoute } from "./shift.radar.routes.js";
+import { tryHandleEmployerShiftApplicationList } from "./shift.applications.routes.js";
 import { shiftDirectInviteStore } from "./shiftDirectInvite.store.js";
 import { idempotencyStore, readIdempotencyKey } from "../../shared/idempotency.store.js";
+import { handleEmployerShiftOpsRoutes } from "./shiftOps.routes.js";
 
 const SHIFT_PREFIX = "/v1/jobmitra/employer/shift";
 
@@ -33,6 +36,10 @@ export async function handleEmployerShiftRoutes(
 
   const { requestId } = req;
   const subpath = pathname.slice(SHIFT_PREFIX.length) || "/";
+
+  if (await handleEmployerShiftOpsRoutes(req, res, url, method)) return true;
+  if (await handleWorkersRadarRoute(req, res, url, method)) return true;
+  if (await tryHandleEmployerShiftApplicationList(req, res, url, method)) return true;
 
   // GET /v1/jobmitra/employer/shift/posts
   if (method === "GET" && subpath === "/posts") {

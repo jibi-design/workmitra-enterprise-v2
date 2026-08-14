@@ -1,14 +1,18 @@
 import type { ServerResponse } from "node:http";
 import type { AuthenticatedRequest } from "../../../middleware/index.js";
+import { validateRequest } from "../../../middleware/validateRequest.js";
 import { sendJson, envelope, readJsonBody } from "../../../utils/http.js";
 import { parseWithSchema, sendValidationError } from "../../../validation/zodParse.js";
 import {
   applyShiftBodySchema,
   directAcceptBodySchema,
+  shiftAppIdParamsSchema,
   shiftPostIdParamsSchema,
 } from "../../../validation/schemas/shift.schemas.js";
 import { acceptDirectInviteShift } from "../../employer/shift/shift.saga.js";
 import { employeeShiftService } from "./shift.service.js";
+import { listNearbyPostsForEmployee } from "./nearbyPosts.service.js";
+import { handleEmployeeShiftOpsRoutes } from "./shiftOps.routes.js";
 
 const SHIFT_PREFIX = "/v1/jobmitra/employee/shift";
 
@@ -27,7 +31,15 @@ export async function handleEmployeeShiftRoutes(
   if (!pathname.startsWith(SHIFT_PREFIX)) return false;
 
   const { requestId } = req;
+  if (await handleEmployeeShiftOpsRoutes(req, res, url, method)) return true;
   const subpath = pathname.slice(SHIFT_PREFIX.length) || "/";
+
+  // GET /v1/jobmitra/employee/shift/nearby-posts
+  if (method === "GET" && subpath === "/nearby-posts") {
+    const result = await listNearbyPostsForEmployee(req.authenticatedUser);
+    sendJson(res, 200, envelope({ posts: result.posts }, requestId));
+    return true;
+  }
 
   // GET /v1/jobmitra/employee/shift/applications
   if (method === "GET" && subpath === "/applications") {
@@ -49,10 +61,6 @@ export async function handleEmployeeShiftRoutes(
   // POST /v1/jobmitra/employee/shift/posts/:postId/apply
   const applyMatch = subpath.match(/^\/posts\/([^/]+)\/apply$/);
   if (method === "POST" && applyMatch) {
-    const params = parseWithSchema(shiftPostIdParamsSchema, { postId: applyMatch[1] });
-    if (!params.ok) {
-      return sendValidationError(res, requestId, "postId must be a valid UUID");
-    }
     const body = await readJsonBody(req);
     if (body === null) {
       sendJson(res, 413, {
@@ -60,15 +68,24 @@ export async function handleEmployeeShiftRoutes(
       });
       return true;
     }
-    const parsed = parseWithSchema(applyShiftBodySchema, body);
-    if (!parsed.ok) {
-      return sendValidationError(res, requestId, "Invalid apply body");
+    const validated = validateRequest(
+      {
+        bodySchema: applyShiftBodySchema,
+        paramsSchema: shiftPostIdParamsSchema,
+        body,
+        params: { postId: applyMatch[1] },
+      },
+      res,
+      requestId,
+    );
+    if (!validated.ok) {
+      return true;
     }
 
     const result = await employeeShiftService.applyToPost(
-      params.data.postId,
+      validated.params.postId,
       req.authenticatedUser,
-      parsed.data as Record<string, unknown>,
+      validated.body as Record<string, unknown>,
     );
     if (!result.ok) {
       sendJson(res, result.httpStatus, {
@@ -124,6 +141,26 @@ export async function handleEmployeeShiftRoutes(
         requestId,
       ),
     );
+    return true;
+  }
+
+  const withdrawMatch = subpath.match(/^\/applications\/([^/]+)\/withdraw$/);
+  if (method === "POST" && withdrawMatch) {
+    const params = parseWithSchema(shiftAppIdParamsSchema, { appId: withdrawMatch[1] });
+    if (!params.ok) {
+      return sendValidationError(res, requestId, "applicationId must be a valid UUID");
+    }
+    const result = await employeeShiftService.withdrawApplication(
+      params.data.appId,
+      req.authenticatedUser,
+    );
+    if (!result.ok) {
+      sendJson(res, result.httpStatus, {
+        error: { code: result.code, message: result.message, requestId },
+      });
+      return true;
+    }
+    sendJson(res, 200, envelope({ application: result.application }, requestId));
     return true;
   }
 

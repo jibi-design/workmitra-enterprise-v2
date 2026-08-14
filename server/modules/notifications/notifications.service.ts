@@ -19,11 +19,21 @@ export async function emitUserNotification(
 ): Promise<UserNotificationView | null> {
   const title = params.title?.trim() ?? "";
   if (!title) return null;
-  return insertNotification({
+  const row = await insertNotification({
     ...params,
     title,
     body: params.body?.trim() ?? "",
   });
+  if (row && params.recipientUserId) {
+    const { emitPulseToUser } = await import("../realtime/pulseHub.js");
+    emitPulseToUser(params.recipientUserId, {
+      type: "inbox",
+      notificationId: row.id,
+      eventType: row.eventType,
+      ts: Date.now(),
+    });
+  }
+  return row;
 }
 
 /**
@@ -54,12 +64,12 @@ export async function emitShiftConfirmedNotification(params: {
     recipientUserId,
     recipientMlId: workerWmId,
     domain: "shift",
-    eventType: "shift_confirmed",
+    eventType: "SHIFT_EMPLOYEE_SELECTED",
     title: "Shift confirmed",
     body: `You were confirmed for ${jobLabel}. Open My Work to continue.`,
     route: "/employee/shift/my-work",
     meta: {
-      type: "shift_confirmed",
+      type: "SHIFT_EMPLOYEE_SELECTED",
       postId: params.postId,
       appId: params.appId,
       workspaceId: params.workspaceId,

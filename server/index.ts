@@ -13,15 +13,22 @@ import { handleAvailabilityRoutes } from "./modules/shift/availability.routes.js
 import { handleFavoritesRoutes } from "./modules/shift/favorites.routes.js";
 import { handleCallingRoutes } from "./routes/calling.routes.js";
 import { enforceCsrf, isMutatingMethod } from "./middleware/csrf.js";
-import { applyApiRateLimit, applyChaosInjection } from "./middleware/rateLimitChaos.js";
+import { applyChaosInjection } from "./middleware/rateLimitChaos.js";
+import { applyRateLimiter } from "./middleware/rateLimiter.js";
 import { applySecurityHeaders } from "./middleware/securityHeaders.js";
 import { buildAllowedOrigins, resolveCorsOrigin } from "./middleware/corsOrigins.js";
 import { resolveClientIp } from "./middleware/clientIp.js";
 import { getRequestId, requireAuth } from "./middleware/index.js";
+import { handleUnhandledDispatchError } from "./middleware/errorHandler.js";
 import { initServerMonitor } from "./observability/monitor.js";
 import { logSecurityEvent } from "./observability/securityEvents.js";
-import { sendInternalServerError } from "./utils/http.js";
 import { handleOpsRoutes } from "./modules/ops/ops.routes.js";
+import { enforceOpsMaintenanceGate } from "./middleware/opsMaintenanceGate.js";
+import {
+  recordPostingSpikeSignal,
+  recordRateLimitSignal,
+} from "./observability/anomalyDetector.js";
+import { attachPulseWebSocket } from "./modules/realtime/attachPulseUpgrade.js";
 
 const PORT = Number(process.env.PORT ?? 3001);
 
@@ -69,7 +76,7 @@ async function dispatchRequest(req: IncomingMessage, res: ServerResponse): Promi
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE,OPTIONS");
   res.setHeader(
     "Access-Control-Allow-Headers",
-    "Content-Type, X-CSRF-Token, Idempotency-Key, Authorization",
+    "Content-Type, X-CSRF-Token, Idempotency-Key, Authorization, X-WM-Step-Up",
   );
   res.setHeader(
     "Access-Control-Expose-Headers",
@@ -138,6 +145,18 @@ async function dispatchRequest(req: IncomingMessage, res: ServerResponse): Promi
     return;
   }
 
+  // Emergency kill-switch: 503 public APIs; ops/health already returned above.
+  if (await enforceOpsMaintenanceGate(req, res, url.pathname)) {
+    logSecurityEvent({
+      event: "MAINTENANCE_GATE_503",
+      path: url.pathname,
+      method,
+      httpStatus: 503,
+      clientKey: clientKeyFromReq(req),
+    });
+    return;
+  }
+
   if (isProduction() && requestOrigin && !allowedOrigin) {
     logSecurityEvent({
       event: "CORS_DENIED",
@@ -157,13 +176,15 @@ async function dispatchRequest(req: IncomingMessage, res: ServerResponse): Promi
     url.pathname.startsWith("/v1/jobmitra/employer/shift/availability-pool") ||
     url.pathname.startsWith("/v1/jobmitra/employer/shift/favorites");
 
-  const rate = await applyApiRateLimit(req, res, url.pathname, method);
+  const rate = await applyRateLimiter(req, res, url.pathname, method);
   if (rate.blocked) {
+    const storeOutage = rate.dimension === "store_error";
+    const httpStatus = storeOutage ? 503 : 429;
     logSecurityEvent({
-      event: "RATE_LIMIT_HIT",
+      event: storeOutage ? "RATE_LIMIT_STORE_ERROR" : "RATE_LIMIT_HIT",
       path: url.pathname,
       method,
-      httpStatus: 429,
+      httpStatus,
       rateClass: rate.rateClass,
       clientKey: clientKeyFromReq(req),
       meta: {
@@ -171,13 +192,16 @@ async function dispatchRequest(req: IncomingMessage, res: ServerResponse): Promi
         dimension: rate.dimension,
       },
     });
-    res.statusCode = 429;
+    if (!storeOutage) {
+      recordRateLimitSignal(clientKeyFromReq(req), url.pathname, rate.rateClass);
+    }
+    res.statusCode = httpStatus;
     res.setHeader("Content-Type", "application/json");
     res.end(
       JSON.stringify({
         error: {
-          code: "TOO_MANY_REQUESTS",
-          message: "Too Many Requests",
+          code: storeOutage ? "RATE_LIMIT_UNAVAILABLE" : "TOO_MANY_REQUESTS",
+          message: storeOutage ? "Rate limit service temporarily unavailable" : "Too Many Requests",
           retryAfterSec: rate.retryAfterSec,
         },
       }),
@@ -191,10 +215,21 @@ async function dispatchRequest(req: IncomingMessage, res: ServerResponse): Promi
   const isLogin = method === "POST" && url.pathname === "/v1/jobmitra/auth/login";
   const isOpsMutating =
     (method === "PATCH" && url.pathname === "/v1/jobmitra/ops/flags") ||
-    (method === "POST" && url.pathname === "/v1/jobmitra/ops/audit");
+    (method === "POST" && url.pathname === "/v1/jobmitra/ops/audit") ||
+    (method === "POST" && url.pathname === "/v1/jobmitra/ops/step-up") ||
+    (method === "POST" && url.pathname === "/v1/jobmitra/ops/privileged");
   const skipCsrf = isLogin || isOpsMutating || (isContractMockPath && !isAuthEnabled());
   if (isMutatingMethod(method) && !skipCsrf) {
     if (!(await enforceCsrf(req, res))) return;
+  }
+
+  if (
+    isMutatingMethod(method) &&
+    url.pathname.startsWith("/v1/jobmitra/") &&
+    !url.pathname.startsWith("/v1/jobmitra/ops/") &&
+    !url.pathname.startsWith("/v1/jobmitra/auth/")
+  ) {
+    recordPostingSpikeSignal(clientKeyFromReq(req), url.pathname);
   }
 
   if (isContractMockPath) {
@@ -204,8 +239,8 @@ async function dispatchRequest(req: IncomingMessage, res: ServerResponse): Promi
         req,
         res,
         requestId,
-        async () => {
-          if (await handleAvailabilityRoutes(req, res, url, method)) return;
+        async (authedReq) => {
+          if (await handleAvailabilityRoutes(authedReq, res, url, method)) return;
           if (await handleFavoritesRoutes(req, res, url, method)) return;
           res.statusCode = 404;
           res.setHeader("Content-Type", "application/json");
@@ -231,12 +266,10 @@ async function dispatchRequest(req: IncomingMessage, res: ServerResponse): Promi
 
 const server = createServer((req, res) => {
   void dispatchRequest(req, res).catch((err: unknown) => {
-    sendInternalServerError(res, getRequestId(), err, {
-      path: req.url,
-      method: req.method,
-    });
+    handleUnhandledDispatchError(req, res, err, getRequestId());
   });
 });
+attachPulseWebSocket(server);
 
 server.listen(PORT, () => {
   console.log(`[Job Mitra API] listening on http://localhost:${PORT}`);

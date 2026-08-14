@@ -12,9 +12,7 @@ export const showPhase2Features = import.meta.env.VITE_SHOW_PHASE2 === "1";
  * - Development: on unless VITE_SHIFT_OPS=0
  * SQL migrations remain separate — this flag only gates UI routes/nav.
  */
-export const showShiftOpsFeatures = import.meta.env.PROD
-  ? import.meta.env.VITE_SHIFT_OPS === "1"
-  : import.meta.env.VITE_SHIFT_OPS !== "0";
+export const showShiftOpsFeatures = import.meta.env.VITE_SHIFT_OPS !== "0";
 
 /**
  * Work mobile + work email OTP gate for Shift Ops onboarding.
@@ -25,7 +23,16 @@ export const requireShiftOpsChannelOtpVerify = false;
 
 /**
  * Companies House CRN lookup (Phase 3).
- * - Default: mock registry for lab / offline
- * - Set VITE_COMPANIES_HOUSE_MOCK=0 to disable client offline mock
+ * - Production: mock OFF unless VITE_COMPANIES_HOUSE_MOCK=1 (lab only)
+ * - Development: mock ON unless VITE_COMPANIES_HOUSE_MOCK=0
  */
-export const companiesHouseMockEnabled = import.meta.env.VITE_COMPANIES_HOUSE_MOCK !== "0";
+export const companiesHouseMockEnabled = import.meta.env.PROD
+  ? import.meta.env.VITE_COMPANIES_HOUSE_MOCK === "1"
+  : import.meta.env.VITE_COMPANIES_HOUSE_MOCK !== "0";
+
+/**
+ * Mitra Labs AI Photo Delivery (QR → selfie → recognition → download).
+ * Day-1: OFF — product is QR/invite utilities only.
+ * Opt-in lab scaffold: VITE_MITRA_LABS_AI_PHOTO=1
+ */
+export const showMitraLabsAiPhotoDelivery = import.meta.env.VITE_MITRA_LABS_AI_PHOTO === "1";

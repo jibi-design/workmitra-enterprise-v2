@@ -44,10 +44,14 @@ export default defineConfig(({ mode, command }) => {
       dedupe: ["react", "react-dom", "react-router", "react-router-dom"],
     },
     server: {
+      watch: {
+        ignored: ["**/.tmp/**"],
+      },
       proxy: {
         "/v1": {
           target: "http://localhost:3001",
           changeOrigin: true,
+          ws: true,
         },
       },
     },
@@ -62,8 +66,8 @@ export default defineConfig(({ mode, command }) => {
         },
         manifest: {
           id: "/",
-          name: "WorkMitra",
-          short_name: "WorkMitra",
+          name: "Job Mitra",
+          short_name: "Job Mitra",
           description: "Find jobs, build trust, grow your career.",
           theme_color: "#1d4ed8",
           background_color: "#ffffff",
@@ -134,40 +138,78 @@ export default defineConfig(({ mode, command }) => {
     build: {
       sourcemap: false,
       minify: "esbuild",
+      /**
+       * Chunk policy:
+       * - Split heavy node_modules into named vendor chunks (load-speed / cache).
+       * - Do NOT force feature/bridge path chunks — that created Circular chunk
+       *   cycles with supabase/vendor. Domain barrels use import+bind instead of
+       *   `export { x } from` to avoid Rollup reexport circular-chunk warnings.
+       * - App code-splitting stays route-level via React.lazy / lazyPage.
+       * - jspdf / html2canvas are dynamic-imported at export call sites only.
+       */
       rollupOptions: {
+        onwarn(warning, defaultHandler) {
+          const msg = warning.message ?? "";
+          // Fail hard on true Circular chunk cycles (manualChunks mistakes).
+          // Reexport-across-async-chunk notices are tracked separately; const SoT
+          // live bindings are required for ESM TDZ safety under planner↔shift cycles.
+          if (msg.includes("Circular chunk:")) {
+            throw new Error(`[circular-chunks] ${msg}`);
+          }
+          if (
+            msg.includes("circular dependency between chunks") ||
+            msg.includes("will end up in different chunks by current Rollup settings")
+          ) {
+            console.warn(`[circular-chunks:reexport] ${msg}`);
+            return;
+          }
+          defaultHandler(warning);
+        },
         output: {
           manualChunks(id) {
-            if (id.includes("node_modules")) {
-              if (id.includes("jspdf")) return "pdf-engine";
-              if (
-                /node_modules[/\\](react-dom|react|scheduler)[/\\]/.test(id) ||
-                /node_modules[/\\]react[/\\]index/.test(id)
-              ) {
-                return "react-vendor";
-              }
-              if (id.includes("react-router")) return "router-vendor";
-              if (id.includes("zustand")) return "state-vendor";
-              if (id.includes("html2canvas")) return "html2canvas";
-              return "vendor";
+            const norm = id.replace(/\\/g, "/").split("?")[0];
+            if (!norm.includes("/node_modules/")) return undefined;
+
+            // PDF / canvas export engines — keep isolated (eager shell must not pull these)
+            if (norm.includes("jspdf") || norm.includes("canvg") || norm.includes("svg2pdf")) {
+              return "pdf-engine";
             }
-            if (id.includes("/features/admin/") || id.includes("\\features\\admin\\")) {
-              return "admin-feature";
-            }
+            if (norm.includes("html2canvas")) return "html2canvas";
+
+            // Core framework
             if (
-              id.includes("/features/employer/hrManagement/") ||
-              id.includes("\\features\\employer\\hrManagement\\")
+              /\/node_modules\/(react-dom|react|scheduler)\//.test(norm) ||
+              /\/node_modules\/react\/index/.test(norm)
             ) {
-              return "hr-feature";
+              return "react-vendor";
             }
+            if (norm.includes("react-router")) return "router-vendor";
+            if (norm.includes("zustand")) return "state-vendor";
+
+            // Named mid-weight libs (shrink catch-all vendor)
+            if (norm.includes("lucide-react")) return "icons-vendor";
+            if (norm.includes("/zod/") || norm.endsWith("/zod")) {
+              return "zod-vendor";
+            }
+            if (norm.includes("@dnd-kit")) return "dnd-vendor";
+            if (norm.includes("framer-motion")) return "motion-vendor";
+
+            // Heavy optional SDKs — isolate from catch-all vendor
+            if (norm.includes("agora-rtc-sdk") || norm.includes("agora-token"))
+              return "agora-vendor";
+            if (norm.includes("@sentry")) return "sentry-vendor";
+            if (norm.includes("@supabase")) return "supabase-vendor";
+            if (norm.includes("@tanstack")) return "virtual-vendor";
             if (
-              id.includes("/features/employer/workforceOps/") ||
-              id.includes("\\features\\employer\\workforceOps\\") ||
-              id.includes("/features/employee/workforce/") ||
-              id.includes("\\features\\employee\\workforce\\")
+              norm.includes("sanitize-html") ||
+              norm.includes("htmlparser") ||
+              norm.includes("domhandler")
             ) {
-              return "workforce-feature";
+              return "sanitize-vendor";
             }
-            return undefined;
+            if (norm.includes("qrcode")) return "qrcode-vendor";
+
+            return "vendor";
           },
         },
       },

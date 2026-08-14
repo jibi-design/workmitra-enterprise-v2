@@ -1,5 +1,6 @@
 /** Job Mitra | pulseEventBridge.queue.ts | src/features/pulse/pulseEventBridge.queue.ts */
 
+import { AUTH_BACKEND_ENABLED } from "../../shared/config/authConfig";
 import type { PulseAffectedUserRole } from "./pulseRegistry";
 import type { GlobalPulseEventPayload, QueuedPulseEvent } from "./pulseEventBridge.types";
 import { PULSE_EVENT_QUEUE_CHANGED_EVENT, PULSE_EVENT_QUEUE_KEY } from "./pulseEventBridge.types";
@@ -88,9 +89,14 @@ function emitPulseQueueChanged(): void {
 }
 
 /**
- * Demo/local mode queue for cross-role testing before backend push delivery.
+ * AUTH on: cross-role delivery is server inbox + WebSocket pulse (two devices).
+ * AUTH off: localStorage queue for E2E/demo on one origin.
  */
 export function queuePulseEventForAffectedUser(payload: GlobalPulseEventPayload): void {
+  if (AUTH_BACKEND_ENABLED) {
+    return;
+  }
+
   if (shouldSuppressPhase2Pulse(payload)) {
     return;
   }

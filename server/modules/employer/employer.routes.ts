@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { requireAuth, requireEmployerRole } from "../../middleware/index.js";
+import { requireAuth, roleGateEmployer } from "../../middleware/index.js";
 import { handleEmployerCareerRoutes } from "./career/career.routes.js";
 import { handleEmployerShiftRoutes } from "./shift/shift.routes.js";
 import { handleEmployerVaultRoutes } from "./vault/vault.routes.js";
@@ -9,6 +9,8 @@ import { handleEmployerHrRoutes } from "./hr/hr.routes.js";
 import { handleEmployerWorkforceRoutes } from "./workforce/workforce.routes.js";
 import { handleEmployerVerificationRoutes } from "./verification/verification.routes.js";
 import { handleEmployerPlannerRoutes } from "./planner/planner.routes.js";
+import { handleEmployerNotificationRoutes } from "./notifications/notifications.routes.js";
+import { handleEmployerCareerExitRoutes } from "../career/career.exit.routes.js";
 import { sendNotFound } from "../../utils/http.js";
 
 const EMPLOYER_PREFIX = "/v1/jobmitra/employer";
@@ -18,7 +20,7 @@ const EMPLOYER_PREFIX = "/v1/jobmitra/employer";
  *
  * All requests entering this handler are gated by:
  *   1. requireAuth       — valid session cookie, user exists in store
- *   2. requireEmployerRole — session role must be 'employer'
+ *   2. roleGateEmployer (WAVE-5.1 Layer 2) — session role must be 'employer'
  *
  * An Employee or Admin session hitting any /employer/* endpoint will receive 403.
  * Role is never read from the request body or query string.
@@ -40,11 +42,19 @@ export async function handleEmployerRoutes(
     res,
     requestId,
     async (authedReq) => {
-      await requireEmployerRole(
+      await roleGateEmployer(
         authedReq,
         res,
         requestId,
         async (authedReq) => {
+          const handledNotifications = await handleEmployerNotificationRoutes(
+            authedReq,
+            res,
+            url,
+            method,
+          );
+          if (handledNotifications) return;
+
           const handledVerification = await handleEmployerVerificationRoutes(
             authedReq,
             res,
@@ -52,6 +62,9 @@ export async function handleEmployerRoutes(
             method,
           );
           if (handledVerification) return;
+
+          const handledExit = await handleEmployerCareerExitRoutes(authedReq, res, url, method);
+          if (handledExit) return;
 
           const handledCareer = await handleEmployerCareerRoutes(authedReq, res, url, method);
           if (handledCareer) return;

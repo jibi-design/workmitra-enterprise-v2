@@ -1,10 +1,11 @@
 import { randomUUID } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { requireAuth, requireEmployeeRole } from "../../middleware/index.js";
+import { requireAuth, roleGateEmployee } from "../../middleware/index.js";
 import { handleEmployeeCareerRoutes } from "./career/career.routes.js";
 import { handleEmployeeVaultRoutes } from "./vault/vault.routes.js";
 import { handleEmployeeShiftRoutes } from "./shift/shift.routes.js";
 import { handleEmployeeNotificationRoutes } from "./notifications/notifications.routes.js";
+import { handleEmployeeCareerExitRoutes } from "../career/career.exit.routes.js";
 import { sendNotFound } from "../../utils/http.js";
 
 const EMPLOYEE_PREFIX = "/v1/jobmitra/employee";
@@ -14,7 +15,8 @@ const EMPLOYEE_PREFIX = "/v1/jobmitra/employee";
  *
  * All requests entering this handler are gated by:
  *   1. requireAuth      — valid session cookie, user exists in store
- *   2. requireEmployeeRole — session role must be 'employee'
+ *   2. roleGateEmployee (WAVE-5.1 Layer 2) — session role must be 'employee'
+ *      (Candidate alias maps to employee; never trust client role claims)
  *
  * An Employer or Admin session hitting any /employee/* endpoint will receive 403.
  * Role is never read from the request body or query string.
@@ -37,7 +39,7 @@ export async function handleEmployeeRoutes(
     res,
     requestId,
     async (authedReq) => {
-      await requireEmployeeRole(
+      await roleGateEmployee(
         authedReq,
         res,
         requestId,
@@ -52,6 +54,9 @@ export async function handleEmployeeRoutes(
           if (handledNotifications) return;
 
           // Career sub-domain
+          const handledExit = await handleEmployeeCareerExitRoutes(authedReq, res, url, method);
+          if (handledExit) return;
+
           const handledCareer = await handleEmployeeCareerRoutes(authedReq, res, url, method);
           if (handledCareer) return;
 

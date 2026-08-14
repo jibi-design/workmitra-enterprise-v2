@@ -1,7 +1,8 @@
 /**
- * Phase-0 in-memory Planner plans store (server publish surface).
- * Client LS planner remains primary for AUTH-off lab; AUTH-on live publish goes through here.
+ * Demand Planner persistence — Postgres (planner_plans).
  */
+
+import { getPool } from "../../../db/pool.js";
 
 export type PlannerPlanRow = {
   readonly id: string;
@@ -13,58 +14,83 @@ export type PlannerPlanRow = {
   readonly updated_at: string;
 };
 
-const plans = new Map<string, PlannerPlanRow>();
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
 
-function newId(): string {
-  return crypto.randomUUID();
+function mapRow(row: Record<string, unknown>): PlannerPlanRow {
+  const status = row.status === "active" || row.status === "cancelled" ? row.status : "draft";
+  return {
+    id: String(row.id),
+    employer_user_id: String(row.employer_user_id),
+    name: String(row.name),
+    status,
+    details: isRecord(row.details) ? row.details : {},
+    created_at:
+      row.created_at instanceof Date ? row.created_at.toISOString() : String(row.created_at ?? ""),
+    updated_at:
+      row.updated_at instanceof Date ? row.updated_at.toISOString() : String(row.updated_at ?? ""),
+  };
 }
 
 export const employerPlannerStore = {
-  listByEmployer(employerUserId: string): PlannerPlanRow[] {
-    return [...plans.values()].filter((p) => p.employer_user_id === employerUserId);
+  async listByEmployer(employerUserId: string): Promise<PlannerPlanRow[]> {
+    const result = await getPool().query(
+      `SELECT id, employer_user_id, name, status, details, created_at, updated_at
+       FROM planner_plans
+       WHERE employer_user_id = $1
+       ORDER BY updated_at DESC`,
+      [employerUserId],
+    );
+    return result.rows.map((row) => mapRow(row as Record<string, unknown>));
   },
 
-  create(params: {
+  async create(params: {
     employerUserId: string;
     name: string;
     status: "draft" | "active" | "cancelled";
     details: Record<string, unknown>;
-  }): PlannerPlanRow {
-    const now = new Date().toISOString();
-    const row: PlannerPlanRow = {
-      id: newId(),
-      employer_user_id: params.employerUserId,
-      name: params.name,
-      status: params.status,
-      details: params.details,
-      created_at: now,
-      updated_at: now,
-    };
-    plans.set(row.id, row);
-    return row;
+  }): Promise<PlannerPlanRow> {
+    const result = await getPool().query(
+      `INSERT INTO planner_plans (employer_user_id, name, status, details)
+       VALUES ($1, $2, $3, $4::jsonb)
+       RETURNING id, employer_user_id, name, status, details, created_at, updated_at`,
+      [params.employerUserId, params.name, params.status, JSON.stringify(params.details)],
+    );
+    return mapRow(result.rows[0] as Record<string, unknown>);
   },
 
-  update(params: {
+  async update(params: {
     planId: string;
     employerUserId: string;
     name: string;
     status: "draft" | "active" | "cancelled";
     details: Record<string, unknown>;
-  }): PlannerPlanRow | null {
-    const existing = plans.get(params.planId);
-    if (!existing || existing.employer_user_id !== params.employerUserId) return null;
-    const row: PlannerPlanRow = {
-      ...existing,
-      name: params.name,
-      status: params.status,
-      details: params.details,
-      updated_at: new Date().toISOString(),
-    };
-    plans.set(row.id, row);
-    return row;
+  }): Promise<PlannerPlanRow | null> {
+    const result = await getPool().query(
+      `UPDATE planner_plans
+       SET name = $3, status = $4, details = $5::jsonb, updated_at = now()
+       WHERE id = $1 AND employer_user_id = $2
+       RETURNING id, employer_user_id, name, status, details, created_at, updated_at`,
+      [
+        params.planId,
+        params.employerUserId,
+        params.name,
+        params.status,
+        JSON.stringify(params.details),
+      ],
+    );
+    const row = result.rows[0];
+    return row ? mapRow(row as Record<string, unknown>) : null;
   },
 
-  findById(planId: string): PlannerPlanRow | null {
-    return plans.get(planId) ?? null;
+  async findById(planId: string): Promise<PlannerPlanRow | null> {
+    const result = await getPool().query(
+      `SELECT id, employer_user_id, name, status, details, created_at, updated_at
+       FROM planner_plans WHERE id = $1`,
+      [planId],
+    );
+    const row = result.rows[0];
+    return row ? mapRow(row as Record<string, unknown>) : null;
   },
 };
