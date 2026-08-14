@@ -127,6 +127,7 @@ export function EmployerShiftPostDashboardPage() {
         shortlistedCount={state.shortlistApps.length}
         backupCount={state.backupApps.length}
         selectedCount={state.selectedApps.length}
+        remainingVacancies={Math.max(0, state.post.vacancies - state.selectedApps.length)}
         alreadyAnalyzed={state.alreadyAnalyzed}
         onGoToApplied={() => state.setTab("applied")}
         onGoToShortlisted={() => state.setTab("shortlisted")}
@@ -148,6 +149,11 @@ export function EmployerShiftPostDashboardPage() {
         onPriorityTag={state.handlePriorityTag}
         cardActions={state.cardActions}
         onRequestTabChange={state.setTab}
+        laterPipeline={{
+          shortlisted: state.shortlistApps.length,
+          backup: state.backupApps.length,
+          selected: state.selectedApps.length,
+        }}
       />
 
       <EmployerShiftAutomationPanel

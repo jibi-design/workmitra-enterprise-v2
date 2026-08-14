@@ -3,9 +3,10 @@
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\hooks\dashboard\useEmployerShiftPostDashboardState.ts
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import type { NoticeData } from "../../../../../shared/components/NoticeModal";
-import type { DashboardTab } from "../../helpers/shiftDashboardHelpers";
+import { parseDashboardTab, type DashboardTab } from "../../helpers/shiftDashboardHelpers";
+import { resolveShiftDashboardLandingTab } from "../../helpers/shiftDashboard.smartResume";
 import type { PostSettings, PriorityTag } from "../../storage/employerShift.storage";
 import { useEmployerShiftDashboardCandidateActions } from "./useEmployerShiftDashboardCandidateActions";
 import { useEmployerShiftDashboardCompare } from "./useEmployerShiftDashboardCompare";
@@ -17,15 +18,18 @@ import { useEmployerShiftDashboardSnapshots } from "./useEmployerShiftDashboardS
 export function useEmployerShiftPostDashboardState() {
   const navigate = useNavigate();
   const { postId = "" } = useParams();
+  const [searchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get("tab");
 
   const { post, apps, activity, workspace, hasApplications } =
     useEmployerShiftDashboardSnapshots(postId);
 
-  const [tab, setTab] = useState<DashboardTab>("applied");
+  const [tab, setTab] = useState<DashboardTab>(() => parseDashboardTab(tabFromUrl) ?? "applied");
   const [isBusy, setIsBusy] = useState(false);
   const mountedRef = useRef(true);
   const busyInFlightRef = useRef(false);
   const busyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const landedPostRef = useRef("");
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showLog, setShowLog] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
@@ -45,6 +49,10 @@ export function useEmployerShiftPostDashboardState() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    landedPostRef.current = "";
+  }, [postId]);
 
   const settings: PostSettings = post?.settings ?? {
     backupSlots: 2,
@@ -94,6 +102,38 @@ export function useEmployerShiftPostDashboardState() {
     selected: selectedApps.length,
     rejected: rejectedApps.length,
   };
+
+  useEffect(() => {
+    const urlTab = parseDashboardTab(tabFromUrl);
+    if (urlTab) {
+      queueMicrotask(() => setTab(urlTab));
+      landedPostRef.current = postId;
+      return;
+    }
+    if (!post || landedPostRef.current === postId) return;
+    const pipeline =
+      tabCounts.applied + tabCounts.shortlisted + tabCounts.backup + tabCounts.selected;
+    if (pipeline === 0) return;
+    const next = resolveShiftDashboardLandingTab(
+      {
+        applied: tabCounts.applied,
+        shortlisted: tabCounts.shortlisted,
+        backup: tabCounts.backup,
+        selected: tabCounts.selected,
+      },
+      post.vacancies,
+    );
+    queueMicrotask(() => setTab(next));
+    landedPostRef.current = postId;
+  }, [
+    post,
+    postId,
+    tabCounts.applied,
+    tabCounts.backup,
+    tabCounts.selected,
+    tabCounts.shortlisted,
+    tabFromUrl,
+  ]);
 
   const tabApps = {
     applied: appliedApps,

@@ -8,3 +8,8 @@
 @import "./../shift-direct-invite.css";
 @import "./../vault-premium.css";
 @import "./../components/home-premium.css";
+@import "./../components/employee-home-console.css";
+@import "./../components/home-inbox-ticker.css";
+/* Shared Domain DNA last — wins over domain-premium borders/shadows */
+@import "./../components/domain-surface.css";
+@import "./../components/readable-content-surfaces.css";

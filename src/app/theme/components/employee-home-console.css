@@ -1,0 +1,1133 @@
+/* Employee Home Console — light 3D float system (blur budget + z-ladder) */
+
+:root {
+  --wm-home-console-bg: #f8fafc;
+  --wm-home-console-surface: rgba(255, 255, 255, 0.9);
+  --wm-home-z-content: 0;
+  --wm-home-z-active: 20;
+  --wm-home-z-nav: 40;
+  --wm-home-z-portal: 1050; /* above BottomNav (1000) */
+  --wm-home-z-overlay: 1100;
+  --wm-home-elevate-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.06);
+  --wm-home-elevate-shadow-hover: 0 20px 40px -8px rgba(15, 23, 42, 0.14);
+  --wm-home-elevate-border: 1px solid rgba(226, 232, 240, 0.8); /* slate-200/80 */
+  --wm-home-radius-card: 24px;
+  --wm-home-radius-hero: 28px;
+}
+
+.wm-homePage.wm-homePage--console {
+  gap: 14px;
+  background: transparent;
+  position: relative;
+  z-index: var(--wm-home-z-content);
+  /* Extra bottom clearance for floating pill nav */
+  padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px));
+}
+
+.wm-homePage--console.wm-homePage--compactTop {
+  gap: 10px;
+}
+
+/* Ultra-compact glassmorphic greeting strip */
+.wm-homeCompactHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+  padding: 10px 12px 10px 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  box-shadow:
+    0 8px 22px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+.wm-homeCompactHeader__copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wm-homeCompactHeader__greeting {
+  margin: 0;
+  font-size: 13px; /* text-sm */
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--wm-neutral-800, #1e293b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wm-homeCompactHeader__name {
+  font-weight: 700;
+  color: var(--wm-neutral-900, #0f172a);
+}
+
+.wm-homeCompactHeader__pill {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px; /* text-xs */
+  font-weight: 650;
+  line-height: 1.3;
+  color: #4338ca;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(199, 210, 254, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wm-homeCompactHeader__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 750;
+  color: #fff;
+  background: linear-gradient(145deg, #4f46e5, #1d4ed8);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 6px 14px rgba(49, 46, 129, 0.22);
+}
+
+.wm-homeCompactHeader__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Smart nudges row — profile pill + pending compact */
+.wm-homeSmartNudges {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wm-homeSmartNudges:empty {
+  display: none;
+}
+
+/* Unified Pending Actions — ultra-compact strip + expandable queue list */
+.wm-pendingActionsBannerWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.wm-pendingActionsBanner {
+  --wm-pending-banner-accent: var(--wm-shift-accent, #16a34a);
+  --wm-pending-profile-accent: #b45309;
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  max-width: 100%;
+  min-height: 0;
+  padding: 6px 4px 6px 10px;
+  border-radius: var(--wm-radius-chip, 14px);
+  border: 1px solid
+    color-mix(in srgb, var(--wm-pending-banner-accent) 18%, rgba(226, 232, 240, 0.85));
+  background: color-mix(in srgb, var(--wm-pending-banner-accent) 6%, rgba(255, 255, 255, 0.92));
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.035);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.wm-pendingActionsBanner__main {
+  flex: 1;
+  min-width: 0;
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  padding: 2px 4px 2px 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  color: color-mix(in srgb, var(--wm-pending-banner-accent) 38%, #475569);
+  touch-action: manipulation;
+  font: inherit;
+}
+
+.wm-pendingActionsBanner__main--static {
+  cursor: default;
+}
+
+.wm-pendingActionsBanner__icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--wm-pending-banner-accent);
+  opacity: 0.9;
+}
+
+.wm-pendingActionsBanner__icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.wm-pendingActionsBanner__line {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: 0;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  word-break: break-word;
+}
+
+.wm-pendingActionsBanner__toggle,
+.wm-pendingActionsBanner__dismiss {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border: none;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--wm-pending-banner-accent) 7%, transparent);
+  color: color-mix(in srgb, var(--wm-pending-banner-accent) 45%, #64748b);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wm-pendingActionsBanner__toggle {
+  font-size: 0;
+}
+
+.wm-pendingActionsBanner__toggle svg {
+  width: 11px;
+  height: 11px;
+}
+
+.wm-pendingActionsBanner__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.wm-pendingActionsBanner__row {
+  --wm-pending-banner-accent: var(--wm-shift-accent, #16a34a);
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  padding: 6px 4px 6px 10px;
+  border-radius: var(--wm-radius-chip, 14px);
+  border: 1px solid
+    color-mix(in srgb, var(--wm-pending-banner-accent) 18%, rgba(226, 232, 240, 0.85));
+  background: color-mix(in srgb, var(--wm-pending-banner-accent) 6%, rgba(255, 255, 255, 0.92));
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.03);
+}
+
+/* Dynamic conditional nudges — upcoming shifts + unified broadcasts */
+.wm-homeDynamicNudge {
+  --wm-nudge-accent: var(--wm-shift-accent, #16a34a);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 4px 4px 4px 12px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--wm-nudge-accent) 28%, rgba(226, 232, 240, 0.9));
+  background: color-mix(in srgb, var(--wm-nudge-accent) 8%, rgba(255, 255, 255, 0.92));
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  position: relative;
+}
+
+.wm-homeDynamicNudge__pulse {
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--wm-nudge-accent);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--wm-nudge-accent) 45%, transparent);
+  animation: wm-home-nudge-pulse 1.8s ease-out infinite;
+}
+
+@keyframes wm-home-nudge-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--wm-nudge-accent) 40%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--wm-nudge-accent) 0%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--wm-nudge-accent) 0%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wm-homeDynamicNudge__pulse {
+    animation: none;
+  }
+}
+
+.wm-homeDynamicNudge__badge {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--wm-nudge-accent);
+  background: color-mix(in srgb, var(--wm-nudge-accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--wm-nudge-accent) 28%, transparent);
+}
+
+.wm-homeDynamicNudge__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 6px 4px 6px 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  touch-action: manipulation;
+}
+
+.wm-homeDynamicNudge__kicker {
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--wm-nudge-accent) 70%, #64748b);
+}
+
+.wm-homeDynamicNudge__title {
+  font-size: 12.5px;
+  font-weight: 650;
+  line-height: 1.3;
+  color: var(--wm-neutral-900, #0f172a);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wm-homeDynamicNudge__dismiss {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.06);
+  color: #475569;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* Active priority band — Framer layout slot */
+.wm-homeActiveBand {
+  position: relative;
+  z-index: var(--wm-home-z-active);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wm-homeActiveBand:empty {
+  display: none;
+}
+
+.wm-homeActiveBand__item {
+  border-radius: var(--wm-home-radius-card);
+}
+
+/* 2-column core grid */
+.wm-homeCoreGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.wm-homeCoreGrid__cell {
+  min-width: 0;
+  display: flex;
+  overflow: visible;
+}
+
+.wm-homeCoreGrid__cell--span2 {
+  grid-column: 1 / -1;
+}
+
+.wm-homeCoreGrid__cell > * {
+  width: 100%;
+  flex: 1;
+}
+
+/* Shared elevated translucent surfaces in the grid */
+.wm-homeCoreGrid .wm-homeGlassCard,
+.wm-homeCoreGrid .wm-homeQuickTile,
+.wm-homeCoreGrid .wm-homeHubEntry,
+.wm-homeCoreGrid .wm-homeCoreFloat {
+  background: var(--wm-home-console-surface);
+  border-radius: var(--wm-home-radius-card);
+  transition:
+    box-shadow 300ms ease,
+    transform 300ms ease,
+    border-color 300ms ease;
+}
+
+/* Domain accents — Shared Domain DNA borders/shadows live in domain-surface.css */
+.wm-homePage--console .wm-homeGlassCard--domainShift {
+  --wm-card-domain-accent: var(--wm-shift-accent, #16a34a);
+}
+
+.wm-homePage--console .wm-homeGlassCard--domainCareer {
+  --wm-card-domain-accent: var(--wm-career-accent, #2563eb);
+}
+
+.wm-homePage--console .wm-homeGlassCard--domainPlanner {
+  --wm-card-domain-accent: color-mix(
+    in srgb,
+    var(--wm-planner-accent, #0891b2) 72%,
+    var(--wm-indigo-500, #6366f1) 28%
+  );
+}
+
+.wm-homePage--console .wm-homeGlassCard--domainDashboard {
+  --wm-home-dashboard-accent: var(--wm-dashboard-accent, #0f766e);
+  --wm-card-domain-accent: var(--wm-dashboard-accent, #0f766e);
+}
+
+.wm-homeCoreGrid .wm-homeGlassCard.is-active,
+.wm-homeCoreGrid .wm-homeGlassCard[aria-current="page"],
+.wm-homePage--console .wm-homeGlassCard--domainShift.is-active,
+.wm-homePage--console .wm-homeGlassCard--domainCareer.is-active,
+.wm-homePage--console .wm-homeGlassCard--domainPlanner.is-active,
+.wm-homePage--console .wm-homeGlassCard--domainDashboard.is-active,
+.wm-homePage--console .wm-homeGlassCard--domainVault.is-active {
+  border: var(--wm-dna-active-ring, var(--wm-domain-border));
+  box-shadow: var(--wm-dna-active-glow), var(--wm-domain-surface-inset);
+}
+
+@media (hover: hover) {
+  .wm-homeCoreGrid .wm-homeGlassCard:hover,
+  .wm-homeCoreGrid .wm-homeQuickTile:hover,
+  .wm-homeCoreGrid .wm-homeCoreFloat:hover {
+    box-shadow: var(--wm-home-elevate-shadow-hover);
+  }
+
+  /* Domain tiles keep DNA ambient glow (not generic elevate) */
+  .wm-homePage--console .wm-homeGlassCard--domainShift:hover,
+  .wm-homePage--console .wm-homeGlassCard--domainCareer:hover,
+  .wm-homePage--console .wm-homeGlassCard--domainPlanner:hover,
+  .wm-homePage--console .wm-homeGlassCard--domainDashboard:hover {
+    box-shadow: var(--wm-domain-ambient-shadow-hover), var(--wm-domain-surface-inset);
+  }
+}
+
+.wm-homeCoreGrid .wm-homeGlassCard {
+  padding: var(--wm-dna-card-padding, var(--wm-card-padding, 14px));
+  gap: 12px;
+  align-items: flex-start;
+  flex-direction: row;
+  text-align: left;
+}
+
+.wm-homeCoreGrid .wm-homeGlassCard__icon {
+  order: 0;
+  margin-inline-end: 0;
+}
+
+.wm-homeCoreGrid .wm-homeGlassCard__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  text-align: left;
+}
+
+.wm-homeCoreGrid .wm-homeGlassCard__trailing {
+  display: none;
+}
+
+.wm-homeQuickTile--grid,
+.wm-homeCoreFloat {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: var(--wm-dna-card-min-height, 140px);
+  padding: var(--wm-dna-card-padding, 14px);
+  border-radius: var(--wm-home-radius-card);
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  color: inherit;
+}
+
+.wm-homeQuickTile--grid .wm-homeQuickTile__label {
+  line-height: 1.25;
+}
+
+.wm-homeQuickTile--grid .wm-homeQuickTile__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Unified Workplace Hub — same outer 3D border/shadow model as domain cards */
+.wm-homeHubEntry {
+  --wm-hub-diary: var(--wm-purple-600, #7c3aed);
+  --wm-hub-vault: var(--wm-amber-600, #d97706);
+  --wm-hub-mix: color-mix(in srgb, var(--wm-hub-diary) 55%, var(--wm-hub-vault) 45%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: var(--wm-dna-card-min-height, 140px);
+  padding: var(--wm-dna-card-padding, 14px);
+  border-radius: var(--wm-home-radius-card);
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  position: relative;
+  /* Do not clip ambient outer shadow (needed for 3D lift) */
+  overflow: visible;
+}
+
+.wm-homeCoreGrid .wm-homeHubEntry--featured {
+  /* Real outer border — not a masked ring painted on the white fill */
+  border: 1.5px solid color-mix(in srgb, var(--wm-hub-mix) 42%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--wm-hub-mix) 6%,
+    var(--wm-home-console-surface, rgba(255, 255, 255, 0.94))
+  );
+  box-shadow:
+    0 10px 28px -6px rgba(15, 23, 42, 0.06),
+    0 10px 24px -8px color-mix(in srgb, var(--wm-hub-diary) 26%, transparent),
+    0 12px 26px -10px color-mix(in srgb, var(--wm-hub-vault) 24%, transparent);
+}
+
+@media (hover: hover) {
+  .wm-homeCoreGrid .wm-homeHubEntry--featured:hover {
+    box-shadow:
+      0 16px 36px -8px rgba(15, 23, 42, 0.1),
+      0 14px 28px -6px color-mix(in srgb, var(--wm-hub-diary) 30%, transparent),
+      0 12px 24px -8px color-mix(in srgb, var(--wm-hub-vault) 28%, transparent);
+  }
+}
+
+.wm-homeHubEntry__kicker {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--wm-hub-diary) 65%, var(--wm-hub-vault));
+}
+
+.wm-homeHubEntry__title {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--wm-neutral-900, #0f172a);
+}
+
+.wm-homeHubEntry__sub {
+  font-size: 12px;
+  font-weight: 550;
+  line-height: 1.35;
+  color: var(--wm-neutral-500, #64748b);
+  position: relative;
+  z-index: 1;
+}
+
+.wm-homeHubEntry__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.wm-homeHubEntry__copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+
+.wm-homeHubEntry__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--wm-hub-diary) 18%, transparent),
+    color-mix(in srgb, var(--wm-hub-vault) 16%, transparent)
+  );
+  color: color-mix(in srgb, var(--wm-hub-diary) 55%, var(--wm-hub-vault));
+}
+
+/* Uniform grid card height + icon pods */
+.wm-homeCoreGrid .wm-homeGlassCard,
+.wm-homeCoreGrid .wm-homeHubEntry,
+.wm-homeCoreGrid .wm-homeQuickTile--grid,
+.wm-homeCoreGrid .wm-homeCoreFloat {
+  min-height: var(--wm-dna-card-min-height, 140px);
+  box-sizing: border-box;
+}
+
+.wm-homeCoreGrid .wm-pulseNode,
+.wm-homeCoreGrid [data-pulse-node-id] {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  min-height: var(--wm-dna-card-min-height, 140px);
+  position: relative;
+  overflow: visible;
+}
+
+.wm-homeCoreGrid [data-pulse-node-id] > .wm-homeGlassCard {
+  flex: 1;
+  min-height: var(--wm-dna-card-min-height, 140px);
+}
+
+.wm-homeCoreGrid .wm-homeGlassCard__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px; /* rounded-xl */
+  flex-shrink: 0;
+}
+
+.wm-homeCoreGrid .wm-homeGlassCard {
+  align-items: flex-start;
+  gap: 12px;
+}
+
+/* Profile nudge — slim floating pill */
+.wm-homeProfilePill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  align-self: stretch;
+  width: 100%;
+  max-width: 100%;
+  padding: 4px 4px 4px 10px; /* py-2-ish + px */
+  border-radius: 999px;
+  background: rgba(255, 251, 235, 0.85); /* amber-50/80 */
+  border: 1px solid rgba(253, 230, 138, 0.65); /* amber-200/60 */
+  box-shadow: 0 6px 16px rgba(180, 83, 9, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Pending invite — compact pill matching profile nudge footprint */
+.wm-homePendingInvitePill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 0 8px;
+  padding: 4px 4px 4px 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, #16a34a 8%, rgba(255, 255, 255, 0.92));
+  border: 1px solid color-mix(in srgb, #16a34a 28%, rgba(226, 232, 240, 0.9));
+  box-shadow: 0 6px 16px rgba(22, 163, 74, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.wm-homePendingInvitePill__copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.wm-homePendingInvitePill__title {
+  font-size: 11px;
+  font-weight: 750;
+  color: #15803d;
+  line-height: 1.2;
+}
+
+.wm-homePendingInvitePill__sub {
+  font-size: 12px;
+  font-weight: 650;
+  color: #166534;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.25;
+}
+
+.wm-homePendingInvitePill__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.wm-homePendingInvitePill__cta {
+  margin: 0;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 999px;
+  background: #16a34a;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+  touch-action: manipulation;
+  white-space: nowrap;
+}
+
+.wm-homePendingInvitePill__cta:hover {
+  background: #15803d;
+}
+
+.wm-homePendingInvitePill__dismiss {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(22, 163, 74, 0.1);
+  color: #166534;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.wm-homeProfilePill__main {
+  flex: 1;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 4px 6px 4px 2px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  color: #92400e;
+  touch-action: manipulation;
+}
+
+.wm-homeProfilePill__ring {
+  flex-shrink: 0;
+}
+
+.wm-homeProfilePill__label {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 650;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wm-homeProfilePill__pct {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 750;
+  color: #b45309;
+  font-variant-numeric: tabular-nums;
+}
+
+.wm-homeProfilePill__dismiss {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(180, 83, 9, 0.08);
+  color: #92400e;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* Pending Actions — compact trigger (employee home) */
+.wm-homePage--console .wm-pendingActionsHub--compact {
+  position: relative;
+  border-radius: 16px; /* rounded-2xl */
+  overflow: hidden;
+  background: rgba(241, 245, 249, 0.85); /* slate-100/80 */
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.wm-homePage--console .wm-pendingActionsHub--compact::before {
+  display: none;
+}
+
+.wm-pendingActionsHub__compactTrigger {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 8px 10px 8px 14px; /* py-2 px-3 */
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  touch-action: manipulation;
+}
+
+.wm-pendingActionsHub__compactPulse {
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: #10b981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45);
+  animation: wm-home-pending-pulse 1.8s ease-out infinite;
+}
+
+@keyframes wm-home-pending-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wm-pendingActionsHub__compactPulse {
+    animation: none;
+  }
+}
+
+.wm-pendingActionsHub__compactCopy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.wm-pendingActionsHub__compactTitle {
+  font-size: 12.5px;
+  font-weight: 750;
+  color: var(--wm-neutral-900, #0f172a);
+  line-height: 1.25;
+}
+
+.wm-pendingActionsHub__compactSub {
+  font-size: 11px;
+  font-weight: 550;
+  color: var(--wm-neutral-500, #64748b);
+  line-height: 1.3;
+}
+
+.wm-pendingActionsHub__compactBadge {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #059669;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.22);
+}
+
+.wm-pendingActionsHub__compactChevron {
+  font-size: 11px;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.wm-homePage--console .wm-pendingActionsHub--compact .wm-pendingActionsHub__rows {
+  margin: 0;
+  padding: 0 8px 10px;
+  gap: 6px;
+}
+
+.wm-homePage--console .wm-pendingActionsHub--compact.isExpanded {
+  background: rgba(255, 255, 255, 0.92);
+}
+
+/* Legacy full pending glass (employer / non-compact) kept below */
+.wm-homePage--console .wm-homeInsightsSection {
+  margin-top: 4px;
+  gap: 12px;
+}
+
+.wm-homePage--console .wm-homeInsightsPortal.wm-homeGlassCard {
+  min-height: 96px;
+  padding: 22px 20px;
+  border-radius: var(--wm-home-radius-card);
+  align-items: flex-start;
+  gap: 14px;
+  flex-direction: row;
+  text-align: left;
+}
+
+.wm-homePage--console .wm-homeInsightsPortal .wm-homeGlassCard__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.wm-homePage--console .wm-homeInsightsPortal .wm-homeGlassCard__title {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: color-mix(in srgb, var(--wm-home-dashboard-accent, #0d9488) 55%, #0f172a);
+}
+
+.wm-homePage--console .wm-homeInsightsPortal .wm-homeGlassCard__subtitle {
+  font-size: 13px;
+}
+
+.wm-homePage--console .wm-homeInsightsPortal .wm-homeGlassCard__trailing,
+.wm-homePage--console .wm-homeInsightsPortal .wm-homeGlassCard__chevron {
+  display: none;
+}
+
+@media (hover: hover) {
+  .wm-homePage--console .wm-homeInsightsPortal.wm-homeGlassCard:hover {
+    box-shadow: var(--wm-domain-ambient-shadow-hover), var(--wm-domain-surface-inset);
+  }
+}
+
+/* Unified Workplace Hub Portal — blur allowed (budget) */
+.wm-homeHubPortal {
+  position: fixed;
+  inset: 0;
+  z-index: var(--wm-home-z-portal);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px 14px calc(96px + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
+}
+
+.wm-homeHubPortal__backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: rgba(15, 23, 42, 0.42);
+  backdrop-filter: blur(16px) saturate(1.15);
+  -webkit-backdrop-filter: blur(16px) saturate(1.15);
+  cursor: pointer;
+}
+
+.wm-homeHubPortal__sheet {
+  position: relative;
+  z-index: 1;
+  width: min(440px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: color-mix(in srgb, #ffffff 86%, transparent);
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.22);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+}
+
+.wm-homeHubPortal__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.wm-homeHubPortal__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 850;
+  letter-spacing: -0.02em;
+  color: var(--wm-neutral-900, #0f172a);
+}
+
+.wm-homeHubPortal__sub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 550;
+  color: var(--wm-neutral-500, #64748b);
+}
+
+.wm-homeHubPortal__close {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border: none;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.06);
+  color: var(--wm-neutral-700, #334155);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.wm-homeHubPortal__cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 420px) {
+  .wm-homeHubPortal__cards {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.wm-homeHubPortalCard {
+  --wm-hub-card-accent: #64748b;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: var(--wm-dna-card-min-height, 140px);
+  padding: var(--wm-dna-card-padding, 14px);
+  border-radius: 24px;
+  border: 1.5px solid color-mix(in srgb, var(--wm-hub-card-accent) 42%, transparent);
+  background: color-mix(in srgb, var(--wm-hub-card-accent) 5%, rgba(255, 255, 255, 0.96));
+  box-shadow:
+    0 10px 28px -6px rgba(15, 23, 42, 0.06),
+    0 10px 24px -8px color-mix(in srgb, var(--wm-hub-card-accent) 26%, transparent);
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  overflow: visible;
+  transition:
+    box-shadow 280ms ease,
+    border-color 280ms ease;
+}
+
+.wm-homeHubPortalCard--diary {
+  /* Violet — Work Diary */
+  --wm-hub-card-accent: var(--wm-purple-600, #7c3aed);
+}
+
+.wm-homeHubPortalCard--vault {
+  /* Amber/Gold — Work Vault */
+  --wm-hub-card-accent: var(--wm-amber-600, #d97706);
+}
+
+@media (hover: hover) {
+  .wm-homeHubPortalCard:hover {
+    box-shadow:
+      0 16px 36px -8px rgba(15, 23, 42, 0.1),
+      0 14px 28px -6px color-mix(in srgb, var(--wm-hub-card-accent) 32%, transparent);
+  }
+}
+
+.wm-homeHubPortalCard__title {
+  font-size: 15px;
+  font-weight: 800;
+  color: color-mix(in srgb, var(--wm-hub-card-accent) 55%, #0f172a);
+}
+
+.wm-homeHubPortalCard__sub {
+  font-size: 12px;
+  font-weight: 550;
+  line-height: 1.4;
+  color: var(--wm-neutral-500, #64748b);
+  flex: 1;
+}
+
+.wm-homeHubPortalCard__cta {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--wm-hub-card-accent);
+}
+
+body.wm-homeHubPortal-open {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wm-homeCoreGrid .wm-homeGlassCard,
+  .wm-homeCoreGrid .wm-homeQuickTile,
+  .wm-homeCoreGrid .wm-homeHubEntry,
+  .wm-homeCoreGrid .wm-homeCoreFloat {
+    transition: none;
+  }
+
+  .wm-homeHubPortal__backdrop,
+  .wm-homeHubPortal__sheet {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: #ffffff;
+  }
+
+  .wm-homeHubPortal__backdrop {
+    background: rgba(15, 23, 42, 0.55);
+  }
+}

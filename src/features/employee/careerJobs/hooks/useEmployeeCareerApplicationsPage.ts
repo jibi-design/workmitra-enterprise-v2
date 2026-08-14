@@ -1,8 +1,8 @@
 // App name: Job Mitra
 // File name: useEmployeeCareerApplicationsPage.ts
 
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { usePulseStore } from "../../../../features/pulse/pulseStore";
 import { hydrateCareerApplicationsFromServer } from "../../../career/services/careerDbTruth.service";
@@ -20,6 +20,11 @@ import {
   subscribeApps,
 } from "../helpers/careerApplicationHelpers";
 import { getPulseTabOverride } from "../helpers/employeeCareerApplicationsPage.helpers";
+import {
+  employeeCareerApplicationsBannerCopy,
+  parseEmployeeCareerApplicationsTab,
+  resolveEmployeeCareerApplicationsTab,
+} from "../helpers/careerApplications.smartResume";
 import { getCareerSearchSnapshot, subscribeCareerSearch } from "../helpers/careerSearchHelpers";
 import {
   acceptCareerOffer,
@@ -34,7 +39,9 @@ const WITHDRAW_FAIL_MESSAGE =
 
 export function useEmployeeCareerApplicationsPage() {
   const nav = useNavigate();
+  const [searchParams] = useSearchParams();
   const [tab, setTab] = useState<Tab>("active");
+  const landedRef = useRef(false);
   const [withdrawJobId, setWithdrawJobId] = useState<string | null>(null);
   const [withdrawJobTitle, setWithdrawJobTitle] = useState("");
   const [declineJobId, setDeclineJobId] = useState<string | null>(null);
@@ -71,9 +78,24 @@ export function useEmployeeCareerApplicationsPage() {
   }, [posts]);
 
   const counts = useMemo(() => computeTabCounts(apps), [apps]);
+  const resumeBanner = useMemo(() => employeeCareerApplicationsBannerCopy(counts), [counts]);
   const activePulseNodeId = usePulseStore((state) => state.chain[0] ?? null);
   const pulseTabOverride = getPulseTabOverride(activePulseNodeId);
   const visibleTab = pulseTabOverride ?? tab;
+
+  useEffect(() => {
+    if (landedRef.current) return;
+    const urlTab = parseEmployeeCareerApplicationsTab(searchParams.get("tab"));
+    if (urlTab) {
+      queueMicrotask(() => setTab(urlTab));
+      landedRef.current = true;
+      return;
+    }
+    if (counts.all === 0) return;
+    const next = resolveEmployeeCareerApplicationsTab(counts);
+    queueMicrotask(() => setTab(next));
+    landedRef.current = true;
+  }, [counts, searchParams]);
   const filtered = useMemo(
     () => apps.filter((app) => visibleTab === "all" || stageToTab(app.stage) === visibleTab),
     [apps, visibleTab],
@@ -124,7 +146,7 @@ export function useEmployeeCareerApplicationsPage() {
       return;
     }
 
-    nav(ROUTE_PATHS.employeeCareerApplications.replace("applications", "workspaces"));
+    nav(ROUTE_PATHS.employeeCareerWorkspaces);
   }
 
   function requestWithdraw(jobId: string, jobTitle: string) {
@@ -181,6 +203,7 @@ export function useEmployeeCareerApplicationsPage() {
     filtered,
     kpi,
     counts,
+    resumeBanner,
     postsMap,
     activePulseNodeId,
     withdrawJobId,

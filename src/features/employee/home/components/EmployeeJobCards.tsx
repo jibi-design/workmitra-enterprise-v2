@@ -7,16 +7,16 @@ import { IconCalendar, IconBriefcase } from "./employeeHomeIcons";
 import { DESIGN_TOKENS } from "../../../../app/theme/designTokens";
 import { plannerPublicIndex } from "../../../shared/planner/plannerPublic";
 import { PulseNode } from "../../../pulse/PulseNode";
-import { HomeGlassCardShell } from "../../../../shared/components/layout/HomeGlassCardShell";
-
-const TRAIL = (
-  <span className="wm-homeGlassCard__chevron" aria-hidden="true">
-    →
-  </span>
-);
+import { DomainCard } from "../../../../shared/components/layout/designDna";
+import {
+  DOMAIN_BY_KEY,
+  domainAccentCssVar,
+  getDomainCopy,
+} from "../../../../shared/config/domainRegistry";
 
 export function ShiftJobsCard() {
   const nav = useNavigate();
+  const domain = DOMAIN_BY_KEY.shift;
   const handleOpen = useCallback(() => {
     nav(ROUTE_PATHS.employeeShiftCenter);
   }, [nav]);
@@ -26,17 +26,17 @@ export function ShiftJobsCard() {
       id="employee-home-shift-card"
       style={{ "--wm-pulse-node-radius": DESIGN_TOKENS.geometry.radiusCard, width: "100%" }}
     >
-      <HomeGlassCardShell
-        title="Shift Jobs"
-        subtitle="Browse & apply for shifts"
-        ariaLabel="Open Shift Jobs"
+      <DomainCard
+        domain="shift"
+        title={domain.title}
+        subtitle={getDomainCopy("shift", "employee")}
+        ariaLabel={`Open ${domain.title}`}
         onClick={handleOpen}
         icon={<IconCalendar />}
         iconStyle={{
-          background: "rgba(39, 174, 96, 0.08)",
-          color: "var(--wm-shift-accent, #27AE60)",
+          background: `color-mix(in srgb, ${domainAccentCssVar("shift")} 12%, transparent)`,
+          color: domainAccentCssVar("shift"),
         }}
-        trailing={TRAIL}
       />
     </PulseNode>
   );
@@ -55,6 +55,7 @@ function IconGigProjects() {
 
 export function GigProjectsCard() {
   const nav = useNavigate();
+  const domain = DOMAIN_BY_KEY.planner;
 
   const openProjectCount = useSyncExternalStore(
     plannerPublicIndex.subscribe,
@@ -69,24 +70,25 @@ export function GigProjectsCard() {
   const subtitle =
     openProjectCount > 0
       ? `${openProjectCount} multi-day project${openProjectCount !== 1 ? "s" : ""} open`
-      : "Browse agency project plans";
+      : getDomainCopy("planner", "employee");
 
   return (
     <PulseNode
       id="employee-home-gig-projects-card"
       style={{ "--wm-pulse-node-radius": DESIGN_TOKENS.geometry.radiusCard, width: "100%" }}
     >
-      <HomeGlassCardShell
-        title="Gig Projects"
+      <DomainCard
+        domain="planner"
+        title={domain.title}
         subtitle={subtitle}
-        ariaLabel={`Open Gig Projects. ${subtitle}.`}
+        ariaLabel={`Open ${domain.title}. ${subtitle}.`}
         onClick={handleOpen}
         icon={<IconGigProjects />}
         iconStyle={{
-          background: "rgba(8, 145, 178, 0.08)",
-          color: "#0891B2",
+          background:
+            "color-mix(in srgb, color-mix(in srgb, var(--wm-planner-accent) 72%, var(--wm-indigo-500) 28%) 12%, transparent)",
+          color: "color-mix(in srgb, var(--wm-planner-accent) 72%, var(--wm-indigo-500) 28%)",
         }}
-        trailing={TRAIL}
       />
     </PulseNode>
   );
@@ -94,6 +96,7 @@ export function GigProjectsCard() {
 
 export function CareerJobsCard() {
   const nav = useNavigate();
+  const domain = DOMAIN_BY_KEY.career;
   const handleOpen = useCallback(() => {
     nav(ROUTE_PATHS.employeeCareerHome);
   }, [nav]);
@@ -103,17 +106,17 @@ export function CareerJobsCard() {
       id="employee-home-career-card"
       style={{ "--wm-pulse-node-radius": DESIGN_TOKENS.geometry.radiusCard, width: "100%" }}
     >
-      <HomeGlassCardShell
-        title="Career Jobs"
-        subtitle="Find permanent roles"
-        ariaLabel="Open Career Jobs"
+      <DomainCard
+        domain="career"
+        title={domain.title}
+        subtitle={getDomainCopy("career", "employee")}
+        ariaLabel={`Open ${domain.title}`}
         onClick={handleOpen}
         icon={<IconBriefcase />}
         iconStyle={{
-          background: "var(--wm-career-accent-soft, rgba(29, 78, 216, 0.1))",
-          color: "var(--wm-career-accent, #2563eb)",
+          background: `color-mix(in srgb, ${domainAccentCssVar("career")} 12%, transparent)`,
+          color: domainAccentCssVar("career"),
         }}
-        trailing={TRAIL}
       />
     </PulseNode>
   );

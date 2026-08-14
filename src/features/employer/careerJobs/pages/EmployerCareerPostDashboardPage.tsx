@@ -10,6 +10,7 @@ import { CareerPostCandidateList } from "../components/CareerPostCandidateList";
 import { CareerPostDashboardHeader } from "../components/CareerPostDashboardHeader";
 import { EmployerCareerPostDashboardModals } from "../components/EmployerCareerPostDashboardModals";
 import { CareerPostPipelineOverview } from "../components/CareerPostPipelineOverview";
+import { CareerDashboardStageBanner } from "../components/CareerDashboardStageBanner";
 import { useCareerDashboardAnalysisState } from "../hooks/careerPostDashboard/useCareerDashboardAnalysisState";
 import { PulseTargetIndicator } from "../../../pulse/PulseTargetIndicator";
 import { useEmployerCareerPostDashboardState } from "../hooks/useEmployerCareerPostDashboardState";
@@ -92,6 +93,17 @@ export function EmployerCareerPostDashboardPage() {
           onTabChange={state.setTab}
         />
       </div>
+
+      <CareerDashboardStageBanner
+        tab={state.tab}
+        counts={{
+          applied: analysisState.visibleCounts.applied,
+          shortlisted: analysisState.visibleCounts.shortlisted,
+          interview: analysisState.visibleCounts.interview,
+          offered: analysisState.visibleCounts.offered,
+          hired: analysisState.visibleCounts.hired,
+        }}
+      />
 
       <CareerPostCandidateList
         apps={analysisState.visibleApps}

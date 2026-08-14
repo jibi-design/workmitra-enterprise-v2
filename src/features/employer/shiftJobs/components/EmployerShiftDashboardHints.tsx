@@ -4,6 +4,11 @@
 
 import type { CSSProperties, ReactNode } from "react";
 import type { DashboardTab } from "../helpers/shiftDashboardHelpers";
+import {
+  shiftConfirmBannerCopy,
+  shiftPipelineHasLaterWork,
+} from "../helpers/shiftDashboard.smartResume";
+import { getDashboardHintToneStyle, type HintTone } from "./EmployerShiftDashboardHints.tones";
 
 type EmployerShiftDashboardHintsProps = {
   tab: DashboardTab;
@@ -11,14 +16,13 @@ type EmployerShiftDashboardHintsProps = {
   shortlistedCount: number;
   backupCount: number;
   selectedCount: number;
+  remainingVacancies: number;
   alreadyAnalyzed: boolean;
   onGoToApplied: () => void;
   onGoToShortlisted: () => void;
   onGoToBackup: () => void;
   onGoToSelected: () => void;
 };
-
-type HintTone = "success" | "warning" | "info";
 
 type HintConfig = {
   readonly title: string;
@@ -54,6 +58,7 @@ export function EmployerShiftDashboardHints({
   shortlistedCount,
   backupCount,
   selectedCount,
+  remainingVacancies,
   alreadyAnalyzed,
   onGoToApplied,
   onGoToShortlisted,
@@ -66,6 +71,7 @@ export function EmployerShiftDashboardHints({
     shortlistedCount,
     backupCount,
     selectedCount,
+    remainingVacancies,
     alreadyAnalyzed,
     onGoToApplied,
     onGoToShortlisted,
@@ -95,6 +101,7 @@ function getHint({
   shortlistedCount,
   backupCount,
   selectedCount,
+  remainingVacancies,
   alreadyAnalyzed,
   onGoToApplied,
   onGoToShortlisted,
@@ -102,6 +109,25 @@ function getHint({
   onGoToSelected,
 }: EmployerShiftDashboardHintsProps): HintConfig | null {
   if (tab === "applied" && appliedCount === 0) {
+    if (
+      shiftPipelineHasLaterWork({
+        applied: appliedCount,
+        shortlisted: shortlistedCount,
+        backup: backupCount,
+        selected: selectedCount,
+      })
+    ) {
+      return {
+        title: "Applied queue is clear",
+        message:
+          shortlistedCount > 0
+            ? "New applicants are not waiting here. Open Shortlisted and tap Confirm Worker to fill the vacancy."
+            : "The applied queue is empty because candidates already moved to later pipeline stages.",
+        tone: "success",
+        actionLabel: shortlistedCount > 0 ? "Go to Shortlist" : "View Confirmed",
+        onAction: shortlistedCount > 0 ? onGoToShortlisted : onGoToSelected,
+      };
+    }
     return {
       title: "Waiting for applications",
       message:
@@ -138,6 +164,15 @@ function getHint({
       tone: "warning",
       actionLabel: appliedCount > 0 ? "Go to Applied" : undefined,
       onAction: appliedCount > 0 ? onGoToApplied : undefined,
+    };
+  }
+
+  if (tab === "shortlisted" && shortlistedCount > 0) {
+    const copy = shiftConfirmBannerCopy(shortlistedCount, remainingVacancies);
+    return {
+      title: copy.title,
+      message: copy.message,
+      tone: "success",
     };
   }
 
@@ -201,7 +236,7 @@ function HintCard({
   readonly actionLabel?: string;
   readonly onAction?: () => void;
 }) {
-  const toneStyle = getToneStyle(tone);
+  const toneStyle = getDashboardHintToneStyle(tone);
 
   return (
     <div
@@ -230,40 +265,4 @@ function HintCard({
       )}
     </div>
   );
-}
-
-function getToneStyle(tone: HintTone): {
-  readonly title: string;
-  readonly text: string;
-  readonly background: string;
-  readonly border: string;
-  readonly button: string;
-} {
-  if (tone === "success") {
-    return {
-      title: "#166534",
-      text: "#166534",
-      background: "rgba(22,163,74,0.06)",
-      border: "1px solid rgba(22,163,74,0.14)",
-      button: "#16a34a",
-    };
-  }
-
-  if (tone === "warning") {
-    return {
-      title: "#92400e",
-      text: "#92400e",
-      background: "rgba(255,251,235,0.88)",
-      border: "1px solid rgba(217,119,6,0.18)",
-      button: "#b45309",
-    };
-  }
-
-  return {
-    title: "#1d4ed8",
-    text: "#1e3a8a",
-    background: "rgba(239,246,255,0.86)",
-    border: "1px solid rgba(29,78,216,0.14)",
-    button: "#1d4ed8",
-  };
 }

@@ -31,6 +31,19 @@ export function EmployeeCareerApplicationsPage() {
 
       <EmployeeCareerApplicationsHero onFindJobs={page.goFind} />
 
+      {page.resumeBanner ? (
+        <div
+          className="wm-er-card"
+          data-testid="career-applications-resume-banner"
+          style={{ padding: "11px 12px" }}
+        >
+          <div style={{ fontSize: 13, fontWeight: 950 }}>{page.resumeBanner.title}</div>
+          <div style={{ marginTop: 4, fontSize: 12, fontWeight: 700, color: "var(--wm-er-muted)" }}>
+            {page.resumeBanner.message}
+          </div>
+        </div>
+      ) : null}
+
       <div className="wm-stackGrid" style={{ padding: "0 4px" }}>
         <KpiTiles kpi={page.kpi} />
         <FilterTabs tab={page.visibleTab} counts={page.counts} onChange={page.setTab} />

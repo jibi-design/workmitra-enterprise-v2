@@ -1,6 +1,6 @@
 /** Job Mitra | EmployeeInsightsCard.tsx | My Dashboard entry card */
 
-import { HomeGlassCardShell } from "../../../../shared/components/layout/HomeGlassCardShell";
+import { DomainCard } from "../../../../shared/components/layout/designDna";
 
 interface InsightsCardProps {
   onViewHistory: () => void;
@@ -27,22 +27,19 @@ function ChartIcon() {
 
 export function InsightsCard({ onViewHistory }: InsightsCardProps) {
   return (
-    <HomeGlassCardShell
+    <DomainCard
+      domain="dashboard"
       audience="employee"
+      className="wm-homeInsightsPortal"
       title="My Dashboard"
       subtitle="Insights & activity"
       ariaLabel="Open My Dashboard"
       onClick={onViewHistory}
       icon={<ChartIcon />}
       iconStyle={{
-        background: "color-mix(in srgb, var(--wm-brand-600, #2563eb) 12%, transparent)",
-        color: "var(--wm-brand-600, #2563eb)",
+        background: "color-mix(in srgb, var(--wm-home-dashboard-accent, #0d9488) 14%, transparent)",
+        color: "var(--wm-home-dashboard-accent, #0d9488)",
       }}
-      trailing={
-        <span className="wm-homeGlassCard__chevron" aria-hidden="true">
-          →
-        </span>
-      }
     />
   );
 }

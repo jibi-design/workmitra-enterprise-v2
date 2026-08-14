@@ -17,14 +17,20 @@ function BellIcon() {
   );
 }
 
-export function NotificationEmptyState() {
+export function NotificationEmptyState({
+  title = "All caught up!",
+  text = "No new notifications",
+}: {
+  readonly title?: string;
+  readonly text?: string;
+}) {
   return (
     <div className="wm-notificationEmptyState">
       <div className="wm-notificationEmptyIcon">
         <BellIcon />
       </div>
-      <div className="wm-notificationEmptyTitle">All caught up!</div>
-      <div className="wm-notificationEmptyText">No new notifications</div>
+      <div className="wm-notificationEmptyTitle">{title}</div>
+      <div className="wm-notificationEmptyText">{text}</div>
     </div>
   );
 }

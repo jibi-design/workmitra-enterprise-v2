@@ -3,25 +3,27 @@
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\hooks\useMyShiftApplicationsState.ts
 
 import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
-import { PulseEvent, PulseSectionId } from "../../../pulse/pulseRegistry";
-import { usePulseStore } from "../../../pulse/pulseStore";
 import type { ConfirmData } from "../../../../shared/components/ConfirmModal";
 import { shiftApplicationsStorage } from "../storage/shiftApplications.storage";
 import { shiftWorkspacesStorage } from "../../shiftJobs/storage/shiftWorkspaces.storage";
 import type {
-  ApplicationTab,
   ShiftApplicationData,
   ShiftPostData,
 } from "../../shiftJobs/types/shiftApplicationTypes";
 import {
   computeKpi,
   computeTabCounts,
+  getWithdrawConfirmMessage,
+  getWithdrawConfirmTitle,
   isWithdrawableStatus,
   statusLabel,
   tabMatch,
 } from "../../shiftJobs/helpers/shiftApplicationHelpers";
+import { employeeShiftApplicationsBannerCopy } from "../../shiftJobs/helpers/shiftApplications.smartResume";
+import { settleMyShiftApplicationsConfirm } from "../../shiftJobs/helpers/myShiftApplications.confirm";
+import { useMyShiftApplicationsLanding } from "./useMyShiftApplicationsLanding";
 import {
   isPlannerApplication,
   isShiftApplication,
@@ -32,7 +34,8 @@ export type ApplicationsDomain = "shift" | "planner";
 
 export function useMyShiftApplicationsState(domain: ApplicationsDomain = "shift") {
   const nav = useNavigate();
-  const [tab, setTab] = useState<ApplicationTab>("all");
+  const [searchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get("tab");
   const [withdrawConfirm, setWithdrawConfirm] = useState<ConfirmData | null>(null);
   const [pendingWithdrawApplication, setPendingWithdrawApplication] =
     useState<ShiftApplicationData | null>(null);
@@ -68,6 +71,11 @@ export function useMyShiftApplicationsState(domain: ApplicationsDomain = "shift"
 
   const kpi = useMemo(() => computeKpi(domainApps), [domainApps]);
   const counts = useMemo(() => computeTabCounts(domainApps), [domainApps]);
+  const [tab, setTab] = useMyShiftApplicationsLanding(domainApps, tabFromUrl);
+  const resumeBanner = useMemo(
+    () => (domain === "shift" ? employeeShiftApplicationsBannerCopy(domainApps) : null),
+    [domain, domainApps],
+  );
 
   const postMap = useMemo(() => {
     const map = new Map<string, ShiftPostData>();
@@ -198,99 +206,14 @@ export function useMyShiftApplicationsState(domain: ApplicationsDomain = "shift"
   }, []);
 
   const handleConfirmWithdraw = useCallback(() => {
-    if (pendingAttendanceApplication) {
-      const result = shiftApplicationsStorage.confirmAttendance(pendingAttendanceApplication.id);
-
-      setWithdrawConfirm(null);
-      setPendingWithdrawApplication(null);
-      setPendingAttendanceApplication(null);
-
-      if (result.ok) {
-        usePulseStore.getState().resolvePulseTrailByTarget({
-          eventId: PulseEvent.SHIFT_CONFIRMATION_REQUIRED,
-          postId: pendingAttendanceApplication.postId,
-          appId: pendingAttendanceApplication.id,
-          sectionId: PulseSectionId.EMPLOYEE_SHIFT_CONFIRMATION_CARD,
-        });
-
-        showToast("Attendance intent / check-in signal saved.");
-        return;
-      }
-
-      if (result.reason === "already_confirmed") {
-        showToast("Attendance intent is already saved.");
-        return;
-      }
-
-      if (result.reason === "not_confirmed") {
-        showToast("This shift is not confirmed yet.");
-        return;
-      }
-
-      if (result.reason === "not_found") {
-        showToast("Application not found. Please refresh and try again.");
-        return;
-      }
-
-      showToast("Unable to save attendance intent. Please try again.");
-      return;
-    }
-
-    if (!pendingWithdrawApplication) {
-      setWithdrawConfirm(null);
-      return;
-    }
-
-    if (pendingWithdrawApplication.status === "confirmed") {
-      const result = shiftApplicationsStorage.cancelConfirmedAssignment(
-        pendingWithdrawApplication.id,
-      );
-
-      setWithdrawConfirm(null);
-      setPendingWithdrawApplication(null);
-      setPendingAttendanceApplication(null);
-
-      if (result.ok) {
-        showToast("Confirmation cancelled. Employer was notified.");
-        return;
-      }
-
-      if (result.reason === "not_confirmed") {
-        showToast("This shift is no longer confirmed.");
-        return;
-      }
-
-      if (result.reason === "not_found") {
-        showToast("Application not found. Please refresh and try again.");
-        return;
-      }
-
-      showToast("Unable to cancel confirmation. Please try again.");
-      return;
-    }
-
-    const result = shiftApplicationsStorage.withdrawApplication(pendingWithdrawApplication.id);
-
+    settleMyShiftApplicationsConfirm({
+      pendingAttendance: pendingAttendanceApplication,
+      pendingWithdraw: pendingWithdrawApplication,
+      showToast,
+    });
     setWithdrawConfirm(null);
     setPendingWithdrawApplication(null);
     setPendingAttendanceApplication(null);
-
-    if (result.ok) {
-      showToast("Application withdrawn.");
-      return;
-    }
-
-    if (result.reason === "not_withdrawable") {
-      showToast("This application can no longer be withdrawn.");
-      return;
-    }
-
-    if (result.reason === "not_found") {
-      showToast("Application not found. Please refresh and try again.");
-      return;
-    }
-
-    showToast("Unable to save withdrawal. Please try again.");
   }, [pendingAttendanceApplication, pendingWithdrawApplication, showToast]);
 
   return {
@@ -301,6 +224,7 @@ export function useMyShiftApplicationsState(domain: ApplicationsDomain = "shift"
     filteredApplications,
     withdrawConfirm,
     toast,
+    resumeBanner,
     setTab,
     openFindShifts,
     openApplication,
@@ -309,28 +233,4 @@ export function useMyShiftApplicationsState(domain: ApplicationsDomain = "shift"
     handleCancelWithdraw,
     handleConfirmWithdraw,
   };
-}
-
-function getWithdrawConfirmTitle(application: ShiftApplicationData): string {
-  if (application.status === "shortlisted") {
-    return "Withdraw from shortlist?";
-  }
-
-  if (application.status === "waiting") {
-    return "Leave backup list?";
-  }
-
-  return "Withdraw this application?";
-}
-
-function getWithdrawConfirmMessage(application: ShiftApplicationData): string {
-  if (application.status === "shortlisted") {
-    return "You are currently shortlisted. Withdraw only if you are no longer available for this shift.";
-  }
-
-  if (application.status === "waiting") {
-    return "You are currently on the backup list. Withdraw only if you do not want to stay available for this shift.";
-  }
-
-  return "Employer will no longer review this application after withdrawal.";
 }

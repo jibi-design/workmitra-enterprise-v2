@@ -1,6 +1,6 @@
 /** Job Mitra | ShiftSearchPage.tsx | Wave B — DomainHero + stack */
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
@@ -16,6 +16,8 @@ import { ShiftSearchFilterPanel } from "../components/ShiftSearchFilterPanel";
 import { ShiftSearchResultsList } from "../components/ShiftSearchResultsList";
 import { ShiftSearchSaveAlert } from "../components/ShiftSearchSaveAlert";
 import { ShiftSearchSmartMatches } from "../components/ShiftSearchSmartMatches";
+import { shiftApplicationsStorage } from "../storage/shiftApplications.storage";
+import { resolveEmployeeShiftApplicationsTab } from "../helpers/shiftApplications.smartResume";
 
 /**
  * Shift Search is green Shift domain only.
@@ -26,6 +28,11 @@ export function ShiftSearchPage() {
   const page = useShiftSearchPageState();
   const nav = useNavigate();
   const showSmartMatches = !page.hasFilters;
+  const pipelineTab = useMemo(
+    () => resolveEmployeeShiftApplicationsTab(shiftApplicationsStorage.getApps()),
+    [],
+  );
+  const showPipelineChip = pipelineTab === "confirmed" || pipelineTab === "active";
 
   useEffect(() => {
     if (window.location.hash === "#gig-projects") {
@@ -48,6 +55,23 @@ export function ShiftSearchPage() {
         description="Filter by date, experience, and category. Apply from the feed or open a shift for full details."
         trailing={<span className="wm-domainHeroBadge">Shift search</span>}
       />
+
+      {showPipelineChip ? (
+        <button
+          type="button"
+          className="wm-shift-surface-glass"
+          data-testid="shift-search-pipeline-chip"
+          onClick={() => nav(`${ROUTE_PATHS.employeeShiftApplications}?tab=${pipelineTab}`)}
+          style={{ padding: "10px 12px", textAlign: "left", cursor: "pointer" }}
+        >
+          <div style={{ fontSize: 12, fontWeight: 950 }}>Back to your active pipeline</div>
+          <div
+            style={{ marginTop: 3, fontSize: 11, fontWeight: 700, color: "var(--wm-emp-muted)" }}
+          >
+            You have a shortlist or confirmed shift waiting. Open My Applications.
+          </div>
+        </button>
+      ) : null}
 
       <div className="wm-animateIn" style={{ animationDelay: "40ms" }}>
         <Section eyebrow="Discovery" title="Location & Skills">

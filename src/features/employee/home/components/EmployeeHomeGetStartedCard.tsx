@@ -1,6 +1,7 @@
 // App: Job Mitra / WorkMitra_Enterprise_v2
 // File: EmployeeHomeGetStartedCard.tsx
-// Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\home\components\EmployeeHomeGetStartedCard.tsx
+
+import { DOMAIN_BY_KEY } from "../../../../shared/config/domainRegistry";
 
 type Props = {
   onFindShifts: () => void;
@@ -8,12 +9,14 @@ type Props = {
 };
 
 export function EmployeeHomeGetStartedCard({ onFindShifts, onCareerSearch }: Props) {
+  const career = DOMAIN_BY_KEY.career;
+
   return (
     <section className="wm-ee-card">
       <div style={{ fontWeight: 700, color: "var(--wm-er-text)", fontSize: 16 }}>Get started</div>
 
       <div className="wm-ee-helperText">
-        Find shifts for daily work, or search career jobs for permanent roles.
+        Find shifts for daily work, or search {career.title.toLowerCase()} for permanent roles.
       </div>
 
       <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
@@ -27,7 +30,7 @@ export function EmployeeHomeGetStartedCard({ onFindShifts, onCareerSearch }: Pro
           onClick={onCareerSearch}
           style={{ flex: 1 }}
         >
-          Career Jobs
+          {career.title}
         </button>
       </div>
     </section>

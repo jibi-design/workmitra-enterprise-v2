@@ -3,7 +3,7 @@
 // HR Management — admin/office work hub.
 // Color: Purple #7c3aed (--wm-er-accent-hr)
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { useHRCandidates } from "../helpers/hrSubscription";
@@ -86,6 +86,7 @@ export function HRManagementPage() {
   const [activeTab, setActiveTab] = useState<TabKey>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterId>("all");
+  const landedTabRef = useRef(false);
 
   const [guideDismissed, setGuideDismissed] = useState(
     () => localStorage.getItem(getHrGuideDismissedKey()) === "1",
@@ -105,6 +106,16 @@ export function HRManagementPage() {
     return counts;
   }, [allRecords]);
 
+  useEffect(() => {
+    if (landedTabRef.current) return;
+    if ((tabCounts.offer_pending ?? 0) > 0) {
+      queueMicrotask(() => setActiveTab("offer_pending"));
+    } else if ((tabCounts.onboarding ?? 0) > 0) {
+      queueMicrotask(() => setActiveTab("onboarding"));
+    }
+    landedTabRef.current = true;
+  }, [tabCounts]);
+
   const filtered = useMemo(() => {
     return allRecords
       .filter((r) => activeTab === "all" || r.status === activeTab)
@@ -122,7 +133,7 @@ export function HRManagementPage() {
   const showEmptyState = activeTab !== "all" && filtered.length === 0 && searchQuery.length === 0;
 
   return (
-    <div>
+    <div data-testid="employer-hr-management-page">
       {/* Header */}
       <div style={{ marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>

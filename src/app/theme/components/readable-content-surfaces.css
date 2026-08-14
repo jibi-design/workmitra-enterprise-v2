@@ -1,0 +1,65 @@
+/* Readable content — Job Mitra is mobile-first.
+   Never frost card/page copy. Hover must not be required to unblur text.
+   Modal / sheet / nav / call / splash overlays are not listed here. */
+
+.wm-ee-vShift,
+.wm-ee-vCareer,
+.wm-ee-vPlanner,
+.wm-er-vShift,
+.wm-er-vCareer,
+.wm-er-vPlanner,
+.wm-er-vWorkforce,
+.wm-homePage,
+.wm-homePage--console,
+.wm-shiftEmployeeHomePage,
+.wm-homeGlassCard,
+.wm-homeGlassCard--domainShift,
+.wm-homeGlassCard--domainCareer,
+.wm-homeGlassCard--domainPlanner,
+.wm-homeGlassCard--domainDashboard,
+.wm-homeGlassCard--domainVault,
+.wm-homeGlassCard--domainDiary,
+.wm-shiftJobsPrimaryCard,
+.wm-shiftEmployeeStatsTile--glass,
+.wm-shiftEmployeeActionCard,
+.wm-shiftEmployeeHomeHero,
+.wm-shiftEmployeeSearchHero,
+.wm-domainHero,
+.wm-ee-card,
+.wm-er-card,
+.wm-ee-tile,
+.wm-shift-card,
+.wm-career-card,
+.wm-shift-surface-glass,
+.wm-career-surface-glass,
+.wm-shift-kpi-tile,
+.wm-homeQuickTile,
+.wm-homeHubEntry,
+.wm-homeCoreFloat,
+.wm-profileSectionCard {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.wm-ee-vShift *,
+.wm-ee-vCareer *,
+.wm-ee-vPlanner *,
+.wm-er-vShift *,
+.wm-er-vCareer *,
+.wm-er-vPlanner *,
+.wm-er-vWorkforce *,
+.wm-homePage *,
+.wm-homePage--console *,
+.wm-shiftEmployeeHomePage * {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.wm-shiftJobsPrimaryCard,
+.wm-domainHero,
+.wm-homeGlassCard,
+.wm-ee-card,
+.wm-shift-card,
+.wm-career-card {
+  filter: none;
+}

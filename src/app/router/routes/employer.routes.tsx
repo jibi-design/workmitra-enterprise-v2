@@ -2,7 +2,11 @@
 
 import { Navigate, Route } from "react-router-dom";
 import { ROUTE_PATHS } from "../routePaths";
-import { showPhase2Features, showShiftOpsFeatures } from "../../../shared/launch/launchVisibility";
+import {
+  showPhase2Features,
+  showShiftOpsFeatures,
+  showMitraLabsAiPhotoDelivery,
+} from "../../../shared/launch/launchVisibility";
 import { LaunchModuleBoundary } from "./routerHelpers";
 import { ER } from "./routeSegments";
 import { HelpSupportPage } from "./adminLazyPages";
@@ -42,6 +46,7 @@ import {
   EmployerPlannerRosterDetailPage,
   EmployerProfilePage,
   EmployerCompliancePage,
+  EmployerDashboardPage,
   EmployerReviewCenterPage,
   EmployerSettingsPage,
   EmployerShiftCreatePage,
@@ -53,9 +58,15 @@ import {
   EmployerShiftWorkspacesPage,
   EmployerStaffDetailPage,
   EmployerStaffDetailWrapper,
+  EmployerSwapApprovalPage,
   EmployerVaultLookupPage,
   EmployerVaultViewPage,
+  EmployerWeeklyShiftPlannerPage,
   EmployerWorkforceHomePage,
+  MitraLabsHubPage,
+  DigitalInviteBuilderPage,
+  ArtisticQrStudioPage,
+  AiPhotoDeliveryBetaPage,
   EmployerWorkforceStaffPage,
   HRCandidateDetailPage,
   HRManagementPage,
@@ -68,7 +79,21 @@ import {
 export const employerRouteTree = (
   <>
     <Route index element={<EmployerHomePage />} />
+    <Route path={ER.dashboard} element={<EmployerDashboardPage />} />
     <Route path={ER.shift} element={<EmployerShiftHomePage />} />
+    <Route path={ER.labs} element={<MitraLabsHubPage />} />
+    <Route path={ER.labsInvites} element={<DigitalInviteBuilderPage />} />
+    <Route path={ER.labsQr} element={<ArtisticQrStudioPage />} />
+    <Route
+      element={
+        <LaunchModuleBoundary
+          enabled={showMitraLabsAiPhotoDelivery}
+          fallback={ROUTE_PATHS.employerLabs}
+        />
+      }
+    >
+      <Route path={ER.labsAiPhoto} element={<AiPhotoDeliveryBetaPage />} />
+    </Route>
     <Route
       element={
         <LaunchModuleBoundary enabled runtimeKill="career" fallback={ROUTE_PATHS.employerHome} />
@@ -112,14 +137,8 @@ export const employerRouteTree = (
     <Route path={ER.reviewCenter} element={<EmployerReviewCenterPage />} />
     <Route path={ER.myStaffDetail} element={<EmployerStaffDetailPage />} />
     <Route path={ER.analytics} element={<EmployerAnalyticsPage />} />
-    <Route
-      element={
-        <LaunchModuleBoundary enabled={showPhase2Features} fallback={ROUTE_PATHS.employerHome} />
-      }
-    >
-      <Route path={ER.hrManagement} element={<HRManagementPage />} />
-      <Route path={ER.hrCandidateDetail} element={<HRCandidateDetailPage />} />
-    </Route>
+    <Route path={ER.hrManagement} element={<HRManagementPage />} />
+    <Route path={ER.hrCandidateDetail} element={<HRCandidateDetailPage />} />
     <Route
       element={
         <LaunchModuleBoundary enabled={showPhase2Features} fallback={ROUTE_PATHS.employerHome} />
@@ -171,6 +190,8 @@ export const employerRouteTree = (
       <Route path={ER.plannerApplications} element={<EmployerPlannerApplicationsPage />} />
       <Route path={ER.plannerRoster} element={<EmployerPlannerRosterPage />} />
       <Route path={ER.plannerRosterDetail} element={<EmployerPlannerRosterDetailPage />} />
+      <Route path={ER.shiftPlanner} element={<EmployerWeeklyShiftPlannerPage />} />
+      <Route path={ER.shiftPlannerSwaps} element={<EmployerSwapApprovalPage />} />
     </Route>
     <Route path="help" element={<HelpSupportPage />} />
     <Route

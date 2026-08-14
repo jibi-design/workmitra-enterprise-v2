@@ -3,8 +3,12 @@
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\careerJobs\hooks\useEmployerCareerPostDashboardState.ts
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import type { CareerTab } from "../components/CareerPipelineTabs";
+import {
+  parseCareerDashboardTab,
+  resolveCareerDashboardLandingTab,
+} from "../helpers/careerDashboard.smartResume";
 import { useCareerDashboardCandidateActions } from "./careerPostDashboard/useCareerDashboardCandidateActions";
 import { useCareerDashboardCompare } from "./careerPostDashboard/useCareerDashboardCompare";
 import { useCareerDashboardData } from "./careerPostDashboard/useCareerDashboardData";
@@ -13,14 +17,44 @@ import { useCareerDashboardPostActions } from "./careerPostDashboard/useCareerDa
 
 export function useEmployerCareerPostDashboardState() {
   const { postId = "" } = useParams();
+  const [searchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get("tab");
 
-  const [tab, setTab] = useState<CareerTab>("applied");
+  const [tab, setTab] = useState<CareerTab>(() => parseCareerDashboardTab(tabFromUrl) ?? "applied");
   const [isBusy, setIsBusy] = useState(false);
   const mountedRef = useRef(true);
   const busyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const landedPostRef = useRef("");
 
   const dashboard = useCareerDashboardData(postId);
   const modal = useCareerDashboardModalState();
+
+  useEffect(() => {
+    landedPostRef.current = "";
+  }, [postId]);
+
+  useEffect(() => {
+    const urlTab = parseCareerDashboardTab(tabFromUrl);
+    if (urlTab) {
+      queueMicrotask(() => setTab(urlTab));
+      landedPostRef.current = postId;
+      return;
+    }
+    if (landedPostRef.current === postId) return;
+    const counts = dashboard.tabCounts;
+    const pipeline =
+      counts.applied + counts.shortlisted + counts.interview + counts.offered + counts.hired;
+    if (pipeline === 0) return;
+    const next = resolveCareerDashboardLandingTab({
+      applied: counts.applied,
+      shortlisted: counts.shortlisted,
+      interview: counts.interview,
+      offered: counts.offered,
+      hired: counts.hired,
+    });
+    queueMicrotask(() => setTab(next));
+    landedPostRef.current = postId;
+  }, [dashboard.tabCounts, postId, tabFromUrl]);
 
   const compare = useCareerDashboardCompare({
     apps: dashboard.apps,

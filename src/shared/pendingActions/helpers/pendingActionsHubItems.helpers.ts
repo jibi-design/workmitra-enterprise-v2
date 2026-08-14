@@ -42,6 +42,12 @@ export type EmployerOfferPendingSource = {
   jobTitle: string;
 };
 
+export type EmployerConfirmPendingSource = {
+  postId: string;
+  jobTitle: string;
+  shortlisted: number;
+};
+
 export function buildInterviewRsvpHubItems(
   sources: InterviewRsvpHubSource[],
   handlers: {
@@ -157,5 +163,26 @@ export function buildEmployerOfferPendingHubItems(
               .replace(":appId", source.appId),
           ),
       },
+    }));
+}
+
+export function buildEmployerConfirmPendingHubItems(
+  sources: EmployerConfirmPendingSource[],
+  navigate: (path: string) => void,
+): PendingActionItem[] {
+  return sources
+    .filter((source) => !isPendingActionDismissed(`employer-confirm-pending-${source.postId}`))
+    .map((source) => ({
+      id: `employer-confirm-pending-${source.postId}`,
+      domain: "shift" as const,
+      label: "Confirm shortlisted worker",
+      detail: `${source.shortlisted} shortlisted on ${source.jobTitle}. Tap Confirm Worker to fill vacancy.`,
+      count: source.shortlisted,
+      ctaLabel: "Open Shortlist",
+      pulseId: "pending-employer-confirm-shortlist",
+      onAction: () =>
+        navigate(
+          `${ROUTE_PATHS.employerShiftPostDashboard.replace(":postId", source.postId)}?tab=shortlisted`,
+        ),
     }));
 }

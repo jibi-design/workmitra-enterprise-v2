@@ -8,6 +8,7 @@ import {
 import { countApplicationsForPostIndexed } from "./appsByPostIndex";
 import { getEmpPostsKey, getEmployerWorkspacesKey } from "../storage/employerShift.keys";
 import { SHIFT_EMPLOYER_SCOPE_CHANGED_EVENT } from "../../../shared/shift/shiftEmployerScope";
+import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 
 /* ------------------------------------------------ */
 /* Constants                                        */
@@ -54,6 +55,33 @@ export function subscribePosts(callback: () => void): () => void {
 /* ------------------------------------------------ */
 export function countApplicationsForPost(postId: string, statusFilter?: string): number {
   return countApplicationsForPostIndexed(postId, statusFilter);
+}
+
+export type ConfirmWaitingPost = {
+  readonly postId: string;
+  readonly jobName: string;
+  readonly shortlisted: number;
+  readonly remaining: number;
+};
+
+export function findConfirmWaitingPost(posts: readonly ShiftPost[]): ConfirmWaitingPost | null {
+  for (const post of posts) {
+    if (post.status === "completed" || post.status === "cancelled") continue;
+    const remaining = Math.max(0, post.vacancies - post.confirmedIds.length);
+    const shortlisted = countApplicationsForPost(post.id, "shortlisted");
+    if (remaining > 0 && shortlisted > 0) {
+      return { postId: post.id, jobName: post.jobName, shortlisted, remaining };
+    }
+  }
+  return null;
+}
+
+export function shiftPostDashboardPath(
+  postId: string,
+  tab?: "shortlisted" | "applied" | "selected",
+): string {
+  const base = ROUTE_PATHS.employerShiftPostDashboard.replace(":postId", postId);
+  return tab ? `${base}?tab=${tab}` : base;
 }
 
 /* ------------------------------------------------ */

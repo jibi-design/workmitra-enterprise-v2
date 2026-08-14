@@ -1,83 +1,44 @@
-/** Job Mitra | EmployeeHomeTopTiles.tsx | Glass Digital ID + frosted quick tiles */
+/** Job Mitra | EmployeeHomeTopTiles.tsx | Ultra-compact glassmorphic greeting strip */
+
+import { useSyncExternalStore } from "react";
+import {
+  getUpcomingShiftNudgeSnapshot,
+  subscribeUpcomingShiftNudge,
+} from "../helpers/employeeHomeDynamicNudges.helpers";
 
 type Props = {
   userName: string;
-  upcomingShiftDisplay: string;
-  shiftBroadcastUnreadDisplay: string;
-  onShiftTile: () => void;
-  onBroadcastTile: () => void;
+  userPhoto?: string | null;
 };
 
-function resolveStatusBadge(upcomingShiftDisplay: string): string {
-  const digits = upcomingShiftDisplay.replace(/[^\d]/g, "");
-  const count = digits ? Number.parseInt(digits, 10) : 0;
+export function EmployeeHomeTopTiles({ userName, userPhoto }: Props) {
+  const upcoming = useSyncExternalStore(
+    subscribeUpcomingShiftNudge,
+    getUpcomingShiftNudgeSnapshot,
+    getUpcomingShiftNudgeSnapshot,
+  );
 
-  if (Number.isFinite(count) && count > 0) {
-    return `${upcomingShiftDisplay} shift${count === 1 ? "" : "s"} this week`;
-  }
-
-  return "Active";
-}
-
-export function EmployeeHomeTopTiles({
-  userName,
-  upcomingShiftDisplay,
-  shiftBroadcastUnreadDisplay,
-  onShiftTile,
-  onBroadcastTile,
-}: Props) {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-  const statusBadge = resolveStatusBadge(upcomingShiftDisplay);
-  const initial = userName.trim().charAt(0).toUpperCase() || "U";
+  const firstName = userName.trim().split(/\s+/)[0] || userName || "User";
+  const initial = firstName.charAt(0).toUpperCase() || "U";
+  const statusPill = upcoming.count > 0 ? `${upcoming.count} upcoming` : "Active";
 
   return (
-    <div className="wm-homeStack">
-      <header className="wm-homeHero wm-homeHero--employee wm-homeCardEnter">
-        <div className="wm-homeHero__orb wm-homeHero__orb--employee" aria-hidden="true" />
-        <div className="wm-homeHero__content">
-          <div className="wm-homeHero__subtitle" style={{ color: "rgba(255,255,255,0.8)" }}>
-            {greeting},
-          </div>
-          <h1 className="wm-homeHero__title wm-typeHero">{userName}</h1>
-          <div className="wm-homeHero__badge">{statusBadge}</div>
-        </div>
-        <div className="wm-homeHero__avatar wm-homeHero__avatar--employeeLive" aria-hidden="true">
-          {initial}
-        </div>
-      </header>
-
-      <div className="wm-homeQuickTiles">
-        <button
-          type="button"
-          className="wm-homeQuickTile wm-press-card wm-homeCardEnter wm-homeCardEnter--1"
-          onClick={onShiftTile}
-          aria-label={`${upcomingShiftDisplay} upcoming shifts`}
-        >
-          <div className="wm-homeQuickTile__value wm-homeQuickTile__value--shift">
-            {upcomingShiftDisplay}
-          </div>
-          <div>
-            <div className="wm-homeQuickTile__label wm-homeQuickTile__label--strong">Shifts</div>
-            <div className="wm-homeQuickTile__label">Upcoming</div>
-          </div>
-        </button>
-
-        <button
-          type="button"
-          className="wm-homeQuickTile wm-press-card wm-homeCardEnter wm-homeCardEnter--2"
-          onClick={onBroadcastTile}
-          aria-label={`${shiftBroadcastUnreadDisplay} broadcast alerts`}
-        >
-          <div className="wm-homeQuickTile__value wm-homeQuickTile__value--alerts">
-            {shiftBroadcastUnreadDisplay}
-          </div>
-          <div>
-            <div className="wm-homeQuickTile__label wm-homeQuickTile__label--strong">Alerts</div>
-            <div className="wm-homeQuickTile__label">Broadcasts</div>
-          </div>
-        </button>
+    <header
+      className="wm-homeCompactHeader"
+      data-testid="employee-home-compact-header"
+      aria-label="Home greeting"
+    >
+      <div className="wm-homeCompactHeader__copy">
+        <p className="wm-homeCompactHeader__greeting">
+          {greeting}, <span className="wm-homeCompactHeader__name">{firstName}</span>
+        </p>
+        <span className="wm-homeCompactHeader__pill">{statusPill}</span>
       </div>
-    </div>
+      <div className="wm-homeCompactHeader__avatar" aria-hidden="true">
+        {userPhoto ? <img src={userPhoto} alt="" /> : initial}
+      </div>
+    </header>
   );
 }

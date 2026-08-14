@@ -1,0 +1,407 @@
+/* Employer-Exclusive DNA — light Obsidian glass + domain glow + exec card chrome */
+
+/* ------------------------------------------------ */
+/* 1) Executive light metallic glass surfaces       */
+/* ------------------------------------------------ */
+
+.wm-shellEmployer .wm-homeGlassCard--employer,
+.wm-shellEmployer .wm-er-card,
+.wm-shellEmployer .wm-domainHero--employer {
+  background: var(--wm-er-glass-bg-strong);
+  box-shadow: var(--wm-er-elevation-shadow);
+  border-color: color-mix(in srgb, #64748b 22%, rgba(255, 255, 255, 0.65));
+}
+
+.wm-shellEmployer .wm-homeGlassCard--employer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    125deg,
+    rgba(255, 255, 255, 0.35) 0%,
+    transparent 38%,
+    color-mix(in srgb, #0f172a 4%, transparent) 100%
+  );
+  opacity: 0.9;
+  z-index: 0;
+}
+
+.wm-shellEmployer .wm-homeGlassCard--employer > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ------------------------------------------------ */
+/* 2) High-contrast domain accent glow (light)      */
+/* ------------------------------------------------ */
+
+.wm-shellEmployer .wm-er-vShift,
+.wm-shellEmployer .wm-er-vCareer,
+.wm-shellEmployer .wm-er-vPlanner,
+.wm-shellEmployer .wm-er-vWorkforce,
+.wm-shellEmployer .wm-er-vVault,
+.wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainShift,
+.wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainCareer,
+.wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainPlanner,
+.wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainVault,
+.wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainDashboard {
+  --wm-domain-border: 1.75px solid color-mix(in srgb, var(--wm-card-domain-accent) 58%, #94a3b8 12%);
+  --wm-domain-ambient-shadow:
+    0 12px 34px -6px rgba(15, 23, 42, 0.12),
+    0 0 0 1px color-mix(in srgb, var(--wm-card-domain-accent) 22%, transparent),
+    0 10px 26px -6px color-mix(in srgb, var(--wm-card-domain-accent) 42%, transparent);
+  --wm-domain-ambient-shadow-hover:
+    0 18px 42px -6px rgba(15, 23, 42, 0.14),
+    0 0 0 1px color-mix(in srgb, var(--wm-card-domain-accent) 28%, transparent),
+    0 14px 32px -4px color-mix(in srgb, var(--wm-card-domain-accent) 48%, transparent);
+}
+
+.wm-shellEmployer .wm-er-vShift .wm-er-card,
+.wm-shellEmployer .wm-er-vCareer .wm-er-card,
+.wm-shellEmployer .wm-er-vPlanner .wm-er-card,
+.wm-shellEmployer .wm-er-vWorkforce .wm-er-card,
+.wm-shellEmployer .wm-er-vVault .wm-er-card,
+.wm-shellEmployer .wm-domainHero--employer.wm-domainHero--shift,
+.wm-shellEmployer .wm-domainHero--employer.wm-domainHero--career,
+.wm-shellEmployer .wm-domainHero--employer.wm-domainHero--planner,
+.wm-shellEmployer .wm-domainHero--employer.wm-domainHero--workforce,
+.wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainShift,
+.wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainCareer,
+.wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainPlanner,
+.wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainVault,
+.wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainDashboard {
+  border: var(--wm-domain-border);
+  box-shadow:
+    var(--wm-domain-ambient-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+/* Persistent active on employer exec tiles */
+.wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainShift.is-active,
+.wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainCareer.is-active,
+.wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainPlanner.is-active,
+.wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainVault.is-active,
+.wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainDashboard.is-active,
+.wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainShift[aria-current="page"],
+.wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainCareer[aria-current="page"],
+.wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainPlanner[aria-current="page"],
+.wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainVault[aria-current="page"],
+.wm-shellEmployer
+  .wm-homeGlassCard--employer.wm-homeGlassCard--domainDashboard[aria-current="page"] {
+  border: var(--wm-dna-active-ring, var(--wm-domain-border));
+  box-shadow:
+    var(--wm-dna-active-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+}
+
+@media (hover: hover) {
+  .wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainShift:hover,
+  .wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainCareer:hover,
+  .wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainPlanner:hover,
+  .wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainVault:hover,
+  .wm-shellEmployer .wm-homeGlassCard--employer.wm-homeGlassCard--domainDashboard:hover {
+    box-shadow:
+      var(--wm-domain-ambient-shadow-hover),
+      inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  }
+}
+
+/* ------------------------------------------------ */
+/* 3) Domain status badge + Create CTA (light)      */
+/* ------------------------------------------------ */
+
+.wm-shellEmployer .wm-homeGlassCard--employer.wm-erExecCard {
+  position: relative;
+  padding-top: 12px;
+  align-items: flex-start;
+}
+
+.wm-erDomainBadge {
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: color-mix(in srgb, var(--wm-card-domain-accent) 75%, #0f172a);
+  background: color-mix(in srgb, var(--wm-card-domain-accent) 14%, rgba(255, 255, 255, 0.92));
+  border: 1px solid color-mix(in srgb, var(--wm-card-domain-accent) 32%, transparent);
+  box-shadow:
+    0 4px 12px color-mix(in srgb, var(--wm-card-domain-accent) 16%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  pointer-events: none;
+}
+
+.wm-erDomainBadge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--wm-card-domain-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--wm-card-domain-accent) 22%, transparent);
+}
+
+.wm-erCreateCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  min-height: 40px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--wm-card-domain-accent) 35%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--wm-card-domain-accent) 12%, #fff),
+    color-mix(in srgb, var(--wm-card-domain-accent) 6%, #fff)
+  );
+  color: color-mix(in srgb, var(--wm-card-domain-accent) 70%, #0f172a);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow:
+    0 4px 12px color-mix(in srgb, var(--wm-card-domain-accent) 14%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  touch-action: manipulation;
+}
+
+.wm-erCreateCta::before,
+.wm-erCreateCta::after {
+  content: none !important;
+}
+
+.wm-erCreateCta:hover {
+  border-color: color-mix(in srgb, var(--wm-card-domain-accent) 48%, transparent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--wm-card-domain-accent) 18%, #fff),
+    color-mix(in srgb, var(--wm-card-domain-accent) 10%, #fff)
+  );
+}
+
+.wm-erCreateCta:active {
+  transform: scale(0.97);
+}
+
+.wm-shellEmployer .wm-homeGlassCard--employer .wm-homeGlassCard__trailing {
+  align-self: flex-end;
+  margin-top: 2px;
+}
+
+.wm-shellEmployer .wm-homeGlassCard--employer .wm-homeGlassCard__icon {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    0 6px 14px color-mix(in srgb, var(--wm-card-domain-accent, #64748b) 12%, transparent);
+}
+
+/* ------------------------------------------------ */
+/* Employer Home console polish (light)             */
+/* ------------------------------------------------ */
+
+/* Slim executive greeting bar — compact height, high-visibility title */
+.wm-shellEmployer .wm-homeCompactHeader--employer {
+  min-height: 44px;
+  padding: 8px 14px;
+  align-items: center;
+  gap: 10px;
+}
+
+.wm-shellEmployer .wm-homeCompactHeader--employer .wm-homeCompactHeader__copy {
+  gap: 3px;
+}
+
+.wm-shellEmployer .wm-homeCompactHeader--employer .wm-homeCompactHeader__greeting {
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.wm-shellEmployer .wm-homeCompactHeader--employer .wm-homeCompactHeader__name {
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.wm-shellEmployer .wm-homeCompactHeader--employer .wm-homeCompactHeader__pill {
+  color: #047857;
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(167, 243, 208, 0.85);
+  padding: 1px 7px;
+  font-size: 10px;
+}
+
+.wm-shellEmployer .wm-homeCompactHeader--employer .wm-homeCompactHeader__avatar {
+  width: 32px;
+  height: 32px;
+  font-size: 12px;
+  background: linear-gradient(145deg, #334155, #0f172a);
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.18);
+}
+
+/* Dashboard card — match Core Services compact padding */
+.wm-shellEmployer .wm-homePage--console .wm-homeStack .wm-homeGlassCard--domainDashboard,
+.wm-shellEmployer .wm-homePage--console .wm-homeStack .wm-erExecCard {
+  padding: var(--wm-dna-card-padding, 14px) !important;
+  gap: 8px;
+  min-height: 0;
+}
+
+.wm-shellEmployer
+  .wm-homePage--console
+  .wm-homeStack
+  .wm-homeGlassCard--domainDashboard
+  .wm-homeGlassCard__icon,
+.wm-shellEmployer .wm-homePage--console .wm-homeStack .wm-erExecCard .wm-homeGlassCard__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+}
+
+.wm-shellEmployer .wm-homePage--console .wm-homeStack .wm-homeGlassCard__title {
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.wm-shellEmployer .wm-homePage--console .wm-homeStack .wm-homeGlassCard__subtitle {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: #475569 !important;
+}
+
+/* Equal-height stack tiles — beat shared CoreGrid row layout */
+.wm-shellEmployer .wm-homePage--console .wm-homeCoreGrid {
+  align-items: stretch;
+  gap: 12px;
+}
+
+.wm-shellEmployer .wm-homePage--console .wm-homeCoreGrid__cell {
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
+  overflow: visible; /* allow left-border Pulse LED to sit on card chrome */
+}
+
+.wm-shellEmployer .wm-homePage--console .wm-homeCoreGrid__cell > *,
+.wm-shellEmployer .wm-homePage--console .wm-homeCoreGrid .wm-pulseNode,
+.wm-shellEmployer .wm-homePage--console .wm-homeCoreGrid [data-pulse-node-id] {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: visible; /* left-border LED must not clip during chain navigation */
+}
+
+.wm-shellEmployer .wm-homePage--console .wm-homeCoreGrid .wm-homeGlassCard--stack,
+.wm-shellEmployer .wm-homePage--console .wm-homeCoreGrid .wm-erExecCard {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+  min-height: var(--wm-dna-card-min-height, 140px);
+  padding: var(--wm-dna-card-padding, 14px);
+  box-sizing: border-box;
+  text-align: left;
+  overflow: hidden;
+}
+
+.wm-shellEmployer
+  .wm-homePage--console
+  .wm-homeCoreGrid
+  .wm-homeGlassCard--stack
+  .wm-homeGlassCard__icon,
+.wm-shellEmployer .wm-homePage--console .wm-homeCoreGrid .wm-erExecCard .wm-homeGlassCard__icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+}
+
+.wm-shellEmployer
+  .wm-homePage--console
+  .wm-homeCoreGrid
+  .wm-homeGlassCard--stack
+  .wm-homeGlassCard__title,
+.wm-shellEmployer .wm-homePage--console .wm-homeCoreGrid .wm-erExecCard .wm-homeGlassCard__title {
+  width: 100%;
+  max-width: 100%;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.25;
+  color: #0f172a;
+  overflow-wrap: anywhere;
+}
+
+.wm-shellEmployer
+  .wm-homePage--console
+  .wm-homeCoreGrid
+  .wm-homeGlassCard--stack
+  .wm-homeGlassCard__subtitle,
+.wm-shellEmployer
+  .wm-homePage--console
+  .wm-homeCoreGrid
+  .wm-erExecCard
+  .wm-homeGlassCard__subtitle {
+  width: 100%;
+  max-width: 100%;
+  font-size: 11.5px;
+  line-height: 1.4;
+  font-weight: 500;
+  color: #475569 !important; /* slate-600 */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.wm-shellEmployer
+  .wm-homePage--console
+  .wm-homeCoreGrid
+  .wm-homeGlassCard--stack
+  .wm-homeGlassCard__trailing,
+.wm-shellEmployer
+  .wm-homePage--console
+  .wm-homeCoreGrid
+  .wm-erExecCard
+  .wm-homeGlassCard__trailing {
+  display: flex !important;
+  width: 100%;
+  justify-content: flex-start;
+  margin-top: auto;
+  padding-top: 6px;
+  align-self: stretch;
+}
+
+.wm-shellEmployer .wm-homePage--console .wm-homeCoreGrid .wm-erDomainBadge {
+  max-width: 100%;
+}
+
+.wm-shellEmployer .wm-homePage--console .wm-homeCoreGrid .wm-erCreateCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 750;
+}

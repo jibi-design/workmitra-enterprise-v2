@@ -1,19 +1,19 @@
-/** Job Mitra | EmployerHomePage.tsx | src/features/employer/home/pages/EmployerHomePage.tsx */
+/** Job Mitra | EmployerHomePage.tsx | Employer Home Console — light glass + compact grid */
 
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { OnboardingOverlay } from "../../../../shared/components/OnboardingOverlay";
-import { PendingActionsHub } from "../../../../shared/components/PendingActionsHub";
 import { HomePageSkeleton } from "../../../../shared/components/layout/HomePageSkeleton";
 import { HomeSectionPanel } from "../../../../shared/components/layout/HomeSectionPanel";
 import { useEmployerRoleHomePendingActions } from "../../../../shared/pendingActions/hooks/useEmployerRoleHomePendingActions";
 import { useEmployerOfferPendingHubItems } from "../../../../shared/pendingActions/hooks/useEmployerOfferPendingHubItems";
-import { showPhase2Features } from "../../../../shared/config/featureFlags";
+import { useEmployerShiftConfirmPendingHubItems } from "../../../../shared/pendingActions/hooks/useEmployerShiftConfirmPendingHubItems";
 import {
   EMPLOYER_ONBOARDING_KEY,
   EMPLOYER_SLIDES,
   ONBOARDING_KEY,
 } from "../../../../shared/components/onboardingConstants";
+import { HOME_LAYOUT_INSPECTION } from "../../../../shared/config/homeLayoutInspection";
 import { employerSettingsStorage } from "../../company/storage/employerSettings.storage";
 import { EmployerHomeHero } from "../components/EmployerHomeHero";
 import {
@@ -21,30 +21,25 @@ import {
   DemandPlannerCard,
   ShiftJobsCard,
 } from "../components/EmployerHomePrimaryCards";
-import {
-  ComplianceHubCard,
-  HRManagementCard,
-  InsightsCard,
-  ManagerConsoleCard,
-  WorkforceCard,
-  WorkVaultCard,
-} from "../components/EmployerHomeSecondaryCards";
-import { ComplianceExpiryAlertCard } from "../components/dailyOs/ComplianceExpiryAlertCard";
-import { EmergencyGapFillBroadcastCard } from "../components/dailyOs/EmergencyGapFillBroadcastCard";
-import { RehireMemoryCard } from "../components/dailyOs/RehireMemoryCard";
-import { RosterRadarWidget } from "../components/dailyOs/RosterRadarWidget";
+import { WorkVaultCard } from "../components/EmployerHomeSecondaryCards";
+import { EmployerHomeDashboardLinks } from "../components/EmployerHomeDashboardLinks";
+import { EmployerPendingActionsBanner } from "../components/EmployerPendingActionsBanner";
+import { HomeInboxTicker } from "../../../notifications/components/HomeInboxTicker";
+import { useHomeInboxTicker } from "../../../notifications/hooks/useHomeInboxTicker";
 import { getDashboardSnapshot, subscribeDashboard } from "../helpers/employerHomeDashboard";
 
 export function EmployerHomePage() {
   const navigate = useNavigate();
   const pendingActions = useEmployerRoleHomePendingActions(navigate);
   const offerPendingActions = useEmployerOfferPendingHubItems(navigate);
+  const confirmPendingActions = useEmployerShiftConfirmPendingHubItems(navigate);
   const allPendingActions = useMemo(
-    () => [...offerPendingActions, ...pendingActions],
-    [offerPendingActions, pendingActions],
+    () => [...confirmPendingActions, ...offerPendingActions, ...pendingActions],
+    [confirmPendingActions, offerPendingActions, pendingActions],
   );
   const [showOnboarding, setShowOnboarding] = useState(
     () =>
+      !HOME_LAYOUT_INSPECTION &&
       localStorage.getItem(EMPLOYER_ONBOARDING_KEY) !== "1" &&
       localStorage.getItem(ONBOARDING_KEY) !== "1",
   );
@@ -61,78 +56,53 @@ export function EmployerHomePage() {
     const profile = employerSettingsStorage.get();
     return profile.companyName || profile.fullName || "Partner";
   }, []);
+  const inboxTicker = useHomeInboxTicker("employer");
 
   if (!chromeReady) {
     return (
-      <div className="wm-homePage">
+      <div className="wm-homePage wm-homePage--console">
         <HomePageSkeleton audience="employer" />
       </div>
     );
   }
 
   return (
-    <div className="wm-homePage">
+    <div className="wm-homePage wm-homePage--console" data-testid="employer-home-launcher">
       <EmployerHomeHero companyName={companyDisplayName} />
 
-      <PendingActionsHub items={allPendingActions} />
+      <div className="wm-homeSmartNudges">
+        <HomeInboxTicker
+          item={inboxTicker.item}
+          onOpen={inboxTicker.onOpen}
+          testId="employer-home-inbox-ticker"
+        />
+        <EmployerPendingActionsBanner pendingActions={allPendingActions} />
+      </div>
 
-      <HomeSectionPanel eyebrow="Daily Ops" title="Work-Life OS">
-        <div className="wm-homeStack">
-          <div className="wm-homeCardEnter wm-homeCardEnter--1">
-            <ComplianceExpiryAlertCard />
-          </div>
-          <div className="wm-homeCardEnter wm-homeCardEnter--2">
-            <RosterRadarWidget />
-          </div>
-          <div className="wm-homeCardEnter wm-homeCardEnter--3">
-            <EmergencyGapFillBroadcastCard />
-          </div>
-          <div className="wm-homeCardEnter wm-homeCardEnter--4">
-            <RehireMemoryCard />
-          </div>
-        </div>
-      </HomeSectionPanel>
-
-      <HomeSectionPanel eyebrow="Hiring" title="Recruitment Hub">
-        <div className="wm-homeStack">
-          <div className="wm-homeCardEnter wm-homeCardEnter--1">
-            <CareerJobsCard data={data} />
-          </div>
-          <div className="wm-homeCardEnter wm-homeCardEnter--2">
+      <HomeSectionPanel eyebrow="Core services" title="Launch">
+        <section
+          className="wm-homeCoreGrid"
+          data-testid="employer-home-core-grid"
+          aria-label="Employer launch shortcuts"
+        >
+          <div className="wm-homeCoreGrid__cell wm-homeCardEnter wm-homeCardEnter--1">
             <ShiftJobsCard data={data} />
           </div>
-          <div className="wm-homeCardEnter wm-homeCardEnter--3">
+          <div className="wm-homeCoreGrid__cell wm-homeCardEnter wm-homeCardEnter--2">
+            <CareerJobsCard data={data} />
+          </div>
+          <div className="wm-homeCoreGrid__cell wm-homeCardEnter wm-homeCardEnter--3">
             <DemandPlannerCard />
           </div>
-        </div>
-      </HomeSectionPanel>
-
-      <HomeSectionPanel eyebrow="Organization" title="Staff & Documents">
-        <div className="wm-homeStack">
-          <div className="wm-homeCardEnter wm-homeCardEnter--4">
+          <div className="wm-homeCoreGrid__cell wm-homeCardEnter wm-homeCardEnter--4">
             <WorkVaultCard />
           </div>
-          <div className="wm-homeCardEnter wm-homeCardEnter--5">
-            <ComplianceHubCard />
-          </div>
-        </div>
+        </section>
       </HomeSectionPanel>
 
-      {showPhase2Features ? (
-        <HomeSectionPanel eyebrow="Operations" title="Workforce & HR (Beta)">
-          <div className="wm-homeStack">
-            <WorkforceCard data={data} />
-            <HRManagementCard />
-            <ManagerConsoleCard />
-          </div>
-        </HomeSectionPanel>
-      ) : null}
-
-      <HomeSectionPanel eyebrow="Intelligence" title="Reports">
-        <div className="wm-homeCardEnter wm-homeCardEnter--5">
-          <InsightsCard />
-        </div>
-      </HomeSectionPanel>
+      <div className="wm-homeCardEnter wm-homeCardEnter--5">
+        <EmployerHomeDashboardLinks />
+      </div>
 
       {showOnboarding && (
         <OnboardingOverlay

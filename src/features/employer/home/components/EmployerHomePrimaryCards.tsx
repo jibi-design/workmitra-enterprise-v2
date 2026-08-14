@@ -1,41 +1,67 @@
-/** Job Mitra | EmployerHomePrimaryCards.tsx | Glass primary recruitment tiles */
+/** Job Mitra | EmployerHomePrimaryCards.tsx | Executive primary recruitment tiles */
 
 import { useCallback, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import type { DashboardData } from "../helpers/employerHomeDashboard";
-import { IconCareer, IconPlanner, IconPlus, IconShift } from "./employerHomeIcons";
+import { IconCareer, IconPlanner, IconShift } from "./employerHomeIcons";
 import { DESIGN_TOKENS } from "../../../../app/theme/designTokens";
 import { PulseNode } from "../../../pulse/PulseNode";
 import { demandPlannerStorage } from "../../planner/storage/demandPlannerStorage";
-import { HomeGlassCardShell } from "../../../../shared/components/layout/HomeGlassCardShell";
+import { ActionPill, DomainCard } from "../../../../shared/components/layout/designDna";
+import {
+  DOMAIN_BY_KEY,
+  domainAccentCssVar,
+  getDomainCopy,
+} from "../../../../shared/config/domainRegistry";
 
-function CreateActionButton({
+function CreatePostButton({
   ariaLabel,
+  label,
+  domain,
   onCreate,
 }: {
   readonly ariaLabel: string;
+  readonly label: "Post" | "Create";
+  readonly domain: "shift" | "career" | "planner";
   readonly onCreate: () => void;
 }) {
   return (
-    <button
-      type="button"
-      className="wm-homeGlassCard__action wm-press-btn"
+    <ActionPill
+      bare
+      domain={domain}
       aria-label={ariaLabel}
+      className="wm-erCreateCta"
       onClick={(event) => {
         event.stopPropagation();
         onCreate();
       }}
     >
-      <IconPlus />
-    </button>
+      {`+ ${label}`}
+    </ActionPill>
+  );
+}
+
+function DomainStatusBadge({ label }: { readonly label: string }) {
+  return (
+    <span className="wm-erDomainBadge" aria-hidden="true">
+      <span className="wm-erDomainBadge__dot" />
+      {label}
+    </span>
   );
 }
 
 export function CareerJobsCard({ data }: { data: DashboardData }) {
   const nav = useNavigate();
+  const domain = DOMAIN_BY_KEY.career;
   const handleOpen = useCallback(() => nav(ROUTE_PATHS.employerCareerHome), [nav]);
   const handleCreate = useCallback(() => nav(ROUTE_PATHS.employerCareerCreate), [nav]);
+  const badgeLabel =
+    data.careerApplications > 0
+      ? `${data.careerApplications} apps · ${data.careerInterviews} interviews`
+      : data.careerActive > 0
+        ? `${data.careerActive} live posts`
+        : "Ready to post";
 
   return (
     <PulseNode
@@ -46,28 +72,47 @@ export function CareerJobsCard({ data }: { data: DashboardData }) {
         width: "100%",
       }}
     >
-      <HomeGlassCardShell
+      <DomainCard
+        domain="career"
         audience="employer"
         asDiv
-        title="Career Jobs"
-        subtitle="Manage hiring pipeline"
-        ariaLabel={`Open Career Jobs. ${data.careerApplications} career applications and ${data.careerInterviews} interviews need review.`}
+        stack
+        className="wm-erExecCard"
+        title={domain.title}
+        subtitle={getDomainCopy("career", "employer")}
+        ariaLabel={`Open ${domain.title}. ${data.careerApplications} career applications and ${data.careerInterviews} interviews need review.`}
         onClick={handleOpen}
         icon={<IconCareer />}
         iconStyle={{
-          background: "color-mix(in srgb, var(--wm-career-accent, #2563eb) 10%, transparent)",
-          color: "var(--wm-career-accent, #2563eb)",
+          background: `color-mix(in srgb, ${domainAccentCssVar("career")} 10%, transparent)`,
+          color: domainAccentCssVar("career"),
         }}
-        trailing={<CreateActionButton ariaLabel="Create Career Job" onCreate={handleCreate} />}
-      />
+        trailing={
+          <CreatePostButton
+            ariaLabel="Create Career Job"
+            label="Post"
+            domain="career"
+            onCreate={handleCreate}
+          />
+        }
+      >
+        <DomainStatusBadge label={badgeLabel} />
+      </DomainCard>
     </PulseNode>
   );
 }
 
 export function ShiftJobsCard({ data }: { data: DashboardData }) {
   const nav = useNavigate();
+  const domain = DOMAIN_BY_KEY.shift;
   const handleOpen = useCallback(() => nav(ROUTE_PATHS.employerShiftHome), [nav]);
   const handleCreate = useCallback(() => nav(ROUTE_PATHS.employerShiftCreate), [nav]);
+  const badgeLabel =
+    data.shiftApplications > 0
+      ? `${data.shiftApplications} apps pending`
+      : data.shiftActive > 0
+        ? `${data.shiftActive} live shifts`
+        : "Ready to post";
 
   return (
     <PulseNode
@@ -78,26 +123,39 @@ export function ShiftJobsCard({ data }: { data: DashboardData }) {
         width: "100%",
       }}
     >
-      <HomeGlassCardShell
+      <DomainCard
+        domain="shift"
         audience="employer"
         asDiv
-        title="Shift Jobs"
-        subtitle="Daily/weekly quick hiring"
-        ariaLabel={`Open Shift Jobs. ${data.shiftApplications} shift applications need review.`}
+        stack
+        className="wm-erExecCard"
+        title={domain.title}
+        subtitle={getDomainCopy("shift", "employer")}
+        ariaLabel={`Open ${domain.title}. ${data.shiftApplications} shift applications need review.`}
         onClick={handleOpen}
         icon={<IconShift />}
         iconStyle={{
-          background: "rgba(39, 174, 96, 0.08)",
-          color: "var(--wm-shift-accent, #27AE60)",
+          background: `color-mix(in srgb, ${domainAccentCssVar("shift")} 10%, transparent)`,
+          color: domainAccentCssVar("shift"),
         }}
-        trailing={<CreateActionButton ariaLabel="Create Shift" onCreate={handleCreate} />}
-      />
+        trailing={
+          <CreatePostButton
+            ariaLabel="Create Shift"
+            label="Post"
+            domain="shift"
+            onCreate={handleCreate}
+          />
+        }
+      >
+        <DomainStatusBadge label={badgeLabel} />
+      </DomainCard>
     </PulseNode>
   );
 }
 
 export function DemandPlannerCard() {
   const nav = useNavigate();
+  const domain = DOMAIN_BY_KEY.planner;
 
   const activePlanCount = useSyncExternalStore(
     demandPlannerStorage.subscribe,
@@ -108,10 +166,12 @@ export function DemandPlannerCard() {
   const handleOpen = useCallback(() => nav(ROUTE_PATHS.employerPlannerHome), [nav]);
   const handleCreate = useCallback(() => nav(ROUTE_PATHS.employerPlannerNew), [nav]);
 
-  const meta =
+  const subtitle =
     activePlanCount > 0
       ? `${activePlanCount} active project${activePlanCount !== 1 ? "s" : ""}`
-      : "Multi-day agency hiring";
+      : getDomainCopy("planner", "employer");
+
+  const badgeLabel = activePlanCount > 0 ? `${activePlanCount} live plans` : "Ready to create";
 
   return (
     <PulseNode
@@ -122,20 +182,32 @@ export function DemandPlannerCard() {
         width: "100%",
       }}
     >
-      <HomeGlassCardShell
+      <DomainCard
+        domain="planner"
         audience="employer"
         asDiv
-        title="Gig Projects"
-        subtitle={meta}
-        ariaLabel={`Open Gig Projects. ${meta}.`}
+        stack
+        className="wm-erExecCard"
+        title={domain.title}
+        subtitle={subtitle}
+        ariaLabel={`Open ${domain.title}. ${subtitle}.`}
         onClick={handleOpen}
         icon={<IconPlanner />}
         iconStyle={{
-          background: "rgba(8, 145, 178, 0.08)",
-          color: "#0891B2",
+          background: `color-mix(in srgb, ${domainAccentCssVar("planner")} 10%, transparent)`,
+          color: domainAccentCssVar("planner"),
         }}
-        trailing={<CreateActionButton ariaLabel="Create new demand plan" onCreate={handleCreate} />}
-      />
+        trailing={
+          <CreatePostButton
+            ariaLabel="Create new demand plan"
+            label="Create"
+            domain="planner"
+            onCreate={handleCreate}
+          />
+        }
+      >
+        <DomainStatusBadge label={badgeLabel} />
+      </DomainCard>
     </PulseNode>
   );
 }

@@ -10,7 +10,9 @@ import { shiftTemplatesStorage } from "../storage/shiftTemplatesStorage";
 import {
   countActiveWorkspaceGroups,
   countApplicationsForPost,
+  findConfirmWaitingPost,
   getPostsSnapshot,
+  shiftPostDashboardPath,
   subscribePosts,
 } from "../helpers/shiftHomeHelpers";
 import {
@@ -21,6 +23,7 @@ import {
   ShiftHomeTemplatesHint,
 } from "../components/ShiftHomeSections";
 import { EmployerShiftDraftReminderCard } from "../components/EmployerShiftDraftReminderCard";
+import { ShiftHomeConfirmWaitingBanner } from "../components/ShiftHomeConfirmWaitingBanner";
 import { LocalWorkersRadarCard } from "../components/LocalWorkersRadarCard";
 import { EmployerGigProjectsPromoStrip } from "../components/EmployerGigProjectsPromoStrip";
 import { IconPlus, IconShiftCalendar } from "../components/ShiftHomeIcons";
@@ -85,9 +88,14 @@ export function EmployerShiftHomePage() {
   );
 
   const recentPosts = useMemo(() => posts.slice(0, 5), [posts]);
+  const confirmWaiting = useMemo(() => findConfirmWaitingPost(posts), [posts]);
 
   function openPost(postId: string) {
-    nav(ROUTE_PATHS.employerShiftPostDashboard.replace(":postId", postId));
+    const waiting =
+      confirmWaiting?.postId === postId
+        ? confirmWaiting
+        : findConfirmWaitingPost(posts.filter((post) => post.id === postId));
+    nav(shiftPostDashboardPath(postId, waiting ? "shortlisted" : undefined));
   }
 
   function goToPostsFiltered(status: string) {
@@ -117,7 +125,14 @@ export function EmployerShiftHomePage() {
         }
       />
 
-      <EmployerShiftDraftReminderCard />
+      {confirmWaiting ? (
+        <ShiftHomeConfirmWaitingBanner
+          waiting={confirmWaiting}
+          onOpen={() => nav(shiftPostDashboardPath(confirmWaiting.postId, "shortlisted"))}
+        />
+      ) : (
+        <EmployerShiftDraftReminderCard />
+      )}
 
       <ShiftHomeKpiTiles
         kpi={kpi}

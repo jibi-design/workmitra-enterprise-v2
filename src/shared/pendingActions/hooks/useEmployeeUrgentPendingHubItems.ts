@@ -11,10 +11,8 @@ import {
   acceptCareerOffer,
   declineCareerOffer,
 } from "../../../features/employee/careerJobs/services/careerApplyService";
-import {
-  readCareerAppsForEmployee,
-  readCareerPosts,
-} from "../../../features/career/helpers/careerStoragePublic";
+import { getCareerSearchSnapshot } from "../../../features/employee/careerJobs/helpers/careerSearchStorage";
+import { readCareerAppsForEmployee } from "../../../features/career/helpers/careerStoragePublic";
 import type {
   CareerApplication,
   RoundResult,
@@ -136,7 +134,7 @@ export function useEmployeeUrgentPendingHubItems(navigate: NavigateFunction): Pe
 
     const employeeId = getCurrentEmployeeId();
     const careerApps = readCareerAppsForEmployee().filter((app) => app.employeeId === employeeId);
-    const careerPostMap = new Map(readCareerPosts().map((post) => [post.id, post]));
+    const careerPostMap = new Map(getCareerSearchSnapshot().map((post) => [post.id, post]));
 
     const interviewSources: InterviewRsvpHubSource[] = [];
     const offerSources: CareerOfferHubSource[] = [];

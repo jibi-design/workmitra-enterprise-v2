@@ -1,0 +1,282 @@
+/* Shared Domain DNA — per-domain accents only (never bake Shift green at :root) */
+
+/*
+  IMPORTANT: --wm-domain-border / --wm-domain-ambient-shadow must be declared on the
+  SAME element that sets --wm-card-domain-accent. If those composites are only on
+  :root, browsers inherit a computed shadow with Shift-green already baked in.
+*/
+
+/* ------------------------------------------------ */
+/* Shift                                            */
+/* ------------------------------------------------ */
+
+.wm-ee-vShift,
+.wm-er-vShift,
+.wm-shiftEmployeeHomePage,
+.wm-domainHero--shift,
+.wm-homeGlassCard--domainShift {
+  --wm-ee-accent: var(--wm-shift-accent, #16a34a);
+  --wm-er-accent: var(--wm-shift-accent, #16a34a);
+  --wm-card-domain-accent: var(--wm-shift-accent, #16a34a);
+  --wm-domain-border: 1.5px solid color-mix(in srgb, var(--wm-card-domain-accent) 42%, transparent);
+  --wm-domain-ambient-shadow:
+    0 10px 28px -6px rgba(15, 23, 42, 0.06),
+    0 10px 24px -8px color-mix(in srgb, var(--wm-card-domain-accent) 28%, transparent);
+  --wm-domain-ambient-shadow-hover:
+    0 16px 36px -8px rgba(15, 23, 42, 0.1),
+    0 14px 28px -6px color-mix(in srgb, var(--wm-card-domain-accent) 32%, transparent);
+}
+
+/* ------------------------------------------------ */
+/* Career                                           */
+/* ------------------------------------------------ */
+
+.wm-ee-vDiary,
+.wm-domainHero--diary,
+.wm-homeGlassCard--domainDiary {
+  --wm-ee-accent: var(--wm-diary-accent, #3b82f6);
+  --wm-er-accent: var(--wm-diary-accent, #3b82f6);
+  --wm-card-domain-accent: var(--wm-diary-accent, #3b82f6);
+  --wm-domain-border: 1.5px solid color-mix(in srgb, var(--wm-card-domain-accent) 42%, transparent);
+  --wm-domain-ambient-shadow:
+    0 10px 28px -6px rgba(15, 23, 42, 0.06),
+    0 10px 24px -8px color-mix(in srgb, var(--wm-card-domain-accent) 28%, transparent);
+  --wm-domain-ambient-shadow-hover:
+    0 16px 36px -8px rgba(15, 23, 42, 0.1),
+    0 14px 28px -6px color-mix(in srgb, var(--wm-card-domain-accent) 32%, transparent);
+}
+
+.wm-ee-vCareer,
+.wm-er-vCareer,
+.wm-domainHero--career,
+.wm-homeGlassCard--domainCareer {
+  --wm-ee-accent: var(--wm-career-accent, #2563eb);
+  --wm-er-accent: var(--wm-career-accent, #2563eb);
+  --wm-card-domain-accent: var(--wm-career-accent, #2563eb);
+  --wm-domain-border: 1.5px solid color-mix(in srgb, var(--wm-card-domain-accent) 42%, transparent);
+  --wm-domain-ambient-shadow:
+    0 10px 28px -6px rgba(15, 23, 42, 0.06),
+    0 10px 24px -8px color-mix(in srgb, var(--wm-card-domain-accent) 28%, transparent);
+  --wm-domain-ambient-shadow-hover:
+    0 16px 36px -8px rgba(15, 23, 42, 0.1),
+    0 14px 28px -6px color-mix(in srgb, var(--wm-card-domain-accent) 32%, transparent);
+}
+
+/* ------------------------------------------------ */
+/* Planner (cyan/indigo)                            */
+/* ------------------------------------------------ */
+
+.wm-ee-vPlanner,
+.wm-er-vPlanner,
+.wm-domainHero--planner,
+.wm-homeGlassCard--domainPlanner {
+  --wm-ee-accent: var(--wm-planner-accent, #0891b2);
+  --wm-er-accent: var(--wm-planner-accent, #0891b2);
+  --wm-card-domain-accent: color-mix(
+    in srgb,
+    var(--wm-planner-accent, #0891b2) 72%,
+    var(--wm-indigo-500, #6366f1) 28%
+  );
+  --wm-domain-border: 1.5px solid color-mix(in srgb, var(--wm-card-domain-accent) 42%, transparent);
+  --wm-domain-ambient-shadow:
+    0 10px 28px -6px rgba(15, 23, 42, 0.06),
+    0 10px 24px -8px color-mix(in srgb, var(--wm-card-domain-accent) 28%, transparent);
+  --wm-domain-ambient-shadow-hover:
+    0 16px 36px -8px rgba(15, 23, 42, 0.1),
+    0 14px 28px -6px color-mix(in srgb, var(--wm-card-domain-accent) 32%, transparent);
+}
+
+/* ------------------------------------------------ */
+/* Workforce                                        */
+/* ------------------------------------------------ */
+
+.wm-ee-vWorkforce,
+.wm-er-vWorkforce,
+.wm-domainHero--workforce {
+  --wm-ee-accent: var(--wm-workforce-accent, #b45309);
+  --wm-er-accent: var(--wm-workforce-accent, #b45309);
+  --wm-card-domain-accent: var(--wm-workforce-accent, #b45309);
+  --wm-domain-border: 1.5px solid color-mix(in srgb, var(--wm-card-domain-accent) 42%, transparent);
+  --wm-domain-ambient-shadow:
+    0 10px 28px -6px rgba(15, 23, 42, 0.06),
+    0 10px 24px -8px color-mix(in srgb, var(--wm-card-domain-accent) 28%, transparent);
+  --wm-domain-ambient-shadow-hover:
+    0 16px 36px -8px rgba(15, 23, 42, 0.1),
+    0 14px 28px -6px color-mix(in srgb, var(--wm-card-domain-accent) 32%, transparent);
+}
+
+/* ------------------------------------------------ */
+/* Vault — Employee page purple; Employer tile gold */
+/* ------------------------------------------------ */
+
+.wm-domainHero--vault,
+.wm-vault-home {
+  --wm-ee-accent: var(--wm-vault-accent, #7c3aed);
+  --wm-card-domain-accent: var(--wm-vault-accent, #7c3aed);
+  --wm-domain-border: 1.5px solid color-mix(in srgb, var(--wm-card-domain-accent) 42%, transparent);
+  --wm-domain-ambient-shadow:
+    0 10px 28px -6px rgba(15, 23, 42, 0.06),
+    0 10px 24px -8px color-mix(in srgb, var(--wm-card-domain-accent) 28%, transparent);
+  --wm-domain-ambient-shadow-hover:
+    0 16px 36px -8px rgba(15, 23, 42, 0.1),
+    0 14px 28px -6px color-mix(in srgb, var(--wm-card-domain-accent) 32%, transparent);
+}
+
+/* Employer standalone Work Vault tile — Vault Violet (never amber/orange) */
+.wm-er-vVault,
+.wm-homeGlassCard--domainVault {
+  --wm-er-accent: var(--wm-vault-accent, #7c3aed);
+  --wm-card-domain-accent: var(--wm-vault-accent, #7c3aed);
+  --wm-domain-border: 1.5px solid color-mix(in srgb, var(--wm-card-domain-accent) 42%, transparent);
+  --wm-domain-ambient-shadow:
+    0 10px 28px -6px rgba(15, 23, 42, 0.06),
+    0 10px 24px -8px color-mix(in srgb, var(--wm-card-domain-accent) 28%, transparent);
+  --wm-domain-ambient-shadow-hover:
+    0 16px 36px -8px rgba(15, 23, 42, 0.1),
+    0 14px 28px -6px color-mix(in srgb, var(--wm-card-domain-accent) 32%, transparent);
+}
+
+/* ------------------------------------------------ */
+/* Dashboard / Settings                             */
+/* ------------------------------------------------ */
+
+.wm-homeGlassCard--domainDashboard {
+  --wm-home-dashboard-accent: var(--wm-dashboard-accent, #0f766e);
+  --wm-card-domain-accent: var(--wm-dashboard-accent, #0f766e);
+  --wm-domain-border: 1.5px solid color-mix(in srgb, var(--wm-card-domain-accent) 40%, #64748b 20%);
+  --wm-domain-ambient-shadow:
+    0 10px 28px -6px rgba(15, 23, 42, 0.06),
+    0 10px 24px -8px color-mix(in srgb, var(--wm-card-domain-accent) 26%, transparent);
+  --wm-domain-ambient-shadow-hover:
+    0 16px 36px -8px rgba(15, 23, 42, 0.1),
+    0 14px 28px -6px color-mix(in srgb, var(--wm-card-domain-accent) 30%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--wm-home-dashboard-accent) 5%,
+    var(--wm-emp-glass-bg-strong, rgba(255, 255, 255, 0.94))
+  );
+}
+
+.wm-domainHero--settings {
+  --wm-card-domain-accent: var(--wm-brand-600, #2563eb);
+  --wm-domain-border: 1.5px solid color-mix(in srgb, var(--wm-card-domain-accent) 42%, transparent);
+  --wm-domain-ambient-shadow:
+    0 10px 28px -6px rgba(15, 23, 42, 0.06),
+    0 10px 24px -8px color-mix(in srgb, var(--wm-card-domain-accent) 28%, transparent);
+  --wm-domain-ambient-shadow-hover:
+    0 16px 36px -8px rgba(15, 23, 42, 0.1),
+    0 14px 28px -6px color-mix(in srgb, var(--wm-card-domain-accent) 32%, transparent);
+}
+
+/* ------------------------------------------------ */
+/* Apply DNA chrome                                 */
+/* ------------------------------------------------ */
+
+.wm-ee-vShift .wm-ee-card,
+.wm-ee-vCareer .wm-ee-card,
+.wm-ee-vDiary .wm-ee-card,
+.wm-ee-vPlanner .wm-ee-card,
+.wm-ee-vWorkforce .wm-ee-card,
+.wm-er-vShift .wm-er-card,
+.wm-er-vCareer .wm-er-card,
+.wm-er-vPlanner .wm-er-card,
+.wm-er-vWorkforce .wm-er-card,
+.wm-er-vVault .wm-er-card {
+  border: var(--wm-domain-border);
+  box-shadow: var(--wm-domain-ambient-shadow), var(--wm-domain-surface-inset);
+}
+
+@media (hover: hover) {
+  .wm-ee-vShift .wm-ee-card:hover,
+  .wm-ee-vCareer .wm-ee-card:hover,
+  .wm-ee-vDiary .wm-ee-card:hover,
+  .wm-ee-vPlanner .wm-ee-card:hover,
+  .wm-ee-vWorkforce .wm-ee-card:hover,
+  .wm-er-vShift .wm-er-card:hover,
+  .wm-er-vCareer .wm-er-card:hover,
+  .wm-er-vPlanner .wm-er-card:hover,
+  .wm-er-vWorkforce .wm-er-card:hover,
+  .wm-er-vVault .wm-er-card:hover {
+    border-color: color-mix(in srgb, var(--wm-card-domain-accent) 52%, transparent);
+    box-shadow: var(--wm-domain-ambient-shadow-hover), var(--wm-domain-surface-inset);
+  }
+}
+
+.wm-domainHero--employee.wm-domainHero--shift,
+.wm-domainHero--employee.wm-domainHero--career,
+.wm-domainHero--employee.wm-domainHero--diary,
+.wm-domainHero--employee.wm-domainHero--planner,
+.wm-domainHero--employee.wm-domainHero--workforce,
+.wm-domainHero--employee.wm-domainHero--settings,
+.wm-domainHero--employer.wm-domainHero--shift,
+.wm-domainHero--employer.wm-domainHero--career,
+.wm-domainHero--employer.wm-domainHero--planner,
+.wm-domainHero--employer.wm-domainHero--workforce,
+.wm-domainHero--employer.wm-domainHero--settings {
+  border: var(--wm-domain-border);
+  box-shadow: var(--wm-domain-ambient-shadow), var(--wm-domain-surface-inset);
+}
+
+.wm-homeGlassCard--domainShift,
+.wm-homeGlassCard--domainCareer,
+.wm-homeGlassCard--domainDiary,
+.wm-homeGlassCard--domainPlanner,
+.wm-homeGlassCard--domainDashboard,
+.wm-homeGlassCard--domainVault {
+  border: var(--wm-domain-border);
+  box-shadow: var(--wm-domain-ambient-shadow), var(--wm-domain-surface-inset);
+}
+
+/* Persistent active — touch / route (not hover-dependent) */
+.wm-homeGlassCard--domainShift.is-active,
+.wm-homeGlassCard--domainCareer.is-active,
+.wm-homeGlassCard--domainDiary.is-active,
+.wm-homeGlassCard--domainPlanner.is-active,
+.wm-homeGlassCard--domainDashboard.is-active,
+.wm-homeGlassCard--domainVault.is-active,
+.wm-homeGlassCard--domainShift[aria-current="page"],
+.wm-homeGlassCard--domainCareer[aria-current="page"],
+.wm-homeGlassCard--domainDiary[aria-current="page"],
+.wm-homeGlassCard--domainPlanner[aria-current="page"],
+.wm-homeGlassCard--domainDashboard[aria-current="page"],
+.wm-homeGlassCard--domainVault[aria-current="page"] {
+  border: var(--wm-dna-active-ring, var(--wm-domain-border));
+  box-shadow: var(--wm-dna-active-glow), var(--wm-domain-surface-inset);
+}
+
+/* Desktop hover polish only — fine pointer devices */
+@media (hover: hover) {
+  .wm-homePage--console .wm-homeCoreGrid .wm-homeGlassCard--domainShift:hover,
+  .wm-homePage--console .wm-homeCoreGrid .wm-homeGlassCard--domainCareer:hover,
+  .wm-homePage--console .wm-homeCoreGrid .wm-homeGlassCard--domainDiary:hover,
+  .wm-homePage--console .wm-homeCoreGrid .wm-homeGlassCard--domainPlanner:hover,
+  .wm-homePage--console .wm-homeCoreGrid .wm-homeGlassCard--domainDashboard:hover,
+  .wm-homePage--console .wm-homeCoreGrid .wm-homeGlassCard--domainVault:hover,
+  .wm-homeGlassCard--domainShift:hover,
+  .wm-homeGlassCard--domainCareer:hover,
+  .wm-homeGlassCard--domainDiary:hover,
+  .wm-homeGlassCard--domainPlanner:hover,
+  .wm-homeGlassCard--domainDashboard:hover,
+  .wm-homeGlassCard--domainVault:hover {
+    box-shadow: var(--wm-domain-ambient-shadow-hover), var(--wm-domain-surface-inset);
+  }
+}
+
+.wm-homeGlassCard__chevron {
+  display: none;
+}
+
+.wm-homeGlassCard__trailing:empty {
+  display: none;
+}
+
+.wm-vault-home .wm-vault-page-hero {
+  border: var(--wm-domain-border);
+  box-shadow: var(--wm-domain-ambient-shadow), var(--wm-domain-surface-inset);
+}
+
+.wm-shiftEmployeeHomePage .wm-shiftEmployeeHomeHero,
+.wm-shiftEmployeeHomePage .wm-shiftEmployeeSearchHero {
+  border: var(--wm-domain-border);
+  box-shadow: var(--wm-domain-ambient-shadow), var(--wm-domain-surface-inset);
+}
