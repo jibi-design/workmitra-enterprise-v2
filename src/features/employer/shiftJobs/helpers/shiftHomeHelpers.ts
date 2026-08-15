@@ -68,7 +68,10 @@ export function findConfirmWaitingPost(posts: readonly ShiftPost[]): ConfirmWait
   for (const post of posts) {
     if (post.status === "completed" || post.status === "cancelled") continue;
     const remaining = Math.max(0, post.vacancies - post.confirmedIds.length);
-    const shortlisted = countApplicationsForPost(post.id, "shortlisted");
+    const shortlisted = Math.max(
+      countApplicationsForPost(post.id, "shortlisted"),
+      post.shortlistIds.length,
+    );
     if (remaining > 0 && shortlisted > 0) {
       return { postId: post.id, jobName: post.jobName, shortlisted, remaining };
     }
