@@ -11,8 +11,10 @@ import { EmployerDemandPlannerHeader } from "../components/wizard/EmployerDemand
 import { EmployerDemandPlannerStepIndicator } from "../components/wizard/EmployerDemandPlannerStepIndicator";
 import { PlannerMorphWizardShell } from "../components/PlannerMorphWizardShell";
 import { useEmployerDemandPlannerState } from "../hooks/useEmployerDemandPlannerState";
+import { usePlannerPlansHydrate } from "../hooks/usePlannerPlansHydrate";
 
 export function EmployerPlannerNewPage() {
+  usePlannerPlansHydrate();
   const state = useEmployerDemandPlannerState();
   const isStaleNotice =
     Boolean(state.notice) &&

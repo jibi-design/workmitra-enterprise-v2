@@ -110,11 +110,21 @@ function toggle(postId: string): { saved: boolean } {
 
   if (existing.some((item) => item.postId === cleanId)) {
     writeAll(existing.filter((item) => item.postId !== cleanId));
+    void import("./employeeCareerSavedJobs.sync").then((mod) => {
+      mod.queueCareerSavedJobSync(cleanId, false);
+    });
     return { saved: false };
   }
 
   writeAll([{ postId: cleanId, savedAt: Date.now() }, ...existing]);
+  void import("./employeeCareerSavedJobs.sync").then((mod) => {
+    mod.queueCareerSavedJobSync(cleanId, true);
+  });
   return { saved: true };
+}
+
+function replaceAll(records: EmployeeCareerSavedJobRecord[]): void {
+  writeAll(records);
 }
 
 function getSnapshotKey(): string {
@@ -145,6 +155,7 @@ export const employeeCareerSavedJobsStorage = {
   getIds,
   isSaved,
   toggle,
+  replaceAll,
   getSnapshotKey,
   subscribe,
 };

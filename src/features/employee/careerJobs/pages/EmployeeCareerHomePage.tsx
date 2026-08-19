@@ -2,7 +2,7 @@
 // File: EmployeeCareerHomePage.tsx
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\careerJobs\pages\EmployeeCareerHomePage.tsx
 
-import { useMemo, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { EmployeeMyCurrentJobCard } from "../components/EmployeeMyCurrentJobCard";
@@ -15,6 +15,7 @@ import {
   getCareerWorkspacesSnapshot,
   subscribeCareerWorkspaces,
 } from "../helpers/careerWorkspaceHooks";
+import { hydrateCareerSavedJobsFromServer } from "../storage/employeeCareerSavedJobs.sync";
 
 function isBlockingCareerSearchStage(stage: string): boolean {
   return stage !== "withdrawn" && stage !== "rejected" && stage !== "offer_declined";
@@ -50,6 +51,10 @@ function isActiveWorkspaceStatus(status: string): boolean {
 
 export function EmployeeCareerHomePage() {
   const nav = useNavigate();
+
+  useEffect(() => {
+    void hydrateCareerSavedJobsFromServer();
+  }, []);
 
   const posts = useSyncExternalStore(
     subscribeCareerSearch,
@@ -88,11 +93,6 @@ export function EmployeeCareerHomePage() {
     [workspaces],
   );
 
-  const workspacePath = ROUTE_PATHS.employeeCareerApplications.replace(
-    "applications",
-    "workspaces",
-  );
-
   return (
     <div className="wm-ee-vCareer wm-stackGrid">
       <EmployeeCareerHomeHeader
@@ -110,7 +110,7 @@ export function EmployeeCareerHomePage() {
         activeWorkspaceCount={activeWorkspaceCount}
       />
 
-      <EmployeeMyCurrentJobCard onOpen={() => nav(workspacePath)} />
+      <EmployeeMyCurrentJobCard onOpen={() => nav(ROUTE_PATHS.employeeCareerWorkspaces)} />
 
       <EmployeeCareerCompletedRecordsSection />
     </div>

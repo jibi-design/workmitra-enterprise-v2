@@ -10,12 +10,14 @@ import { PlannerEmployerCommandGrid } from "../components/PlannerEmployerCommand
 import { PlannerEmployerPlanStatusSection } from "../components/PlannerEmployerPlanStatusSection";
 import { DomainHero } from "../../../../shared/components/layout/DomainHero";
 import { PlannerShell } from "../../../../app/shells/PlannerShell";
+import { usePlannerPlansHydrate } from "../hooks/usePlannerPlansHydrate";
 
 function getPlansSnapshot() {
   return demandPlannerStorage.getAll();
 }
 
 export function EmployerPlannerHomePage() {
+  usePlannerPlansHydrate();
   const nav = useNavigate();
   const plans = useSyncExternalStore(
     demandPlannerStorage.subscribe,

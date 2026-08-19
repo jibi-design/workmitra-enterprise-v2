@@ -2,7 +2,7 @@
 // File name: useEmployeeCareerSearchPageState.ts
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\careerJobs\hooks\useEmployeeCareerSearchPageState.ts
 
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { jobAlertStorage } from "../../../../shared/utils/jobAlertStorage";
@@ -22,13 +22,24 @@ import {
   subscribeCareerSearch,
 } from "../helpers/careerSearchHelpers";
 import type {
-  CareerSearchPost,
   ExperienceFilter,
   JobTypeFilter,
   WorkModeFilter,
 } from "../helpers/careerSearchHelpers";
-import { employeeCareerRecentlyViewedJobsStorage } from "../storage/employeeCareerRecentlyViewedJobs.storage";
+import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
+import {
+  getNearbyCareerIds,
+  getNearbyCareerIdsKey,
+  subscribeNearbyCareerIds,
+} from "../helpers/careerNearby.cache";
+import { hydrateNearbyCareerIdsFromServer } from "../helpers/careerNearby.hydrate";
+import {
+  mapCareerIdsToPosts,
+  selectCareerDiscoveryVisiblePosts,
+} from "../helpers/selectCareerDiscoveryVisiblePosts";
 import { employeeCareerSavedJobsStorage } from "../storage/employeeCareerSavedJobs.storage";
+import { hydrateCareerSavedJobsFromServer } from "../storage/employeeCareerSavedJobs.sync";
+import { employeeCareerRecentlyViewedJobsStorage } from "../storage/employeeCareerRecentlyViewedJobs.storage";
 
 const MAX_SEARCH_QUERY_LENGTH = 80;
 const MAX_LOCATION_QUERY_LENGTH = 80;
@@ -114,25 +125,63 @@ export function useEmployeeCareerSearchPageState() {
     [applicationStatusByPostId, filtered, recentJobIds, savedJobIds],
   );
 
-  const visiblePosts = useMemo(
-    () =>
-      getCareerDiscoveryPosts({
+  const profileKey = useSyncExternalStore(
+    employeeProfileStorage.subscribe,
+    () => {
+      const profile = employeeProfileStorage.get();
+      return `${profile.basePincode}|${profile.careerCommuteRadius}`;
+    },
+    () => "",
+  );
+
+  useEffect(() => {
+    void hydrateNearbyCareerIdsFromServer();
+    void hydrateCareerSavedJobsFromServer();
+  }, [profileKey]);
+
+  const nearbyKey = useSyncExternalStore(
+    subscribeNearbyCareerIds,
+    getNearbyCareerIdsKey,
+    getNearbyCareerIdsKey,
+  );
+
+  const visiblePosts = useMemo(() => {
+    void nearbyKey;
+    const profile = employeeProfileStorage.get();
+    return selectCareerDiscoveryVisiblePosts({
+      discovered: getCareerDiscoveryPosts({
         activeTab,
         posts: filtered,
         savedJobIds,
         recentJobIds,
         applicationStatusByPostId,
       }),
-    [activeTab, applicationStatusByPostId, filtered, recentJobIds, savedJobIds],
-  );
+      filtered,
+      activeTab,
+      query,
+      locationQuery,
+      nearbyIds: getNearbyCareerIds(),
+      workerPincode: profile.basePincode,
+      commuteRadiusKm: profile.careerCommuteRadius,
+    });
+  }, [
+    activeTab,
+    applicationStatusByPostId,
+    filtered,
+    locationQuery,
+    nearbyKey,
+    query,
+    recentJobIds,
+    savedJobIds,
+  ]);
 
   const savedPosts = useMemo(
-    () => mapIdsToPosts(savedJobIds, discoverablePosts),
+    () => mapCareerIdsToPosts(savedJobIds, discoverablePosts),
     [discoverablePosts, savedJobIds],
   );
 
   const recentPosts = useMemo(
-    () => mapIdsToPosts(recentJobIds, discoverablePosts),
+    () => mapCareerIdsToPosts(recentJobIds, discoverablePosts),
     [discoverablePosts, recentJobIds],
   );
 
@@ -253,10 +302,4 @@ export function useEmployeeCareerSearchPageState() {
     toggleSaved,
     saveSearch,
   };
-}
-
-function mapIdsToPosts(ids: string[], posts: CareerSearchPost[]): CareerSearchPost[] {
-  return ids
-    .map((id) => posts.find((post) => post.id === id) ?? null)
-    .filter((post): post is CareerSearchPost => post !== null);
 }

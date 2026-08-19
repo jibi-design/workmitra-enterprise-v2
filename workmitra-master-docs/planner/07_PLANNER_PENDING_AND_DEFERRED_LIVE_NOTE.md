@@ -7,7 +7,7 @@
 > **Rule:** `.cursor/rules/infra-live-state-notes.mdc` (Planner section)
 
 **Document:** `07_PLANNER_PENDING_AND_DEFERRED_LIVE_NOTE.md`  
-**Last verified:** 2026-07-26 (T1-5 master §11–12 sync — Track 1 COMPLETE)  
+**Last verified:** 2026-08-19 (plannerGateApi dual-write + hydrate)  
 **Active track:** Track 1 — Planner product  
 **Overall status:** **Track 1 patches T1-1…T1-5 COMPLETE.** Remaining product work = P2 open items + deferred D-xx (see below).
 
@@ -15,22 +15,22 @@
 
 ## 1. Current truth (quick read)
 
-| Area                                                 | Status                                                     |
-| ---------------------------------------------------- | ---------------------------------------------------------- |
-| Hybrid A2 Phase-1 circuit                            | COMPLETE                                                   |
-| Phase-2 Ops (audit, concurrency, escalations, RTW)   | COMPLETE                                                   |
-| Employer Ultra UI / Luxury polish tracks (docs)      | COMPLETE                                                   |
-| Employer finance page                                | **DONE (T1-1)**                                            |
-| Employer roster detail                               | **DONE (T1-2)**                                            |
-| Employer plan detail                                 | PARTIAL — fill % / days; not full P2 calendar + day drawer |
-| Retry on cancel/broadcast failure                    | **DONE (T1-3)**                                            |
-| Visual e2e browse / applications / finance           | **DONE (T1-4)**                                            |
-| Master doc §11–12 vs Hybrid A2                       | **DONE (T1-5)** — `01` v1.10                               |
-| Full P3 finance ledger + CSV                         | DEFERRED                                                   |
-| Optional plan snapshot (Phase-2)                     | DEFERRED (PO gate)                                         |
-| V2 workforce intelligence                            | DEFERRED — do not build until PO V2 sprint                 |
-| Planner DB cutover (leave localStorage)              | DEFERRED — later architecture track                        |
-| Company email / Cloudflare Pages / production launch | OUT OF SCOPE — see pre-launch board                        |
+| Area                                                 | Status                                                                   |
+| ---------------------------------------------------- | ------------------------------------------------------------------------ |
+| Hybrid A2 Phase-1 circuit                            | COMPLETE                                                                 |
+| Phase-2 Ops (audit, concurrency, escalations, RTW)   | COMPLETE                                                                 |
+| Employer Ultra UI / Luxury polish tracks (docs)      | COMPLETE                                                                 |
+| Employer finance page                                | **DONE (T1-1)**                                                          |
+| Employer roster detail                               | **DONE (T1-2)**                                                          |
+| Employer plan detail                                 | PARTIAL — fill % / days; not full P2 calendar + day drawer               |
+| Retry on cancel/broadcast failure                    | **DONE (T1-3)**                                                          |
+| Visual e2e browse / applications / finance           | **DONE (T1-4)**                                                          |
+| Master doc §11–12 vs Hybrid A2                       | **DONE (T1-5)** — `01` v1.10                                             |
+| Full P3 finance ledger + CSV                         | DEFERRED                                                                 |
+| Optional plan snapshot (Phase-2)                     | DEFERRED (PO gate)                                                       |
+| V2 workforce intelligence                            | DEFERRED — do not build until PO V2 sprint                               |
+| Planner DB cutover (leave localStorage)              | PARTIAL — dual-write + GET hydrate via plannerGateApi; LS still UI cache |
+| Company email / Cloudflare Pages / production launch | OUT OF SCOPE — see pre-launch board                                      |
 
 ---
 
@@ -53,15 +53,14 @@ Circuit specs · batch approval · route contract · workspace/roster smoke · P
 
 ## 3. PENDING patches (Track 1 — COMPLETE)
 
-| #    | Patch                                                       | Priority | Status                |
-| ---- | ----------------------------------------------------------- | -------- | --------------------- |
-| T1-1 | Finance placeholder polish + e2e smoke                      | —        | **DONE** (2026-07-26) |
-| T1-2 | Roster detail cleanup (`*-stub-back` testid, 4-state)       | —        | **DONE** (2026-07-26) |
-| T1-3 | Wire cancel/broadcast failures → `wm_retry_queue_v1`        | —        | **DONE** (2026-07-26) |
-| T1-4 | Visual e2e: employee browse + applications (+ finance)      | —        | **DONE** (2026-07-26) |
-| T1-5 | Sync master doc `01` §11–12 checklists to Hybrid A2 reality | —        | **DONE** (2026-07-26) |
-
-**Track 1 ordered patches: ALL DONE.** Further Planner work uses P2 open checkboxes in `01` §11 + DEFERRED D-xx below (PO gate).
+| #       | Patch                                                            | Priority | Status                |
+| ------- | ---------------------------------------------------------------- | -------- | --------------------- |
+| T1-1    | Finance placeholder polish + e2e smoke                           | —        | **DONE** (2026-07-26) |
+| T1-2    | Roster detail cleanup (`*-stub-back` testid, 4-state)            | —        | **DONE** (2026-07-26) |
+| T1-3    | Wire cancel/broadcast failures → `wm_retry_queue_v1`             | —        | **DONE** (2026-07-26) |
+| T1-4    | Visual e2e: employee browse + applications (+ finance)           | —        | **DONE** (2026-07-26) |
+| T1-5    | Sync master doc `01` §11–12 checklists to Hybrid A2 reality      | —        | **DONE** (2026-07-26) |
+| P-LOC-1 | Planner work-area matching (Shift kernel + per-day blind counts) | —        | **DONE** (2026-08-13) |
 
 **Hard rule:** When starting new Planner work, add a new PENDING row or promote a D-xx — do not rely on chat memory.
 
@@ -117,11 +116,12 @@ Those live on `PENDING_WORK_BOARD.md` Tracks 2–4 / pre-launch bundle.
 
 ## 8. Change log
 
-| Date       | Who             | What changed                                                                                                   |
-| ---------- | --------------- | -------------------------------------------------------------------------------------------------------------- |
-| 2026-07-26 | Leader + Cursor | Created live note from Track 1 inventory. T1-1 Finance = NEXT.                                                 |
-| 2026-07-26 | Leader + Cursor | **T1-1 DONE** — Finance placeholder polish + `planner-finance-placeholder.spec.ts` (2 PASS). Next = T1-2.      |
-| 2026-07-26 | Leader + Cursor | **T1-2 DONE** — Roster detail stub-back→back; missing-plan empty; workspace/route/rtw e2e 6 PASS. Next = T1-3. |
-| 2026-07-26 | Leader + Cursor | **T1-3 DONE** — cancel/broadcast enqueue to wm_retry_queue_v1; unit 5 PASS. Next = T1-4.                       |
-| 2026-07-26 | Leader + Cursor | **T1-4 DONE** — visual e2e browse + applications + finance (3 PASS). Next = T1-5.                              |
-| 2026-07-26 | Leader + Cursor | **T1-5 DONE** — master `01` v1.10 §11–12 Hybrid A2 sync. Track 1 COMPLETE.                                     |
+| Date       | Who               | What changed                                                                                                                                                     |
+| ---------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-07-26 | Leader + Cursor   | Created live note from Track 1 inventory. T1-1 Finance = NEXT.                                                                                                   |
+| 2026-07-26 | Leader + Cursor   | **T1-1 DONE** — Finance placeholder polish + `planner-finance-placeholder.spec.ts` (2 PASS). Next = T1-2.                                                        |
+| 2026-07-26 | Leader + Cursor   | **T1-2 DONE** — Roster detail stub-back→back; missing-plan empty; workspace/route/rtw e2e 6 PASS. Next = T1-3.                                                   |
+| 2026-07-26 | Leader + Cursor   | **T1-3 DONE** — cancel/broadcast enqueue to wm_retry_queue_v1; unit 5 PASS. Next = T1-4.                                                                         |
+| 2026-07-26 | Leader + Cursor   | **T1-4 DONE** — visual e2e browse + applications + finance (3 PASS). Next = T1-5.                                                                                |
+| 2026-08-13 | Operator + Cursor | **P-LOC-1 DONE** — DemandPlan work area code; per-day blind counts via Shift radar kernel; employee browse fail-closed filter. D-05 bell/ranking still deferred. |
+| 2026-08-19 | Operator + Cursor | **plannerGateApi** — client GET/POST/PATCH `/v1/jobmitra/employer/planner/plans` when AUTH_BACKEND_ENABLED; LS cache + fail-soft.                                |

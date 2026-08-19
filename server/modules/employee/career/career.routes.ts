@@ -2,6 +2,9 @@ import type { ServerResponse } from "node:http";
 import type { AuthenticatedRequest } from "../../../middleware/index.js";
 import { sendJson, sendNotFound, envelope, readJsonBody } from "../../../utils/http.js";
 import { employeeCareerService } from "./career.service.js";
+import { handleCareerNearbyJobsRoute } from "./nearby.routes.js";
+import { handleCareerLocationProfileRoute } from "./locationProfile.routes.js";
+import { handleCareerSavedJobsRoutes } from "./savedJobs.routes.js";
 
 const CAREER_PREFIX = "/v1/jobmitra/employee/career";
 
@@ -29,6 +32,10 @@ export async function handleEmployeeCareerRoutes(
 
   const { requestId } = req;
   const subpath = pathname.slice(CAREER_PREFIX.length) || "/";
+
+  if (await handleCareerNearbyJobsRoute(req, res, url, method)) return true;
+  if (await handleCareerLocationProfileRoute(req, res, url, method)) return true;
+  if (await handleCareerSavedJobsRoutes(req, res, url, method)) return true;
 
   // GET /v1/jobmitra/employee/career/jobs
   // Browse available Career job posts

@@ -12,6 +12,8 @@ import {
   type PlanRoleGroup,
 } from "./demandPlanner.schema";
 import { plannerDispatchChanged, plannerReadJson, plannerWriteJson } from "./plannerSafeStorage";
+import { scopeAppLocalId } from "../../../../shared/identity/constants/idConstants";
+import { queuePlannerServerSync } from "./demandPlanner.serverSync";
 
 export type {
   DaySlot,
@@ -86,7 +88,7 @@ function write(list: DemandPlan[]): void {
 }
 
 function genId(): string {
-  return `dp_${Math.random().toString(36).slice(2)}_${Date.now().toString(36)}`;
+  return `${scopeAppLocalId("dp")}_${Math.random().toString(36).slice(2)}_${Date.now().toString(36)}`;
 }
 
 export type UpdatePlanOptions = {
@@ -173,7 +175,13 @@ export const demandPlannerStorage = {
           : 0,
     };
     write([plan, ...read()].slice(0, 50));
+    queuePlannerServerSync(id);
     return id;
+  },
+
+  replaceAll(plans: DemandPlan[]): void {
+    const { plans: migrated } = migrateDemandPlanList(plans);
+    write(migrated.slice(0, 50));
   },
 
   updatePlan(
@@ -222,6 +230,7 @@ export const demandPlannerStorage = {
       }),
     );
     if (!updated) return { ok: false, reason: "not_found" };
+    queuePlannerServerSync(id);
     return { ok: true, plan: updated };
   },
 
@@ -254,6 +263,7 @@ export const demandPlannerStorage = {
         return result;
       }),
     );
+    if (result) queuePlannerServerSync(id);
     return result;
   },
 
@@ -274,6 +284,7 @@ export const demandPlannerStorage = {
         return result;
       }),
     );
+    if (result) queuePlannerServerSync(id);
     return result;
   },
 
@@ -281,6 +292,7 @@ export const demandPlannerStorage = {
     const plan = this.getById(id);
     if (!plan || plan.status !== "draft") return;
     write(read().filter((p) => p.id !== id));
+    queuePlannerServerSync(id, "delete");
   },
 
   upsertRoleGroup(planId: string, group: PlanRoleGroup): boolean {

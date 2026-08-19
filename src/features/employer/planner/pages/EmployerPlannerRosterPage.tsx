@@ -16,14 +16,19 @@ import {
 } from "../../../shared/planner/services/plannerEscalationTriggers.service";
 import { listActivePlannerPlansForRoster } from "../../../shared/planner/services/plannerRoster.helpers";
 import { PlannerRoleGroupManager } from "../components/PlannerRoleGroupManager";
+import { usePlannerPlansHydrate } from "../hooks/usePlannerPlansHydrate";
 
 export function EmployerPlannerRosterPage() {
+  usePlannerPlansHydrate();
   const plans = useMemo(() => {
     runPlannerMilestoneEngine();
     return listActivePlannerPlansForRoster();
   }, []);
 
-  const [selectedPlanId, setSelectedPlanId] = useState(plans[0]?.planId ?? "");
+  const [selectedPlanId, setSelectedPlanId] = useState(() => {
+    const understaff = [...listUnderstaffPlanIds()];
+    return understaff[0] ?? plans[0]?.planId ?? "";
+  });
   const activePlanId = plans.some((p) => p.planId === selectedPlanId)
     ? selectedPlanId
     : (plans[0]?.planId ?? "");
@@ -58,7 +63,7 @@ export function EmployerPlannerRosterPage() {
             marginBottom: 6,
           }}
         >
-          Hybrid A2 · Roster Console
+          Roster Console
         </div>
         <h1 className="wm-pageTitle" style={{ margin: 0 }}>
           Roster Management

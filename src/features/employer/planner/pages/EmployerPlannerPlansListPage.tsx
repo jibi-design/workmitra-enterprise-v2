@@ -12,8 +12,8 @@ import {
   type DemandPlan,
   type DemandPlanStatus,
 } from "../storage/demandPlannerStorage";
-import { PlannerEmployerCommandGrid } from "../components/PlannerEmployerCommandGrid";
 import { PlannerEmployerPlanStatusSection } from "../components/PlannerEmployerPlanStatusSection";
+import { usePlannerPlansHydrate } from "../hooks/usePlannerPlansHydrate";
 
 const TABS: DemandPlanStatus[] = ["draft", "active", "completed", "cancelled"];
 
@@ -22,6 +22,7 @@ function getPlansSnapshot() {
 }
 
 export function EmployerPlannerPlansListPage() {
+  usePlannerPlansHydrate();
   const nav = useNavigate();
   const plans = useSyncExternalStore(
     demandPlannerStorage.subscribe,
@@ -92,8 +93,6 @@ export function EmployerPlannerPlansListPage() {
           </div>
         </div>
       </DomainHero>
-
-      <PlannerEmployerCommandGrid />
 
       {TABS.map((status) => (
         <PlannerEmployerPlanStatusSection
