@@ -3,6 +3,9 @@
 import { CenterModal } from "../components/CenterModal";
 import type { IntentPacket } from "./intentPacket";
 import { isEmployerCreateIntent } from "./guestIntentKinds";
+import { HoneypotField } from "./security/HoneypotField";
+import { honeypotTripped } from "./security/honeypotField.helpers";
+import { recordGuestIntegrityStrike } from "./security/guestDeviceIntegrity";
 
 type Props = {
   readonly open: boolean;
@@ -20,27 +23,47 @@ export function GuestIntentWarningModal({ open, intent, onPrimary, onSkip }: Pro
   const primaryLabel = employer ? "Create Profile / Sign In" : "Sign In / Register";
   const skipLabel = employer ? "Skip & Continue Preview" : "Skip & Continue Browsing";
 
+  function guarded(action: () => void, form: HTMLFormElement | null) {
+    if (form && honeypotTripped(form)) {
+      recordGuestIntegrityStrike();
+      return;
+    }
+    action();
+  }
+
   return (
     <CenterModal open={open} onBackdropClose={onSkip} ariaLabel={title} maxWidth={440}>
-      <div className="wm-auth-panel" data-testid="guest-intent-warning" style={{ boxShadow: "none", margin: 0 }}>
+      <form
+        className="wm-auth-panel"
+        data-testid="guest-intent-warning"
+        style={{ boxShadow: "none", margin: 0, position: "relative" }}
+        onSubmit={(e) => {
+          e.preventDefault();
+          guarded(onPrimary, e.currentTarget);
+        }}
+      >
+        <HoneypotField />
         <h2 className="wm-auth-hero__title" style={{ fontSize: 22, marginBottom: 8 }}>
           {title}
         </h2>
         <p className="wm-auth-hero__sub" style={{ marginBottom: 18, lineHeight: 1.5 }}>
           {message}
         </p>
-        <button type="button" className="wm-press-btn wm-auth-submit" onClick={onPrimary}>
+        <button type="submit" className="wm-press-btn wm-auth-submit">
           {primaryLabel}
         </button>
         <button
           type="button"
           className="wm-outlineBtn"
-          onClick={onSkip}
+          onClick={(e) => {
+            const form = e.currentTarget.form;
+            guarded(onSkip, form);
+          }}
           style={{ width: "100%", marginTop: 10 }}
         >
           {skipLabel}
         </button>
-      </div>
+      </form>
     </CenterModal>
   );
 }

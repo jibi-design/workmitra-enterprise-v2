@@ -4,7 +4,10 @@ import { Link } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../app/router/routePaths";
 import { guestStorage } from "../../../shared/guest/guestStorage";
 import { useSoftAuth } from "../../../shared/guest/useSoftAuth";
-import { useSyncExternalStore, useState } from "react";
+import { HoneypotField } from "../../../shared/guest/security/HoneypotField";
+import { honeypotTripped } from "../../../shared/guest/security/honeypotField.helpers";
+import { recordGuestIntegrityStrike } from "../../../shared/guest/security/guestDeviceIntegrity";
+import { useSyncExternalStore, useState, type FormEvent } from "react";
 
 function EmployerDraftTeaser() {
   const { requireAuthForAction } = useSoftAuth();
@@ -53,7 +56,12 @@ export function GuestExplorePage() {
   const [radius, setRadius] = useState(String(shadow.searchRadiusKm));
   const [skills, setSkills] = useState(shadow.skills.join(", "));
 
-  function saveShadow() {
+  function saveShadow(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (honeypotTripped(e.currentTarget)) {
+      recordGuestIntegrityStrike();
+      return;
+    }
     guestStorage.saveShadowProfile({
       preferredCity: city.trim(),
       searchRadiusKm: Math.max(1, Number(radius) || 25),
@@ -97,11 +105,13 @@ export function GuestExplorePage() {
 
       <EmployerDraftTeaser />
 
-      <section
+      <form
         className="wm-ee-card"
-        style={{ marginTop: 18, padding: 16 }}
+        style={{ marginTop: 18, padding: 16, position: "relative" }}
         data-testid="guest-shadow-profile"
+        onSubmit={saveShadow}
       >
+        <HoneypotField />
         <div style={{ fontWeight: 900, fontSize: 15 }}>Your preferences (this device)</div>
         <p style={{ marginTop: 4, fontSize: 12, color: "var(--wm-er-muted)" }}>
           Saved locally as guest data — syncs into your profile after sign-in.
@@ -131,15 +141,10 @@ export function GuestExplorePage() {
             style={{ padding: 8, borderRadius: 8, border: "1px solid #e2e8f0" }}
           />
         </label>
-        <button
-          type="button"
-          className="wm-primarybtn"
-          style={{ marginTop: 12 }}
-          onClick={saveShadow}
-        >
+        <button type="submit" className="wm-primarybtn" style={{ marginTop: 12 }}>
           Save preferences
         </button>
-      </section>
+      </form>
     </div>
   );
 }

@@ -43,6 +43,10 @@ describe("WAVE-5.1 Layer 3 rateLimiter", () => {
     expect(classifyRateLimitPath("/v1/jobmitra/public/event-day/passes/abc", "GET")).toBe("global");
     expect(isAuthSensitiveRoute("/v1/jobmitra/employee/shift/applications", "GET")).toBe(false);
   });
+
+  it("classifies unauthenticated global traffic as guest at apply-time via session cookie", () => {
+    expect(classifyRateLimitPath("/v1/jobmitra/health", "GET")).toBe("global");
+  });
 });
 
 describe("WAVE-5.1 Layer 3 validateRequest", () => {

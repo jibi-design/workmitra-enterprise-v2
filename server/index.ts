@@ -16,6 +16,10 @@ import { handleCallingRoutes } from "./routes/calling.routes.js";
 import { enforceCsrf, isMutatingMethod } from "./middleware/csrf.js";
 import { applyChaosInjection } from "./middleware/rateLimitChaos.js";
 import { applyRateLimiter } from "./middleware/rateLimiter.js";
+import {
+  applyGuestDeviceBucket,
+  enforceGuestWriteIsolation,
+} from "./middleware/guestWriteIsolation.js";
 import { applySecurityHeaders } from "./middleware/securityHeaders.js";
 import { buildAllowedOrigins, resolveCorsOrigin } from "./middleware/corsOrigins.js";
 import { resolveClientIp } from "./middleware/clientIp.js";
@@ -78,7 +82,7 @@ async function dispatchRequest(req: IncomingMessage, res: ServerResponse): Promi
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE,OPTIONS");
   res.setHeader(
     "Access-Control-Allow-Headers",
-    "Content-Type, X-CSRF-Token, Idempotency-Key, Authorization, X-WM-Step-Up",
+    "Content-Type, X-CSRF-Token, Idempotency-Key, Authorization, X-WM-Step-Up, X-Wm-Guest-Device",
   );
   res.setHeader(
     "Access-Control-Expose-Headers",
@@ -208,6 +212,21 @@ async function dispatchRequest(req: IncomingMessage, res: ServerResponse): Promi
         },
       }),
     );
+    return;
+  }
+
+  if (!(await applyGuestDeviceBucket(req, res))) {
+    return;
+  }
+
+  if (!enforceGuestWriteIsolation(req, res, url.pathname, method)) {
+    logSecurityEvent({
+      event: "GUEST_WRITE_FORBIDDEN",
+      path: url.pathname,
+      method,
+      httpStatus: 401,
+      clientKey: clientKeyFromReq(req),
+    });
     return;
   }
 

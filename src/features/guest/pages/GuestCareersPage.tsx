@@ -10,6 +10,7 @@ import {
 } from "../../employee/careerJobs/helpers/careerSearchHelpers";
 import { EmployerTrustBadge } from "../../../shared/employerProfile/EmployerTrustBadge";
 import { guestStorage } from "../../../shared/guest/guestStorage";
+import { toGuestPublicPlace } from "../../../shared/guest/security/guestSensitiveMask";
 
 export function GuestCareersPage() {
   const nav = useNavigate();
@@ -49,7 +50,7 @@ export function GuestCareersPage() {
                 <div style={{ fontWeight: 900, fontSize: 15 }}>{post.jobTitle}</div>
                 <div style={{ marginTop: 4, fontSize: 12, color: "var(--wm-er-muted)" }}>
                   {post.companyName}
-                  {post.location ? ` · ${post.location}` : ""}
+                  {post.location ? ` · ${toGuestPublicPlace(post.location)}` : ""}
                 </div>
                 <EmployerTrustBadge variant="compact" />
                 <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>

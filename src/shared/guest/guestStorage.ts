@@ -1,5 +1,7 @@
 /** Phase 4 — Guest local-first storage (`wm_guest_*`). Survives role-switch air-gap. */
 
+import { sanitizeUserText } from "../security/sanitizeUserText";
+
 export const GUEST_STORAGE_PREFIX = "wm_guest_";
 
 const SHORTLIST_SHIFTS_KEY = "wm_guest_shortlist_shifts_v1";
@@ -70,16 +72,27 @@ function asIdList(value: unknown): string[] {
   return value.filter((x): x is string => typeof x === "string" && x.trim().length > 0);
 }
 
+function sanitizeDraftPayload(payload: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(payload)) {
+    out[key] = typeof value === "string" ? sanitizeUserText(value, 2000) : value;
+  }
+  return out;
+}
+
 function parseShadow(raw: Partial<GuestShadowProfile>): GuestShadowProfile {
   return {
     skills: Array.isArray(raw.skills)
-      ? raw.skills.filter((s): s is string => typeof s === "string")
+      ? raw.skills
+          .filter((s): s is string => typeof s === "string")
+          .map((s) => sanitizeUserText(s, 80))
       : [],
     searchRadiusKm:
       typeof raw.searchRadiusKm === "number" && raw.searchRadiusKm > 0
         ? raw.searchRadiusKm
         : EMPTY_SHADOW.searchRadiusKm,
-    preferredCity: typeof raw.preferredCity === "string" ? raw.preferredCity : "",
+    preferredCity:
+      typeof raw.preferredCity === "string" ? sanitizeUserText(raw.preferredCity, 80) : "",
     updatedAt: typeof raw.updatedAt === "number" ? raw.updatedAt : 0,
   };
 }
@@ -154,9 +167,9 @@ export const guestStorage = {
   saveShadowProfile(patch: Partial<GuestShadowProfile>): GuestShadowProfile {
     const current = guestStorage.getShadowProfile();
     const next: GuestShadowProfile = {
-      skills: patch.skills ?? current.skills,
+      skills: (patch.skills ?? current.skills).map((s) => sanitizeUserText(s, 80)),
       searchRadiusKm: patch.searchRadiusKm ?? current.searchRadiusKm,
-      preferredCity: patch.preferredCity ?? current.preferredCity,
+      preferredCity: sanitizeUserText(patch.preferredCity ?? current.preferredCity, 80),
       updatedAt: Date.now(),
     };
     writeJson(SHADOW_PROFILE_KEY, next);
@@ -175,7 +188,7 @@ export const guestStorage = {
       id: draft.id ?? `guest_draft_${Date.now().toString(16)}`,
       kind: draft.kind,
       targetId: draft.targetId,
-      payload: draft.payload,
+      payload: sanitizeDraftPayload(draft.payload),
       createdAt: Date.now(),
     };
     const others = guestStorage

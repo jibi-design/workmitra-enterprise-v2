@@ -10,6 +10,10 @@ import {
 } from "../../employee/careerJobs/helpers/careerSearchHelpers";
 import { EmployerTrustBadge } from "../../../shared/employerProfile/EmployerTrustBadge";
 import { guestStorage } from "../../../shared/guest/guestStorage";
+import {
+  toGuestPublicBody,
+  toGuestPublicPlace,
+} from "../../../shared/guest/security/guestSensitiveMask";
 import { useSoftAuth } from "../../../shared/guest/useSoftAuth";
 
 export function GuestCareerDetailPage() {
@@ -68,11 +72,12 @@ export function GuestCareerDetailPage() {
       <h1 style={{ margin: "10px 0 0", fontSize: 24, fontWeight: 900 }}>{post.jobTitle}</h1>
       <div style={{ marginTop: 6, fontSize: 13, color: "var(--wm-er-muted)" }}>
         {post.companyName}
-        {post.location ? ` · ${post.location}` : ""}
+        {post.location ? ` · ${toGuestPublicPlace(post.location)}` : ""}
       </div>
       <EmployerTrustBadge variant="full" showEmptyHint />
       <p style={{ marginTop: 12, fontSize: 14, lineHeight: 1.5, color: "#334155" }}>
-        {post.description?.trim() || "Review this role and employer verification before applying."}
+        {toGuestPublicBody(post.description) ||
+          "Review this role and employer verification before applying."}
       </p>
       <div style={{ display: "flex", gap: 8, marginTop: 16, flexWrap: "wrap" }}>
         <button type="button" className="wm-primarybtn" onClick={onApply}>

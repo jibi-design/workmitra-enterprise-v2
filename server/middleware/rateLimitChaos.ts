@@ -18,6 +18,7 @@ export type RateLimitClass =
   | "shift"
   | "call_initiate"
   | "call"
+  | "guest"
   | "global";
 
 type LimitConfig = { windowMs: number; maxHits: number };
@@ -42,6 +43,8 @@ const IP_LIMITS: Record<RateLimitClass, LimitConfig> = {
   shift: { windowMs: 60_000, maxHits: 40 },
   call_initiate: { windowMs: 60_000, maxHits: 12 },
   call: { windowMs: 60_000, maxHits: 20 },
+  /** Unauthenticated public API — bot/scrape budget. */
+  guest: { windowMs: 60_000, maxHits: 30 },
   global: { windowMs: 60_000, maxHits: 120 },
 };
 
@@ -54,6 +57,7 @@ const LOAD_HARNESS_IP_LIMITS: Record<RateLimitClass, LimitConfig> = {
   shift: { windowMs: 60_000, maxHits: 50_000 },
   call_initiate: { windowMs: 60_000, maxHits: 50_000 },
   call: { windowMs: 60_000, maxHits: 50_000 },
+  guest: { windowMs: 60_000, maxHits: 50_000 },
   global: { windowMs: 60_000, maxHits: 200_000 },
 };
 
@@ -165,7 +169,11 @@ export async function applyApiRateLimit(
       }
     })();
   const verb = method ?? req.method ?? "GET";
-  const rateClass = classifyRateLimitPath(path, verb);
+  let rateClass = classifyRateLimitPath(path, verb);
+  const sessionFpEarly = sessionFingerprint(req);
+  if (rateClass === "global" && !sessionFpEarly) {
+    rateClass = "guest";
+  }
   const loadHarness = isLoadHarnessRateLimitRelaxed();
   const ipConfig = (loadHarness ? LOAD_HARNESS_IP_LIMITS : IP_LIMITS)[rateClass];
   const ip = resolveClientIp(req);

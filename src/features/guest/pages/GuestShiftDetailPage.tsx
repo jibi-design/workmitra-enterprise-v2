@@ -9,6 +9,7 @@ import {
 } from "../../employee/shiftJobs/storage/shiftSearch.storage";
 import { EmployerTrustBadge } from "../../../shared/employerProfile/EmployerTrustBadge";
 import { guestStorage } from "../../../shared/guest/guestStorage";
+import { toGuestPublicPlace } from "../../../shared/guest/security/guestSensitiveMask";
 import { useSoftAuth } from "../../../shared/guest/useSoftAuth";
 
 export function GuestShiftDetailPage() {
@@ -66,7 +67,7 @@ export function GuestShiftDetailPage() {
       </Link>
       <h1 style={{ margin: "10px 0 0", fontSize: 24, fontWeight: 900 }}>{post.jobName}</h1>
       <div style={{ marginTop: 6, fontSize: 13, color: "var(--wm-er-muted)" }}>
-        {post.companyName} · {post.locationName}
+        {post.companyName} · {toGuestPublicPlace(post.locationName)}
       </div>
       <EmployerTrustBadge variant="full" showEmptyHint />
       <div style={{ marginTop: 12, fontSize: 18, fontWeight: 900, color: "#16a34a" }}>

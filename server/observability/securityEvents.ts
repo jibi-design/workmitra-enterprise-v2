@@ -14,7 +14,8 @@ export type SecurityEventType =
   | "RBAC_DENIED"
   | "ANOMALY_RAISED"
   | "MAINTENANCE_GATE_503"
-  | "STEP_UP_DENIED";
+  | "STEP_UP_DENIED"
+  | "GUEST_WRITE_FORBIDDEN";
 
 export type SecurityEventPayload = {
   event: SecurityEventType;

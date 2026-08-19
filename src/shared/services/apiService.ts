@@ -1,6 +1,8 @@
 /** Job Mitra | apiService.ts | src/shared/services/apiService.ts */
 
 import { AUTH_BACKEND_ENABLED } from "../config/authConfig";
+import { ensureGuestDeviceHash } from "../guest/security/guestDeviceIntegrity";
+import { guestMaySendHttpWrite } from "../guest/security/guestWritePolicy";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "";
 const CSRF_STORAGE_KEY = "wm_csrf_token";
@@ -162,6 +164,26 @@ export const apiService = {
     }
 
     const method = (rest.method ?? "GET").toUpperCase();
+    let hasSession = false;
+    try {
+      hasSession = /(?:^|;\s*)wm_session=/.test(document.cookie);
+    } catch {
+      hasSession = false;
+    }
+    if (
+      !guestMaySendHttpWrite({
+        method,
+        url: url.toString(),
+        isAuthenticated: hasSession,
+      })
+    ) {
+      throw new ApiRequestError(
+        "Sign in required to save to the live database.",
+        401,
+        "GUEST_WRITE_FORBIDDEN",
+      );
+    }
+
     const mutating =
       method === "POST" || method === "PATCH" || method === "PUT" || method === "DELETE";
     if (AUTH_BACKEND_ENABLED && mutating && !configHeaders.has("X-CSRF-Token")) {
@@ -172,6 +194,9 @@ export const apiService = {
       if (csrf) {
         configHeaders.set("X-CSRF-Token", csrf);
       }
+    }
+    if (!configHeaders.has("X-Wm-Guest-Device")) {
+      configHeaders.set("X-Wm-Guest-Device", ensureGuestDeviceHash());
     }
 
     const response = await fetch(url.toString(), {

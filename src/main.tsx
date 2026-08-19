@@ -3,6 +3,8 @@ import { StrictMode, type ComponentType } from "react";
 import { createRoot } from "react-dom/client";
 import { normalizeHashRouterDeepLink } from "./app/router/pendingRoute";
 import { installIncomingCallNativeBridge } from "./features/shared/calling";
+import { installGuestWriteGuard } from "./shared/guest/security/installGuestWriteGuard";
+import { ensureGuestDeviceHash } from "./shared/guest/security/guestDeviceIntegrity";
 import "./index.css";
 import App from "./App.tsx";
 import { initAppHaptics } from "./shared/platform/haptics";
@@ -13,6 +15,8 @@ import { hydrateVaultDocumentsPlaintext } from "./features/employee/workVault/se
 
 normalizeHashRouterDeepLink();
 installIncomingCallNativeBridge();
+ensureGuestDeviceHash();
+installGuestWriteGuard();
 initAppHaptics();
 installShiftRetryQueueDrain();
 initClientMonitor();

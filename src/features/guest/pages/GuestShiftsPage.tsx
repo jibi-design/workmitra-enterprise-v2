@@ -10,6 +10,7 @@ import {
 import { isShiftOpenForDiscovery } from "../../employee/shiftJobs/helpers/shiftSearchViewHelpers";
 import { EmployerTrustBadge } from "../../../shared/employerProfile/EmployerTrustBadge";
 import { guestStorage } from "../../../shared/guest/guestStorage";
+import { toGuestPublicPlace } from "../../../shared/guest/security/guestSensitiveMask";
 
 export function GuestShiftsPage() {
   const nav = useNavigate();
@@ -49,7 +50,7 @@ export function GuestShiftsPage() {
               <article key={post.id} className="wm-ee-card" style={{ padding: 14 }}>
                 <div style={{ fontWeight: 900, fontSize: 15 }}>{post.jobName}</div>
                 <div style={{ marginTop: 4, fontSize: 12, color: "var(--wm-er-muted)" }}>
-                  {post.companyName} · {post.locationName}
+                  {post.companyName} · {toGuestPublicPlace(post.locationName)}
                 </div>
                 <EmployerTrustBadge variant="compact" />
                 <div style={{ marginTop: 8, fontSize: 14, fontWeight: 850, color: "#16a34a" }}>

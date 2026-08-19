@@ -1,0 +1,12 @@
+name = "mitra-access-hub"
+main = "src/index.ts"
+compatibility_date = "2024-11-01"
+workers_dev = true
+
+# Custom domain is already attached in Cloudflare dashboard (mitraaccesshub.com).
+# After first deploy, keep routes via dashboard or:
+# routes = [{ pattern = "mitraaccesshub.com/*", zone_name = "mitraaccesshub.com" }]
+
+[vars]
+# Ephemeral tunnel upstream for current certification window — replace with durable API origin for production.
+API_UPSTREAM = "https://march-strings-showing-console.trycloudflare.com"

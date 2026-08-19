@@ -1,0 +1,13 @@
+{
+  "name": "mitra-access-hub-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "^4.120.0"
+  }
+}
