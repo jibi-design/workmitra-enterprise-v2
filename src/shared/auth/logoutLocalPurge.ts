@@ -46,6 +46,7 @@ const EXACT_PURGE_KEYS: readonly string[] = [
   "wm_workforce_attendance_v1",
   "wm_work_diary_v1",
   "wm_work_diary_settings_v1",
+  "wm_personal_work_diary_v1",
   "wm_shift_availability_daily_v1",
   "wm_employee_rest_ritual_v1",
   "wm_auth_session_epoch_v1",
@@ -55,6 +56,8 @@ const EXACT_PURGE_KEYS: readonly string[] = [
   ...Object.values(VAULT_STORAGE_KEYS),
   ...PII_STORAGE_KEYS,
 ];
+
+export const LOGOUT_MED01_SENSITIVE_KEYS = EXACT_PURGE_KEYS;
 
 const PREFIX_PURGE: readonly string[] = [
   "wm_employee_",
@@ -69,6 +72,10 @@ const PREFIX_PURGE: readonly string[] = [
   "wm_employer_",
   "wm_planner_",
   "wm_workforce_",
+  "wm_pulse_chain_state_v1",
+  "wm_home_status_strip_dismissed_v1",
+  "wm_home_ticker_all_clear_dismiss_v1",
+  "wm_mitra_labs_",
 ];
 
 function safeRemove(key: string): void {

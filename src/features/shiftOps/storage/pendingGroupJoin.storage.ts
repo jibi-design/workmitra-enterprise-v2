@@ -6,6 +6,8 @@ const PENDING_JOIN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 export type PendingGroupJoin = {
   token: string;
   groupId?: string;
+  /** Resolved employer / site / company label for home banner copy */
+  companyName?: string;
   useDailyOtpGate: boolean;
   savedAt: number;
 };
@@ -42,8 +44,10 @@ export function parseGroupJoinFromPath(pathWithSearch: string): PendingGroupJoin
     const token = (url.searchParams.get("token") ?? url.searchParams.get("invite") ?? "").trim();
     if (!token) return null;
     const groupId = (url.searchParams.get("group") ?? "").trim() || undefined;
+    const companyName =
+      (url.searchParams.get("company") ?? url.searchParams.get("name") ?? "").trim() || undefined;
     const useDailyOtpGate = url.searchParams.get("legacy") !== "1";
-    return { token, groupId, useDailyOtpGate, savedAt: Date.now() };
+    return { token, groupId, companyName, useDailyOtpGate, savedAt: Date.now() };
   } catch {
     return null;
   }
@@ -64,6 +68,10 @@ export function peekPendingGroupJoin(): PendingGroupJoin | null {
     return {
       token: parsed.token.trim(),
       groupId: typeof parsed.groupId === "string" && parsed.groupId ? parsed.groupId : undefined,
+      companyName:
+        typeof parsed.companyName === "string" && parsed.companyName.trim()
+          ? parsed.companyName.trim()
+          : undefined,
       useDailyOtpGate: parsed.useDailyOtpGate !== false,
       savedAt,
     };
@@ -76,9 +84,13 @@ export function stashPendingGroupJoin(pending: PendingGroupJoin): void {
   if (!canUseStorage()) return;
   if (!pending.token.trim()) return;
   try {
+    const existing = peekPendingGroupJoin();
+    const sameToken = existing?.token === pending.token.trim();
     const payload: PendingGroupJoin = {
       token: pending.token.trim(),
-      groupId: pending.groupId?.trim() || undefined,
+      groupId: pending.groupId?.trim() || (sameToken ? existing?.groupId : undefined),
+      companyName:
+        pending.companyName?.trim() || (sameToken ? existing?.companyName : undefined),
       useDailyOtpGate: pending.useDailyOtpGate !== false,
       savedAt: Date.now(),
     };

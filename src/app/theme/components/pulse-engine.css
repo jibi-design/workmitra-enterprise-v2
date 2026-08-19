@@ -1,97 +1,297 @@
-/* Pulse Navigation Engine — GPU breathe, arrival lock, a11y static glow */
+/* Pulse Navigation Engine — solid high-intensity hardware bead
+ * Top-right inner. Traffic light green/amber/red. Cosine breathe. No ring graphic.
+ */
 
 .wm-led {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   flex-shrink: 0;
   pointer-events: none;
   will-change: opacity, transform;
   transform: translateZ(0);
   backface-visibility: hidden;
+  /* Defaults — overridden by PulseEdgeLight / halo inline vars */
+  --wm-pulse-period: 4000ms;
+  --wm-pulse-hue: 190;
+  --wm-pulse-amp: 0.85;
+  --wm-pulse-amp-min: 0.82;
+  --wm-pulse-amp-max: 1;
+  --wm-pulse-scale-min: 0.94;
+  --wm-pulse-scale-max: 1;
+  --wm-pulse-w125: 0.4142;
+  --wm-pulse-w25: 0.7297;
+  --wm-pulse-w375: 0.928;
+}
+
+.wm-led[data-pulse-paint="surface"],
+.wm-led[data-pulse-paint="row"] {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
 }
 
 .wm-led__core {
   display: block;
   width: 100%;
   height: 100%;
-  border-radius: inherit;
-  background: inherit;
-  box-shadow: inherit;
+  border-radius: 50%;
+  background: var(--wm-led-solid, #22c55e);
+  filter: saturate(1.25);
+  box-shadow:
+    inset 0 0 3px rgba(255, 255, 255, 0.35),
+    0 0 4px 1px color-mix(in srgb, var(--wm-led-solid, #22c55e) 80%, white),
+    0 0 10px 2px var(--wm-led-color-a);
   will-change: opacity, transform;
   transform: translateZ(0) scale(1);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-name: wm-led-breathe-pro;
+  animation-duration: var(--wm-pulse-period);
 }
 
-.wm-led-normal .wm-led__core {
-  animation: wm-led-breathe-gpu 3.5s ease-in-out infinite;
-}
+/* Host severity markers (reduced-motion / tests). Period from --wm-pulse-period. */
 
-.wm-led-warning .wm-led__core {
-  animation: wm-led-breathe-gpu 2.5s ease-in-out infinite;
-}
-
-.wm-led-urgent .wm-led__core {
-  animation: wm-led-breathe-gpu 1.2s ease-in-out infinite;
-}
-
-.wm-led-guide .wm-led__core {
-  animation: wm-led-breathe-gpu 3.5s ease-in-out infinite;
-}
-
-/* Pillar 2 — Destination arrival: solid success, hold, auto-dim to 0 */
+/* Pillar 2 — Destination arrival: ease-out attack, hold, ease-in release */
 .wm-led-arrival .wm-led__core {
-  animation: wm-led-arrival-lock 2.5s ease-out forwards;
+  animation-name: wm-led-arrival-pro;
+  animation-duration: var(--wm-pulse-period, 2500ms);
+  animation-timing-function: linear;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
 }
 
 .wm-breathe {
   will-change: opacity, transform;
   transform: translateZ(0);
-  animation: wm-led-breathe-gpu 3.5s ease-in-out infinite;
+  --wm-pulse-period: 4000ms;
+  --wm-pulse-amp-min: 0.4;
+  --wm-pulse-amp-max: 1;
+  --wm-pulse-scale-min: 1;
+  --wm-pulse-scale-max: 1;
+  --wm-pulse-w125: 0.4142;
+  --wm-pulse-w25: 0.7297;
+  --wm-pulse-w375: 0.928;
+  animation-name: wm-led-breathe-pro;
+  animation-duration: var(--wm-pulse-period);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
 }
 
 .wm-breathe-arrival {
   will-change: opacity, transform;
   transform: translateZ(0);
-  animation: wm-led-arrival-lock 2.5s ease-out forwards;
+  animation-name: wm-led-arrival-pro;
+  animation-duration: var(--wm-pulse-period, 2500ms);
+  animation-timing-function: linear;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
 }
 
 /* Secondary / capped — static highlight, no breathe */
 .wm-led-static .wm-led__core,
 .wm-breathe-static {
   animation: none !important;
-  opacity: 1;
+  opacity: calc(1 * var(--wm-pulse-amp, 1));
   transform: translateZ(0) scale(1);
 }
 
-@keyframes wm-led-breathe-gpu {
+/*
+ * Raised cosine L(t)=0.5−0.5·cos(2πt), gamma-shaped via precomputed weights
+ * I = ampMin + (ampMax−ampMin) * w(t), then * --wm-pulse-amp
+ * Scale follows raw L (no γ) for subtle core bloom only.
+ */
+@keyframes wm-led-breathe-pro {
   0%,
   100% {
-    opacity: 0.62;
-    transform: translateZ(0) scale(0.92);
+    opacity: calc(var(--wm-pulse-amp-min) * var(--wm-pulse-amp, 1));
+    transform: translateZ(0) scale(var(--wm-pulse-scale-min));
+  }
+  12.5% {
+    opacity: calc(
+      (
+          var(--wm-pulse-amp-min) +
+            (var(--wm-pulse-amp-max) - var(--wm-pulse-amp-min)) * var(--wm-pulse-w125)
+        ) *
+        var(--wm-pulse-amp, 1)
+    );
+    transform: translateZ(0)
+      scale(
+        calc(
+          var(--wm-pulse-scale-min) +
+            (var(--wm-pulse-scale-max) - var(--wm-pulse-scale-min)) * 0.1464
+        )
+      );
+  }
+  25% {
+    opacity: calc(
+      (
+          var(--wm-pulse-amp-min) +
+            (var(--wm-pulse-amp-max) - var(--wm-pulse-amp-min)) * var(--wm-pulse-w25)
+        ) *
+        var(--wm-pulse-amp, 1)
+    );
+    transform: translateZ(0)
+      scale(
+        calc(
+          var(--wm-pulse-scale-min) +
+            (var(--wm-pulse-scale-max) - var(--wm-pulse-scale-min)) * 0.5
+        )
+      );
+  }
+  37.5% {
+    opacity: calc(
+      (
+          var(--wm-pulse-amp-min) +
+            (var(--wm-pulse-amp-max) - var(--wm-pulse-amp-min)) * var(--wm-pulse-w375)
+        ) *
+        var(--wm-pulse-amp, 1)
+    );
+    transform: translateZ(0)
+      scale(
+        calc(
+          var(--wm-pulse-scale-min) +
+            (var(--wm-pulse-scale-max) - var(--wm-pulse-scale-min)) * 0.8536
+        )
+      );
   }
   50% {
-    opacity: 1;
-    transform: translateZ(0) scale(1);
+    opacity: calc(var(--wm-pulse-amp-max) * var(--wm-pulse-amp, 1));
+    transform: translateZ(0) scale(var(--wm-pulse-scale-max));
+  }
+  62.5% {
+    opacity: calc(
+      (
+          var(--wm-pulse-amp-min) +
+            (var(--wm-pulse-amp-max) - var(--wm-pulse-amp-min)) * var(--wm-pulse-w375)
+        ) *
+        var(--wm-pulse-amp, 1)
+    );
+    transform: translateZ(0)
+      scale(
+        calc(
+          var(--wm-pulse-scale-min) +
+            (var(--wm-pulse-scale-max) - var(--wm-pulse-scale-min)) * 0.8536
+        )
+      );
+  }
+  75% {
+    opacity: calc(
+      (
+          var(--wm-pulse-amp-min) +
+            (var(--wm-pulse-amp-max) - var(--wm-pulse-amp-min)) * var(--wm-pulse-w25)
+        ) *
+        var(--wm-pulse-amp, 1)
+    );
+    transform: translateZ(0)
+      scale(
+        calc(
+          var(--wm-pulse-scale-min) +
+            (var(--wm-pulse-scale-max) - var(--wm-pulse-scale-min)) * 0.5
+        )
+      );
+  }
+  87.5% {
+    opacity: calc(
+      (
+          var(--wm-pulse-amp-min) +
+            (var(--wm-pulse-amp-max) - var(--wm-pulse-amp-min)) * var(--wm-pulse-w125)
+        ) *
+        var(--wm-pulse-amp, 1)
+    );
+    transform: translateZ(0)
+      scale(
+        calc(
+          var(--wm-pulse-scale-min) +
+            (var(--wm-pulse-scale-max) - var(--wm-pulse-scale-min)) * 0.1464
+        )
+      );
   }
 }
 
-@keyframes wm-led-arrival-lock {
+/* Arrival (Phase 3): ease-out attack → solid hold → ease-in soft land.
+ * Opacity/transform only on LED core or button halo — never the card.
+ * Attack includes a clear double-blink so click = “this is the end”.
+ */
+@keyframes wm-led-arrival-pro {
   0% {
-    opacity: 1;
-    transform: translateZ(0) scale(1.05);
+    opacity: calc(0.25 * var(--wm-pulse-amp, 1));
+    transform: translateZ(0) scale(var(--wm-pulse-scale-min, 0.96));
   }
-  12% {
-    opacity: 1;
+  4% {
+    opacity: calc(1 * var(--wm-pulse-amp, 1));
+    transform: translateZ(0) scale(1.12);
+  }
+  9% {
+    opacity: calc(0.28 * var(--wm-pulse-amp, 1));
+    transform: translateZ(0) scale(0.96);
+  }
+  14% {
+    opacity: calc(1 * var(--wm-pulse-amp, 1));
+    transform: translateZ(0) scale(1.1);
+  }
+  20% {
+    opacity: calc(1 * var(--wm-pulse-amp, 1));
+    transform: translateZ(0) scale(1.02);
+  }
+  28% {
+    opacity: calc(1 * var(--wm-pulse-amp, 1));
     transform: translateZ(0) scale(1);
   }
-  72% {
-    opacity: 1;
+  68% {
+    opacity: calc(1 * var(--wm-pulse-amp, 1));
     transform: translateZ(0) scale(1);
+  }
+  78% {
+    opacity: calc(0.92 * var(--wm-pulse-amp, 1));
+    transform: translateZ(0) scale(0.995);
+  }
+  88% {
+    opacity: calc(0.55 * var(--wm-pulse-amp, 1));
+    transform: translateZ(0) scale(0.98);
+  }
+  95% {
+    opacity: calc(0.18 * var(--wm-pulse-amp, 1));
+    transform: translateZ(0) scale(0.97);
   }
   100% {
     opacity: 0;
     transform: translateZ(0) scale(0.96);
   }
+}
+
+/*
+ * Final destination: ramp then hold — no extra flash. LED/rail/halo only.
+ */
+@keyframes wm-led-destination-pro {
+  0% {
+    opacity: calc(0.42 * var(--wm-pulse-amp, 1));
+    transform: translateZ(0) scale(1);
+  }
+  16% {
+    opacity: calc(1 * var(--wm-pulse-amp, 1));
+    transform: translateZ(0) scale(1);
+  }
+  100% {
+    opacity: calc(0.88 * var(--wm-pulse-amp, 1));
+    transform: translateZ(0) scale(1);
+  }
+}
+
+.wm-led-destination .wm-led__core {
+  animation-name: wm-led-destination-pro;
+  animation-duration: var(--wm-pulse-period, 1800ms);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.wm-breathe-destination {
+  will-change: opacity, transform;
+  transform: translateZ(0);
+  animation-name: wm-led-destination-pro;
+  animation-duration: var(--wm-pulse-period, 1800ms);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -100,28 +300,31 @@
   .wm-led-urgent .wm-led__core,
   .wm-led-guide .wm-led__core,
   .wm-led-arrival .wm-led__core,
+  .wm-led-destination .wm-led__core,
   .wm-led-static .wm-led__core,
   .wm-breathe,
   .wm-breathe-arrival,
+  .wm-breathe-destination,
   .wm-breathe-static {
     animation: none !important;
     opacity: 1 !important;
     transform: translateZ(0) scale(1) !important;
   }
 
-  /* Gentle static border glow — replaces breathing when motion is reduced */
+  /* Soft static bead — no bloom shade (matches natural LED look) */
   .wm-led-normal,
   .wm-led-warning,
   .wm-led-urgent,
   .wm-led-guide,
   .wm-led-arrival,
+  .wm-led-destination,
   .wm-led-static,
   .wm-breathe,
   .wm-breathe-arrival,
+  .wm-breathe-destination,
   .wm-breathe-static {
     filter: none;
-    box-shadow:
-      0 0 0 2px var(--wm-led-color-a, rgba(34, 197, 94, 0.35)),
-      0 0 10px 3px var(--wm-led-color-b, rgba(34, 197, 94, 0.45)) !important;
+    box-shadow: none !important;
+    opacity: 0.85 !important;
   }
 }

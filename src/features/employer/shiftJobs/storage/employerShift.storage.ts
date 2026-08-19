@@ -140,14 +140,23 @@ export const employerShiftStorage = {
 
   moveToShortlist(postId: string, appId: string): void {
     shortlistEmployerShiftCandidate(postId, appId);
+    void import("../services/employerCandidateStatusSync").then((m) => {
+      m.syncEmployerCandidateStatusToServer(postId, appId, "shortlisted");
+    });
   },
 
   moveToWaiting(postId: string, appId: string): void {
     waitlistEmployerShiftCandidate(postId, appId);
+    void import("../services/employerCandidateStatusSync").then((m) => {
+      m.syncEmployerCandidateStatusToServer(postId, appId, "waiting");
+    });
   },
 
   rejectCandidate(postId: string, appId: string): void {
     rejectEmployerShiftCandidate(postId, appId);
+    void import("../services/employerCandidateStatusSync").then((m) => {
+      m.syncEmployerCandidateStatusToServer(postId, appId, "rejected");
+    });
   },
 
   removeFromPicks(postId: string, appId: string, reason = "Removed by employer"): void {

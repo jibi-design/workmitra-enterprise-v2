@@ -22,7 +22,9 @@ export function rankCareerPostsForRecommended(params: {
   const workerPincode = parsePincode(params.workerPincode);
   if (!workerPincode) return [...params.posts];
 
+  const openArea = params.posts.filter((post) => !parsePincode(post.locationPincode));
   const matched = params.posts.filter((post) =>
+    Boolean(parsePincode(post.locationPincode)) &&
     careerWorkerCoversJobSite({
       workerPincode,
       commuteRadiusKm: params.commuteRadiusKm,
@@ -30,7 +32,7 @@ export function rankCareerPostsForRecommended(params: {
     }),
   );
 
-  return [...matched].sort((a, b) => {
+  return [...matched, ...openArea].sort((a, b) => {
     const da = distanceKmBetweenWorkAreas(workerPincode, a.locationPincode);
     const db = distanceKmBetweenWorkAreas(workerPincode, b.locationPincode);
     if (da == null && db == null) return 0;

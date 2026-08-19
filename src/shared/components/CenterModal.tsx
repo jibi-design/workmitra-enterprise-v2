@@ -1,5 +1,6 @@
 ﻿// src/shared/components/CenterModal.tsx
 import { useEffect, type ReactNode } from "react";
+import { useOverlayBackClose } from "../native/useOverlayBackClose";
 
 /* ------------------------------------------------ */
 /* Types                                            */
@@ -29,6 +30,8 @@ export function CenterModal({
   surface = "default",
   children,
 }: CenterModalProps) {
+  useOverlayBackClose(open, onBackdropClose);
+
   useEffect(() => {
     if (!open) return;
 

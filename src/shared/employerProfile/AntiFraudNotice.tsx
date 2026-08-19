@@ -2,6 +2,7 @@
 // File: AntiFraudNotice.tsx
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\shared\employerProfile\AntiFraudNotice.tsx
 
+import { MitraLabsBrandName } from "../components/brand/BrandName";
 type Props = {
   mlId?: string;
 };
@@ -30,7 +31,7 @@ export function AntiFraudNotice({ mlId = "" }: Props) {
       </svg>
 
       <div style={{ fontSize: 12, color: "var(--wm-er-muted)", lineHeight: 1.5 }}>
-        Your Mitra Labs ID{" "}
+        Your <MitraLabsBrandName size="sm" /> ID{" "}
         <span
           style={{
             fontFamily: "monospace",

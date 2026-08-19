@@ -1,4 +1,5 @@
 ﻿// src/shared/components/NoticeModal.tsx
+import type { ReactNode } from "react";
 import { CenterModal } from "./CenterModal";
 
 /* ------------------------------------------------ */
@@ -8,7 +9,7 @@ export type NoticeTone = "info" | "warn" | "success" | "error";
 
 export interface NoticeData {
   title: string;
-  message: string;
+  message: ReactNode;
   tone?: NoticeTone;
   /** Optional primary button label (default OK). Used for Reload CTA on stale plan. */
   confirmLabel?: string;

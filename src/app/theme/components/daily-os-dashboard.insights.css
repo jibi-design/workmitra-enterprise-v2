@@ -1,0 +1,205 @@
+/* Candidate Pro Daily OS — planner, insights, trend, activity. */
+
+.wm-dailyOsHero__icon--planner {
+  color: var(--wm-planner-accent, #0891b2);
+  background: color-mix(in srgb, var(--wm-planner-accent, #0891b2) 14%, transparent);
+}
+
+.wm-dailyOsHero__icon--mixed {
+  color: var(--wm-neutral-700, #334155);
+  background: color-mix(in srgb, var(--wm-neutral-400, #94a3b8) 22%, transparent);
+}
+
+.wm-dailyOsPlanner__value {
+  margin-top: 10px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--wm-neutral-900, #0f172a);
+}
+
+.wm-dailyOsPlanner__value span {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--wm-neutral-500, #64748b);
+}
+
+.wm-dailyOsPlanner__track {
+  margin-top: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--wm-planner-accent, #0891b2) 16%, transparent);
+  overflow: hidden;
+}
+
+.wm-dailyOsPlanner__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--wm-planner-accent, #0891b2);
+}
+
+.wm-dailyOsGauge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.wm-dailyOsGauge__svg {
+  width: 88px;
+  height: 56px;
+  flex-shrink: 0;
+}
+
+.wm-dailyOsGauge__track {
+  stroke: color-mix(in srgb, var(--wm-career-accent, #2563eb) 18%, transparent);
+  stroke-linecap: round;
+}
+
+.wm-dailyOsGauge__value {
+  stroke: var(--wm-career-accent, #2563eb);
+  stroke-linecap: round;
+}
+
+.wm-dailyOsGauge__readout {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wm-dailyOsGauge__readout strong {
+  font-size: 22px;
+  letter-spacing: -0.03em;
+  color: var(--wm-neutral-900, #0f172a);
+}
+
+.wm-dailyOsGauge__readout span {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--wm-neutral-500, #64748b);
+}
+
+.wm-dailyOsSpark {
+  display: block;
+  width: 100%;
+  height: 40px;
+  margin-top: 8px;
+  color: var(--wm-shift-accent, #16a34a);
+}
+
+.wm-dailyOsSpark--hours {
+  color: color-mix(in srgb, var(--wm-shift-accent, #16a34a) 55%, #0f172a);
+}
+
+.wm-dailyOsTimeline {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wm-dailyOsHero__cell--tap {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.wm-dailyOsStepper__btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.wm-dailyOsTimeline__row {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: start;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.wm-dailyOsTimeline__dot {
+  width: 8px;
+  height: 8px;
+  margin-top: 4px;
+  border-radius: 999px;
+  background: var(--wm-neutral-400, #94a3b8);
+}
+
+.wm-dailyOsTimeline__row--career .wm-dailyOsTimeline__dot {
+  background: var(--wm-career-accent, #2563eb);
+}
+
+.wm-dailyOsTimeline__row--shift .wm-dailyOsTimeline__dot {
+  background: var(--wm-shift-accent, #16a34a);
+}
+
+.wm-dailyOsTimeline__row--planner .wm-dailyOsTimeline__dot {
+  background: var(--wm-planner-accent, #0891b2);
+}
+
+.wm-dailyOsTimeline__title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--wm-neutral-900, #0f172a);
+}
+
+.wm-dailyOsTimeline__detail,
+.wm-dailyOsTimeline__when {
+  font-size: 11px;
+  color: var(--wm-neutral-500, #64748b);
+}
+
+.wm-dailyOsTimeline__when {
+  white-space: nowrap;
+}
+
+.wm-dailyOsCvChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--wm-career-accent, #2563eb) 28%, transparent);
+  background: color-mix(in srgb, var(--wm-career-accent, #2563eb) 10%, #fff);
+  color: var(--wm-career-accent, #2563eb);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.wm-dailyOsBento--tap {
+  cursor: pointer;
+}

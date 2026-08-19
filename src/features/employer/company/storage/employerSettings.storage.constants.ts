@@ -13,6 +13,7 @@ export const EMPTY_PROFILE: EmployerProfile = {
   companySize: "",
   locationCity: "",
   locationState: "",
+  locationPincode: "",
   companyDescription: "",
   fullName: "",
   email: "",
@@ -25,6 +26,8 @@ export const EMPTY_PROFILE: EmployerProfile = {
   quietHoursEnabled: false,
   quietFrom: "22:00",
   quietTo: "07:00",
+  shiftFavoritesFirstDefault: false,
+  escrowHoldDefaultEnabled: true,
   transferStatus: "none",
   businessAdminIds: [],
   previousHandles: [],
@@ -59,5 +62,5 @@ export const COMPANY_SIZE_OPTIONS: readonly string[] = [
 
 export const LANGUAGE_OPTIONS: readonly { value: string; label: string }[] = [
   { value: "en", label: "English" },
-  { value: "ml", label: "മലയാളം (Malayalam)" },
+  { value: "ml", label: "Malayalam" },
 ] as const;

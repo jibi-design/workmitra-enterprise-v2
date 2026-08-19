@@ -10,11 +10,9 @@ import {
 } from "../../employee/careerJobs/helpers/careerSearchHelpers";
 import { EmployerTrustBadge } from "../../../shared/employerProfile/EmployerTrustBadge";
 import { guestStorage } from "../../../shared/guest/guestStorage";
-import { useSoftAuth } from "../../../shared/guest/useSoftAuth";
 
 export function GuestCareersPage() {
   const nav = useNavigate();
-  const { requireAuthForAction } = useSoftAuth();
   const posts = useSyncExternalStore(
     subscribeCareerSearch,
     getCareerSearchSnapshot,
@@ -29,19 +27,13 @@ export function GuestCareersPage() {
 
   function onSave(postId: string) {
     guestStorage.toggleShortlistCareer(postId);
-    requireAuthForAction({
-      action: "save_career",
-      targetId: postId,
-      returnPath: ROUTE_PATHS.guestCareers,
-      roleHint: "employee",
-    });
   }
 
   return (
     <div data-testid="guest-careers-page" style={{ paddingTop: 14 }}>
       <h1 style={{ margin: 0, fontSize: 24, fontWeight: 900 }}>Career roles</h1>
       <p style={{ marginTop: 6, fontSize: 13, color: "var(--wm-er-muted)" }}>
-        Browse without signing in. Apply or save when ready.
+        Browse without signing in. Apply when ready.
       </p>
 
       {list.length === 0 ? (

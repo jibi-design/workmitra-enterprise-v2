@@ -1,6 +1,6 @@
 /** Job Mitra | VaultStyleOtpDigits.tsx | Shared 6-digit OTP strip (wm-vault-otp-verify recipe) */
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Props = {
   length?: number;
@@ -10,6 +10,7 @@ type Props = {
   disabled?: boolean;
   labelPrefix?: string;
   testId?: string;
+  autoFocus?: boolean;
 };
 
 export function VaultStyleOtpDigits({
@@ -20,12 +21,18 @@ export function VaultStyleOtpDigits({
   disabled = false,
   labelPrefix = "OTP digit",
   testId,
+  autoFocus = false,
 }: Props) {
   const controlled = typeof value === "string";
   const [internal, setInternal] = useState<string[]>(() => Array(length).fill(""));
   const refs = useRef<(HTMLInputElement | null)[]>([]);
 
   const digits = controlled ? Array.from({ length }, (_, i) => value[i] ?? "") : internal;
+
+  useEffect(() => {
+    if (!autoFocus || disabled) return;
+    refs.current[0]?.focus();
+  }, [autoFocus, disabled]);
 
   function commit(next: string[]) {
     if (!controlled) setInternal(next);

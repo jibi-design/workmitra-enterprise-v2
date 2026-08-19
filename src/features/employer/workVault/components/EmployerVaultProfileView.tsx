@@ -89,6 +89,7 @@ export function EmployerVaultProfileView({ data, unlocked, folders = [], documen
             photoDataUrl={data.identity.photoDataUrl}
             phoneVerified={data.identity.phoneVerified}
             emailVerified={data.identity.emailVerified}
+            showContactVerification={false}
           />
         </div>
       )}

@@ -16,7 +16,7 @@ export function EnterpriseResponsiveGrid({
   children,
   minItemWidth = 148,
   gap = 12,
-  collapseMobile = true,
+  collapseMobile = false,
   collapseTablet = false,
   className,
   testId,
@@ -28,6 +28,7 @@ export function EnterpriseResponsiveGrid({
 
   const classes = [
     "wm-ent-grid",
+    "wm-stable-row",
     collapseMobile ? "wm-ent-grid--collapseMobile" : "",
     collapseTablet ? "wm-ent-grid--collapseTablet" : "",
     className ?? "",

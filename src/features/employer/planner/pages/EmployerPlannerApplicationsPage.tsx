@@ -49,7 +49,7 @@ export function EmployerPlannerApplicationsPage() {
       data-testid="planner-employer-applications"
     >
       <section className="wm-planner-card wm-planner-card--obsidian" style={{ marginTop: 0 }}>
-        <div className="wm-planner-sectionLabel">Hybrid A2 · Batch Approval Engine</div>
+        <div className="wm-planner-sectionLabel">Applications</div>
         <h1 className="wm-planner-sectionTitle" style={{ margin: 0, fontSize: 22 }}>
           Plan Applications
         </h1>

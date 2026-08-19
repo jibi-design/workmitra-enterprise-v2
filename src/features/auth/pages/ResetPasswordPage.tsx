@@ -5,10 +5,12 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../app/router/routePaths";
 import { AUTH_BACKEND_ENABLED } from "../../../shared/config/authConfig";
 import { authService } from "../services/authService";
+import { AuthPasswordField } from "../../../shared/components/AuthPasswordField";
 import { JobMitraLandingLogo } from "../components/JobMitraLandingLogo";
 import { LandingFooterLinks } from "../components/LandingFooterLinks";
+import { JobMitraBrandName } from "../../../shared/components/brand/BrandName";
 
-const SUPPORT_EMAIL = "support@mitralabs.app";
+const SUPPORT_EMAIL = "support@mitraaccesshub.com";
 const PRIVACY_POLICY_URL = "https://jibi-design.github.io/workmitra-privacy/";
 
 export function ResetPasswordPage() {
@@ -28,7 +30,7 @@ export function ResetPasswordPage() {
     setSuccess(null);
 
     if (!AUTH_BACKEND_ENABLED) {
-      setError("Password reset requires auth backend.");
+      setError("Password reset is temporarily unavailable. Try again later.");
       return;
     }
     if (!token) {
@@ -65,36 +67,30 @@ export function ResetPasswordPage() {
           </div>
           <h1 className="wm-auth-hero__title wm-auth-hero__title--center">Set new password</h1>
           <p className="wm-auth-hero__sub wm-auth-hero__sub--center">
-            Choose a strong password for your Job Mitra account.
+            Choose a strong password for your <JobMitraBrandName size="sm" /> account.
           </p>
         </div>
 
         <form className="wm-auth-form" onSubmit={onSubmit}>
-          <label className="wm-auth-label">
-            New password
-            <input
-              className="wm-auth-input"
-              type="password"
-              autoComplete="new-password"
-              required
-              minLength={8}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </label>
+          <AuthPasswordField
+            label="New password"
+            name="new-password"
+            autoComplete="new-password"
+            required
+            minLength={8}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-          <label className="wm-auth-label">
-            Confirm password
-            <input
-              className="wm-auth-input"
-              type="password"
-              autoComplete="new-password"
-              required
-              minLength={8}
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-            />
-          </label>
+          <AuthPasswordField
+            label="Confirm password"
+            name="confirm-password"
+            autoComplete="new-password"
+            required
+            minLength={8}
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+          />
 
           {error ? (
             <p className="wm-auth-error" role="alert">

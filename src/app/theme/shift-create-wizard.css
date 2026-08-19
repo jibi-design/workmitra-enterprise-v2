@@ -1,6 +1,21 @@
 /* src/app/theme/shift-create-wizard.css */
 /* Create Shift wizard — recessed glass availability card (Step 2). */
 
+/* P0 — Company + Job Title stack on mobile; two-col from tablet up */
+.wm-shiftCreateBasicFields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+@media (min-width: 480px) {
+  .wm-shiftCreateBasicFields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+}
+
 .wm-shiftCreateWizardPage {
   padding-bottom: 8px;
 }

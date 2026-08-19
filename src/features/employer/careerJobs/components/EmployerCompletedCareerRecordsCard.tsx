@@ -5,6 +5,7 @@ import type { CSSProperties } from "react";
 import type { CareerEmploymentFeedbackTask } from "../../myStaff/storage/careerEmploymentFeedback.storage";
 import type { StaffRecord } from "../../myStaff/storage/myStaff.storage";
 import { getFeedbackStatusForStaff } from "../helpers/employerCareerRecords.helpers";
+import { ActionPill } from "../../../../shared/components/layout/designDna";
 
 type Props = {
   records: StaffRecord[];
@@ -30,7 +31,7 @@ export function EmployerCompletedCareerRecordsCard({
   ).length;
 
   return (
-    <section className="wm-er-card wm-career-card wm-career-card--employer" style={CARD_STYLE}>
+    <section className="wm-er-card wm-career-card wm-career-card--employer wm-homeGlassCard--domainCareer" style={CARD_STYLE}>
       <div
         style={{
           display: "flex",
@@ -63,9 +64,9 @@ export function EmployerCompletedCareerRecordsCard({
         />
       </div>
 
-      <button type="button" className="wm-primarybtn" onClick={onOpenRecords}>
+      <ActionPill domain="career" onClick={onOpenRecords}>
         Open Completed Records
-      </button>
+      </ActionPill>
 
       {records.length === 0 && (
         <div style={EMPTY_NOTE_STYLE}>

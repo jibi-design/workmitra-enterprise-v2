@@ -15,61 +15,20 @@ import {
 import { plannerPublicIndex } from "../../../shared/planner/ports/plannerShiftJobsBridge";
 import { pushEmployerActivity } from "./employerShift.activityStorage";
 import {
-  canSyncShiftConfirmIds,
+  ensureConfirmServerIds,
   isShiftConfirmApiEnabled,
   shiftConfirmApi,
 } from "../services/shiftConfirmApi.service";
-import { ApiRequestError } from "../../../../shared/services/apiService";
+import { hydrateEmployerPostApplicationsFromServer } from "../../../shift/services/shiftDbTruth.service";
+import { adoptServerWorkspaceId } from "../../../shift/services/shiftWorkspaceAdopt";
+import { syncShiftWorkspaceIdBridge } from "../../../shift/services/shiftWorkspaceBridge.sync";
+import { shiftAppIdsMatch, shiftPostIdsMatch } from "../../../shift/utils/shiftIdBridge";
 import type { EmployeeShiftApplication, ShiftPost } from "./employerShift.types";
 import { getEmployerShiftPost, updateEmployerShiftPost } from "./employerShift.postActions.crud";
+import { healConfirmFromServer, isConfirmHealCandidate } from "./employerShift.confirmHeal";
 import { withShiftConfirmLock } from "./employerShift.confirmLock";
-import {
-  getSiteMembershipTruth,
-  provisionSiteMembership,
-  resolveShiftOpsSiteIdForPost,
-} from "../../../shared/shiftOps/shiftJobsMembershipBridge";
-
-/** Wave-4/5.1: timeout / already-confirmed / 5xx → heal. Narrow TypeError to network failures only (R4). */
-function isConfirmHealCandidate(err: unknown): boolean {
-  if (err instanceof ApiRequestError) {
-    if (err.status === 409 && err.code === "ALREADY_CONFIRMED") return true;
-    if (err.status === 408 || err.status === 504) return true;
-    if (err.status >= 500) return true;
-  }
-  if (err instanceof DOMException && err.name === "AbortError") return true;
-  if (err instanceof TypeError) {
-    const msg = err.message.toLowerCase();
-    return (
-      msg.includes("fetch") ||
-      msg.includes("network") ||
-      msg.includes("failed to fetch") ||
-      msg.includes("load failed")
-    );
-  }
-  if (err instanceof Error) {
-    const msg = err.message.toLowerCase();
-    return msg.includes("timeout") || msg.includes("network") || msg.includes("failed to fetch");
-  }
-  return false;
-}
-
-async function healConfirmFromServer(
-  postId: string,
-  appId: string,
-  expectedWorkerWmId: string,
-): Promise<boolean> {
-  try {
-    const workspace = await shiftConfirmApi.getWorkspace(postId, appId);
-    if (!workspace?.id || !workspace.post_id || !workspace.app_id) return false;
-    const expected = expectedWorkerWmId.trim().toUpperCase();
-    if (!expected) return false;
-    // Wave-5: reject heal if server workspace MUID does not match the application worker
-    if (workspace.worker_wm_id.trim().toUpperCase() !== expected) return false;
-    return true;
-  } catch {
-    return false;
-  }
-}
+import { bindShiftOpsGroupAndWorker } from "./employerShift.confirmSiteMembership";
+import { activateShiftHireMyStaff } from "../services/shiftHireMyStaffActivation.service";
 
 export function shortlistEmployerShiftCandidate(postId: string, appId: string): ShiftPost | null {
   const post = getEmployerShiftPost(postId);
@@ -141,6 +100,7 @@ export async function confirmEmployerShiftCandidate(
       reason:
         | "not_found"
         | "missing_site_or_worker"
+        | "site_ensure_failed"
         | "membership_failed"
         | "vacancy_full"
         | "already_confirmed"
@@ -163,27 +123,24 @@ export async function confirmEmployerShiftCandidate(
       const priorPost = post;
 
       const preApps = readEmployeeApplications();
-      const targetApp = preApps.find((item) => item.id === appId && item.postId === postId);
+      const targetApp = preApps.find(
+        (item) => shiftAppIdsMatch(item.id, appId) && shiftPostIdsMatch(item.postId, postId),
+      );
       const workerMlId = targetApp?.profileSnapshot?.uniqueId?.trim() ?? "";
-      const siteId = resolveShiftOpsSiteIdForPost(post);
-      if (!siteId || !workerMlId) {
+      if (!workerMlId) {
         return { ok: false, reason: "missing_site_or_worker", post };
       }
 
-      const existingMembership = getSiteMembershipTruth(siteId, workerMlId);
-      if (!existingMembership?.membershipId) {
-        const provision = await provisionSiteMembership({
-          siteId,
-          workerMlId,
-          planId: post.planId?.trim() || undefined,
-          context: "confirm_employer_shift_candidate",
-        });
-        if (!provision.ok) {
-          return { ok: false, reason: "membership_failed", post };
-        }
+      const bound = await bindShiftOpsGroupAndWorker({
+        post,
+        workerMlId,
+        context: "confirm_employer_shift_candidate",
+      });
+      if (!bound.ok) {
+        return { ok: false, reason: bound.reason, post: bound.post };
       }
 
-      const livePost = getEmployerShiftPost(postId) ?? post;
+      const livePost = getEmployerShiftPost(postId) ?? bound.post;
       const result = confirmCandidate(livePost, appId);
       if (!result.ok) {
         const reason =
@@ -198,24 +155,29 @@ export async function confirmEmployerShiftCandidate(
       const updated = updateEmployerShiftPost(postId, result.post);
       if (!updated) return { ok: false, reason: "saga_failed", post: livePost };
 
-      if (isShiftConfirmApiEnabled()) {
-        if (!canSyncShiftConfirmIds(postId, appId)) {
-          writeEmployeeApplications(priorApplications);
-          restoreEmployeeWorkspaces(priorWorkspaces);
-          updateEmployerShiftPost(postId, priorPost);
-          return { ok: false, reason: "api_ids_unavailable", post: priorPost };
-        }
-
+      let workspaceId = result.workspaceId;
+      await hydrateEmployerPostApplicationsFromServer(postId);
+      if (
+        isShiftConfirmApiEnabled() &&
+        (await ensureConfirmServerIds(postId, appId, livePost.jobName))
+      ) {
         try {
-          await shiftConfirmApi.confirm(postId, appId, workerMlId);
+          const confirmed = await shiftConfirmApi.confirm(postId, appId);
+          const serverWs = await syncShiftWorkspaceIdBridge(
+            result.workspaceId,
+            postId,
+            appId,
+            confirmed,
+          );
+          if (serverWs) workspaceId = adoptServerWorkspaceId(result.workspaceId, serverWs);
         } catch (err) {
-          // Wave-4/5: timeout / ALREADY_CONFIRMED / 5xx → heal (retain local confirm if server has matching workspace)
           if (
             isConfirmHealCandidate(err) &&
             (await healConfirmFromServer(postId, appId, workerMlId))
           ) {
-            // keep local confirmed state
-          } else {
+            const serverWs = await syncShiftWorkspaceIdBridge(result.workspaceId, postId, appId);
+            if (serverWs) workspaceId = adoptServerWorkspaceId(result.workspaceId, serverWs);
+          } else if (import.meta.env.PROD) {
             writeEmployeeApplications(priorApplications);
             restoreEmployeeWorkspaces(priorWorkspaces);
             updateEmployerShiftPost(postId, priorPost);
@@ -236,7 +198,12 @@ export async function confirmEmployerShiftCandidate(
         plannerPublicIndex.refreshOpenCounts(updated.planId);
       }
 
-      return { ok: true, post: updated, workspaceId: result.workspaceId };
+      // Finalized confirm path only — activate My Staff after API sync/heal (or AUTH-off local).
+      if (targetApp) {
+        activateShiftHireMyStaff(updated, targetApp);
+      }
+
+      return { ok: true, post: updated, workspaceId };
     });
   } catch (err) {
     if (err instanceof Error && err.message === "SHIFT_CONFIRM_LOCKED") {

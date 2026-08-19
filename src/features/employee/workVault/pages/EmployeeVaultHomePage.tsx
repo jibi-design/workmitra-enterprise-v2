@@ -6,7 +6,7 @@
 //
 // Work Vault home — 3 tabs: Profile, Documents, Verify Employer.
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useLocation } from "react-router-dom";
 import type { VaultFolder } from "../types/vaultTypes";
 import { validateFolderLimit } from "../helpers/vaultValidation";
@@ -35,6 +35,8 @@ import { ActiveSessionBanner } from "../components/VaultActiveSessionBanner";
 import { VaultProfileTab } from "../components/VaultProfileTab";
 import { VaultDocumentsTab } from "../components/VaultDocumentsTab";
 import { VaultVerifyEmployerTab } from "../components/VaultVerifyEmployerTab";
+import { useVaultWorkReviewsHydrate } from "../../../shared/workVault/useVaultWorkReviewsHydrate";
+import { ratingStorage } from "../../../../shared/rating/ratingStorage";
 
 /* ── Tab system ────────────────────────────────── */
 type TabId = "profile" | "documents" | "verify";
@@ -65,8 +67,18 @@ function EmployeeVaultHomeContent({ initialTab }: { initialTab: TabId }) {
     return () => clearInterval(t);
   }, []);
 
+  const reviewHydrateTick = useVaultWorkReviewsHydrate("employee");
+  const reviewCount = useSyncExternalStore(
+    ratingStorage.subscribe,
+    () => ratingStorage.getAllERRatings().length + ratingStorage.getAllWRRatings().length,
+    () => 0,
+  );
+
   /* Profile data */
-  const vaultData = useMemo(() => getVaultSectionData(), []);
+  const vaultData = useMemo(
+    () => getVaultSectionData(),
+    [reviewHydrateTick, reviewCount],
+  );
 
   /* Documents state */
   const [folders, setFolders] = useState<VaultFolder[]>(() => {
@@ -164,7 +176,7 @@ function EmployeeVaultHomeContent({ initialTab }: { initialTab: TabId }) {
   }, []);
 
   return (
-    <div className="wm-vault-home wm-stackGrid">
+    <div className="wm-vault-home wm-stackGrid" data-testid="employee-vault-home">
       {/* Header — L-V1 slate luxury hero */}
       <header className="wm-vault-page-hero">
         <div className="wm-vault-page-hero__eyebrow">Labor identity</div>

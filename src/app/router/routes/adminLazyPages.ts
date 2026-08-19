@@ -38,6 +38,11 @@ export const AdminSettingsPage = lazyPage(() =>
     default: m.AdminSettingsPage,
   })),
 );
+export const AdminModerationPage = lazyPage(() =>
+  import("../../../features/admin/oversight/pages/AdminModerationPage").then((m) => ({
+    default: m.AdminModerationPage,
+  })),
+);
 
 export const NotFoundPage = lazyPage(() =>
   import("../NotFoundPage").then((m) => ({ default: m.NotFoundPage })),

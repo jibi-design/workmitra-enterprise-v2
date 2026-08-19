@@ -14,12 +14,17 @@ import {
 } from "./CareerPostDashboardHeader.styles";
 
 function subscribeClock(onStoreChange: () => void) {
-  const id = window.setInterval(onStoreChange, 30_000);
+  const id = window.setInterval(() => {
+    clockSnapMs = Date.now();
+    onStoreChange();
+  }, 30_000);
   return () => window.clearInterval(id);
 }
 
+let clockSnapMs = Date.now();
+
 function getClockMs() {
-  return Date.now();
+  return clockSnapMs;
 }
 
 type CareerPostDashboardHeaderProps = {

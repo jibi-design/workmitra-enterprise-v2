@@ -62,13 +62,7 @@ export function EmploymentTermsSection({ post }: { post: CareerJobPost }) {
         </div>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: 12,
-        }}
-      >
+      <div className="wm-stable-row" style={{ gap: 12 }}>
         <div className="wm-stat-box" style={STAT_BOX_STYLE}>
           <div
             style={{

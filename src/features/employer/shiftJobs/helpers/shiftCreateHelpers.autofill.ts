@@ -4,6 +4,7 @@ export type AutoFillData = {
   companyName: string;
   industryType: string;
   locationCity: string;
+  locationPincode: string;
 };
 
 export function getAutoFillData(): AutoFillData {
@@ -13,5 +14,6 @@ export function getAutoFillData(): AutoFillData {
     companyName: profile.companyName || "",
     industryType: profile.industryType || "",
     locationCity: profile.locationCity || "",
+    locationPincode: profile.locationPincode || "",
   };
 }

@@ -34,6 +34,8 @@ export type StaffRecord = {
   employerComment?: string;
   addMethod: "via_app" | "manually_added";
   careerPostId?: string;
+  /** Present when staff was activated from a Shift confirm hire. */
+  shiftPostId?: string;
   employeeConfirmed: boolean;
   createdAt: number;
   updatedAt: number;

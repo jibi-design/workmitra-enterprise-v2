@@ -1,5 +1,6 @@
 import { NOTICE_OPTIONS } from "../helpers/careerPostDetailHelpers";
 import { PhoneNumberField } from "../../../../shared/phone";
+import { JobMitraBrandName } from "../../../../shared/components/brand/BrandName";
 import {
   CAREER_BLUE,
   CAREER_MUTED,
@@ -97,7 +98,7 @@ export function CareerApplyContactFields({
             fontWeight: 600,
           }}
         >
-          Used for interview and contact coordination through Job Mitra.
+          Used for interview and contact coordination through <JobMitraBrandName size="sm" />.
         </div>
       </div>
 
@@ -120,7 +121,7 @@ export function CareerApplyContactFields({
             fontWeight: 600,
           }}
         >
-          Used for interview and contact coordination through Job Mitra.
+          Used for interview and contact coordination through <JobMitraBrandName size="sm" />.
         </div>
       </div>
 
@@ -160,7 +161,7 @@ export function CareerApplyContactFields({
 
         <span style={{ fontSize: 13, color: CAREER_TEXT, lineHeight: 1.5, fontWeight: 700 }}>
           I confirm these contact details are mine and can be used for interview/contact
-          coordination through Job Mitra.
+          coordination through <JobMitraBrandName size="sm" />.
         </span>
       </label>
     </>

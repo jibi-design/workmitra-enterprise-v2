@@ -4,6 +4,7 @@ import { ROUTE_PATHS } from "../../../../../app/router/routePaths";
 import {
   careerGateApi,
   isCareerApiSyncEnabled,
+  mustRollbackCareerLocalWrite,
 } from "../../../../career/services/careerGateApi.service";
 import {
   applyServerTruthAfterApply,
@@ -36,6 +37,54 @@ import {
 } from "./careerApply.validation";
 import type { AcceptCareerOfferResult, CareerApplyInput } from "./careerApply.types";
 import { sanitizeUserText } from "../../../../../shared/security/sanitizeUserText";
+import { getCareerSearchSnapshot } from "../../helpers/careerSearchHelpers";
+import type { CareerJobPost } from "../../../../career/types/careerDomainTypes";
+
+/** Employee apply — employer posts bucket may be absent; fall back to merged search index. */
+function resolveCareerPostForApply(jobId: string): CareerJobPost | null {
+  const fromEmployer = getCareerPost(jobId);
+  if (fromEmployer) return fromEmployer;
+
+  const searchHit = getCareerSearchSnapshot().find((item) => item.id === jobId);
+  if (!searchHit) return null;
+
+  return {
+    id: searchHit.id,
+    employerId: searchHit.employerId ?? "employer_demo",
+    companyName: searchHit.companyName,
+    jobTitle: searchHit.jobTitle,
+    department: searchHit.department,
+    jobType: searchHit.jobType,
+    workMode: searchHit.workMode,
+    location: searchHit.location,
+    vacancies: 1,
+    probationPeriod: "none",
+    salaryMin: searchHit.salaryMin,
+    salaryMax: searchHit.salaryMax,
+    salaryPeriod: searchHit.salaryPeriod,
+    noticePeriodDays: searchHit.noticePeriodDays ?? 0,
+    experienceMin: searchHit.experienceMin,
+    experienceMax: searchHit.experienceMax,
+    qualifications: searchHit.qualifications,
+    skills: searchHit.skills,
+    description: searchHit.description,
+    responsibilities: searchHit.responsibilities,
+    interviewRounds: searchHit.interviewRounds,
+    roundConfigs: [{ round: 1, label: "Screening", mode: "phone" }],
+    status: "active",
+    createdAt: searchHit.createdAt,
+    updatedAt: searchHit.createdAt,
+    closingDate: searchHit.closingDate,
+    screeningQuestions: searchHit.screeningQuestions ?? [],
+    isTemplate: false,
+    totalApplications: 0,
+    shortlisted: 0,
+    inInterview: 0,
+    offered: 0,
+    hired: 0,
+    rejected: 0,
+  };
+}
 
 export function hasExistingApplication(jobId: string): CareerApplication | null {
   const currentEmployeeId = getCurrentEmployeeId();
@@ -61,7 +110,7 @@ export function getMyApplicationForJob(jobId: string): CareerApplication | null 
 }
 
 export async function applyToCareerJob(input: CareerApplyInput): Promise<CareerApplication | null> {
-  const post = getCareerPost(input.jobId);
+  const post = resolveCareerPostForApply(input.jobId);
   if (!post) return null;
 
   const now = Date.now();
@@ -100,29 +149,31 @@ export async function applyToCareerJob(input: CareerApplyInput): Promise<CareerA
 
   if (isCareerApiSyncEnabled()) {
     const serverPostId = requireCareerServerPostId(input.jobId);
-    if (!serverPostId) {
+    if (mustRollbackCareerLocalWrite(serverPostId)) {
       writeAllApps(priorApps);
       return null;
     }
 
-    try {
-      const serverApp = await careerGateApi.applyToJob(serverPostId, {
-        cover_note: app.coverNote,
-      });
-      const merged = applyServerTruthAfterApply(app.id, serverApp);
-      queuePulseEventForAffectedUser({
-        type: "CAREER_APPLICATION_SUBMITTED",
-        domain: "career",
-        affectedUserRole: "employer",
-        targetId: app.jobId,
-        postId: app.jobId,
-        appId: merged?.id ?? app.id,
-        severity: "urgent",
-      });
-      return merged ?? app;
-    } catch {
-      writeAllApps(priorApps);
-      return null;
+    if (serverPostId) {
+      try {
+        const serverApp = await careerGateApi.applyToJob(serverPostId, {
+          cover_note: app.coverNote,
+        });
+        const merged = applyServerTruthAfterApply(app.id, serverApp);
+        queuePulseEventForAffectedUser({
+          type: "CAREER_APPLICATION_SUBMITTED",
+          domain: "career",
+          affectedUserRole: "employer",
+          targetId: app.jobId,
+          postId: app.jobId,
+          appId: merged?.id ?? app.id,
+          severity: "info",
+        });
+        return merged ?? app;
+      } catch {
+        writeAllApps(priorApps);
+        return null;
+      }
     }
   }
 
@@ -133,7 +184,7 @@ export async function applyToCareerJob(input: CareerApplyInput): Promise<CareerA
     targetId: app.jobId,
     postId: app.jobId,
     appId: app.id,
-    severity: "urgent",
+    severity: "info",
   });
 
   return app;
@@ -142,14 +193,16 @@ export async function applyToCareerJob(input: CareerApplyInput): Promise<CareerA
 export async function acceptCareerOffer(jobId: string): Promise<AcceptCareerOfferResult> {
   const currentEmployeeId = getCurrentEmployeeId();
   const apps = readAllApps();
-  const app = apps.find((item) => item.jobId === jobId && item.employeeId === currentEmployeeId);
+  const app =
+    apps.find((item) => item.jobId === jobId && item.employeeId === currentEmployeeId) ??
+    apps.find((item) => item.jobId === jobId);
 
   if (!app) return { ok: false, reason: "not_found" };
   if (app.stage !== "offered" || !canTransition(app.stage, "offer_accepted")) {
     return { ok: false, reason: "invalid_stage" };
   }
 
-  const post = getCareerPost(jobId);
+  const post = resolveCareerPostForApply(jobId);
   if (!post || post.status !== "active") return { ok: false, reason: "post_inactive" };
 
   const now = Date.now();
@@ -170,17 +223,19 @@ export async function acceptCareerOffer(jobId: string): Promise<AcceptCareerOffe
 
   if (isCareerApiSyncEnabled()) {
     const serverAppId = requireCareerServerApplicationId(app.id);
-    if (!serverAppId) {
+    if (mustRollbackCareerLocalWrite(serverAppId)) {
       writeAllApps(priorApps);
       return { ok: false, reason: "api_error" };
     }
 
-    try {
-      await careerGateApi.acceptOffer(serverAppId);
-      await hydrateCareerApplicationsFromServer();
-    } catch {
-      writeAllApps(priorApps);
-      return { ok: false, reason: "api_error" };
+    if (serverAppId) {
+      try {
+        await careerGateApi.acceptOffer(serverAppId);
+        await hydrateCareerApplicationsFromServer();
+      } catch {
+        writeAllApps(priorApps);
+        return { ok: false, reason: "api_error" };
+      }
     }
   }
 
@@ -191,7 +246,7 @@ export async function acceptCareerOffer(jobId: string): Promise<AcceptCareerOffe
     targetId: jobId,
     postId: jobId,
     appId: app.id,
-    severity: "urgent",
+    severity: "success",
   });
 
   pushCareerActivity({
@@ -208,7 +263,9 @@ export async function acceptCareerOffer(jobId: string): Promise<AcceptCareerOffe
 export async function declineCareerOffer(jobId: string): Promise<boolean> {
   const currentEmployeeId = getCurrentEmployeeId();
   const apps = readAllApps();
-  const app = apps.find((item) => item.jobId === jobId && item.employeeId === currentEmployeeId);
+  const app =
+    apps.find((item) => item.jobId === jobId && item.employeeId === currentEmployeeId) ??
+    apps.find((item) => item.jobId === jobId);
 
   if (!app || !canDeclineOfferStage(app.stage)) return false;
 
@@ -227,17 +284,19 @@ export async function declineCareerOffer(jobId: string): Promise<boolean> {
 
   if (isCareerApiSyncEnabled()) {
     const serverAppId = requireCareerServerApplicationId(app.id);
-    if (!serverAppId) {
+    if (mustRollbackCareerLocalWrite(serverAppId)) {
       writeAllApps(priorApps);
       return false;
     }
 
-    try {
-      await careerGateApi.declineOffer(serverAppId);
-      await hydrateCareerApplicationsFromServer();
-    } catch {
-      writeAllApps(priorApps);
-      return false;
+    if (serverAppId) {
+      try {
+        await careerGateApi.declineOffer(serverAppId);
+        await hydrateCareerApplicationsFromServer();
+      } catch {
+        writeAllApps(priorApps);
+        return false;
+      }
     }
   }
 
@@ -268,7 +327,9 @@ export async function declineCareerOffer(jobId: string): Promise<boolean> {
 export async function withdrawCareerApplication(jobId: string): Promise<boolean> {
   const currentEmployeeId = getCurrentEmployeeId();
   const apps = readAllApps();
-  const app = apps.find((item) => item.jobId === jobId && item.employeeId === currentEmployeeId);
+  const app =
+    apps.find((item) => item.jobId === jobId && item.employeeId === currentEmployeeId) ??
+    apps.find((item) => item.jobId === jobId);
 
   if (!app || !canWithdrawApplicationStage(app.stage)) return false;
 
@@ -287,17 +348,19 @@ export async function withdrawCareerApplication(jobId: string): Promise<boolean>
 
   if (isCareerApiSyncEnabled()) {
     const serverAppId = requireCareerServerApplicationId(app.id);
-    if (!serverAppId) {
+    if (mustRollbackCareerLocalWrite(serverAppId)) {
       writeAllApps(priorApps);
       return false;
     }
 
-    try {
-      await careerGateApi.withdrawApplication(serverAppId);
-      await hydrateCareerApplicationsFromServer();
-    } catch {
-      writeAllApps(priorApps);
-      return false;
+    if (serverAppId) {
+      try {
+        await careerGateApi.withdrawApplication(serverAppId);
+        await hydrateCareerApplicationsFromServer();
+      } catch {
+        writeAllApps(priorApps);
+        return false;
+      }
     }
   }
 

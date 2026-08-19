@@ -231,7 +231,8 @@
 
 .wm-notificationCardTime {
   font-size: 11px;
-  color: var(--wm-neutral-400);
+  font-weight: 650;
+  color: var(--wm-neutral-700, #334155);
   margin-top: 5px;
   padding-left: 16px;
 }

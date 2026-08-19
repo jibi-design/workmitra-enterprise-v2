@@ -22,6 +22,25 @@ export const ROUTE_PATHS = {
 
   /** Wave 3 — Employee My Dashboard (Insights & activity shell) */
   employeeDashboard: "/employee/dashboard",
+  /** Employer Pro hiring dashboard */
+  employerDashboard: "/employer/dashboard",
+  /** Event day tools tab (legacy alias: ?tab=utilities). */
+  employerDashboardEventDay: "/employer/dashboard?tab=event-day",
+
+  /** Weekly Shift Planner (instance swaps — separate from Demand Planner) */
+  employeeShiftPlanner: "/employee/planner",
+  employeeShiftPlannerSwaps: "/employee/planner/swaps",
+  employerShiftPlanner: "/employer/planner",
+  employerShiftPlannerSwaps: "/employer/planner/swaps",
+
+  /** Mitra Labs utility hub (Digital Invites + SVG QR). AI Photo is flag-gated. */
+  employerLabs: "/employer/labs",
+  employerLabsInvites: "/employer/labs/invites",
+  employerLabsQr: "/employer/labs/qr",
+  employerLabsReport: "/employer/labs/report",
+  employerLabsReportFolder: "/employer/labs/report/:folderId",
+  employerLabsAiPhoto: "/employer/labs/ai-photo",
+  labsPassVerify: "/labs/pass/verify/:token",
 
   // Employee domain entries
   employeeShiftCenter: "/employee/shift",
@@ -83,6 +102,7 @@ export const ROUTE_PATHS = {
   employeeCareerSearch: "/employee/career/search",
   employeeCareerPostDetails: "/employee/career/post/:postId",
   employeeCareerApplications: "/employee/career/applications",
+  employeeCareerWorkspaces: "/employee/career/workspaces",
   employeeCareerWorkspace: "/employee/career/workspace/:workspaceId",
   employeeCareerCompletedRecords: "/employee/career/completed-records",
 
@@ -135,6 +155,9 @@ export const ROUTE_PATHS = {
   // Employee Employment
   employeeEmploymentDetail: "/employee/employment/:employmentId",
 
+  /** Home Personal Work Diary — separate from Workplace Hub Work Diary */
+  employeePersonalWorkDiary: "/employee/personal-work-diary",
+
   // Employer HR Management (Purple)
   employerHRManagement: "/employer/hr",
   employerHRCandidateDetail: "/employer/hr/candidate/:hrCandidateId",
@@ -161,11 +184,12 @@ export const ROUTE_PATHS = {
   employerVaultLookup: "/employer/vault",
   employerVaultView: "/employer/vault/view/:employeeId",
 
-  // Admin — all 6 tabs
+  // Admin — oversight tabs
   adminAlerts: "/admin/alerts",
   adminUsers: "/admin/users",
   adminAnalytics: "/admin/analytics",
   adminNotifications: "/admin/notifications",
+  adminModeration: "/admin/moderation",
   adminSettings: "/admin/settings",
 
   // Employee (Phase-0)

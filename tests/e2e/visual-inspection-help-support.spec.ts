@@ -43,8 +43,8 @@ test.describe("Visual Inspection — Help & Support", () => {
     );
 
     const bust = Date.now();
-    await page.goto(`/?pw_help=${bust}#${HELP_PATH}`, { waitUntil: "networkidle" });
-    await page.reload({ waitUntil: "networkidle" });
+    await page.goto(`/?pw_help=${bust}#${HELP_PATH}`, { waitUntil: "domcontentloaded" });
+    await page.reload({ waitUntil: "domcontentloaded" });
     await expect(page).toHaveURL(/\/employee\/help/);
     await expect(page.locator("body")).not.toContainText("Something went wrong");
 

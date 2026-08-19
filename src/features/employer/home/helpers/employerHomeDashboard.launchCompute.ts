@@ -1,6 +1,6 @@
 /** Launch-safe employer home KPIs — career + shift keys only (no vault/HR parse). */
 
-import { resolveCareerEmployerScopedKey } from "../../../shared/career/careerEmployerScope";
+import { tryResolveCareerEmployerScopedKey } from "../../../shared/career/careerEmployerScope";
 import { getCareerEmployerAppsStorageKey } from "../../careerJobs/helpers/careerPersistence";
 import { type DashboardData, isRec, safeParseArray } from "./employerHomeDashboard.types";
 
@@ -15,8 +15,8 @@ const PHASE2_ZEROS = {
   consoleAlerts: 0,
 } as const;
 
-function careerPostsKey(): string {
-  return resolveCareerEmployerScopedKey("career_posts_v1");
+function careerPostsKey(): string | null {
+  return tryResolveCareerEmployerScopedKey("career_posts_v1");
 }
 
 function careerAppsKey(): string {
@@ -36,7 +36,8 @@ export function computeLaunchDashboard(): DashboardData {
   const shiftPosts = safeParseArray("wm_employer_shift_posts_v1");
   const workspaces = safeParseArray("wm_employee_shift_workspaces_v1");
   const employeeApps = safeParseArray("wm_employee_shift_applications_v1");
-  const careerPosts = safeParseArray(careerPostsKey());
+  const postsKey = careerPostsKey();
+  const careerPosts = postsKey ? safeParseArray(postsKey) : [];
   const careerApps = safeParseArray(careerAppsKey());
 
   let careerActive = 0;

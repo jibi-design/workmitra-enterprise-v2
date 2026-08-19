@@ -11,6 +11,7 @@ import type { AvailabilityBroadcast } from "../../employee/shiftJobs/storage/ava
 import type { FavoriteWorker } from "../../employer/shiftJobs/storage/favoritesStorage";
 import type { ShiftPost } from "../../employer/shiftJobs/storage/employerShift.types";
 import { employeeProfileStorage } from "../../employee/profile/storage/employeeProfile.storage";
+import { employerSettingsStorage } from "../../employer/company/storage/employerSettings.storage";
 import { upsertSiteMembershipTruth } from "../../shiftOps/storage/siteMembershipTruth.storage";
 import {
   resolveShiftEmployerScopedKey,
@@ -27,31 +28,11 @@ export const QA_BULK_SITE_ID = "bbbbbbbb-cccc-4ddd-8eee-ffffffffffff";
 const ALL_KEY = "wm_all_availability_broadcasts_v1";
 const SEARCH_KEY = "wm_employee_shift_search_v1";
 
-const CITIES = ["Kochi", "Thrissur", "Kozhikode", "Kannur", "Alappuzha", "", "Kochi"] as const;
-const FIRST = [
-  "Asha",
-  "Biju",
-  "Chitra",
-  "Deepak",
-  "Esha",
-  "Faisal",
-  "Gita",
-  "Hari",
-  "Indu",
-  "Jithin",
-] as const;
-const LAST = [
-  "Nair",
-  "Menon",
-  "Pillai",
-  "Kumar",
-  "Joseph",
-  "Thomas",
-  "Rahman",
-  "Das",
-  "Iyer",
-  "Varghese",
-] as const;
+const CITIES = ["City A", "City B", "City C", "City D", "City E", "", "City A"] as const;
+
+function qaWorkerLabel(index1Based: number): string {
+  return `Worker ${index1Based}`;
+}
 
 export type QaBulkSeedResult = {
   favoriteCount: number;
@@ -76,7 +57,7 @@ export function buildQaBulkFavorites(count = QA_BULK_COUNT): FavoriteWorker[] {
     list.push({
       id: `fav_qa_bulk_${i}`,
       workerMlId,
-      workerName: `${FIRST[(i - 1) % FIRST.length]} ${LAST[(i - 1) % LAST.length]} #${i}`,
+      workerName: qaWorkerLabel(i),
       shiftsWorked: i % 5,
       avgStars: i % 7 === 0 ? 4.5 : i % 3 === 0 ? 3 : 0,
       addedAt: now - i * 1000,
@@ -112,12 +93,14 @@ export function buildQaBulkAvailabilityPool(count = QA_BULK_COUNT): Availability
 
     pool.push({
       workerMlId: qaBulkWorkerId(i),
-      workerName: `${FIRST[(i - 1) % FIRST.length]} ${LAST[(i - 1) % LAST.length]} #${i}`,
+      workerName: qaWorkerLabel(i),
       selectedDates,
       broadcastAt: now - i * 500,
       expiresAt,
       city: city || undefined,
       category: i % 2 === 0 ? "warehouse" : "general",
+      basePincode: "670001",
+      commuteRadius: 15,
     });
   }
 
@@ -138,7 +121,8 @@ export function buildQaBulkActivePost(startIso?: string): ShiftPost {
     category: "warehouse",
     experience: "fresher_ok",
     payPerDay: 950,
-    locationName: "Kochi",
+    locationName: "City A",
+    locationPincode: "670001",
     distanceKm: 3,
     startAt,
     endAt,
@@ -175,9 +159,10 @@ export function applyQaBulkCandidateSeed(count = QA_BULK_COUNT): QaBulkSeedResul
   const postsKey = resolveShiftEmployerScopedKey("shift_posts_v1");
   const activeScopeIsMultiEmp = favKey.includes("ML_QA_EMP_");
 
-  // Always refresh the shared availability pool.
+  // Shared availability pool only — do not auto-enable QA debug overlays.
   localStorage.setItem(ALL_KEY, JSON.stringify(pool));
-  localStorage.setItem("wm_debug_availability_sync", "1");
+  localStorage.removeItem("wm_debug_availability_sync");
+  employerSettingsStorage.savePartial({ locationPincode: "670001", locationCity: "City A" });
 
   if (!activeScopeIsMultiEmp) {
     // Single-employer QA path — safe to write favorites/posts/search for this scope.
@@ -222,8 +207,8 @@ export function assumeQaBulkWorkerProfile(index1Based: number): {
   workerName: string;
 } {
   const workerMlId = qaBulkWorkerId(index1Based);
-  const workerName = `${FIRST[(index1Based - 1) % FIRST.length]} ${LAST[(index1Based - 1) % LAST.length]} #${index1Based}`;
-  const city = CITIES[(index1Based - 1) % CITIES.length] || "Kochi";
+  const workerName = qaWorkerLabel(index1Based);
+  const city = CITIES[(index1Based - 1) % CITIES.length] || "City A";
   const existing = employeeProfileStorage.get();
 
   employeeProfileStorage.set({
@@ -231,6 +216,8 @@ export function assumeQaBulkWorkerProfile(index1Based: number): {
     uniqueId: workerMlId,
     fullName: workerName,
     city,
+    basePincode: "670001",
+    commuteRadius: 15,
     skills: ["warehouse", "lifting", "packing", "inventory"].slice(0, 2 + (index1Based % 3)),
     experience: index1Based % 3 === 0 ? "1-3" : "fresher",
     languages: ["English", "Malayalam"],

@@ -21,7 +21,7 @@ export function YourAccountSection({ data, editMode, onFieldChange }: Props) {
   return (
     <section style={EXECUTIVE_CARD_SHELL} data-testid="employer-your-account-section">
       <div style={EXECUTIVE_SECTION_KICKER}>Your account</div>
-      <h2 style={EXECUTIVE_SECTION_TITLE}>നിങ്ങളുടെ വ്യക്തിഗത അക്കൗണ്ട്</h2>
+      <h2 style={EXECUTIVE_SECTION_TITLE}>Your personal account</h2>
       <p style={EXECUTIVE_HELPER}>
         Your account is yours. Login, phone, and email stay private and never move with the
         business.
@@ -69,7 +69,7 @@ export function YourAccountSection({ data, editMode, onFieldChange }: Props) {
         }}
       >
         <div style={{ fontSize: 12, color: "#0f172a", fontWeight: 700, lineHeight: 1.5 }}>
-          നിങ്ങളുടെ അക്കൗണ്ട് വ്യക്തിപരമാണ്. സ്ഥാപനത്തിന്റെ പ്രൊഫൈൽ സ്ഥാപനത്തിന്റേതാണ്.
+          Your account is personal. The business profile belongs to the company.
         </div>
         <div style={{ marginTop: 6, fontSize: 11, color: "var(--wm-er-muted)", lineHeight: 1.45 }}>
           Security and notification settings are in Settings.

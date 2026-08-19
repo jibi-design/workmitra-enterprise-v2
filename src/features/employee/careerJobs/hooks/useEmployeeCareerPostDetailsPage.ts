@@ -5,6 +5,7 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { useSoftAuth } from "../../../../shared/guest/useSoftAuth";
 import { useUnsavedChangesGuard } from "../../../../shared/hooks/useUnsavedChangesGuard";
 import {
   getSubmitBlockReason,
@@ -27,6 +28,7 @@ const WITHDRAW_FAIL_MESSAGE =
   "This application cannot be withdrawn from its current status, or the server could not complete withdrawal.";
 
 export function useEmployeeCareerPostDetailsPage() {
+  const { requireAuthForAction } = useSoftAuth();
   const nav = useNavigate();
   const { postId = "" } = useParams();
   const [now, setNow] = useState(() => Date.now());
@@ -87,6 +89,7 @@ export function useEmployeeCareerPostDetailsPage() {
   const [screeningAnswers, setScreeningAnswers] = useState<Record<string, "yes" | "no">>({});
   const [showSuccess, setShowSuccess] = useState(false);
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
+  const [showApplyConfirm, setShowApplyConfirm] = useState(false);
   const [showError, setShowError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -135,6 +138,27 @@ export function useEmployeeCareerPostDetailsPage() {
     }, 1200);
   }
 
+  function requestApply() {
+    if (!post || isSubmitting) return;
+    if (
+      !requireAuthForAction({
+        action: "apply_career",
+        targetId: postId,
+        returnPath: ROUTE_PATHS.employeeCareerPostDetails.replace(":postId", postId),
+        roleHint: "employee",
+      })
+    ) {
+      return;
+    }
+
+    if (!canSubmit) {
+      setShowError(submitBlockReason || "Please complete the required application steps.");
+      return;
+    }
+
+    setShowApplyConfirm(true);
+  }
+
   async function handleApply() {
     if (!post || isSubmitting) return;
 
@@ -143,6 +167,7 @@ export function useEmployeeCareerPostDetailsPage() {
       return;
     }
 
+    setShowApplyConfirm(false);
     setIsSubmitting(true);
     setShowError(null);
 
@@ -216,12 +241,15 @@ export function useEmployeeCareerPostDetailsPage() {
     showSuccess,
     showWithdrawConfirm,
     setShowWithdrawConfirm,
+    showApplyConfirm,
+    setShowApplyConfirm,
     showError,
     setShowError,
     canSubmit,
     submitBlockReason,
     screeningQuestions,
     handleApply,
+    requestApply,
     requestWithdraw,
     handleWithdraw,
     goSearch: () => nav(ROUTE_PATHS.employeeCareerSearch),

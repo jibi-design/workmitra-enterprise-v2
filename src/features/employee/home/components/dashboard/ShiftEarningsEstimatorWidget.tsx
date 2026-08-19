@@ -10,16 +10,9 @@ import {
   POSTS_KEY,
 } from "../../../shiftJobs/storage/shiftApplications.storage.mutations";
 
-function formatGbp(amount: number): string {
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: "GBP",
-      maximumFractionDigits: 0,
-    }).format(amount);
-  } catch {
-    return `£${Math.round(amount)}`;
-  }
+/** Symbol-free amount — no £ / $ / ₹ in UI. */
+function formatPayAmount(amount: number): string {
+  return Math.round(amount).toLocaleString("en-GB");
 }
 
 /** Stable revision for useSyncExternalStore — raw LS fingerprint. */
@@ -61,7 +54,7 @@ export function ShiftEarningsEstimatorWidget() {
       </div>
 
       <div className="wm-dashEarnHero" aria-live="polite">
-        <div className="wm-dashEarnHero__value">{formatGbp(summary.totalEarned)}</div>
+        <div className="wm-dashEarnHero__value">{formatPayAmount(summary.totalEarned)}</div>
         <div className="wm-dashEarnHero__meta">
           {summary.totalShifts} confirmed · {summary.totalDays} day
           {summary.totalDays === 1 ? "" : "s"}
@@ -82,7 +75,7 @@ export function ShiftEarningsEstimatorWidget() {
                   {entry.companyName} · {entry.totalDays}d
                 </div>
               </div>
-              <div className="wm-dashEarnList__amount">{formatGbp(entry.totalEarned)}</div>
+              <div className="wm-dashEarnList__amount">{formatPayAmount(entry.totalEarned)}</div>
             </li>
           ))}
         </ul>

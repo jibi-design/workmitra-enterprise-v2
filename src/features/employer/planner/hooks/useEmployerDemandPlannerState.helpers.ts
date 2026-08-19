@@ -10,6 +10,7 @@ export function buildStep1FromDraft(
     name: draft.name,
     companyName: draft.companyName,
     locationName: draft.locationName,
+    locationPincode: draft.locationPincode ?? "",
     category: draft.category,
     experience: draft.experience,
     startDate: draft.startDate,

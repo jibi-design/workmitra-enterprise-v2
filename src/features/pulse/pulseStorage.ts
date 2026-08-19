@@ -1,5 +1,9 @@
-/** Job Mitra | pulseStorage.ts | Urgent-safe hydrate + re-trigger (P2-7) */
+/** Job Mitra | pulseStorage.ts | Role-scoped hydrate + current-hop re-trigger */
 
+import {
+  PULSE_STORAGE_LEGACY_KEY,
+  readPulseStorageKey,
+} from "./pulseStorage.scope";
 import type {
   ActivePulseTrails,
   ActivePulses,
@@ -12,15 +16,15 @@ import type {
 type PersistedPulseState = {
   readonly version: 1;
   readonly chain: PulseNodeId[];
+  readonly pendingGuidanceRoots: PulseNodeId[];
   readonly severityByNodeId: Record<PulseNodeId, PulseChainSeverity>;
   readonly activePulses: ActivePulses;
   readonly activeTrails: ActivePulseTrails;
 };
 
-const PULSE_STORAGE_KEY = "wm_pulse_chain_state_v1";
-
 export const EMPTY_HYDRATED_PULSE_STATE: HydratedPulseState = {
   chain: [],
+  pendingGuidanceRoots: [],
   resolvingNodeId: null,
   severityByNodeId: {},
   activePulses: {},
@@ -39,7 +43,7 @@ function safeSetStorageItem(key: string, value: string): void {
 export function safeRemovePulseStorage(): void {
   try {
     if (typeof window === "undefined") return;
-    window.localStorage.removeItem(PULSE_STORAGE_KEY);
+    window.localStorage.removeItem(readPulseStorageKey());
   } catch {
     // Pulse cleanup is best-effort only.
   }
@@ -49,43 +53,74 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function normalizeNodeIdList(value: unknown): PulseNodeId[] {
+  if (!Array.isArray(value)) return [];
+  const output: PulseNodeId[] = [];
+  for (const item of value) {
+    if (typeof item !== "string" || item.trim().length === 0) continue;
+    const id = item.trim();
+    if (output.includes(id)) continue;
+    output.push(id);
+  }
+  return output;
+}
+
+function readRawPulseBlob(): string | null {
+  if (typeof window === "undefined") return null;
+  const scoped = window.localStorage.getItem(readPulseStorageKey());
+  if (scoped) return scoped;
+  const legacy = window.localStorage.getItem(PULSE_STORAGE_LEGACY_KEY);
+  if (!legacy) return null;
+  try {
+    window.localStorage.setItem(readPulseStorageKey(), legacy);
+    window.localStorage.removeItem(PULSE_STORAGE_LEGACY_KEY);
+  } catch {
+    // Keep reading the in-memory legacy blob even if migrate fails.
+  }
+  return legacy;
+}
+
 /**
- * Keep urgent chain nodes across refresh; drop stale non-urgent breathing lights.
- * Re-triggers activePulses so urgent LEDs resume after reload.
+ * Restore urgent current hop only. Home reminder roots must not re-light every card.
  */
 export function hydratePulseState(): HydratedPulseState {
   try {
     if (typeof window === "undefined") return EMPTY_HYDRATED_PULSE_STATE;
 
-    const raw = window.localStorage.getItem(PULSE_STORAGE_KEY);
+    const raw = readRawPulseBlob();
     if (!raw) return EMPTY_HYDRATED_PULSE_STATE;
 
     const parsed: unknown = JSON.parse(raw);
     if (!isRecord(parsed) || parsed.version !== 1 || !Array.isArray(parsed.chain)) {
-      safeRemovePulseStorage();
+      window.localStorage.removeItem(readPulseStorageKey());
       return EMPTY_HYDRATED_PULSE_STATE;
     }
 
     const severityRaw = isRecord(parsed.severityByNodeId) ? parsed.severityByNodeId : {};
-    const urgentChain: PulseNodeId[] = [];
+    const urgentChain = normalizeNodeIdList(parsed.chain);
+    const pendingGuidanceRoots = normalizeNodeIdList(parsed.pendingGuidanceRoots);
     const severityByNodeId: Record<PulseNodeId, PulseChainSeverity> = {};
 
-    for (const item of parsed.chain) {
-      if (typeof item !== "string" || item.trim().length === 0) continue;
-      const id = item.trim();
-      if (severityRaw[id] !== "urgent") continue;
-      if (urgentChain.includes(id)) continue;
-      urgentChain.push(id);
-      severityByNodeId[id] = "urgent";
+    for (const id of urgentChain) {
+      const severity = severityRaw[id];
+      if (
+        severity === "urgent" ||
+        severity === "warning" ||
+        severity === "info" ||
+        severity === "success"
+      ) {
+        severityByNodeId[id] = severity;
+      }
     }
 
     if (urgentChain.length === 0) {
-      safeRemovePulseStorage();
+      window.localStorage.removeItem(readPulseStorageKey());
       return EMPTY_HYDRATED_PULSE_STATE;
     }
 
     const restored = retriggerUrgentPulses({
       chain: urgentChain,
+      pendingGuidanceRoots,
       resolvingNodeId: null,
       severityByNodeId,
       activePulses: isRecord(parsed.activePulses) ? (parsed.activePulses as ActivePulses) : {},
@@ -100,21 +135,26 @@ export function hydratePulseState(): HydratedPulseState {
   }
 }
 
-/** Force breathing lights back on for every urgent chain node. */
+/** Force breathing light back on for the current hop only. */
 export function retriggerUrgentPulses(state: HydratedPulseState): HydratedPulseState {
+  const head = state.chain[0];
   const activePulses: ActivePulses = { ...state.activePulses };
   const severityByNodeId: Record<PulseNodeId, PulseChainSeverity> = {
     ...state.severityByNodeId,
   };
 
-  for (const nodeId of state.chain) {
-    if (severityByNodeId[nodeId] !== "urgent") continue;
-    activePulses[nodeId] = true;
-    severityByNodeId[nodeId] = "urgent";
+  for (const nodeId of Object.keys(activePulses)) {
+    activePulses[nodeId] = false;
+  }
+
+  if (head) {
+    activePulses[head] = true;
+    if (!severityByNodeId[head]) severityByNodeId[head] = "info";
   }
 
   return {
     ...state,
+    pendingGuidanceRoots: [],
     severityByNodeId,
     activePulses,
     resolvingNodeId: null,
@@ -122,15 +162,19 @@ export function retriggerUrgentPulses(state: HydratedPulseState): HydratedPulseS
 }
 
 export function persistPulseState(
-  state: Pick<PulseState, "chain" | "severityByNodeId" | "activePulses" | "activeTrails">,
+  state: Pick<
+    PulseState,
+    "chain" | "pendingGuidanceRoots" | "severityByNodeId" | "activePulses" | "activeTrails"
+  >,
 ): void {
   const persisted: PersistedPulseState = {
     version: 1,
     chain: state.chain,
+    pendingGuidanceRoots: [],
     severityByNodeId: state.severityByNodeId,
     activePulses: state.activePulses,
     activeTrails: state.activeTrails,
   };
 
-  safeSetStorageItem(PULSE_STORAGE_KEY, JSON.stringify(persisted));
+  safeSetStorageItem(readPulseStorageKey(), JSON.stringify(persisted));
 }

@@ -1,11 +1,12 @@
 // src/app/router/guards/RequireRole.tsx
-import { useNavigate, useLocation } from "react-router-dom";
+import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import { ROUTE_PATHS } from "../routePaths";
 import { stashPendingRoute } from "../pendingRoute";
 import type { AppRole } from "../../storage/roleStorage";
 import { AUTH_BACKEND_ENABLED } from "../../../shared/config/authConfig";
 import { useAuthStore } from "../../../shared/store/authStore";
 import { useAppRole } from "./useAppRole";
+import { LAB_WORKSPACE_PICK_PATH } from "./ensureLabWorkspaceRole";
 import {
   RouteGuardDenied,
   RouteGuardLoading,
@@ -17,6 +18,7 @@ function homeForRole(role: AppRole): string {
   return ROUTE_PATHS.adminHome;
 }
 
+/** @deprecated Prefer RoleGate (WAVE-5.1) or RequireActiveContext for EE/ER shells. */
 export function RequireRole(props: { role: AppRole; children: React.ReactElement }) {
   const location = useLocation();
   const nav = useNavigate();
@@ -34,14 +36,7 @@ export function RequireRole(props: { role: AppRole; children: React.ReactElement
 
     if (!isAuthenticated || !authUser) {
       stashPendingRoute(returnPath);
-      return (
-        <RouteGuardDenied
-          title="Sign in required"
-          message="You need an active account to open this workspace."
-          primaryLabel="Sign in"
-          onPrimary={() => nav(ROUTE_PATHS.login, { replace: true, state: { from: returnPath } })}
-        />
-      );
+      return <Navigate to={ROUTE_PATHS.login} replace state={{ from: returnPath }} />;
     }
 
     if (authUser.role !== props.role) {
@@ -61,14 +56,7 @@ export function RequireRole(props: { role: AppRole; children: React.ReactElement
 
   if (!appRole) {
     stashPendingRoute(returnPath);
-    return (
-      <RouteGuardDenied
-        title="Choose a workspace"
-        message="Pick Employee or Employer to continue to this page."
-        primaryLabel="Choose workspace"
-        onPrimary={() => nav(ROUTE_PATHS.landing, { replace: true, state: { from: returnPath } })}
-      />
-    );
+    return <Navigate to={LAB_WORKSPACE_PICK_PATH} replace state={{ from: returnPath }} />;
   }
 
   if (appRole !== props.role) {

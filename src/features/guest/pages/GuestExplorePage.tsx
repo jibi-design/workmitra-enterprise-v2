@@ -16,11 +16,11 @@ function EmployerDraftTeaser() {
       payload: { source: "guest_explore" },
     });
     requireAuthForAction({
-      action: "create_draft",
+      action: "create_shift",
       targetId: "local_draft",
       returnPath: ROUTE_PATHS.explore,
       roleHint: "employer",
-      payload: { source: "guest_explore" },
+      payload: { phase: "enter", source: "guest_explore" },
     });
   }
 

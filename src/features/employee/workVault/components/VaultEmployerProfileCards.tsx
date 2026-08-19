@@ -3,6 +3,7 @@
 // Sub-components for VaultVerifyEmployerTab.
 // ProfileCard, StatsCard, TagsCard, ReviewsCard — L-V3 slate elevation.
 
+import type { ReactNode } from "react";
 import { StatusBadge } from "../../../../shared/components/enterprise/StatusBadge";
 import { TrustStrip } from "../../../../shared/components/enterprise/TrustStrip";
 import type { EnterpriseTone } from "../../../../shared/components/enterprise/enterprise.types";
@@ -13,6 +14,7 @@ import {
 } from "../../../../shared/employerProfile/employerPublicProfileService";
 import { EmployerVerificationBadges } from "../../../../shared/employerProfile/EmployerVerificationBadges";
 import { resolveEmployerVerificationBadges } from "../../../../shared/employerProfile/employerVerificationBadge.helpers";
+import { JobMitraBrandName } from "../../../../shared/components/brand/BrandName";
 
 /* ── Helpers ───────────────────────────────────── */
 
@@ -56,7 +58,7 @@ function levelTone(level: EmployerLevel): EnterpriseTone {
 function trustCopy(profile: EmployerPublicProfile): {
   kind: "info" | "lock" | "compliance";
   tone: EnterpriseTone;
-  title: string;
+  title: ReactNode;
   message: string;
   badgeLabel: string;
 } {
@@ -108,7 +110,11 @@ function trustCopy(profile: EmployerPublicProfile): {
   return {
     kind: "info",
     tone: "neutral",
-    title: "New on Job Mitra",
+    title: (
+      <>
+        New on <JobMitraBrandName size="sm" />
+      </>
+    ),
     message: "Limited public ratings so far. Prefer OTP document review and clear job details.",
     badgeLabel: profile.reputationLabel,
   };

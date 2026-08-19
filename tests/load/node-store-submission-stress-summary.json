@@ -1,0 +1,98 @@
+{
+  "harness": "node-store-submission-stress-auth",
+  "profile": "store-submission-live-1k-authenticated",
+  "base": "https://literature-andy-regular-myself.trycloudflare.com",
+  "vusMax": 1000,
+  "chaos": false,
+  "authEnabled": true,
+  "sessionPool": 3,
+  "wallMs": 26506.3509,
+  "totalRequests": 5253,
+  "okRate": 0.7713687416714259,
+  "authOkRate": 0.31410622501427754,
+  "failCount": 1201,
+  "authFailCount": 1201,
+  "http5xx": 0,
+  "timeoutCount": 0,
+  "p95Ms": 3438.9815000000017,
+  "p99Ms": 3958.2291999999998,
+  "authP95Ms": 3937.0279999999993,
+  "authP99Ms": 4093.824199999999,
+  "shiftP95Ms": 3340.1363999999994,
+  "shiftP99Ms": 3419.8233,
+  "loginWarmP95Ms": 482.5439,
+  "loginWarmSamples": [
+    {
+      "status": 200,
+      "ms": 482.5439
+    },
+    {
+      "status": 200,
+      "ms": 457.6331
+    },
+    {
+      "status": 200,
+      "ms": 439.16820000000007
+    }
+  ],
+  "throughputRps": 198.1789202073832,
+  "stages": [
+    {
+      "wave": 1,
+      "concurrency": 1,
+      "requests": 3,
+      "failCount": 0,
+      "authFailCount": 0,
+      "http5xx": 0,
+      "elapsedMs": 537.1558
+    },
+    {
+      "wave": 2,
+      "concurrency": 50,
+      "requests": 150,
+      "failCount": 0,
+      "authFailCount": 0,
+      "http5xx": 0,
+      "elapsedMs": 2422.5937000000004
+    },
+    {
+      "wave": 3,
+      "concurrency": 200,
+      "requests": 600,
+      "failCount": 0,
+      "authFailCount": 0,
+      "http5xx": 0,
+      "elapsedMs": 8045.9169
+    },
+    {
+      "wave": 4,
+      "concurrency": 500,
+      "requests": 1500,
+      "failCount": 330,
+      "authFailCount": 330,
+      "http5xx": 0,
+      "elapsedMs": 7769.001800000002
+    },
+    {
+      "wave": 5,
+      "concurrency": 1000,
+      "requests": 3000,
+      "failCount": 871,
+      "authFailCount": 871,
+      "http5xx": 0,
+      "elapsedMs": 7729.759199999997
+    }
+  ],
+  "thresholds": {
+    "okRateMin": 0.95,
+    "authOkRateMin": 0.99,
+    "rate5xxMax": 0,
+    "p95MsMax": 3000,
+    "p99MsMax": 8000,
+    "authP95MsMax": 3000,
+    "timeoutMax": 0
+  },
+  "supabaseNote": "Connection pool / CPU: observe Supabase Dashboard → Database → Connections & Query performance for this run window. Not scraped by this client.",
+  "verdict": "FAIL",
+  "generatedAt": "2026-08-10T09:14:18.440Z"
+}

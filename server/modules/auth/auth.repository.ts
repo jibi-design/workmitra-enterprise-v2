@@ -26,6 +26,14 @@ export interface DbSessionRow {
   revoked_at: Date | null;
 }
 
+export interface DbSessionListRow {
+  id: string;
+  created_at: Date;
+  last_seen_at: Date;
+  user_agent: string | null;
+  session_token_hash: string;
+}
+
 export const authRepository = {
   async findUserByEmail(email: string): Promise<DbUserRow | null> {
     const result = await getPool().query<DbUserRow>(
@@ -132,6 +140,60 @@ export const authRepository = {
        WHERE user_id = $1 AND revoked_at IS NULL`,
       [userId],
     );
+  },
+
+  async updatePasswordHash(userId: string, passwordHash: string): Promise<void> {
+    await getPool().query(`UPDATE auth_users SET password_hash = $2 WHERE id = $1`, [
+      userId,
+      passwordHash,
+    ]);
+  },
+
+  /**
+   * Soft-delete for store compliance: mark deleted, scrub PII, invalidate credentials.
+   * Rows remain for FK / audit integrity; login queries exclude status = 'deleted'.
+   */
+  async markUserDeleted(userId: string, scrubbedPasswordHash: string): Promise<boolean> {
+    const scrubbedEmail = `deleted_${userId.replace(/[^a-zA-Z0-9]/g, "")}@deleted.invalid`;
+    const result = await getPool().query(
+      `UPDATE auth_users SET
+         status = 'deleted',
+         email = $2,
+         full_name = 'Deleted User',
+         password_hash = $3,
+         failed_login_count = 0,
+         failed_login_window_start = NULL,
+         locked_until = NULL,
+         updated_at = now()
+       WHERE id = $1 AND status != 'deleted'`,
+      [userId, scrubbedEmail, scrubbedPasswordHash],
+    );
+    return (result.rowCount ?? 0) > 0;
+  },
+
+  async listActiveSessionsForUser(userId: string): Promise<DbSessionListRow[]> {
+    const result = await getPool().query<DbSessionListRow>(
+      `SELECT id, created_at, last_seen_at, user_agent, session_token_hash
+       FROM auth_sessions
+       WHERE user_id = $1
+         AND revoked_at IS NULL
+         AND expires_at > now()
+         AND idle_expires_at > now()
+       ORDER BY last_seen_at DESC`,
+      [userId],
+    );
+    return result.rows;
+  },
+
+  async revokeOtherSessionsForUser(userId: string, keepTokenHash: string): Promise<number> {
+    const result = await getPool().query(
+      `UPDATE auth_sessions SET revoked_at = now()
+       WHERE user_id = $1
+         AND revoked_at IS NULL
+         AND session_token_hash <> $2`,
+      [userId, keepTokenHash],
+    );
+    return result.rowCount ?? 0;
   },
 
   async recordLoginAttempt(email: string, ipHash: string, success: boolean): Promise<void> {

@@ -6,6 +6,7 @@ import {
   ensureRequirements,
   safeParsePosts,
 } from "../../helpers/shiftApplyHelpers";
+import { shiftPostIdsMatch } from "../../../../shift/utils/shiftIdBridge";
 import {
   WORKSPACES_KEY,
   getEffectiveApplication,
@@ -33,8 +34,8 @@ export function useShiftPostApplyDerived(postId: string) {
   const isSavedShift = post ? favoriteIds.has(post.id) : false;
 
   const postApplications = post
-    ? safeParseAllShiftApplications(localStorage.getItem(APPS_KEY)).filter(
-        (application) => application.postId === post.id,
+    ? safeParseAllShiftApplications(localStorage.getItem(APPS_KEY)).filter((application) =>
+        shiftPostIdsMatch(application.postId, post.id),
       )
     : [];
 

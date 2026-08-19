@@ -1,6 +1,7 @@
 // Job Mitra | submitEmployerShiftRatingSaga.ts
 // Employer rates worker on a completed shift — rating + worker points.
 
+import { persistShiftReviewToServer } from "../../features/shift/services/persistShiftReviewToServer";
 import { favoritesStorage } from "../../features/employer/shiftJobs/storage/favoritesStorage";
 import { ratingStorage } from "./ratingStorage";
 import type { EmployerToWorkerRating } from "./ratingTypes";
@@ -12,10 +13,12 @@ export type SubmitEmployerShiftRatingSagaInput = Omit<
 > & {
   workerName: string;
   jobTitle: string;
+  workspaceId?: string;
+  appId?: string;
 };
 
 export type SubmitEmployerShiftRatingSagaResult =
-  | { ok: true; rating: EmployerToWorkerRating; pointsApplied: boolean }
+  | { ok: true; rating: EmployerToWorkerRating; pointsApplied: boolean; persist: Promise<void> }
   | { ok: false; reason: "invalid_domain" | "already_rated" | "rating_write_error" };
 
 function ratingWasPersisted(input: SubmitEmployerShiftRatingSagaInput): boolean {
@@ -45,6 +48,15 @@ export function submitEmployerShiftRatingSaga(
     return { ok: false, reason: "rating_write_error" };
   }
 
+  const persist = persistShiftReviewToServer({
+    role: "employer",
+    workspaceId: input.workspaceId,
+    postId: input.jobId,
+    appId: input.appId,
+    rating: input.stars,
+    body: input.comment,
+  });
+
   try {
     if (input.stars === 5)
       workerPointsStorage.applyEvent(input.workerMlId, "rating_5star", input.jobId);
@@ -67,14 +79,14 @@ export function submitEmployerShiftRatingSaga(
       });
     }
 
-    return { ok: true, rating, pointsApplied: true };
+    return { ok: true, rating, pointsApplied: true, persist };
   } catch (error) {
     if (error instanceof WorkerPointsStorageWriteError) {
       console.warn("[submitEmployerShiftRatingSaga] Rating saved but points could not be applied", {
         workerMlId: input.workerMlId,
         jobId: input.jobId,
       });
-      return { ok: true, rating, pointsApplied: false };
+      return { ok: true, rating, pointsApplied: false, persist };
     }
 
     throw error;

@@ -118,7 +118,7 @@
 .wm-analyticsCard {
   position: relative;
   z-index: 1;
-  padding: 20px;
+  padding: var(--wm-dna-card-padding, var(--wm-card-padding, 14px));
   border-radius: var(--wm-radius-employer-card);
   border: 1px solid rgba(148, 163, 184, 0.18);
   background:

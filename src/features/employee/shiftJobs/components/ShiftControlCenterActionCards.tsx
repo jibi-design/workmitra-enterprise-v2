@@ -1,9 +1,8 @@
 // App name: Job Mitra
 // File name: ShiftControlCenterActionCards.tsx
-// Shift Jobs Home — discovery actions (Find + Applications); layout via CSS lock
+// Shift Jobs Home — discovery actions; Wave 2 DNA press + persistent active
 
 import type { ReactNode } from "react";
-import { motion } from "framer-motion";
 import { PulseTargetCard } from "../../../pulse/PulseTarget";
 import { usePulseStore } from "../../../pulse/pulseStore";
 import type { ShiftControlCenterCounts } from "../types/shiftControlCenter.types";
@@ -26,8 +25,8 @@ export function ShiftControlCenterActionCards({
   const findShiftsPulseActive = activePulseNodeId === "shift-dashboard-find-shifts";
   const appsPulseActive = activePulseNodeId === "shift-dashboard-applications";
 
-  return (
-    <div className="wm-shiftEmployeeActionGrid" data-testid="shift-jobs-action-cards">
+  const appsFirst = counts.pending > 0 || counts.confirmed > 0;
+  const findCard = (
       <PulseTargetCard pulseId="shift-dashboard-find-shifts" radius={PRIMARY_CARD_RADIUS}>
         <ActionCard
           title="Find Shifts"
@@ -42,7 +41,8 @@ export function ShiftControlCenterActionCards({
           onClick={onOpenSearch}
         />
       </PulseTargetCard>
-
+  );
+  const appsCard = (
       <PulseTargetCard pulseId="shift-dashboard-applications" radius={PRIMARY_CARD_RADIUS}>
         <ActionCard
           title="My Applications"
@@ -53,6 +53,21 @@ export function ShiftControlCenterActionCards({
           onClick={onOpenApplications}
         />
       </PulseTargetCard>
+  );
+
+  return (
+    <div className="wm-shiftEmployeeActionGrid" data-testid="shift-jobs-action-cards">
+      {appsFirst ? (
+        <>
+          {appsCard}
+          {findCard}
+        </>
+      ) : (
+        <>
+          {findCard}
+          {appsCard}
+        </>
+      )}
     </div>
   );
 }
@@ -73,19 +88,19 @@ function ActionCard({
   onClick: () => void;
 }) {
   return (
-    <motion.button
+    <button
       type="button"
       className={[
+        "wm-press-card",
         "wm-shift-pressable",
         "wm-shiftJobsPrimaryCard",
-        isPulseActive ? "isPulseActive" : "",
+        "wm-homeGlassCard--domainShift",
+        isPulseActive ? "isPulseActive is-active" : "",
       ]
         .filter(Boolean)
         .join(" ")}
       onClick={onClick}
-      whileHover={{ scale: 1.01 }}
-      whileTap={{ scale: 0.985 }}
-      transition={{ type: "spring", stiffness: 420, damping: 28 }}
+      aria-current={isPulseActive ? "page" : undefined}
       aria-label={`${title}. ${subtitle}. ${meta}`}
     >
       <div className="wm-shiftJobsPrimaryCardInner">
@@ -103,7 +118,7 @@ function ActionCard({
           ›
         </span>
       </div>
-    </motion.button>
+    </button>
   );
 }
 

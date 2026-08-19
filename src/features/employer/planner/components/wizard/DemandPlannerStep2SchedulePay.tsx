@@ -1,11 +1,12 @@
 // Job Mitra | DemandPlannerStep2SchedulePay.tsx | Step 2 — Schedule, Pay, Location, Matrix
 
-import { PlannerBlindDemandCard } from "../PlannerBlindDemandCard";
+import { PlannerBlindDayCounts } from "../PlannerBlindDayCounts";
 import { validateDemandPlannerDaySlots } from "../../helpers/employerDemandPlanner.helpers";
 import type { DaySlot } from "../../storage/demandPlannerStorage";
 import { DemandPlannerStep2Calendar } from "./DemandPlannerStep2Calendar";
 import { DemandPlannerStep2 } from "./DemandPlannerStep2";
 import type { Step1Data } from "./DemandPlannerStep1.types";
+import { sanitizePincodeInput } from "../../../../shared/location/pincode";
 
 type Props = {
   step1: Step1Data;
@@ -46,7 +47,20 @@ export function DemandPlannerStep2SchedulePay({
         hideActions
       />
 
-      <PlannerBlindDemandCard dateKey={step1.startDate} />
+      <div className="wm-field" style={{ marginTop: 12 }}>
+        <div className="wm-label">
+          Work area code <span className="wm-planner-req">*</span>
+        </div>
+        <input
+          className="wm-input"
+          value={step1.locationPincode}
+          onChange={(e) => setStep1("locationPincode", sanitizePincodeInput(e.target.value))}
+          placeholder="Work area code"
+          inputMode="numeric"
+          maxLength={6}
+          autoComplete="off"
+        />
+      </div>
 
       <div className="wm-field" style={{ marginTop: 12 }}>
         <div className="wm-label">Shift Timing (optional)</div>
@@ -60,12 +74,12 @@ export function DemandPlannerStep2SchedulePay({
       </div>
 
       <div className="wm-field" style={{ marginTop: 10 }}>
-        <div className="wm-label">Work Location *</div>
+        <div className="wm-label">Reporting area *</div>
         <input
           className="wm-input"
           value={step1.locationName}
           onChange={(e) => setStep1("locationName", e.target.value)}
-          placeholder="City / area / address"
+          placeholder="Reporting area"
           maxLength={120}
         />
       </div>
@@ -81,8 +95,13 @@ export function DemandPlannerStep2SchedulePay({
         />
       </div>
 
-      {slots.length > 0 && (
+      {slots.length === 0 ? (
+        <p className="wm-planner-blindDemandCopy wm-planner-blindDemandCopy--muted" style={{ marginTop: 14 }}>
+          Add days to see workers in range
+        </p>
+      ) : (
         <div style={{ marginTop: 14 }}>
+          <PlannerBlindDayCounts slots={slots} locationPincode={step1.locationPincode} />
           <DemandPlannerStep2
             slots={slots}
             defaultPay={0}

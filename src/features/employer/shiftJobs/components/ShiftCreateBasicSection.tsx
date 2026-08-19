@@ -52,12 +52,6 @@ const FIELD_HINT_STYLE: CSSProperties = {
   lineHeight: 1.45,
 };
 
-const TWO_COL_STYLE: CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: 10,
-};
-
 export function ShiftCreateBasicSection(props: Props) {
   const descLen = props.description.length;
   const isOther = !CATEGORIES.slice(0, -1).includes(props.category);
@@ -88,7 +82,7 @@ export function ShiftCreateBasicSection(props: Props) {
         sub="Tell workers what this shift is about"
       />
 
-      <div style={TWO_COL_STYLE}>
+      <div className="wm-shiftCreateBasicFields">
         <div className="wm-field">
           <div className="wm-label">
             Company / Business Name <span style={{ color: "var(--wm-error)" }}>*</span>

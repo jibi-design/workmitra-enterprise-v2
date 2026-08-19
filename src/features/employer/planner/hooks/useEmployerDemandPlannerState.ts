@@ -29,6 +29,7 @@ function buildFreshStep1(autoFill: ReturnType<typeof getPlannerEmployerAutofill>
     ...DEFAULT_STEP1_DATA,
     companyName: autoFill.companyName,
     locationName: autoFill.locationCity,
+    locationPincode: autoFill.locationPincode,
     category: autoFill.industryType || DEFAULT_STEP1_DATA.category,
   };
 }
@@ -143,6 +144,7 @@ export function useEmployerDemandPlannerState() {
       name: step1.name.trim(),
       companyName: step1.companyName.trim(),
       locationName: step1.locationName.trim(),
+      locationPincode: step1.locationPincode.trim(),
       category: step1.category,
       experience: step1.experience,
       startDate: step1.startDate,

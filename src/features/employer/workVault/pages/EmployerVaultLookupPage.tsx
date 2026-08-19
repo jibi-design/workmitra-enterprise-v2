@@ -14,6 +14,7 @@ import {
   vaultAccentMix,
   type VaultSectionData,
 } from "../../../shared/workVault/vaultPublic";
+import { JobMitraAppLabel } from "../../../../shared/components/brand/JobMitraAppLabel";
 import { employerSettingsStorage } from "../../company/storage/employerSettings.storage";
 import {
   getWorkspacesSnapshot,
@@ -24,6 +25,7 @@ import { EmployerVaultLookup } from "../components/EmployerVaultLookup";
 import { EmployerVaultProfileView } from "../components/EmployerVaultProfileView";
 import { EmployerFutureVerificationPanel } from "../components/futureVerification/EmployerFutureVerificationPanel";
 import { EmployerTrustRecordsPanel } from "../components/trustRecords/EmployerTrustRecordsPanel";
+import { useVaultWorkReviewsHydrate } from "../../../shared/workVault/useVaultWorkReviewsHydrate";
 
 type TabId = "trust" | "verify";
 
@@ -58,6 +60,7 @@ function IconUnlock() {
 
 export function EmployerVaultLookupPage() {
   const nav = useNavigate();
+  useVaultWorkReviewsHydrate("employer");
 
   const [activeTab, setActiveTab] = useState<TabId>("trust");
   const [foundEntry, setFoundEntry] = useState<IdRegistryEntry | null>(null);
@@ -118,7 +121,7 @@ export function EmployerVaultLookupPage() {
   }
 
   return (
-    <div className="wm-stackGrid">
+    <div className="wm-stackGrid" data-testid="employer-vault-lookup">
       <DomainHero
         variant="settings"
         audience="employer"
@@ -215,7 +218,7 @@ export function EmployerVaultLookupPage() {
                   lineHeight: 1.5,
                 }}
               >
-                Ask the employee to share their 6-digit access code from the Job Mitra app.
+                Ask the employee to share their 6-digit access code from the <JobMitraAppLabel />.
               </div>
             </div>
           )}

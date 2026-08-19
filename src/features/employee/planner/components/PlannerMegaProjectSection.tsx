@@ -2,12 +2,14 @@
 
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
+import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import type { PlannerPublicIndexEntry } from "../../../shared/planner/plannerPublic";
 import { plannerPublicIndex } from "../../../shared/planner/plannerPublic";
 import { employeePlanEngagementStorage } from "../storage/employeePlanEngagement.storage";
 import { employeeProjectDetailPath } from "../../planner/helpers/plannerEmployeeRoutes";
 import { PlannerPickChooseModal } from "./PlannerPickChooseModal";
 import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
+import { useSoftAuth } from "../../../../shared/guest/useSoftAuth";
 import { filterPlannerEntriesNearWorker } from "../helpers/plannerNearby.filter";
 
 type Props = {
@@ -116,6 +118,7 @@ function MegaCard({
 
 export function PlannerMegaProjectSection({ onToast, onNeedProfile, isProfileComplete }: Props) {
   const nav = useNavigate();
+  const { requireAuthForAction } = useSoftAuth();
   const rawEntries = useSyncExternalStore(
     plannerPublicIndex.subscribe,
     getIndexSnapshot,
@@ -165,6 +168,16 @@ export function PlannerMegaProjectSection({ onToast, onNeedProfile, isProfileCom
   }, [entries, recentEntries]);
 
   function openPickChoose(entry: PlannerPublicIndexEntry) {
+    if (
+      !requireAuthForAction({
+        action: "apply_planner",
+        targetId: entry.planId,
+        returnPath: ROUTE_PATHS.employeePlannerBrowse,
+        roleHint: "employee",
+      })
+    ) {
+      return;
+    }
     if (!isProfileComplete) {
       onNeedProfile();
       return;

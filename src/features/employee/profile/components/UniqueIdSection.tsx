@@ -1,6 +1,7 @@
 /** Job Mitra | UniqueIdSection.tsx | Worker identity card on employee profile */
 
 import { ID_BRAND_NAME, ID_FORMAT_HINT } from "../../../../shared/identity/constants/idConstants";
+import { MitraLabsBrandName } from "../../../../shared/components/brand/BrandName";
 
 const TRUST_BLUE = "#4338ca";
 const TRUST_GREEN = "#15803d";
@@ -90,7 +91,7 @@ export function UniqueIdSection({ uniqueId, onCopy }: Props) {
             <div
               style={{ marginTop: 5, fontSize: 12, color: "var(--wm-emp-muted)", lineHeight: 1.55 }}
             >
-              Permanent Mitra Labs identity for employer lookup and team access.
+              Permanent <MitraLabsBrandName size="sm" /> identity for employer lookup and team access.
             </div>
           </div>
         </div>
@@ -179,7 +180,8 @@ export function UniqueIdSection({ uniqueId, onCopy }: Props) {
               />
 
               <div style={{ fontSize: 12, color: "#14532d", lineHeight: 1.55, fontWeight: 750 }}>
-                Share this ID only with employers you want to connect with inside Mitra Labs.
+                Share this ID only with employers you want to connect with inside{" "}
+                <MitraLabsBrandName size="sm" />.
               </div>
             </div>
           </>

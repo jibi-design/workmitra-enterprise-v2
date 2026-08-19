@@ -2,6 +2,7 @@ import type { ServerResponse } from "node:http";
 import type { AuthenticatedRequest } from "../../../middleware/index.js";
 import { sendJson, sendNotFound, envelope, readJsonBody } from "../../../utils/http.js";
 import { employerCareerService } from "./career.service.js";
+import { handleCareerCandidatesRadarRoute } from "./radar.routes.js";
 
 const CAREER_PREFIX = "/v1/jobmitra/employer/career";
 
@@ -29,6 +30,8 @@ export async function handleEmployerCareerRoutes(
 
   const { requestId } = req;
   const subpath = pathname.slice(CAREER_PREFIX.length) || "/";
+
+  if (await handleCareerCandidatesRadarRoute(req, res, url, method)) return true;
 
   // POST /v1/jobmitra/employer/career/jobs
   // Employer creates a new Career job post

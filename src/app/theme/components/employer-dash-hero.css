@@ -1,0 +1,255 @@
+/* Employer dashboard — 3-up hero metrics. Token-backed only. */
+
+.wm-erDashHero {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.wm-erDashHero__cell {
+  min-width: 0;
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid var(--wm-glass-border, rgba(148, 163, 184, 0.28));
+  background: var(--wm-er-card, #fff);
+  box-shadow: var(--wm-er-card-shadow, 0 6px 18px rgba(15, 23, 42, 0.05));
+}
+
+.wm-erDashHero__cell--roles {
+  background: color-mix(in srgb, var(--wm-dashboard-accent, #0f766e) 8%, #fff);
+  border-color: color-mix(in srgb, var(--wm-dashboard-accent, #0f766e) 22%, transparent);
+}
+
+.wm-erDashHero__cell--apps {
+  background: color-mix(in srgb, var(--wm-career-accent, #2563eb) 8%, #fff);
+  border-color: color-mix(in srgb, var(--wm-career-accent, #2563eb) 22%, transparent);
+}
+
+.wm-erDashHero__cell--today {
+  background: color-mix(in srgb, var(--wm-dashboard-accent-strong, #115e59) 8%, #fff);
+  border-color: color-mix(in srgb, var(--wm-dashboard-accent, #0f766e) 22%, transparent);
+}
+
+.wm-erDashHero__top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wm-erDashHero__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  color: var(--wm-dashboard-accent, #0f766e);
+  background: color-mix(in srgb, var(--wm-dashboard-accent, #0f766e) 14%, transparent);
+}
+
+.wm-erDashHero__cell--apps .wm-erDashHero__icon {
+  color: var(--wm-career-accent, #2563eb);
+  background: color-mix(in srgb, var(--wm-career-accent, #2563eb) 14%, transparent);
+}
+
+.wm-erDashHero__badge {
+  display: inline-flex;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  vertical-align: middle;
+  color: var(--wm-dashboard-accent-strong, #115e59);
+  background: color-mix(in srgb, var(--wm-dashboard-accent, #0f766e) 14%, transparent);
+}
+
+.wm-erDashHero__cell--apps .wm-erDashHero__badge {
+  color: var(--wm-career-accent, #2563eb);
+  background: color-mix(in srgb, var(--wm-career-accent, #2563eb) 14%, transparent);
+}
+
+.wm-erDashHero__label {
+  margin-top: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--wm-er-muted, #64748b);
+}
+
+.wm-erDashHero__value {
+  margin-top: 2px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--wm-er-text, #0f172a);
+}
+
+.wm-erDashHero__meta {
+  margin: 2px 0 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--wm-er-muted, #64748b);
+}
+
+.wm-erDashStepper {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0;
+  position: relative;
+}
+
+.wm-erDashStepper::before {
+  content: "";
+  position: absolute;
+  top: 13px;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: color-mix(in srgb, var(--wm-dashboard-accent, #0f766e) 18%, transparent);
+}
+
+.wm-erDashStepper__step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.wm-erDashStepper__btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.wm-erDashStepper__node {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 2px solid color-mix(in srgb, var(--wm-dashboard-accent, #0f766e) 22%, transparent);
+  background: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--wm-er-muted, #64748b);
+}
+
+.wm-erDashStepper__step.isReached .wm-erDashStepper__node {
+  background: color-mix(in srgb, var(--wm-dashboard-accent, #0f766e) 14%, #fff);
+  border-color: var(--wm-dashboard-accent, #0f766e);
+  color: var(--wm-dashboard-accent, #0f766e);
+}
+
+.wm-erDashStepper__step.isCurrent .wm-erDashStepper__node {
+  background: var(--wm-dashboard-accent, #0f766e);
+  border-color: var(--wm-dashboard-accent, #0f766e);
+  color: #fff;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--wm-dashboard-accent, #0f766e) 22%, transparent);
+}
+
+.wm-erDashStepper__name {
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.2;
+  color: var(--wm-er-muted, #64748b);
+}
+
+.wm-erDashStepper__step.isCurrent .wm-erDashStepper__name {
+  color: var(--wm-dashboard-accent-strong, #115e59);
+}
+
+.wm-erDashBento {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+  align-items: stretch;
+}
+
+@media (max-width: 359px) {
+  .wm-erDashBento {
+    grid-template-columns: 1fr;
+  }
+}
+
+.wm-erDashBentoCard {
+  min-width: 0;
+  height: 100%;
+}
+
+.wm-erDashJobs__titleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.wm-erDashJobs__titleRow .wm-erDashJobs__title {
+  flex: 1;
+  min-width: 0;
+}
+
+.wm-erDashJobBadge {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+.wm-erDashJobBadge--active {
+  color: var(--wm-brand-job, #059669);
+  background: color-mix(in srgb, var(--wm-brand-job, #059669) 14%, transparent);
+}
+
+.wm-erDashJobBadge--draft {
+  color: var(--wm-neutral-500, #64748b);
+  background: color-mix(in srgb, var(--wm-neutral-500, #64748b) 16%, transparent);
+}
+
+.wm-erDashJobBadge--paused {
+  color: var(--wm-er-muted, #64748b);
+  background: color-mix(in srgb, var(--wm-er-muted, #64748b) 14%, transparent);
+}
+
+.wm-erDashJobs__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.wm-erDashJobs__count {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--wm-career-accent, #2563eb);
+  background: color-mix(in srgb, var(--wm-career-accent, #2563eb) 12%, transparent);
+}

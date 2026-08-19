@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+import { expect } from "@playwright/test";
 
 /** Local Vite dev server — matches playwright.config.ts baseURL */
 export const E2E_BASE_URL = "http://localhost:5173";
@@ -11,6 +12,8 @@ export async function bootstrapEmployeeSession(page: Page): Promise<void> {
     ({ roleKey, splashKey }) => {
       sessionStorage.setItem(roleKey, "employee");
       sessionStorage.setItem(splashKey, "1");
+      localStorage.setItem("wm_onboarding_complete_v1", "1");
+      localStorage.setItem("wm_employee_onboarding_complete_v1", "1");
     },
     { roleKey: ROLE_KEY, splashKey: SPLASH_KEY },
   );
@@ -43,3 +46,10 @@ export async function gotoHash(page: Page, hashPath: string): Promise<void> {
 
 /** Mitra green active fill on selected availability day circles */
 export const SHIFT_ACTIVE_GREEN_RGB = "rgb(22, 163, 74)";
+
+/** Career apply form — PhoneNumberField (replaces legacy placeholder). */
+export async function fillCareerApplyPhone(page: Page, national = "9876543210"): Promise<void> {
+  const phoneInput = page.getByTestId("career-apply-phone").locator('input[type="tel"]');
+  await expect(phoneInput).toBeVisible({ timeout: 15_000 });
+  await phoneInput.fill(national);
+}

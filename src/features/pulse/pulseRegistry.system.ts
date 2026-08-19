@@ -8,14 +8,14 @@ import type { PulseConfig } from "./pulseRegistryTypes";
 export const PULSE_REGISTRY_SYSTEM = {
   [PulseEvent.PROFILE_UPDATE_NEEDED]: {
     ...PULSE_VISUAL_TOKENS.WARNING,
-    duration: "2s",
+    domain: "system",
     resolutionType: "ROUTE",
     targetPath: ROUTE_PATHS.employeeProfile,
   },
 
   [PulseEvent.REVIEW_RECEIVED]: {
     ...PULSE_VISUAL_TOKENS.WARNING,
-    duration: "2s",
+    domain: "system",
     resolutionType: "ROUTE",
     targetPath: ROUTE_PATHS.employeeReviewCenter,
   },

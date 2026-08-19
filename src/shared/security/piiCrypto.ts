@@ -32,6 +32,9 @@ function b64ToBytes(b64: string): Uint8Array {
 
 function openIdb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => {
+      reject(new Error("idb_open_timeout"));
+    }, 2_000);
     const req = indexedDB.open(IDB_NAME, 1);
     req.onupgradeneeded = () => {
       const db = req.result;
@@ -39,8 +42,18 @@ function openIdb(): Promise<IDBDatabase> {
         db.createObjectStore(IDB_STORE);
       }
     };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error ?? new Error("idb open failed"));
+    req.onsuccess = () => {
+      window.clearTimeout(timer);
+      resolve(req.result);
+    };
+    req.onblocked = () => {
+      window.clearTimeout(timer);
+      reject(new Error("idb_open_blocked"));
+    };
+    req.onerror = () => {
+      window.clearTimeout(timer);
+      reject(req.error ?? new Error("idb open failed"));
+    };
   });
 }
 
@@ -119,9 +132,13 @@ export async function ensurePiiCryptoReady(): Promise<void> {
     if (!raw) {
       raw = crypto.getRandomValues(new Uint8Array(32));
     }
-    await idbPutKey(raw);
     cachedRawKey = raw;
     cachedCryptoKey = await importAesKey(raw);
+    try {
+      await idbPutKey(raw);
+    } catch {
+      /* Memory key is enough for login to render if IndexedDB is blocked. */
+    }
   })();
 
   try {

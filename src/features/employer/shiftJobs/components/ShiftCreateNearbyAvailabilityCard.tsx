@@ -4,10 +4,12 @@
 import { useRef, useSyncExternalStore } from "react";
 import { availabilityStorage } from "../../../shared/shift/availability.reader";
 import { toDateStr } from "../helpers/shiftCreateHelpers";
+import { useServerWorkersRadarCount } from "../hooks/useServerWorkersRadarCount";
 import { AvailabilitySyncDebugChip } from "./AvailabilitySyncDebugChip";
 
 type Props = {
   startAt: number;
+  locationPincode: string;
 };
 
 const ALL_KEY = "wm_all_availability_broadcasts_v1";
@@ -23,26 +25,32 @@ function RadarIcon() {
   );
 }
 
-export function ShiftCreateNearbyAvailabilityCard({ startAt }: Props) {
+export function ShiftCreateNearbyAvailabilityCard({ startAt, locationPincode }: Props) {
   const cacheRef = useRef<{ key: string; count: number }>({ key: "", count: 0 });
+  const iso = toDateStr(startAt);
 
-  const count = useSyncExternalStore(
+  const localCount = useSyncExternalStore(
     availabilityStorage.subscribe,
     () => {
-      const iso = toDateStr(startAt);
       const availRaw = localStorage.getItem(ALL_KEY) ?? "";
-      const key = `${iso}|${availRaw}`;
+      const key = `${iso}|${locationPincode}|${availRaw}`;
       if (cacheRef.current.key === key) return cacheRef.current.count;
-      const next = availabilityStorage.countWorkersFreeOnIsoDate(iso);
+      const next = availabilityStorage.countWorkersFreeOnIsoDateNear(iso, locationPincode);
       cacheRef.current = { key, count: next };
       return next;
     },
     () => 0,
   );
 
+  const server = useServerWorkersRadarCount({
+    locationPincode,
+    isoDate: iso,
+    refreshKey: `${iso}|${locationPincode}|${localCount}`,
+  });
+  const count = server.usingServer ? server.count : localCount;
+
   const hasMatches = count > 0;
   const workerLabel = count === 1 ? "available worker" : "available workers";
-  const iso = toDateStr(startAt);
 
   return (
     <div
@@ -81,7 +89,13 @@ export function ShiftCreateNearbyAvailabilityCard({ startAt }: Props) {
 
       <AvailabilitySyncDebugChip
         label="Create Nearby card"
-        lines={[`iso=${iso}`, `count=${count}`, `subscribes=${availabilityStorage.CHANGED_EVENT}`]}
+        lines={[
+          `iso=${iso}`,
+          `pincode=${locationPincode || "none"}`,
+          `count=${count}`,
+          `source=${server.usingServer ? "server" : "local"}`,
+          `subscribes=${availabilityStorage.CHANGED_EVENT}`,
+        ]}
       />
     </div>
   );

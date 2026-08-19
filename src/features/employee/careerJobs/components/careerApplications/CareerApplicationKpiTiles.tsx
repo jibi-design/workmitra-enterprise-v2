@@ -78,10 +78,9 @@ const KPI_DEFS: { label: string; field: keyof KpiCounts; helper: string; icon: R
 export function KpiTiles({ kpi }: { kpi: KpiCounts }) {
   return (
     <section
+      className="wm-stable-row"
       style={{
         marginTop: "var(--wm-stack-gap)",
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr 1fr",
         gap: "var(--wm-space-10)",
       }}
     >

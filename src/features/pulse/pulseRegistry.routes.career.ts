@@ -11,7 +11,7 @@ export const PULSE_EVENT_ROUTES_CAREER: Partial<
     eventId: PulseEvent.APPLICATION_RECEIVED,
     affectedUserRole: "employer",
     domain: "career",
-    severity: "urgent",
+    severity: "info",
     chain: ["home-career-card", "career-dashboard-applications"],
   },
 
@@ -19,7 +19,7 @@ export const PULSE_EVENT_ROUTES_CAREER: Partial<
     eventId: PulseEvent.APPLICATION_RECEIVED,
     affectedUserRole: "employer",
     domain: "career",
-    severity: "urgent",
+    severity: "info",
     chain: ["home-career-card", "career-dashboard-applications"],
   },
 
@@ -27,7 +27,7 @@ export const PULSE_EVENT_ROUTES_CAREER: Partial<
     eventId: PulseEvent.SHORTLISTED,
     affectedUserRole: "employee",
     domain: "career",
-    severity: "urgent",
+    severity: "warning",
     chain: [
       "employee-home-career-card",
       "career-dashboard-applications",
@@ -40,7 +40,7 @@ export const PULSE_EVENT_ROUTES_CAREER: Partial<
     eventId: PulseEvent.INTERVIEW_SCHEDULED,
     affectedUserRole: "employee",
     domain: "career",
-    severity: "urgent",
+    severity: "warning",
     chain: [
       "employee-home-career-card",
       "career-dashboard-applications",
@@ -53,7 +53,7 @@ export const PULSE_EVENT_ROUTES_CAREER: Partial<
     eventId: PulseEvent.INTERVIEW_SCHEDULED,
     affectedUserRole: "employee",
     domain: "career",
-    severity: "urgent",
+    severity: "warning",
     chain: [
       "employee-home-career-card",
       "career-dashboard-applications",
@@ -66,7 +66,7 @@ export const PULSE_EVENT_ROUTES_CAREER: Partial<
     eventId: PulseEvent.OFFER_RECEIVED,
     affectedUserRole: "employee",
     domain: "career",
-    severity: "urgent",
+    severity: "warning",
     chain: [
       "employee-home-career-card",
       "career-dashboard-applications",
@@ -79,7 +79,7 @@ export const PULSE_EVENT_ROUTES_CAREER: Partial<
     eventId: PulseEvent.OFFER_RECEIVED,
     affectedUserRole: "employee",
     domain: "career",
-    severity: "urgent",
+    severity: "warning",
     chain: [
       "employee-home-career-card",
       "career-dashboard-applications",

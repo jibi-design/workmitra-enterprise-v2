@@ -26,6 +26,7 @@ const EMPLOYEE_EXACT: readonly string[] = [
   "wm_primary_current_employment_id_v1",
   "wm_work_diary_v1",
   "wm_work_diary_settings_v1",
+  "wm_personal_work_diary_v1",
   /** Wave 3 dashboard utilities (never diary). */
   "wm_shift_availability_daily_v1",
   "wm_employee_rest_ritual_v1",
@@ -82,6 +83,24 @@ function collectPrefixMatches(prefixes: readonly string[]): string[] {
 }
 
 /**
+ * Shared names that both roles write. Always wipe on switch so leftover
+ * workspaces, ticker dismiss, and confirm locks cannot bleed across profiles.
+ */
+const SHARED_CROSS_ROLE: readonly string[] = [
+  "wm_employee_shift_workspaces_v1",
+  "wm_employee_shift_applications_v1",
+  "wm_home_status_strip_dismissed_v1",
+  "wm_home_ticker_all_clear_dismiss_v1",
+  "wm_shift_confirm_lock_v1",
+];
+
+const SHARED_CROSS_ROLE_PREFIXES: readonly string[] = [
+  "wm_home_status_strip_dismissed_v1",
+  "wm_home_ticker_all_clear_dismiss_v1",
+  "wm_pulse_chain_state_v1",
+];
+
+/**
  * Purge local state belonging to the workspace we are leaving.
  * Call after successful switch-context, before navigating to the new home.
  */
@@ -97,7 +116,12 @@ export function purgeOppositeWorkspaceLocalState(nextMode: ActiveMode): void {
     clearShiftRetryDeadLetter();
   }
 
-  const keys = new Set<string>([...exact, ...collectPrefixMatches(prefixes)]);
+  const keys = new Set<string>([
+    ...exact,
+    ...SHARED_CROSS_ROLE,
+    ...collectPrefixMatches(prefixes),
+    ...collectPrefixMatches(SHARED_CROSS_ROLE_PREFIXES),
+  ]);
   for (const key of keys) {
     // Phase 4 — never purge guest local-first artifacts during role switch.
     if (key.startsWith("wm_guest_")) continue;
@@ -107,6 +131,12 @@ export function purgeOppositeWorkspaceLocalState(nextMode: ActiveMode): void {
   try {
     sessionStorage.removeItem(SHIFT_AUTH_TENANT_BIND_KEY);
     sessionStorage.removeItem("wm_shift_confirm_tab_id_v1");
+    for (const prefix of SHARED_CROSS_ROLE_PREFIXES) {
+      for (let i = sessionStorage.length - 1; i >= 0; i--) {
+        const key = sessionStorage.key(i);
+        if (key && key.startsWith(prefix)) sessionStorage.removeItem(key);
+      }
+    }
   } catch {
     /* ignore */
   }

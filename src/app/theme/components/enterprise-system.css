@@ -202,7 +202,7 @@
 }
 
 .wm-ent-skeleton__card {
-  padding: 16px;
+  padding: var(--wm-dna-card-padding, var(--wm-card-padding, 14px));
   border-radius: 16px;
   border: 1px solid var(--wm-neutral-200);
   background: #fff;
@@ -398,10 +398,36 @@
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
 }
 
+.wm-ent-tab-row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.wm-ent-tab-row::-webkit-scrollbar {
+  display: none;
+}
+
+.wm-ent-tab-row > *,
+.wm-ent-tab-row .wm-ent-tab-cell {
+  flex: 0 0 auto;
+  display: flex !important;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+  width: auto !important;
+}
+
 .wm-ent-tab-btn {
   width: 100%;
-  min-height: 44px;
-  padding: 7px 6px;
+  min-width: 4.75rem;
+  min-height: 52px;
+  padding: 6px 10px;
   border-radius: 14px;
   border: 1px solid transparent;
   background: transparent;
@@ -409,6 +435,13 @@
   color: var(--wm-er-muted, #64748b);
   font-size: 11px;
   font-weight: 750;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  text-align: center;
+  white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   transition:
@@ -416,6 +449,24 @@
     border-color var(--wm-motion-fast, 120ms) var(--wm-motion-spring, cubic-bezier(0.16, 1, 0.3, 1)),
     color var(--wm-motion-fast, 120ms) var(--wm-motion-spring, cubic-bezier(0.16, 1, 0.3, 1)),
     transform var(--wm-motion-fast, 120ms) var(--wm-motion-spring, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+.wm-ent-tab-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+}
+
+.wm-ent-tab-label {
+  display: block;
+  width: 100%;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .wm-ent-tab-btn.is-active {
@@ -430,13 +481,16 @@
 }
 
 .wm-ent-tab-count {
-  margin-top: 4px;
-  display: inline-flex;
+  margin: 0 auto;
+  display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 20px;
+  box-sizing: border-box;
+  min-width: 18px;
   height: 18px;
-  padding: 0 6px;
+  padding: 0 5px;
+  line-height: 1;
+  text-align: center;
   border-radius: 999px;
   background: rgba(226, 232, 240, 0.95);
   color: var(--wm-er-muted, #64748b);
@@ -450,6 +504,10 @@
 .wm-ent-tab-btn.is-active .wm-ent-tab-count {
   background: var(--wm-er-accent-shift, #16a34a);
   color: #fff;
+}
+
+.wm-ent-tab-count[data-empty="true"] {
+  visibility: hidden;
 }
 
 @media (prefers-reduced-motion: reduce) {

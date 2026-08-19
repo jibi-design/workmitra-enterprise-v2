@@ -112,7 +112,7 @@ export function EmployeeNotificationsPage() {
   const isEmpty = filtered.length === 0;
 
   return (
-    <div>
+    <div className="pb-safe-nav">
       <div className="wm-notifPageHeader">
         <div>
           <div className="wm-notifPageHeader__title">
@@ -171,7 +171,13 @@ export function EmployeeNotificationsPage() {
         domainStyles={EMPLOYEE_DOMAINS}
       />
 
-      {isEmpty && <NotificationEmptyState />}
+      {isEmpty && unread > 0 ? (
+        <NotificationEmptyState
+          title="Unread items are in another filter"
+          text="Switch tabs to see action-required notifications. This filter is empty."
+        />
+      ) : null}
+      {isEmpty && unread === 0 && <NotificationEmptyState />}
 
       {!isEmpty &&
         groups.map((group) => (

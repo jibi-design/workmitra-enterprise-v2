@@ -8,6 +8,7 @@ export type ShiftCreateAutoFill = {
   companyName: string;
   industryType: string;
   locationCity: string;
+  locationPincode: string;
 };
 
 export type ShiftCreateFormSnapshot = {
@@ -22,6 +23,7 @@ export type ShiftCreateFormSnapshot = {
   payBasis: EmployerShiftCreateDraftForm["payBasis"];
   shiftTiming: string;
   locationName: string;
+  locationPincode: string;
   locationAddress: string;
   mapsLink: string;
   startAt: number;
@@ -44,10 +46,12 @@ export function hasDraftContent(
 ): boolean {
   const companyChanged = form.companyName.trim() !== autoFill.companyName.trim();
   const locationChanged = form.locationName.trim() !== autoFill.locationCity.trim();
+  const pincodeChanged = form.locationPincode.trim() !== autoFill.locationPincode.trim();
 
   return (
     companyChanged ||
     locationChanged ||
+    pincodeChanged ||
     form.jobName.trim().length > 0 ||
     form.category.trim() !== autoFill.industryType.trim() ||
     form.description.trim().length > 0 ||
@@ -74,4 +78,9 @@ export function snapshotFromDraft(draft: EmployerShiftPostDraft): ShiftCreateFor
     whatWeProvide: [...draft.form.whatWeProvide],
     quickQuestions: [...draft.form.quickQuestions] as QuickQuestion[],
   };
+}
+
+/** Stable compare key for dirty-guard vs last saved/loaded draft. */
+export function fingerprintShiftCreateSnapshot(snapshot: ShiftCreateFormSnapshot): string {
+  return JSON.stringify(snapshot);
 }

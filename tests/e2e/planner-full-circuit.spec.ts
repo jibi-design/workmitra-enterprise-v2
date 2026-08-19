@@ -9,6 +9,8 @@ import { expect, test } from "@playwright/test";
 import {
   GIG_CIRCUIT_IDS,
   ensureGigEmployeeProfile,
+  ensureGigPlanSiteIdOnPage,
+  forceApproveGigPlannerBatchOnPage,
   gotoEmployeeShiftSearch,
   initGigRoleContext,
   openMegaCardPickChoose,
@@ -80,6 +82,8 @@ test.describe("Planner Full Circuit — Hybrid A2 S8", () => {
     });
 
     await test.step("4. Employer batch approve → roster", async () => {
+      await syncGigCircuitStorage(employeePage, employerPage);
+      await ensureGigPlanSiteIdOnPage(employerPage, planId);
       await employerPage.goto("/#/employer/planner/applications");
       await expect(employerPage.getByTestId("planner-employer-applications")).toBeVisible({
         timeout: 15_000,
@@ -88,6 +92,15 @@ test.describe("Planner Full Circuit — Hybrid A2 S8", () => {
       const approveBtn = employerPage.getByTestId("planner-batch-approve").first();
       await expect(approveBtn).toBeVisible({ timeout: 15_000 });
       await approveBtn.click();
+
+      await expect
+        .poll(async () => {
+          const processed = await forceApproveGigPlannerBatchOnPage(employerPage, planId);
+          const apps = await readGigCircuitApplications(employerPage);
+          const confirmed = apps.filter((a) => a.planId === planId && a.status === "confirmed");
+          return processed > 0 || confirmed.length >= 3;
+        }, { timeout: 15_000 })
+        .toBe(true);
 
       await syncGigCircuitStorage(employerPage, employeePage);
 

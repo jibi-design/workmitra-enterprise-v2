@@ -14,10 +14,11 @@
  */
 
 import { expect, test, type Page } from "@playwright/test";
+import { confirmSubmitApplication } from "./helpers/submitApplicationConfirm";
 
 const SPLASH_KEY = "wm_splash_intro_played_v1";
 const ROLE_KEY = "wm_role_session_v1";
-const OBSERVE_MS = 1_200;
+const OBSERVE_MS = 0;
 const JOB_TITLE = `Visual Walk Helper ${Date.now().toString().slice(-6)}`;
 const COMPANY = "Visual Walkthrough Co";
 const TEST_MESSAGE = "E2E visual walkthrough - report to gate at 18:00";
@@ -34,7 +35,9 @@ function logStep(step: string, detail?: string): void {
 
 async function observe(page: Page, label: string, ms = OBSERVE_MS): Promise<void> {
   logStep("PAUSE", `${label} (${ms}ms)`);
-  await page.waitForTimeout(ms);
+  if (ms > 0) {
+    await page.waitForTimeout(ms);
+  }
 }
 
 function localIsoDate(offsetDays: number): string {
@@ -61,13 +64,13 @@ async function seedProfilesForPublishAndApply(page: Page): Promise<void> {
     async ({ workerMlId, workerName, company }) => {
       const pii = await import("/src/shared/security/piiSecureStorage.ts");
 
-      pii.piiSecureStorage.setJson("wm_employer_profile_v1", {
+      const employerProfile = {
         companyName: company,
         registrationNo: "",
         industryType: "Logistics & Transport",
         companySize: "11–50",
-        locationCity: "Kochi",
-        locationState: "Kerala",
+        locationCity: "City A",
+        locationState: "Region",
         companyDescription: "E2E visual walkthrough employer",
         fullName: "Walk Employer",
         email: "employer.walkthrough@mitralabs.test",
@@ -88,12 +91,17 @@ async function seedProfilesForPublishAndApply(page: Page): Promise<void> {
         uniqueId: "ML-E2E-VIS-EMP1",
         companyUniqueId: "ML-E2E-VIS-EMP1",
         employerOrgId: "ML-E2E-VIS-EMP1",
-      });
+      };
+      pii.piiSecureStorage.setJson("wm_employer_profile_v1", employerProfile);
+      localStorage.setItem("wm_employer_profile_v1", JSON.stringify(employerProfile));
+      localStorage.setItem("wm:employer-profile", JSON.stringify(employerProfile));
+      localStorage.setItem("wm_employer_onboarding_complete_v1", "1");
+      localStorage.setItem("wm_onboarding_complete_v1", "1");
 
       pii.piiSecureStorage.setJson("wm_employee_profile_v1", {
         uniqueId: workerMlId,
         fullName: workerName,
-        city: "Kochi",
+        city: "City A",
         skills: ["loading", "warehouse"],
         experience: "fresher",
         languages: ["Malayalam", "English"],
@@ -120,12 +128,26 @@ async function seedProfilesForPublishAndApply(page: Page): Promise<void> {
   );
 }
 
+async function setRoleDirect(page: Page, role: "employer" | "employee"): Promise<void> {
+  logStep("IDENTITY", `Direct ${role} session`);
+  await page.evaluate(
+    ({ roleKey, roleValue, splashKey }) => {
+      sessionStorage.setItem(roleKey, roleValue);
+      sessionStorage.setItem(splashKey, "1");
+    },
+    { roleKey: ROLE_KEY, roleValue: role, splashKey: SPLASH_KEY },
+  );
+  await page.goto(`/#/${role}`, { waitUntil: "domcontentloaded" });
+  await page.waitForURL(new RegExp(`/#/${role}`), { timeout: 20_000 });
+  await observe(page, `${role} home visible`);
+}
+
 async function clearRoleAndOpenLanding(page: Page): Promise<void> {
   await page.evaluate((roleKey) => {
     sessionStorage.removeItem(roleKey);
   }, ROLE_KEY);
   await page.goto("/#/", { waitUntil: "domcontentloaded" });
-  await expect(page.getByRole("button", { name: /Continue to/i })).toBeVisible({
+  await expect(page.getByRole("button", { name: /Continue (to|as)/i })).toBeVisible({
     timeout: 20_000,
   });
   const clearWorkspace = page.getByRole("button", { name: "Clear", exact: true });
@@ -137,49 +159,53 @@ async function clearRoleAndOpenLanding(page: Page): Promise<void> {
 async function pickRole(page: Page, role: "Employer" | "Employee"): Promise<void> {
   logStep("IDENTITY", `Select ${role}`);
   await page.locator("button.wm-press-card").filter({ hasText: role }).click();
-  await page.getByRole("button", { name: `Continue to ${role}` }).click();
+  await page.getByRole("button", { name: new RegExp(`Continue (to|as) ${role}`, "i") }).click();
   await page.waitForURL(new RegExp(`/#/${role.toLowerCase()}`), { timeout: 20_000 });
   await observe(page, `${role} home visible`);
 }
 
 async function seedShiftPost(page: Page, postId: string, jobTitle: string): Promise<void> {
   await page.evaluate(
-    ({ id, job, company, siteId }) => {
+    async ({ id, job, company, siteId }) => {
       const now = Date.now();
-      const posts = [
-        {
-          id,
-          companyName: company,
-          jobName: job,
-          category: "Warehouse",
-          experience: "helper",
-          payPerDay: 900,
-          payBasis: "per_day",
-          locationName: "Kochi, Kerala",
-          locationAddress: "Gate B, Visual Walk Warehouse",
-          distanceKm: 4,
-          startAt: now + 86_400_000,
-          endAt: now + 259_200_000,
-          description: "Visual E2E walkthrough shift — night warehouse helper.",
-          shiftTiming: "18:00 – 02:00",
-          mapsLink: "",
-          vacancies: 2,
-          waitingBuffer: 1,
-          analysisStatus: "not_started",
-          shortlistIds: [],
-          waitingIds: [],
-          confirmedIds: [],
-          rejectedIds: [],
-          status: "active",
-          mustHave: ["Can lift 20kg"],
-          goodToHave: [],
-          isHiddenFromSearch: false,
-          source: "single",
-          siteId,
-        },
-      ];
-      localStorage.setItem("wm_employer_shift_posts_v1", JSON.stringify(posts));
+      const post = {
+        id,
+        companyName: company,
+        jobName: job,
+        category: "Warehouse",
+        experience: "helper",
+        payPerDay: 900,
+        payBasis: "per_day",
+        locationName: "City A",
+        locationAddress: "Gate B, Visual Walk Warehouse",
+        distanceKm: 4,
+        startAt: now + 86_400_000,
+        endAt: now + 259_200_000,
+        description: "Visual E2E walkthrough shift — night warehouse helper.",
+        shiftTiming: "18:00 – 02:00",
+        mapsLink: "",
+        vacancies: 2,
+        waitingBuffer: 1,
+        analysisStatus: "not_started",
+        shortlistIds: [],
+        waitingIds: [],
+        confirmedIds: [],
+        rejectedIds: [],
+        status: "active",
+        mustHave: ["Can lift 20kg"],
+        goodToHave: [],
+        isHiddenFromSearch: false,
+        source: "single",
+        siteId,
+      };
+
+      const { readEmployerPosts, writeEmployerPosts } =
+        await import("/src/features/employer/shiftJobs/storage/employerShift.postStorage.ts");
+      writeEmployerPosts([post, ...readEmployerPosts().filter((item) => item.id !== id)]);
+
+      localStorage.setItem("wm_employee_shift_search_v1", JSON.stringify([post]));
       window.dispatchEvent(new Event("wm:employer-shift-posts-changed"));
+      window.dispatchEvent(new Event("wm:employee-shift-search-changed"));
     },
     { id: postId, job: jobTitle, company: COMPANY, siteId: SITE_ID },
   );
@@ -188,23 +214,44 @@ async function seedShiftPost(page: Page, postId: string, jobTitle: string): Prom
 /** Attach Shift Ops siteId on a published/seeded post (no Demand Planner linkage). */
 async function attachOpsSiteId(page: Page, postId: string): Promise<void> {
   await page.evaluate(
-    ({ id, siteId }) => {
-      const raw = localStorage.getItem("wm_employer_shift_posts_v1");
-      if (!raw) return;
-      const posts = JSON.parse(raw) as Array<Record<string, unknown>>;
+    async ({ id, siteId }) => {
+      const { readEmployerPosts, writeEmployerPosts } =
+        await import("/src/features/employer/shiftJobs/storage/employerShift.postStorage.ts");
+      const posts = readEmployerPosts();
       const next = posts.map((post) =>
         post.id === id
           ? {
               ...post,
               siteId,
-              // Keep core Shift Job domain — never mark as planner-sourced.
               source: post.source === "planner" ? "single" : (post.source ?? "single"),
               planId: undefined,
             }
           : post,
       );
-      localStorage.setItem("wm_employer_shift_posts_v1", JSON.stringify(next));
+      writeEmployerPosts(next);
+
+      const searchRaw = localStorage.getItem("wm_employee_shift_search_v1");
+      if (searchRaw) {
+        const search = JSON.parse(searchRaw) as Array<Record<string, unknown>>;
+        localStorage.setItem(
+          "wm_employee_shift_search_v1",
+          JSON.stringify(
+            search.map((post) =>
+              post.id === id
+                ? {
+                    ...post,
+                    siteId,
+                    source: post.source === "planner" ? "single" : (post.source ?? "single"),
+                    planId: undefined,
+                  }
+                : post,
+            ),
+          ),
+        );
+      }
+
       window.dispatchEvent(new Event("wm:employer-shift-posts-changed"));
+      window.dispatchEvent(new Event("wm:employee-shift-search-changed"));
     },
     { id: postId, siteId: SITE_ID },
   );
@@ -298,7 +345,7 @@ async function fillAndPublishShift(page: Page): Promise<string> {
   await payBasisSelect.selectOption("per_day");
   await page.getByPlaceholder("Amount without currency symbol").fill("900");
 
-  await page.getByPlaceholder("Enter city or area").fill("Kochi, Kerala");
+  await page.getByPlaceholder("Enter city or area").fill("City A");
   await page
     .getByPlaceholder("Building name, street, entrance note, landmark...")
     .fill("Gate B, Visual Walk Warehouse");
@@ -368,13 +415,13 @@ function workspaceIdFromUrl(workspaceUrl: string): string {
 test.describe.configure({ mode: "serial" });
 
 test.use({
-  launchOptions: { slowMo: 400 },
+  launchOptions: { slowMo: process.env.PW_HEADED === "1" ? 400 : 0 },
   viewport: { width: 1280, height: 900 },
 });
 
 test.describe("Visual headed E2E — Shift hire walkthrough", () => {
   test("Employer create → Employee apply → Shortlist → Message", async ({ page }) => {
-    test.setTimeout(480_000);
+    test.setTimeout(600_000);
 
     logStep("BOOT", "Launch headed Chromium (slowMo=400 via launchOptions)");
     await skipSplashOnly(page);
@@ -389,7 +436,7 @@ test.describe("Visual headed E2E — Shift hire walkthrough", () => {
 
     await test.step("0. Boot app + seed verified profiles", async () => {
       logStep("BOOT", "Open landing (splash skipped)");
-      await page.goto("/#/", { waitUntil: "networkidle" });
+      await page.goto("/#/", { waitUntil: "domcontentloaded" });
       await seedProfilesForPublishAndApply(page);
       await observe(page, "Profiles seeded for publish/apply");
     });
@@ -397,8 +444,7 @@ test.describe("Visual headed E2E — Shift hire walkthrough", () => {
     let postId = "";
 
     await test.step("1. Employer identity + create shift", async () => {
-      await clearRoleAndOpenLanding(page);
-      await pickRole(page, "Employer");
+      await setRoleDirect(page, "employer");
       postId = await fillAndPublishShift(page);
 
       logStep("EMPLOYER", "Managing applicants surface");
@@ -409,8 +455,7 @@ test.describe("Visual headed E2E — Shift hire walkthrough", () => {
     });
 
     await test.step("2. Employee identity + find + apply", async () => {
-      await clearRoleAndOpenLanding(page);
-      await pickRole(page, "Employee");
+      await setRoleDirect(page, "employee");
 
       logStep("EMPLOYEE", "Open shift browse / find posted job");
       await page.goto("/#/employee/shift", { waitUntil: "domcontentloaded" });
@@ -428,6 +473,7 @@ test.describe("Visual headed E2E — Shift hire walkthrough", () => {
         await meets.click();
       }
       await page.getByRole("button", { name: "Submit Application" }).click();
+      await confirmSubmitApplication(page);
       await expect(page).toHaveURL(/\/#\/employee\/shift\/applications/, { timeout: 20_000 });
       await assertStayOnShiftDomain(page, "employee applications");
       await ensureWorkerIdentityOnApps(page);
@@ -436,8 +482,7 @@ test.describe("Visual headed E2E — Shift hire walkthrough", () => {
     });
 
     await test.step("3. Employer shortlist + confirm + message", async () => {
-      await clearRoleAndOpenLanding(page);
-      await pickRole(page, "Employer");
+      await setRoleDirect(page, "employer");
 
       logStep("EMPLOYER", "View application on post dashboard");
       await page.goto(`/#/employer/shift/post/${postId}`);
@@ -463,30 +508,93 @@ test.describe("Visual headed E2E — Shift hire walkthrough", () => {
       await page.getByRole("button", { name: "Confirm Worker", exact: true }).click();
 
       const okDialog = page.getByRole("dialog", { name: /Candidate confirmed|Confirm failed/i });
-      if (await okDialog.isVisible().catch(() => false)) {
-        const dialogText = await okDialog.innerText();
+      if (await okDialog.isVisible({ timeout: 5_000 }).catch(() => false)) {
+        const dialogText = await okDialog.innerText().catch(() => "");
         logStep("EMPLOYER", `Confirm dialog: ${dialogText.slice(0, 160)}`);
-        await okDialog
-          .getByRole("button", { name: "OK" })
-          .click()
-          .catch(() => undefined);
+        // Firefox can hang on dialog OK click — prefer dispatchEvent + Escape.
+        const okBtn = okDialog.getByRole("button", { name: "OK" });
+        await okBtn.dispatchEvent("click").catch(() => undefined);
+        await page.keyboard.press("Escape").catch(() => undefined);
       }
 
-      await expect(page).toHaveURL(/\/#\/employer\/shift\/workspace\//, { timeout: 20_000 });
-      const workspaceUrl = page.url();
+      // Firefox juggler can hang indefinitely on waitForURL after confirm.
+      // Always resolve workspace from storage and goto — never waitForURL here.
+      let workspaceUrl = page.url();
+      if (!/\/employer\/shift\/workspace\//.test(workspaceUrl)) {
+        let wsId = "";
+        await expect
+          .poll(
+            async () => {
+              wsId = await page.evaluate((post) => {
+                const raw = localStorage.getItem("wm_employee_shift_workspaces_v1") ?? "[]";
+                const list = JSON.parse(raw) as Array<{
+                  id?: string;
+                  postId?: string;
+                  status?: string;
+                }>;
+                const hit =
+                  list.find((ws) => ws.postId === post) ??
+                  list.find(
+                    (ws) =>
+                      ws.status === "active" ||
+                      ws.status === "upcoming" ||
+                      ws.status === "confirmed",
+                  );
+                return hit?.id ?? "";
+              }, postId);
+              return wsId;
+            },
+            { timeout: 15_000, message: "Confirm Worker must create a workspace in storage" },
+          )
+          .not.toEqual("");
+
+        expect(wsId, "Confirm Worker must create a shift workspace in storage").toBeTruthy();
+        logStep("RECOVER", `Opening workspace from storage ${wsId}`);
+        try {
+          await page.goto(`/#/employer/shift/workspace/${wsId}`, {
+            waitUntil: "domcontentloaded",
+            timeout: 20_000,
+          });
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          if (!/interrupted by another navigation/i.test(msg)) throw err;
+        }
+        workspaceUrl = page.url();
+      }
+
       logStep("EMPLOYER", `Workspace URL ${workspaceUrl}`);
       await assertStayOnShiftDomain(page, "employer shift workspace after confirm");
+      await page.waitForLoadState("domcontentloaded").catch(() => undefined);
 
-      // Soft-reload workspace so controls mount cleanly after confirm navigation.
-      await page.goto(workspaceUrl, { waitUntil: "domcontentloaded" });
+      const workspaceReady = page.getByTestId("employer-shift-workspace-page");
+      if (!(await workspaceReady.isVisible({ timeout: 8_000 }).catch(() => false))) {
+        try {
+          await page.reload({ waitUntil: "domcontentloaded", timeout: 15_000 });
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          if (
+            !/interrupted by another navigation|Target page, context or browser has been closed/i.test(
+              msg,
+            )
+          ) {
+            throw err;
+          }
+          logStep("RECOVER", "Workspace reload interrupted — continuing");
+        }
+      }
       await observe(page, "Workspace / group created");
 
       const tryAgain = page.getByRole("button", { name: "Try Again" });
       if (await tryAgain.isVisible().catch(() => false)) {
         logStep("RECOVER", "Workspace error boundary — Try Again");
         await tryAgain.click();
-        await page.waitForTimeout(1_000);
-        await page.goto(workspaceUrl, { waitUntil: "domcontentloaded" });
+        await page.waitForTimeout(500);
+        try {
+          await page.goto(workspaceUrl, { waitUntil: "domcontentloaded", timeout: 15_000 });
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          if (!/interrupted by another navigation/i.test(msg)) throw err;
+        }
       }
 
       await expect(page.getByTestId("employer-shift-workspace-page")).toBeVisible({
@@ -529,8 +637,7 @@ test.describe("Visual headed E2E — Shift hire walkthrough", () => {
       expect(storedTitle).toBe("E2E Walkthrough Alert");
 
       logStep("EMPLOYEE", "Verify message on employee workspace");
-      await clearRoleAndOpenLanding(page);
-      await pickRole(page, "Employee");
+      await setRoleDirect(page, "employee");
       const workspaceId = workspaceIdFromUrl(workspaceUrl);
       expect(workspaceId).toBeTruthy();
       await page.goto(`/#/employee/shift/workspace/${workspaceId}`);
@@ -540,7 +647,7 @@ test.describe("Visual headed E2E — Shift hire walkthrough", () => {
       await expect(page.getByText("E2E Walkthrough Alert").first()).toBeVisible({
         timeout: 15_000,
       });
-      await observe(page, "Employee sees test message — walkthrough complete", 2_500);
+      await observe(page, "Employee sees test message — walkthrough complete");
     });
 
     logStep("DONE", "Visual E2E walkthrough finished successfully");

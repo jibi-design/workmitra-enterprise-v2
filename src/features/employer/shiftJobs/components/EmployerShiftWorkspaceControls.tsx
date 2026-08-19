@@ -10,6 +10,7 @@ import { employerSettingsStorage } from "../../company/storage/employerSettings.
 import { statusLabel } from "../types/shiftWorkspaceTypes";
 import type { ShiftWorkspace } from "../types/shiftWorkspaceTypes";
 import { RatingBanner } from "./ShiftWorkspaceComponents";
+import { EmployerShiftWorkspaceArchiveControl } from "./EmployerShiftWorkspaceArchiveControl";
 import { getEmployerShiftPost } from "../storage/employerShift.postActions.crud";
 import {
   getSiteMembershipTruth,
@@ -85,6 +86,14 @@ export function EmployerShiftWorkspaceControls({
 
       {isCompleted ? (
         <RatingBanner workspace={workspace} hasRating={hasRating} onRate={onRate} />
+      ) : null}
+
+      {isCompleted && hasRating ? (
+        <EmployerShiftWorkspaceArchiveControl
+          postId={workspace.postId}
+          workerMlId={receiverMl}
+          enabled
+        />
       ) : null}
 
       {!readOnly && receiverMl ? (

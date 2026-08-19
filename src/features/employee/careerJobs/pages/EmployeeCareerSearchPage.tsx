@@ -63,6 +63,7 @@ export function EmployeeCareerSearchPage() {
           activeTab={activeTab}
           state={state}
           hasSearchText={hasSearchText}
+          onOpenSaved={() => setActiveTab("saved")}
         />
       </section>
 

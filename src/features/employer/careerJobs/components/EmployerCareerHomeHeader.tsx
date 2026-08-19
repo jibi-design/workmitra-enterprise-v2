@@ -2,7 +2,7 @@
 // File name: EmployerCareerHomeHeader.tsx
 
 import { EmployerCareerIconPlus } from "./EmployerCareerHomeIcons";
-import { DomainHero } from "../../../../shared/components/layout/DomainHero";
+import { ActionPill, DomainHero } from "../../../../shared/components/layout/designDna";
 
 type EmployerCareerKpiData = {
   total: number;
@@ -104,10 +104,9 @@ export function EmployerCareerHomeHeader({ onCreate, kpi }: EmployerCareerHomeHe
       title="Build long-term hiring pipelines"
       subtitle="Create stable roles, review candidate progress, and manage hired workspaces."
     >
-      <button
-        type="button"
+      <ActionPill
+        domain="career"
         onClick={onCreate}
-        className="wm-primarybtn"
         style={{
           width: "100%",
           minHeight: 46,
@@ -120,7 +119,7 @@ export function EmployerCareerHomeHeader({ onCreate, kpi }: EmployerCareerHomeHe
       >
         <EmployerCareerIconPlus />
         Create Career Job
-      </button>
+      </ActionPill>
 
       <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
         <CommandMetric label="Active posts" value={kpi.active} helper="Visible now" primary />

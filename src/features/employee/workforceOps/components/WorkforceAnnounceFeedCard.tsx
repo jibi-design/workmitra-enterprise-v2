@@ -74,7 +74,7 @@ export function WorkforceAnnounceFeedCard({
             month: "long",
             day: "numeric",
           })}{" "}
-          Â· {announcement.shifts.length} shift{announcement.shifts.length !== 1 ? "s" : ""} Â·{" "}
+          · {announcement.shifts.length} shift{announcement.shifts.length !== 1 ? "s" : ""} ·{" "}
           {totalVacancy} {totalVacancy === 1 ? "vacancy" : "vacancies"}
         </div>
 

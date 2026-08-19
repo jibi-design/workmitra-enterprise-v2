@@ -10,6 +10,7 @@ export {
   hydrateCareerAppIdBridgeFromServer,
   isCareerApiSyncEnabled,
   mergeServerApplicationsIntoBridges,
+  mustRollbackCareerLocalWrite,
   resolveCareerGateApplicationId,
   resolveCareerGatePostId,
   syncActorIdentityBridge,

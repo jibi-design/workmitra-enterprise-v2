@@ -3,6 +3,7 @@ import type { ShiftApplicationRow } from "../../shift/types.js";
 import { employerShiftRepository, isShiftUuid } from "../../employer/shift/shift.repository.js";
 import { employerShiftService } from "../../employer/shift/shift.service.js";
 import { logSecurityEvent } from "../../../observability/securityEvents.js";
+import { emitShiftInboxNotification } from "../../notifications/shiftNotifications.emit.js";
 
 export type ApplyShiftResult =
   | { ok: true; application: ShiftApplicationRow }
@@ -123,6 +124,91 @@ export const employeeShiftService = {
       details,
     });
 
+    void emitShiftInboxNotification({
+      recipientUserId: post.employer_id,
+      eventType: "SHIFT_APPLICATION_SUBMITTED",
+      title: "New shift application received",
+      body: `A worker applied to ${post.job_name}.`,
+      route: "/employer/shift",
+      postId,
+      appId: application.id,
+      actorRole: "employee",
+    });
+
     return { ok: true, application };
+  },
+
+  async withdrawApplication(
+    applicationId: string,
+    employee: AuthUser,
+  ): Promise<ApplyShiftResult> {
+    if (!isShiftUuid(applicationId)) {
+      return {
+        ok: false,
+        code: "VALIDATION_ERROR",
+        message: "applicationId must be a valid UUID",
+        httpStatus: 400,
+      };
+    }
+
+    const workerKey = employee.id.trim().toUpperCase();
+    try {
+      const withdrawn = await employerShiftRepository.withTransaction(async (client) => {
+        const locked = await employerShiftRepository.findApplicationByIdTx(client, applicationId);
+        if (!locked) {
+          throw Object.assign(new Error("Application not found"), {
+            code: "NOT_FOUND",
+            httpStatus: 404,
+          });
+        }
+        if (locked.worker_wm_id.trim().toUpperCase() !== workerKey) {
+          throw Object.assign(new Error("Application not found"), {
+            code: "NOT_FOUND",
+            httpStatus: 404,
+          });
+        }
+        const updated = await employerShiftRepository.updateApplicationStatusIfConfirmableTx(
+          client,
+          applicationId,
+          "withdrawn",
+          ["applied", "shortlisted", "waiting"],
+        );
+        if (!updated) {
+          throw Object.assign(new Error("Application cannot be withdrawn from its current status"), {
+            code: "INVALID_STATE",
+            httpStatus: 409,
+          });
+        }
+        return updated;
+      });
+
+      const post = await employerShiftRepository.findPostById(withdrawn.post_id);
+      if (post) {
+        void emitShiftInboxNotification({
+          recipientUserId: post.employer_id,
+          eventType: "SHIFT_APPLICATION_WITHDRAWN",
+          title: "Shift application withdrawn",
+          body: `A worker withdrew from ${post.job_name}.`,
+          route: "/employer/shift",
+          postId: withdrawn.post_id,
+          appId: withdrawn.id,
+          actorRole: "employee",
+        });
+      }
+
+      return { ok: true, application: withdrawn };
+    } catch (err) {
+      const code = typeof err === "object" && err && "code" in err ? String(err.code) : "ERROR";
+      const httpStatus =
+        typeof err === "object" && err && "httpStatus" in err
+          ? Number((err as { httpStatus: number }).httpStatus)
+          : 500;
+      return {
+        ok: false,
+        code,
+        message: err instanceof Error ? err.message : "Withdraw failed",
+        httpStatus: Number.isFinite(httpStatus) ? httpStatus : 500,
+      };
+    }
   },
 };

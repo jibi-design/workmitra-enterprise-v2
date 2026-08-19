@@ -171,6 +171,7 @@ export function parseSearchPosts(raw: string | null): CareerSearchPost[] {
         jobType: clampJobType(item["jobType"]),
         workMode: clampWorkMode(item["workMode"]),
         location: cleanText(str(item, "location")),
+        locationPincode: cleanText(str(item, "locationPincode"), 16) || undefined,
         salaryMin: salary.min,
         salaryMax: salary.max,
         salaryPeriod: clampSalaryPeriod(item["salaryPeriod"]),

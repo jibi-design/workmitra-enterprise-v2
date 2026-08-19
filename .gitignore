@@ -23,3 +23,10 @@ src/index.css.__tmp
 *.bak2
 *.bak_*
 
+
+# Android Play Store signing / FCM (never commit)
+android/keystore.properties
+android/keystore/*.jks
+android/keystore/*.keystore
+android/app/google-services.json
+*.aab

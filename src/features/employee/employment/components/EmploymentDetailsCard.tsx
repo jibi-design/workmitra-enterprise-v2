@@ -11,6 +11,7 @@ import {
   statusMeta,
 } from "../helpers/employmentDetailHelpers";
 import { FieldRow } from "./EmploymentSharedUI";
+import { JobMitraAppLabel } from "../../../../shared/components/brand/JobMitraAppLabel";
 
 type Props = {
   record: EmploymentRecord;
@@ -71,7 +72,7 @@ export function EmploymentDetailsCard({ record }: Props) {
       )}
       <FieldRow
         label="Hired Via"
-        value={record.hireMethod === "via_app" ? "Job Mitra App" : "Manually Added"}
+        value={record.hireMethod === "via_app" ? <JobMitraAppLabel /> : "Manually Added"}
       />
 
       <div

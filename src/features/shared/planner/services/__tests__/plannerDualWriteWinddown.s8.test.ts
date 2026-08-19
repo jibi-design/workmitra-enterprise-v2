@@ -28,7 +28,7 @@ describe("Hybrid A2 S8 — dual-write wind-down", () => {
     const planId = demandPlannerStorage.create({
       name: "S8 Native Plan",
       companyName: "S8 Co",
-      locationName: "Kochi",
+      locationName: "City A",
       category: "Security",
       experience: "experienced",
       startDate: "2026-10-01",
@@ -61,7 +61,7 @@ describe("Hybrid A2 S8 — dual-write wind-down", () => {
     const planId = demandPlannerStorage.create({
       name: "S8 Approve Plan",
       companyName: "S8 Co",
-      locationName: "Kochi",
+      locationName: "City A",
       category: "Security",
       experience: "experienced",
       startDate: "2026-10-06",
@@ -80,7 +80,7 @@ describe("Hybrid A2 S8 — dual-write wind-down", () => {
       JSON.stringify({
         uniqueId: "ML-S8-WORKER",
         fullName: "S8 Worker",
-        city: "Kochi",
+        city: "City A",
         skills: ["security"],
         experience: "helper",
         languages: ["en"],

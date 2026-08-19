@@ -17,6 +17,7 @@ import { tryHandleEmployerShiftApplicationList } from "./shift.applications.rout
 import { shiftDirectInviteStore } from "./shiftDirectInvite.store.js";
 import { idempotencyStore, readIdempotencyKey } from "../../shared/idempotency.store.js";
 import { handleEmployerShiftOpsRoutes } from "./shiftOps.routes.js";
+import { tryHandleWorkspaceMessageRoutes } from "../../shift/workspaceMessages.routes.js";
 
 const SHIFT_PREFIX = "/v1/jobmitra/employer/shift";
 
@@ -38,6 +39,18 @@ export async function handleEmployerShiftRoutes(
   const subpath = pathname.slice(SHIFT_PREFIX.length) || "/";
 
   if (await handleEmployerShiftOpsRoutes(req, res, url, method)) return true;
+  if (
+    await tryHandleWorkspaceMessageRoutes(
+      req,
+      res,
+      url,
+      method,
+      SHIFT_PREFIX,
+      "employer",
+    )
+  ) {
+    return true;
+  }
   if (await handleWorkersRadarRoute(req, res, url, method)) return true;
   if (await tryHandleEmployerShiftApplicationList(req, res, url, method)) return true;
 

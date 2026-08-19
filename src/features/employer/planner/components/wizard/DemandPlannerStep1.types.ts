@@ -7,6 +7,7 @@ export type Step1Data = {
   name: string;
   companyName: string;
   locationName: string;
+  locationPincode: string;
   category: string;
   experience: ExperienceLabel;
   startDate: string;
@@ -19,14 +20,19 @@ export type Step1Data = {
   mapsLink: string;
 };
 
-export const DEFAULT_STEP1_DATA: Omit<Step1Data, "companyName" | "locationName" | "category"> & {
+export const DEFAULT_STEP1_DATA: Omit<
+  Step1Data,
+  "companyName" | "locationName" | "locationPincode" | "category"
+> & {
   companyName: string;
   locationName: string;
+  locationPincode: string;
   category: string;
 } = {
   name: "",
   companyName: "",
   locationName: "",
+  locationPincode: "",
   category: "Construction",
   experience: "helper",
   startDate: "",

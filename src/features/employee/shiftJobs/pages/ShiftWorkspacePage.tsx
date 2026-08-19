@@ -55,6 +55,7 @@ export function ShiftWorkspacePage() {
         workspace={workspace}
         readOnly={derived.readOnly}
         onReplySuccess={page.handleReplySuccess}
+        onReplyError={page.handleReplyError}
       />
 
       <ShiftWorkspaceRatingSection
@@ -78,6 +79,8 @@ export function ShiftWorkspacePage() {
         employerMlId={derived.employerMlId}
         companyName={workspace.companyName}
         domain="shift"
+        workspaceId={workspace.id}
+        appId={workspace.appId}
         onSubmitted={page.handleRatingSubmitted}
         onClose={() => page.setRatingOpen(false)}
       />

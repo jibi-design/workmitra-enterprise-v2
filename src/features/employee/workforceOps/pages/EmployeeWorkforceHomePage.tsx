@@ -196,9 +196,9 @@ export function EmployeeWorkforceHomePage() {
                     {group.name}
                   </div>
                   <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginTop: 2 }}>
-                    {group.date} Â· {member.assignedShiftIds.length} shift
+                    {group.date} · {member.assignedShiftIds.length} shift
                     {member.assignedShiftIds.length !== 1 ? "s" : ""}
-                    {group.location && ` Â· ${group.location}`}
+                    {group.location && ` · ${group.location}`}
                   </div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>

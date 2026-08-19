@@ -8,10 +8,12 @@ import { useCallback, useEffect, useRef } from "react";
 import type { AccountMenuSheetInnerProps, AccountMenuSheetProps } from "./AccountMenuSheet.types";
 import { AccountMenuHeader } from "./AccountMenuHeader";
 import { AccountMenuItems } from "./AccountMenuItems";
+import { useOverlayBackClose } from "../../native/useOverlayBackClose";
 
-export function AccountMenuSheet({ open, ...rest }: AccountMenuSheetProps) {
+export function AccountMenuSheet({ open, onClose, ...rest }: AccountMenuSheetProps) {
+  useOverlayBackClose(open, onClose);
   if (!open) return null;
-  return <AccountMenuSheetInner {...rest} />;
+  return <AccountMenuSheetInner onClose={onClose} {...rest} />;
 }
 
 function AccountMenuSheetInner({

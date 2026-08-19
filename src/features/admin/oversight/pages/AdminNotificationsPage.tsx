@@ -144,7 +144,7 @@ export function AdminNotificationsPage() {
           pushAdminNotification(
             "system",
             "System check completed",
-            "All services operational. Phase-0 localStorage mode.",
+            "All services operational.",
           )
         }
       />

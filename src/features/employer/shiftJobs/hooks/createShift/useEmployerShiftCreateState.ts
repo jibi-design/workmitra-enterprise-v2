@@ -3,6 +3,7 @@
 
 import { useCallback, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSoftAuth } from "../../../../../shared/guest/useSoftAuth";
 import { ROUTE_PATHS } from "../../../../../app/router/routePaths";
 import type { ConfirmData } from "../../../../../shared/components/ConfirmModal";
 import type { NoticeData } from "../../../../../shared/components/NoticeModal";
@@ -11,7 +12,6 @@ import { getCurrentEmployerMlId } from "../../../company/helpers/employerPublicI
 import { canPublishJobPosts } from "../../../company/helpers/employerVerificationPolicy.helpers";
 import { employerSettingsStorage } from "../../../company/storage/employerSettings.storage";
 import {
-  isDirtyCheck,
   validateWizardStep1,
   validateWizardStep2,
   type ShiftPayBasisDraft,
@@ -22,6 +22,12 @@ import {
 } from "../../storage/employerShiftDraft.storage";
 import type { ShiftCreateWizardStep } from "../../components/ShiftCreateWizardTopBar";
 import type { ShiftCreateFormSnapshot } from "./employerShiftCreateDraft.helpers";
+import {
+  buildDraftForm,
+  fingerprintShiftCreateSnapshot,
+  hasDraftContent,
+  snapshotFromDraft,
+} from "./employerShiftCreateDraft.helpers";
 import { publishEmployerShiftPost } from "./employerShiftCreatePublish.helpers";
 import { createDraftHandlers } from "./employerShiftCreateDraft.handlers";
 import { useEmployerShiftCreateFormFields } from "./useEmployerShiftCreateFormFields";
@@ -29,8 +35,11 @@ import { buildEmployerShiftCreateViewModel } from "./useEmployerShiftCreateState
 
 export function useEmployerShiftCreateState() {
   const nav = useNavigate();
+  const { requireAuthForAction } = useSoftAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const formNodeRef = useRef<HTMLDivElement | null>(null);
+  /** Set true after successful publish so leave-guard does not cancel nav. */
+  const bypassLeaveGuardRef = useRef(false);
   const employerMlId = useMemo(() => getCurrentEmployerMlId(), []);
   const requestedDraftId = searchParams.get("draftId") ?? "";
 
@@ -47,6 +56,17 @@ export function useEmployerShiftCreateState() {
 
   const [draftId, setDraftId] = useState<string | null>(initialDraft?.id ?? null);
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(initialDraft?.updatedAt ?? null);
+  const [savedFingerprint, setSavedFingerprint] = useState<string | null>(() =>
+    initialDraft ? fingerprintShiftCreateSnapshot(snapshotFromDraft(initialDraft)) : null,
+  );
+
+  const markDraftClean = useCallback((snapshot: ShiftCreateFormSnapshot) => {
+    setSavedFingerprint(fingerprintShiftCreateSnapshot(snapshot));
+  }, []);
+
+  const clearDraftCleanBaseline = useCallback(() => {
+    setSavedFingerprint(null);
+  }, []);
 
   const drafts = useSyncExternalStore(
     employerShiftDraftStorage.subscribe,
@@ -65,7 +85,7 @@ export function useEmployerShiftCreateState() {
     [drafts, draftId],
   );
 
-  function formSnapshot(): ShiftCreateFormSnapshot {
+  const formSnapshot = useCallback((): ShiftCreateFormSnapshot => {
     return {
       companyName: form.companyName,
       jobName: form.jobName,
@@ -78,6 +98,7 @@ export function useEmployerShiftCreateState() {
       payBasis: form.payBasis as ShiftCreateFormSnapshot["payBasis"],
       shiftTiming: form.shiftTiming,
       locationName: form.locationName,
+      locationPincode: form.locationPincode,
       locationAddress: form.locationAddress,
       mapsLink: form.mapsLink,
       startAt: form.startAt,
@@ -89,7 +110,7 @@ export function useEmployerShiftCreateState() {
       dressCode: form.dressCode,
       jobType: form.jobType,
     };
-  }
+  }, [form]);
 
   function applyDraftFields(draft: EmployerShiftPostDraft) {
     setDraftId(draft.id);
@@ -105,6 +126,7 @@ export function useEmployerShiftCreateState() {
     form.setPayBasis(draft.form.payBasis as ShiftPayBasisDraft);
     form.setShiftTiming(draft.form.shiftTiming);
     form.setLocationName(draft.form.locationName);
+    form.setLocationPincode(draft.form.locationPincode);
     form.setLocationAddress(draft.form.locationAddress);
     form.setMapsLink(draft.form.mapsLink);
     form.setStartAt(draft.form.startAt);
@@ -125,30 +147,28 @@ export function useEmployerShiftCreateState() {
     applyDraftFields,
     setDraftId,
     setLastSavedAt,
+    markDraftClean,
+    clearDraftCleanBaseline,
     setSearchParams,
     setNotice,
     scrollToForm,
   });
   /* eslint-enable react-hooks/refs */
 
-  const checkDirty = useCallback(
-    (): boolean =>
-      isDirtyCheck({
-        companyName: form.companyName,
-        jobName: form.jobName,
-        category: form.category,
-        description: form.description,
-        vacanciesStr: form.vacanciesStr,
-        payPerDayStr: form.payPerDayStr,
-        payBasis: form.payBasis,
-        locationName: form.locationName,
-        mustHave: form.mustHave,
-        goodToHave: form.goodToHave,
-      }),
-    [form],
-  );
+  const checkDirty = useCallback((): boolean => {
+    const snapshot = formSnapshot();
+    const currentFingerprint = fingerprintShiftCreateSnapshot(snapshot);
+    if (savedFingerprint !== null && currentFingerprint === savedFingerprint) {
+      return false;
+    }
+    return hasDraftContent(buildDraftForm(snapshot), form.autoFill);
+  }, [form, savedFingerprint, formSnapshot]);
 
-  useUnsavedChangesGuard(checkDirty(), "You have unsaved Shift Job changes. Leave this page?");
+  useUnsavedChangesGuard(
+    checkDirty(),
+    "You have unsaved Shift Job changes. Leave this page?",
+    bypassLeaveGuardRef,
+  );
 
   function handlePayBasis(value: ShiftPayBasisDraft): void {
     form.setPayBasis(value);
@@ -190,6 +210,7 @@ export function useEmployerShiftCreateState() {
     if (wizardStep === 2) {
       const errs = validateWizardStep2({
         locationName: form.locationName,
+        locationPincode: form.locationPincode,
         payPerDay,
         payBasis: form.payBasis,
         startAt: form.startAt,
@@ -212,6 +233,17 @@ export function useEmployerShiftCreateState() {
   }
 
   function handleCreate() {
+    if (
+      !requireAuthForAction({
+        action: "create_shift",
+        targetId: draftId || "shift-create",
+        returnPath: ROUTE_PATHS.employerShiftCreate,
+        roleHint: "employer",
+        payload: { phase: "publish" },
+      })
+    ) {
+      return;
+    }
     if (!isValid) {
       setNotice({ title: "Cannot Review Post", message: errors.join("\n"), tone: "warn" });
       return;
@@ -231,15 +263,29 @@ export function useEmployerShiftCreateState() {
   }
 
   async function doCreate() {
+    const snapshot = formSnapshot();
     const postId = await publishEmployerShiftPost({
-      snapshot: formSnapshot(),
+      snapshot,
       mustList,
       goodList,
       payPerDay,
       draftId,
     });
 
-    if (!postId) return;
+    if (!postId) {
+      setNotice({
+        title: "Publish failed",
+        message:
+          "Could not create the shift post. If API sync is on, sign in and retry; otherwise check validation and try again.",
+        tone: "warn",
+      });
+      return;
+    }
+
+    // Publish already persisted — clear dirty + bypass leave-guard so nav is not cancelled
+    // by useBlocker (Playwright auto-dismisses window.confirm as Cancel).
+    markDraftClean(snapshot);
+    bypassLeaveGuardRef.current = true;
     nav(ROUTE_PATHS.employerShiftPostDashboard.replace(":postId", postId));
   }
 

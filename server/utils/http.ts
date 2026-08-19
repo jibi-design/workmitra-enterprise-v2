@@ -1,7 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { isProduction } from "../modules/auth/env.js";
-import { captureException } from "../observability/monitor.js";
-import { sanitizeForLog } from "../observability/sanitize.js";
+import { handleRequestError } from "../middleware/errorHandler.js";
 
 const MAX_BODY_BYTES = 16 * 1024;
 
@@ -16,8 +14,8 @@ export function envelope<T>(data: T, requestId: string): { data: T; meta: { requ
 }
 
 /**
- * Defense Layer 2 — never leak stack traces / internal details to clients in production.
- * Always logs sanitized details internally (console + optional Sentry).
+ * Defense Layer 2 / WAVE-5.1 Layer 4 — never leak stack traces to clients.
+ * Delegates to centralized errorHandler.
  */
 export function sendInternalServerError(
   res: ServerResponse,
@@ -25,37 +23,12 @@ export function sendInternalServerError(
   error?: unknown,
   context?: Record<string, unknown>,
 ): void {
-  if (error !== undefined) {
-    captureException(error, {
-      requestId,
-      ...context,
-      safeError: sanitizeForLog(error),
-    });
-  }
-
-  if (res.headersSent) return;
-
-  const payload: {
-    error: {
-      code: "INTERNAL_SERVER_ERROR";
-      message: string;
-      requestId: string;
-      detail?: string;
-    };
-  } = {
-    error: {
-      code: "INTERNAL_SERVER_ERROR",
-      message: "An unexpected error occurred",
-      requestId,
-    },
-  };
-
-  // Dev-only: optional non-sensitive hint (still sanitized) — never in production
-  if (!isProduction() && error instanceof Error) {
-    payload.error.detail = sanitizeForLog(error.message) as string;
-  }
-
-  sendJson(res, 500, payload);
+  handleRequestError(res, error ?? new Error("Internal server error"), {
+    requestId,
+    path: typeof context?.path === "string" ? context.path : undefined,
+    method: typeof context?.method === "string" ? context.method : undefined,
+    userId: typeof context?.userId === "string" ? context.userId : null,
+  });
 }
 
 export function sendNotImplemented(res: ServerResponse, requestId: string, endpoint: string): void {

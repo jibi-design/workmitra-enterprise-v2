@@ -54,34 +54,34 @@ function normalizeCrn(raw: string): string {
 }
 
 export function isValidCrnShape(crn: string): boolean {
-  // UK company numbers: 8 digits, or 2 letters + 6 digits (e.g. SC123456).
+  // Company numbers: 8 digits, or 2 letters + 6 digits (e.g. AB123456).
   return /^(\d{8}|[A-Z]{2}\d{6})$/.test(crn);
 }
 
 /** Deterministic mock registry for lab / CI — never hits the network. */
 const MOCK_REGISTRY: Record<string, Omit<CompaniesHouseCompany, "source" | "companyNumber">> = {
   "01234567": {
-    companyName: "Mitra Labs Demo Holdings Ltd",
+    companyName: "Demo Holdings Ltd",
     companyStatus: "active",
-    registeredOfficeAddress: "1 Demo Street, London, EC1A 1BB",
+    registeredOfficeAddress: "Registered office on file",
     dateOfCreation: "2018-04-01",
   },
   "09876543": {
-    companyName: "Trade Kitchen Catering Ltd",
+    companyName: "Trade Catering Ltd",
     companyStatus: "active",
-    registeredOfficeAddress: "12 Market Row, Manchester, M1 2AB",
+    registeredOfficeAddress: "Registered office on file",
     dateOfCreation: "2020-11-12",
   },
-  SC123456: {
-    companyName: "Highland Contract Services Ltd",
+  "11223344": {
+    companyName: "Contract Services Ltd",
     companyStatus: "active",
-    registeredOfficeAddress: "4 Castle Wynd, Edinburgh, EH1 2NG",
+    registeredOfficeAddress: "Registered office on file",
     dateOfCreation: "2015-06-20",
   },
   "00000000": {
     companyName: "Dissolved Example Co Ltd",
     companyStatus: "dissolved",
-    registeredOfficeAddress: "Retired Road, Leeds, LS1 1AA",
+    registeredOfficeAddress: "Registered office on file",
     dateOfCreation: "2001-01-01",
   },
 };
@@ -238,7 +238,7 @@ export const companiesHouseService = {
       return {
         ok: false,
         code: "VALIDATION_ERROR",
-        message: "CRN must be 8 digits or 2 letters + 6 digits (e.g. 01234567 or SC123456).",
+        message: "CRN must be 8 digits or 2 letters + 6 digits (e.g. 01234567 or AB123456).",
         httpStatus: 400,
       };
     }

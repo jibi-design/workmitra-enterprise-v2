@@ -32,6 +32,34 @@ const detailsSchema = z
     return out;
   });
 
+const applyProfileSnapshotSchema = z
+  .object({
+    uniqueId: z.string().max(128).optional(),
+    fullName: sanitizedText(120).optional(),
+    city: sanitizedText(80).optional(),
+    experience: z.string().max(40).optional(),
+    skills: z.array(z.string().max(40)).max(24).optional(),
+    languages: z.array(z.string().max(40)).max(12).optional(),
+  })
+  .strip()
+  .optional();
+
+const applyAnswerMapSchema = z
+  .record(z.string().max(80), z.enum(["meets", "not_sure", "dont_meet"]))
+  .optional();
+
+const applyDetailsSchema = z
+  .object({
+    profileSnapshot: applyProfileSnapshotSchema,
+    mustHaveAnswers: applyAnswerMapSchema,
+    goodToHaveAnswers: applyAnswerMapSchema,
+    notes: z.record(z.string().max(80), sanitizedText(500)).optional(),
+    quickAnswers: z.record(z.string().max(80), z.enum(["yes", "no"])).optional(),
+  })
+  .strip()
+  .optional()
+  .transform((rec) => rec ?? {});
+
 export const shiftPostIdParamsSchema = z.object({
   postId: uuid,
 });
@@ -80,7 +108,21 @@ export const confirmShiftBodySchema = z.object({
 export const applyShiftBodySchema = z.object({
   worker_wm_id: z.string().min(1).max(128).optional(),
   workerWmId: z.string().min(1).max(128).optional(),
-  details: detailsSchema,
+  details: applyDetailsSchema,
+});
+
+export const workspaceMessageBodySchema = z.object({
+  kind: z.enum(["broadcast", "direct"]),
+  title: sanitizedText(80).optional(),
+  body: sanitizedText(360).optional(),
+});
+
+export const shiftAppIdParamsSchema = z.object({
+  appId: uuid,
+});
+
+export const patchShiftApplicationStatusBodySchema = z.object({
+  status: z.enum(["shortlisted", "waiting", "rejected"]),
 });
 
 export const directAcceptBodySchema = z.preprocess(

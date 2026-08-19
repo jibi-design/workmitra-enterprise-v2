@@ -12,6 +12,11 @@ export function isCareerApiSyncEnabled(): boolean {
   return AUTH_BACKEND_ENABLED;
 }
 
+/** PROD AUTH: missing UUID rolls back. DEV: keep local writes for seeded E2E / demo posts. */
+export function mustRollbackCareerLocalWrite(serverId: string | null | undefined): boolean {
+  return !serverId && !import.meta.env.DEV;
+}
+
 export function resolveCareerGateApplicationId(localAppId: string): string | null {
   return careerAppIdBridge.resolveServerApplicationId(localAppId);
 }

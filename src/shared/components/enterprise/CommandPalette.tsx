@@ -1,4 +1,4 @@
-/** Job Mitra | CommandPalette.tsx | Employer Cmd/Ctrl+K navigation overlay */
+/** Job Mitra | CommandPalette.tsx | Cmd/Ctrl+K navigation overlay (role-agnostic) */
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -9,11 +9,15 @@ import {
   type CommandPaletteItem,
 } from "./commandPalette.registry";
 import type { EnterpriseTone } from "./enterprise.types";
+import { useOverlayBackClose } from "../../native/useOverlayBackClose";
 
 export type CommandPaletteProps = {
   open: boolean;
   onClose: () => void;
   onNavigate: (path: string) => void;
+  /** Defaults to employer registry when omitted. */
+  items?: readonly CommandPaletteItem[];
+  searchPlaceholder?: string;
   testId?: string;
 };
 
@@ -21,17 +25,26 @@ function domainTone(domain: CommandPaletteItem["domain"]): EnterpriseTone {
   if (domain === "planner") return "active";
   if (domain === "shift") return "active";
   if (domain === "career") return "pending";
+  if (domain === "vault") return "pending";
   return "neutral";
 }
 
 function domainAccent(
   domain: CommandPaletteItem["domain"],
 ): "planner" | "shift" | "career" | undefined {
-  if (domain === "general") return undefined;
+  if (domain === "general" || domain === "vault") return undefined;
   return domain;
 }
 
-export function CommandPalette({ open, onClose, onNavigate, testId }: CommandPaletteProps) {
+export function CommandPalette({
+  open,
+  onClose,
+  onNavigate,
+  items = EMPLOYER_COMMAND_PALETTE_ITEMS,
+  searchPlaceholder = "Search Planner, Shift, Career…",
+  testId,
+}: CommandPaletteProps) {
+  useOverlayBackClose(open, onClose);
   const titleId = useId();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [query, setQuery] = useState("");
@@ -47,10 +60,7 @@ export function CommandPalette({ open, onClose, onNavigate, testId }: CommandPal
     }
   }
 
-  const results = useMemo(
-    () => filterCommandPaletteItems(query, EMPLOYER_COMMAND_PALETTE_ITEMS),
-    [query],
-  );
+  const results = useMemo(() => filterCommandPaletteItems(query, items), [query, items]);
 
   useEffect(() => {
     if (!open) return;
@@ -135,7 +145,7 @@ export function CommandPalette({ open, onClose, onNavigate, testId }: CommandPal
               setQuery(e.target.value);
               setActiveIndex(0);
             }}
-            placeholder="Search Planner, Shift, Career…"
+            placeholder={searchPlaceholder}
             className="wm-ent-cmd-input"
             data-testid="wm-ent-command-palette-input"
             autoComplete="off"

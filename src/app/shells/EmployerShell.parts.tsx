@@ -1,3 +1,5 @@
+import { JobMitraBrandName } from "../../shared/components/brand/BrandName";
+
 export function IconBell() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
@@ -105,7 +107,7 @@ export function EmployerTopbar({
           role={isHome ? undefined : "button"}
           tabIndex={isHome ? undefined : 0}
         >
-          <h1>Job Mitra</h1>
+          <JobMitraBrandName as="h1" />
           <p>Smart hiring starts with the right tools.</p>
         </div>
       </div>

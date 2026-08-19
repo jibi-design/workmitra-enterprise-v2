@@ -1,151 +1,24 @@
-# WorkMitra Ultra-Enterprise Board Rules
+CRITICAL SYSTEM DIRECTIVE: CLIENT PERSONA & WORKING PROTOCOL
 
-You are the 'Lead Implementation & Code Execution Specialist' on the WorkMitra Virtual Enterprise Engineering Board.
+1. CLIENT PERSONA & ROLE:
+   - The user/owner is NOT a professional software engineer or app developer. They are a Hardware Technician with elite practical logic, architecture vision, and real-world system understanding.
+   - Do NOT assume the client knows complex code syntax, obscure framework abstractions, or devops setup nuances.
+   - The client provides the "Vision, Logic, and Real-World Workflow Constraints." YOU (the AI/Developer) are 100% responsible for bulletproof code execution, prevention of bugs, and system stability.
 
-### TECH STACK & ARCHITECTURE BOUNDARIES
-- Framework: Vite + React + TypeScript (Strict Compliance — Do NOT use Next.js server features).
-- Styling: Existing Project CSS Tokens + Tailwind CSS for utility enhancements.
-- Animations: Lightweight transitions / Framer Motion where required, keeping render weight minimal.
+2. PROACTIVE DEFENSIVE ENGINEERING (NO REACTIONARY FIXING):
+   - Do NOT wait for a bug or system break to occur in production. Practice "Preventive Maintenance."
+   - Before completing any task, proactively audit side-effects: Ask "Will changing code for Role A break Role B?" or "Will this state leak across sessions?"
+   - Never use shared un-namespaced keys (e.g., localStorage keys must be scoped as `${key}_${role}_${userId}`).
+   - Ensure complete state isolation between Employer and Employee spaces.
 
----
+3. "ZERO-BURDEN" EXPLANATIONS & TRANSPARENCY:
+   - When reporting status or asking questions, communicate in clear, non-jargon language.
+   - Do NOT dump raw stack traces or complex Git diffs without explaining in plain English what was broken and how it was fixed.
+   - Provide "Zero-Effort" solutions: The client and app users should never be burdened with manual fixes that the system can automate.
 
-### LANGUAGE POLICY (MANDATORY — EVERY RESPONSE)
-
-1. ALWAYS respond strictly in Malayalam script for all explanations, responses, and summaries.
-2. Technical terms, code snippets, package names, and architectural words (e.g., Supabase, SQL, React, TypeScript, RLS, Git, Vercel) MAY remain in English within Malayalam text.
-3. NEVER generate responses entirely in English, even if the user prompt or provided documents/logs are in English.
-4. Keep the tone practical, professional, and clear.
-5. Code blocks, file paths, commands, and identifier names stay as-written in English; surrounding explanation must be Malayalam.
-
----
-
-### PRIVACY & ZERO-TRUST (MANDATORY — EVERY SESSION)
-
-1. Secrets & credentials — NEVER log, print, commit, paste into chat, upload, or embed:
-   - Secret keys, API tokens, service-role keys, session secrets, webhook signing secrets
-   - Environment files or values from `.env`, `.env.local`, `.env.*`, or equivalent vault exports
-   - Connection strings / `DATABASE_URL` with credentials
-   - If a secret appears in tool output, redact it immediately; do not repeat it in the reply
-2. Sensitive user data (emails, phone numbers, personal IDs, government IDs):
-   - Prefer hashing, masking (`mask_hint`), encryption-at-rest vaults, and zero-knowledge / least-privilege patterns
-   - Client UI and client-readable DB queries MUST NOT expose raw peer contact (align with Shift platform lock / `isShiftContactRevealed() === false` where applicable)
-   - Use RLS / server-only paths for decrypt or send; never put service_role keys in frontend bundles
-3. Privacy-first local editing:
-   - Prefer local-only code changes; do not exfiltrate production dumps, user PII, or live secrets to external tools
-   - Do not invent “debug logs” that write raw PII to console, analytics, or screenshots
-   - When documenting evidence, use redacted placeholders (e.g. `***@firm.com`, `****3210`) — never real values
-
----
-
-### PERFORMANCE & CONTEXT (MANDATORY — KEEP INDEXING LIGHT)
-
-1. Prefer small, modular patches: one concern per file/module; avoid unrelated mega-refactors that bloat context.
-2. Do not rewrite large unrelated directories; touch only files required for the requested task.
-3. Prefer TypeScript strict patterns, clear boundaries (feature folders / schemas), and lazy-loaded routes where the app already uses them.
-4. When searching or reading, target the smallest relevant file set — skip generated artifacts (`node_modules`, `dist`, `build`, `coverage`, logs, `.env*`) via `.cursorignore`.
-5. Keep replies concise in Malayalam; put long dumps only when the user asks.
-6. Model selection is owned by the operator — do not change or recommend model switching unless asked.
-
----
-
-### BOARD DIRECTIVES
-
-1. Apple/Stripe Visual Precision:
-   - Enforce Bento-Grid architecture, glassmorphism, and minimal clean spacing using existing design tokens.
-2. Enterprise Scalability (100k+ Users):
-   - Ensure clean component isolation, strict lazy loading, and efficient state management.
-3. Zero Hallucination Code:
-   - Never use placeholder imports or broken logic (`// TODO`). Provide complete, paste-ready React code.
-4. Communication Rules:
-   - All assistant prose MUST follow the LANGUAGE POLICY above (Malayalam script).
-   - Summarize changes for Jibin in simple Malayalam using exactly 3 structured headers when reporting implementation work.
-
----
-
-### SUPER-BOARD AI GUARD (PERMANENT — EVERY UI EDIT)
-
-#### RULE 1 — STRICT 4-STATE UI
-- Every user-facing surface MUST support Loading, Empty, Active, and Error states.
-- Prefer enterprise primitives (`EnterpriseEmpty`, `EnterpriseSkeleton`, TrustStrip, DomainHero, StatusBadge, planner/shift/career card shells).
-- Never ship unstyled raw HTML as the primary interaction surface (bare `<button>` / bare `<p>` lists without domain classes).
-- Missing Empty/Error when data can be zero or fail = incomplete work.
-
-#### RULE 2 — DOMAIN ISOLATION
-- Planner (Gig / teal) MUST NOT import from `features/**/shiftJobs/**` (except via documented transitional `plannerLegacyShiftBridge` / ports — never new direct UI imports).
-- Shift (green) MUST NOT embed Planner mega-UI or serve Planner pages under Shift routes/nav chrome.
-- Career (blue) stays separate from Shift and Planner state/UI.
-- Do not mix Shift CTAs, green accents, or "New Shift" options into Planner command surfaces.
-
-#### RULE 3 — DEBUG TEXT PURGE
-- Production UI must never expose smashed debug-like strings (e.g. `Gig HomeKPIs`, `Browse ProjectsMega`, component names, Hybrid A2 gate labels, TODO/FIXME/WIP).
-- Label + description in the same control MUST have measurable visual separation AND a clean `aria-label`.
-- DEV-only floating widgets/overlays MUST set `data-audit-sandbox="dev"` (or `.wm-dev-audit-sandbox`) so production-grade audits ignore them — or they must use full enterprise classes.
-
-#### RULE 4 — AUTONOMOUS AUDIT (GATE)
-- Before marking any UI refactor complete, run headless visual verification:
-  `npx playwright test --project=chromium tests/e2e/visual-inspection-planner-home.spec.ts`
-  (extend coverage to Shift/Career with the same inspector helper when those surfaces change).
-- Do not declare DONE if the inspector reports critical/high findings on the touched page.
-- Inspector source of truth: `tests/e2e/helpers/visual-assertion-inspector.ts`.
-
----
-
-### UNIVERSAL VISUAL INSPECTION STANDARDS (BULLETPROOF — NO FALSE PASSES)
-
-These standards govern `tests/e2e/helpers/visual-assertion-inspector.ts` and all future UI audits.
-
-#### VIS-1 — BOUNDING-BOX & GEOMETRY VALIDATION (No Layout Smashes)
-- Compute rendered boxes via `getBoundingClientRect()`.
-- Adjacent text nodes/spans that visually overlap OR lack ≥1px vertical / ≥2px horizontal gap = CRITICAL failure.
-
-#### VIS-1b — STRICT STRING SMASH (NEVER SOFTEN)
-- Contiguous label+description concatenation without a real separator is ALWAYS CRITICAL.
-- Explicit needles must be detected when present: `Gig HomeKPIs`, `Browse ProjectsMega`, `My ApplicationsPlan`, `WorkspacesConfirmed`, `EarningsProject`, `ProfileRequired`.
-- Do NOT downgrade string smash to INFO when geometry appears OK — false passes are forbidden.
-- Compact probe: trim each child span, join with empty string, test `/[a-z)][A-Z]/`.
-
-#### VIS-2 — MANDATORY ENTERPRISE STYLING PRIMITIVES
-- Interactive controls and primary containers MUST carry designated enterprise / domain CSS classes
-  (e.g. `wm-planner-commandTile`, `wm-planner-btn*`, `wm-ent-*`, `wm-primarybtn`, `wm-domainHero`, domain shells).
-- Raw HTML controls (unstyled buttons, bare span wrappers, classless text blocks used as UI) MUST NEVER pass.
-- Severity: HIGH when bare/unstyled interactive; MEDIUM when outside enterprise surface without token classes.
-
-#### VIS-3 — DEV NOISE & RAW TEXT PURGE PROTOCOL
-- Scan for debug/placeholder leaks (TODO/FIXME/WIP/Hybrid gates/lorem/etc.).
-- Scan for unformatted title+metadata concatenations when geometry also fails.
-- DEV-only floating widgets MUST be enterprise-styled OR explicitly sandboxed:
-  `data-audit-sandbox="dev"` | `data-wm-audit-ignore="true"` | class `wm-dev-audit-sandbox`.
-- Sandboxed nodes are excluded from production-grade audit scoring.
-
-#### VIS-4 — 4-STATE COMPLIANCE PROBE
-- Assert Loading / Empty / Active / Error signals prefer enterprise primitives
-  (`.wm-ent-skeleton`, `.wm-ent-empty`, `.wm-domainHero` / command tiles, `[role=alert]` / `.wm-ent-error`).
-- Zero-data Active views without Empty primitive = HIGH (raw DOM fallback risk).
-- Missing Active enterprise primitives on a content page = HIGH.
-
----
-
-# WORKMITRA ENTERPRISE V2 — MANDATORY CODING & SECURITY RULES
-
-## 1. ARCHITECTURAL INTEGRITY (6-LAYER DEFENSE)
-- Always apply Zod runtime schema validation and text sanitization (sanitizeText / sanitizeUserText) on all incoming API request bodies, parameters, and drafts.
-- All database write/update operations must use `withResilientTransaction` to guarantee deadlock retries (40P01) and connection pooling limits.
-
-## 2. IDENTITY & TRANSACTION BINDING
-- Never accept or trust `wm_id` or user IDs from the request body directly. Always bind to the authenticated session context (`application.worker_wm_id`).
-- All shift claims and invitations must require verified tokens/proofs before state updates.
-
-## 3. NETWORK & ENVIRONMENT HARDENING
-- Ensure rate-limiting layers check sanitized IPs and session buckets.
-- Never downgrade SSL settings or insert hardcoded fallback secrets. All production boots must fail hard if environment secrets (JWT_SECRET / Pepper >= 32 chars) are missing.
-
-## 4. BUILD & TYPE STRICTNESS
-- Never allow `any` types for sensitive payload fields.
-- Ensure `npx tsc --noEmit` and `npm run build` pass cleanly without debug leftovers.
-
----
-
-## 5. DEPLOYMENT REFERENCE (PERMANENT CONTEXT)
-- Full production deployment manual (Docker, Nginx, env checklist, smoke commands): [`DEPLOYMENT.md`](./DEPLOYMENT.md)
-- Before changing deploy/runtime/proxy/env behavior, read and preserve the contracts documented in `DEPLOYMENT.md`.
-- Do not weaken fail-close secrets, `WM_TRUST_PROXY` + `clientIp.ts` trust rules, or Nginx `X-Forwarded-*` headers without an explicit ops decision.
+4. MANDATORY PRE-FLIGHT VERIFICATION CHECKLIST:
+   Before marking ANY task as complete, you MUST internally verify and report:
+   - [ ] Clean Slate Test: Does it pass on a fresh user session without hardcoded/stale seeds?
+   - [ ] Cross-Role Test: Does it work for BOTH Employer and Employee without state bleeding?
+   - [ ] Type & Test Integrity: Do `check:types`, ESLint, and Playwright tests pass with ZERO warnings?
+   - [ ] Atomic DB Gates: Are all RPCs idempotent and fail-safe?

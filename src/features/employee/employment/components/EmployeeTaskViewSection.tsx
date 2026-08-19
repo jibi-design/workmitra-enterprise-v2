@@ -74,7 +74,7 @@ export function EmployeeTaskViewSection({ hrCandidateId }: Props) {
       {/* Header */}
       <div style={{ marginBottom: 12 }}>
         <div
-          style={{ fontWeight: 900, fontSize: 14, color: "var(--wm-emp-text, var(--wm-er-text))" }}
+          style={{ fontWeight: "var(--wm-weight-bold, 700)", fontSize: 14, color: "var(--wm-emp-text, var(--wm-er-text))" }}
         >
           My Tasks
         </div>

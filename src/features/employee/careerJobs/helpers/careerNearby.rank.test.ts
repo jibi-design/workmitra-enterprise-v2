@@ -38,6 +38,15 @@ describe("rankCareerPostsForRecommended", () => {
     expect(ranked.map((row) => row.id)).toEqual(["b", "a"]);
   });
 
+  it("keeps posts without a work area code on the recommended feed", () => {
+    const ranked = rankCareerPostsForRecommended({
+      posts: [post("anywhere"), post("hit", "670001")],
+      workerPincode: "670001",
+      commuteRadiusKm: 10,
+    });
+    expect(ranked.map((row) => row.id)).toEqual(["hit", "anywhere"]);
+  });
+
   it("matches the same work area code locally without dates", () => {
     const ranked = rankCareerPostsForRecommended({
       posts: [post("miss", "110001"), post("hit", "670001")],

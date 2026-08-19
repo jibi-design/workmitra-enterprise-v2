@@ -1,5 +1,6 @@
 /** Job Mitra | PublicLandingPage.tsx | Marketing landing composition */
 
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../app/router/routePaths";
 import { AUTH_BACKEND_ENABLED } from "../../../shared/config/authConfig";
@@ -7,12 +8,44 @@ import { LandingFooterLinks } from "../../auth/components/LandingFooterLinks";
 import { PublicLandingDomainStrip } from "../components/PublicLandingDomainStrip";
 import { PublicLandingHero } from "../components/PublicLandingHero";
 
-const SUPPORT_EMAIL = "support@mitralabs.app";
+const SUPPORT_EMAIL = "support@mitraaccesshub.com";
 const PRIVACY_POLICY_URL = "https://jibi-design.github.io/workmitra-privacy/";
 
 const ENTER_PATH = AUTH_BACKEND_ENABLED ? ROUTE_PATHS.login : ROUTE_PATHS.landing;
 
+const TRUST_PROOF_ITEMS = [
+  "Separate workspaces for employees and employers.",
+  "Home screens highlight the next action you need to take.",
+  "Sensitive records stay private — not shown on public pages.",
+] as const;
+
 export function PublicLandingPage() {
+  const proofRef = useRef<HTMLDivElement>(null);
+  const [proofRevealed, setProofRevealed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    return reduceMotion || typeof IntersectionObserver === "undefined";
+  });
+
+  useEffect(() => {
+    if (proofRevealed) return;
+    const root = proofRef.current;
+    if (!root || typeof IntersectionObserver === "undefined") return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setProofRevealed(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.22, rootMargin: "0px 0px -6% 0px" },
+    );
+
+    observer.observe(root);
+    return () => observer.disconnect();
+  }, [proofRevealed]);
+
   return (
     <div className="wm-publicLanding">
       <PublicLandingHero
@@ -27,16 +60,26 @@ export function PublicLandingPage() {
         <h2 className="wm-publicLanding__sectionTitle" id="public-proof-title">
           Built for careful work
         </h2>
-        <div className="wm-publicLanding__proof">
-          <p className="wm-publicLanding__proofItem">
-            Role-separated workspaces for employees and employers.
-          </p>
-          <p className="wm-publicLanding__proofItem">
-            Action hubs surface only what needs a decision next.
-          </p>
-          <p className="wm-publicLanding__proofItem">
-            Sensitive records stay behind sealed storage patterns — not in public chrome.
-          </p>
+        <div
+          ref={proofRef}
+          className={
+            proofRevealed
+              ? "wm-publicLanding__proof is-revealed"
+              : "wm-publicLanding__proof is-pending"
+          }
+        >
+          {TRUST_PROOF_ITEMS.map((text, index) => (
+            <p
+              key={text}
+              className={
+                proofRevealed
+                  ? `wm-publicLanding__proofItem wm-animateScaleIn wm-publicLanding__proofItem--d${index}`
+                  : "wm-publicLanding__proofItem"
+              }
+            >
+              {text}
+            </p>
+          ))}
         </div>
       </section>
 

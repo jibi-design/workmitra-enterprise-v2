@@ -1,8 +1,7 @@
 // App: Job Mitra / WorkMitra_Enterprise_v2
-// File: EmployeeCareerNavCards.tsx
-// Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\careerJobs\components\careerHome\EmployeeCareerNavCards.tsx
+// File: EmployeeCareerNavCards.tsx — Wave 2 Design DNA DomainCard
 
-import type { ReactNode } from "react";
+import { DomainCard } from "../../../../../shared/components/layout/designDna";
 
 type Props = {
   activeJobCount: number;
@@ -10,21 +9,6 @@ type Props = {
   onSearchJobs: () => void;
   onMyApplications: () => void;
 };
-
-const CAREER_BLUE = "var(--wm-er-accent-career, #1d4ed8)";
-const CAREER_BLUE_DEEP = "#1e3a8a";
-const CAREER_TEXT = "var(--wm-er-text, #1e293b)";
-const CAREER_MUTED = "var(--wm-er-muted, #64748b)";
-const INACTIVE_BADGE_BG = "rgba(15,23,42,0.055)";
-const INACTIVE_BADGE_TEXT = "rgba(15,23,42,0.58)";
-
-function ChevronIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="currentColor" d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6-6-6Z" />
-    </svg>
-  );
-}
 
 function IconSearch() {
   return (
@@ -48,164 +32,79 @@ function IconApplications() {
   );
 }
 
-function NavCard({
-  icon,
-  title,
-  subtitle,
-  label,
-  metric,
-  primary,
-  onClick,
-}: {
-  icon: ReactNode;
-  title: string;
-  subtitle: string;
-  label: string;
-  metric: number;
-  primary?: boolean;
-  onClick: () => void;
-}) {
-  const hasMetric = metric > 0;
-
-  return (
-    <button
-      type="button"
-      className="wm-press-card"
-      onClick={onClick}
-      aria-label={title}
-      style={{
-        width: "100%",
-        textAlign: "left",
-        padding: "var(--wm-card-padding)",
-        borderRadius: "var(--wm-radius-employee-card)",
-        border: primary ? "1px solid rgba(29,78,216,0.24)" : "1px solid rgba(29,78,216,0.11)",
-        background: primary
-          ? "linear-gradient(135deg, rgba(255,255,255,1), rgba(239,246,255,0.94))"
-          : "linear-gradient(135deg, rgba(255,255,255,1), rgba(248,250,252,0.98))",
-        boxShadow: primary
-          ? "0 16px 34px rgba(29,78,216,0.085)"
-          : "0 12px 26px rgba(15,23,42,0.05)",
-        cursor: "pointer",
-        display: "grid",
-        gridTemplateColumns: "48px 1fr",
-        gap: "var(--wm-stack-gap)",
-      }}
-    >
-      <div
-        style={{
-          width: 48,
-          height: 48,
-          borderRadius: "var(--wm-radius-chip)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: primary ? "rgba(29,78,216,0.11)" : "rgba(29,78,216,0.055)",
-          color: primary ? CAREER_BLUE : CAREER_BLUE_DEEP,
-          border: primary ? "1px solid rgba(29,78,216,0.14)" : "1px solid rgba(29,78,216,0.08)",
-        }}
-      >
-        {icon}
-      </div>
-
-      <div style={{ minWidth: 0 }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "space-between",
-            gap: 10,
-          }}
-        >
-          <div style={{ minWidth: 0 }}>
-            <div className="wm-typeCardTitle">{title}</div>
-            <div className="wm-typeHelper" style={{ marginTop: 5 }}>
-              {subtitle}
-            </div>
-          </div>
-
-          <div
-            style={{
-              flexShrink: 0,
-              minWidth: 34,
-              height: 28,
-              padding: "0 10px",
-              borderRadius: "var(--wm-radius-pill)",
-              background: hasMetric ? CAREER_BLUE : INACTIVE_BADGE_BG,
-              color: hasMetric ? "#fff" : INACTIVE_BADGE_TEXT,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 12,
-              fontWeight: 950,
-            }}
-          >
-            {metric}
-          </div>
-        </div>
-
-        <div
-          style={{
-            marginTop: 10,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 10,
-          }}
-        >
-          <span style={{ fontSize: 11, fontWeight: 950, color: CAREER_BLUE_DEEP }}>{label}</span>
-          <span
-            style={{
-              width: 26,
-              height: 26,
-              borderRadius: "var(--wm-radius-pill)",
-              background: "rgba(29,78,216,0.055)",
-              color: CAREER_BLUE_DEEP,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <ChevronIcon />
-          </span>
-        </div>
-      </div>
-    </button>
-  );
-}
-
 export function EmployeeCareerNavCards({
   activeJobCount,
   activeApplicationCount,
   onSearchJobs,
   onMyApplications,
 }: Props) {
+  const appsFirst = activeApplicationCount > 0;
+  const findCard = (
+      <DomainCard
+        domain="career"
+        audience="employee"
+        active={!appsFirst}
+        stack
+        title="Find Career Jobs"
+        subtitle="Browse active long-term roles and choose where to apply."
+        ariaLabel="Find Career Jobs"
+        onClick={onSearchJobs}
+        icon={<IconSearch />}
+        iconStyle={{
+          background: "color-mix(in srgb, var(--wm-career-accent, #2563eb) 12%, transparent)",
+          color: "var(--wm-career-accent, #2563eb)",
+        }}
+      >
+        <span className="wm-erDomainBadge" aria-hidden="true">
+          <span className="wm-erDomainBadge__dot" />
+          {activeJobCount > 0 ? `${activeJobCount} open` : "Start discovery"}
+        </span>
+      </DomainCard>
+  );
+  const appsCard = (
+      <DomainCard
+        domain="career"
+        audience="employee"
+        active={appsFirst}
+        stack
+        title="My Applications"
+        subtitle="Track applications, interviews, offers, and next steps."
+        ariaLabel="My Applications"
+        onClick={onMyApplications}
+        icon={<IconApplications />}
+        iconStyle={{
+          background: "color-mix(in srgb, var(--wm-career-accent, #2563eb) 12%, transparent)",
+          color: "var(--wm-career-accent, #2563eb)",
+        }}
+      >
+        <span className="wm-erDomainBadge" aria-hidden="true">
+          <span className="wm-erDomainBadge__dot" />
+          {activeApplicationCount > 0
+            ? `${activeApplicationCount} in progress`
+            : "Review progress"}
+        </span>
+      </DomainCard>
+  );
+
   return (
-    <section className="wm-stackGrid">
+    <section className="wm-stackGrid" data-testid="employee-career-nav-cards">
       <div>
-        <div style={{ fontSize: 13, fontWeight: 950, color: CAREER_TEXT }}>Career actions</div>
-        <div style={{ marginTop: 3, fontSize: 11.5, fontWeight: 750, color: CAREER_MUTED }}>
+        <div className="wm-typeCardTitle">Career actions</div>
+        <div className="wm-typeHelper" style={{ marginTop: 3 }}>
           Continue from the right long-term work step.
         </div>
       </div>
-
-      <NavCard
-        icon={<IconSearch />}
-        title="Find Career Jobs"
-        subtitle="Browse active long-term roles and choose where to apply."
-        label="Start discovery"
-        metric={activeJobCount}
-        primary
-        onClick={onSearchJobs}
-      />
-
-      <NavCard
-        icon={<IconApplications />}
-        title="My Applications"
-        subtitle="Track applications, interviews, offers, and next steps."
-        label="Review progress"
-        metric={activeApplicationCount}
-        onClick={onMyApplications}
-      />
+      {appsFirst ? (
+        <>
+          {appsCard}
+          {findCard}
+        </>
+      ) : (
+        <>
+          {findCard}
+          {appsCard}
+        </>
+      )}
     </section>
   );
 }

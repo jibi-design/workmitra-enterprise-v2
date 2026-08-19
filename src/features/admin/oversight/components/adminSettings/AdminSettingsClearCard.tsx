@@ -42,7 +42,7 @@ export function AdminSettingsClearCard({
 
         <AdminSettingsClearRow
           label="Clear Workforce Data"
-          description="No data stored yet (Phase-0)"
+          description="No data stored yet"
           color="var(--wm-ad-workforce)"
           disabled={!hasWorkforceKeys}
           onClear={() => {}}

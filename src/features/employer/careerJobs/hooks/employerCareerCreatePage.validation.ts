@@ -2,6 +2,7 @@ import type { StepBasicData } from "../components/CareerCreateStepBasic";
 import type { StepInterviewData } from "../components/CareerCreateStepInterview";
 import type { StepRequirementsData } from "../components/CareerCreateStepRequirements";
 import { CREATE_PAGE_VALIDATION_STARTED_AT } from "../helpers/employerCareerCreatePage.helpers";
+import { isValidPincode } from "../../../shared/location/pincode";
 
 export function getStep1Errors(basic: StepBasicData): string[] {
   const errors: string[] = [];
@@ -18,7 +19,10 @@ export function getStep1Errors(basic: StepBasicData): string[] {
   }
 
   if (basic.workMode !== "remote" && basic.location.trim().length < 2) {
-    errors.push("Work City is required for on-site/hybrid roles.");
+    errors.push("Reporting area is required for on-site/hybrid roles.");
+  }
+  if (!isValidPincode(basic.locationPincode)) {
+    errors.push("Work area code is required.");
   }
   return errors;
 }

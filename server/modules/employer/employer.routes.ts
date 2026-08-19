@@ -9,6 +9,7 @@ import { handleEmployerHrRoutes } from "./hr/hr.routes.js";
 import { handleEmployerWorkforceRoutes } from "./workforce/workforce.routes.js";
 import { handleEmployerVerificationRoutes } from "./verification/verification.routes.js";
 import { handleEmployerPlannerRoutes } from "./planner/planner.routes.js";
+import { handleEmployerEventDayRoutes } from "./eventDay/eventDay.routes.js";
 import { handleEmployerNotificationRoutes } from "./notifications/notifications.routes.js";
 import { handleEmployerCareerExitRoutes } from "../career/career.exit.routes.js";
 import { sendNotFound } from "../../utils/http.js";
@@ -25,7 +26,7 @@ const EMPLOYER_PREFIX = "/v1/jobmitra/employer";
  * An Employee or Admin session hitting any /employer/* endpoint will receive 403.
  * Role is never read from the request body or query string.
  *
- * Sub-domain route handlers (career, shift, vault, hr, workforce) are mounted below.
+ * Sub-domain route handlers (career, shift, event-day, vault, hr, workforce) are mounted below.
  */
 export async function handleEmployerRoutes(
   req: IncomingMessage,
@@ -74,6 +75,9 @@ export async function handleEmployerRoutes(
 
           const handledPlanner = await handleEmployerPlannerRoutes(authedReq, res, url, method);
           if (handledPlanner) return;
+
+          const handledEventDay = await handleEmployerEventDayRoutes(authedReq, res, url, method);
+          if (handledEventDay) return;
 
           const handledVault = await handleEmployerVaultRoutes(authedReq, res, url, method);
           if (handledVault) return;

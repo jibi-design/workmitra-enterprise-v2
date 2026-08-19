@@ -8,42 +8,42 @@ import type { PulseConfig } from "./pulseRegistryTypes";
 export const PULSE_REGISTRY_EMPLOYMENT = {
   [PulseEvent.EMPLOYMENT_JOINED]: {
     ...PULSE_VISUAL_TOKENS.SUCCESS,
-    duration: "2s",
+    domain: "employment",
     resolutionType: "ROUTE",
     targetPath: ROUTE_PATHS.employeeCareerHome,
   },
 
   [PulseEvent.EMPLOYMENT_RESIGNATION_SUBMITTED]: {
     ...PULSE_VISUAL_TOKENS.WARNING,
-    duration: "2s",
+    domain: "employment",
     resolutionType: "ROUTE",
     targetPath: ROUTE_PATHS.employerCareerHome,
   },
 
   [PulseEvent.EMPLOYMENT_RESIGNATION_WITHDRAWN]: {
     ...PULSE_VISUAL_TOKENS.INFO,
-    duration: "2s",
+    domain: "employment",
     resolutionType: "ROUTE",
     targetPath: ROUTE_PATHS.employerCareerHome,
   },
 
   [PulseEvent.EMPLOYMENT_RESIGNATION_CONFIRMED]: {
     ...PULSE_VISUAL_TOKENS.WARNING,
-    duration: "2s",
+    domain: "employment",
     resolutionType: "ROUTE",
     targetPath: ROUTE_PATHS.employeeCareerHome,
   },
 
   [PulseEvent.EMPLOYMENT_TERMINATED]: {
     ...PULSE_VISUAL_TOKENS.CRITICAL,
-    duration: "2s",
+    domain: "employment",
     resolutionType: "ROUTE",
     targetPath: ROUTE_PATHS.employeeCareerHome,
   },
 
   [PulseEvent.EMPLOYMENT_FORCE_COMPLETED]: {
     ...PULSE_VISUAL_TOKENS.WARNING,
-    duration: "2s",
+    domain: "employment",
     resolutionType: "ROUTE",
     targetPath: ROUTE_PATHS.employerCareerHome,
   },

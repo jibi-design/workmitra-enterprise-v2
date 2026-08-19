@@ -4,7 +4,7 @@
 
 import { NoticeModal } from "../../../../shared/components/NoticeModal";
 
-export type EmployeeSettingsNoticeTone = "info" | "warn";
+export type EmployeeSettingsNoticeTone = "info" | "warn" | "success";
 
 export type EmployeeSettingsNotice = {
   title: string;

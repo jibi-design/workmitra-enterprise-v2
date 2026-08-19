@@ -43,9 +43,7 @@ const SUB_STYLE: CSSProperties = {
 
 const GRID_STYLE: CSSProperties = {
   marginTop: 12,
-  display: "grid",
   gap: 9,
-  gridTemplateColumns: "repeat(auto-fit, minmax(135px, 1fr))",
 };
 
 const FIELD_STYLE: CSSProperties = {
@@ -93,7 +91,7 @@ export function CandidateReviewToolbar({
         </button>
       </div>
 
-      <div style={GRID_STYLE}>
+      <div className="wm-stable-row" style={GRID_STYLE}>
         <input
           type="search"
           value={filters.query}

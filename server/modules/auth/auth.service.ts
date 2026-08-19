@@ -55,6 +55,29 @@ export const authService = {
     return memoryAuthService.resetPassword(token, password);
   },
 
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+    meta: RequestMeta,
+  ): Promise<LoginResult> {
+    if (isDbAuthEnabled()) {
+      return dbAuthService.changePassword(userId, currentPassword, newPassword, meta);
+    }
+    return memoryAuthService.changePassword(userId, currentPassword, newPassword);
+  },
+
+  async deleteAccount(
+    userId: string,
+    password: string,
+    meta: RequestMeta,
+  ): Promise<{ ok: true } | { ok: false; code: string; message: string; httpStatus?: number }> {
+    if (isDbAuthEnabled()) {
+      return dbAuthService.deleteAccount(userId, password, meta);
+    }
+    return memoryAuthService.deleteAccount(userId, password);
+  },
+
   async getUserById(userId: string): Promise<AuthUser | null> {
     if (isDbAuthEnabled()) return dbAuthService.getUserById(userId);
     return memoryAuthService.getUserById(userId);

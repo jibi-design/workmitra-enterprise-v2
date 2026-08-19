@@ -48,6 +48,7 @@ export function EmployerProfilePage() {
       phone: draft.phone.trim(),
       locationCity: draft.locationCity.trim(),
       locationState: draft.locationState.trim(),
+      locationPincode: draft.locationPincode.trim(),
       companyDescription: draft.companyDescription.trim(),
       publicHandle: draft.publicHandle?.trim().toLowerCase(),
     };
@@ -92,7 +93,7 @@ export function EmployerProfilePage() {
   }, []);
 
   return (
-    <div>
+    <div className="pb-safe-nav">
       <div className="wm-profileHero">
         <div className="wm-profileHero__avatar wm-profileHero__avatar--employer" aria-hidden="true">
           {d.companyLogo ? (

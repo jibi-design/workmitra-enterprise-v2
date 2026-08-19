@@ -13,6 +13,7 @@ export type ShiftPostDemo = {
   payPerDay: number;
   payBasis?: ShiftPayBasis;
   locationName: string;
+  locationPincode?: string;
   distanceKm: number;
   startAt: number;
   endAt: number;

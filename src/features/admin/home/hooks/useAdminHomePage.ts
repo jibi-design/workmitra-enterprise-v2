@@ -31,6 +31,10 @@ export function useAdminHomePage() {
     nav(ROUTE_PATHS.adminAlerts);
   }, [nav]);
 
+  const openModeration = useCallback(() => {
+    nav(ROUTE_PATHS.adminModeration);
+  }, [nav]);
+
   const toggleTimeline = useCallback(() => {
     setShowTimeline((value) => !value);
   }, []);
@@ -49,6 +53,7 @@ export function useAdminHomePage() {
     showResetConfirm,
     handleReset,
     openAuditLog,
+    openModeration,
     toggleTimeline,
     openResetConfirm,
     closeResetConfirm,

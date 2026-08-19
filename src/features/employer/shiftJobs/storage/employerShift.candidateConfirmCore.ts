@@ -18,6 +18,7 @@ import {
   restoreEmployeeWorkspaces,
   writeEmployeeApplications,
 } from "./employerShift.employeeBridge";
+import { shiftAppIdsMatch, shiftPostIdsMatch } from "../../../shift/utils/shiftIdBridge";
 import { getEmployerShiftPost } from "./employerShift.postActions.crud";
 import type { ApplicantStatus, EmployeeShiftApplication, ShiftPost } from "./employerShift.types";
 import type { ConfirmCandidateSagaResult } from "./employerShift.candidateConfirm.types";
@@ -29,7 +30,9 @@ export function confirmCandidate(post: ShiftPost, appId: string): ConfirmCandida
   // Re-read for vacancy integrity if caller passed a stale snapshot
   const livePost = getEmployerShiftPost(post.id) ?? post;
   const apps = readEmployeeApplications();
-  const target = apps.find((app) => app.id === appId && app.postId === livePost.id);
+  const target = apps.find(
+    (app) => shiftAppIdsMatch(app.id, appId) && shiftPostIdsMatch(app.postId, livePost.id),
+  );
   const vacancyLimit = getSafeVacancyLimit(livePost.vacancies);
 
   if (!target) return { ok: false, reason: "not_found" };

@@ -22,7 +22,7 @@ function seedDraft(id = "dp_p22"): string {
         id,
         name: "Concurrency Draft",
         companyName: "Lock Co",
-        locationName: "Kochi",
+        locationName: "City A",
         category: "Security",
         experience: "experienced",
         startDate: "2026-12-01",

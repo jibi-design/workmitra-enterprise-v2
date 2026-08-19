@@ -81,11 +81,49 @@ export function resolvePostAuthRoute(role: AppRole, fallback: string): string {
   return sanitizeAppRoute(pending, role, fallback);
 }
 
-/** HashRouter deep links: /employee/... in pathname → /#/employee/... */
+/**
+ * HashRouter deep links:
+ * - /employee/... in pathname → /#/employee/...
+ * - /labs/pass/verify/:token in pathname → /#/labs/pass/verify/:token (phone QR)
+ * - over-encoded hash #/%2Flogin or #%2Flogin → #/login
+ */
 export function normalizeHashRouterDeepLink(): void {
+  const rewriteOverEncodedHash = (): boolean => {
+    const hash = window.location.hash;
+    if (!/%2[fF]/.test(hash)) return false;
+    try {
+      let decoded = hash.startsWith("#") ? hash.slice(1) : hash;
+      for (let i = 0; i < 3; i += 1) {
+        const next = decodeURIComponent(decoded);
+        if (next === decoded) break;
+        decoded = next;
+      }
+      const path = decoded.startsWith("/") ? decoded : `/${decoded}`;
+      const targetHash = `#${path}`;
+      if (targetHash === hash) return false;
+      window.location.replace(
+        `${window.location.origin}${window.location.pathname}${window.location.search}${targetHash}`,
+      );
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  if (rewriteOverEncodedHash()) return;
+
+  if (!(window as Window & { __wmHashEncodeFix?: boolean }).__wmHashEncodeFix) {
+    (window as Window & { __wmHashEncodeFix?: boolean }).__wmHashEncodeFix = true;
+    window.addEventListener("hashchange", () => {
+      rewriteOverEncodedHash();
+    });
+  }
+
   const { pathname, search } = window.location;
   if (!pathname || pathname === "/" || pathname === "/index.html") return;
-  if (!/^\/(employee|employer|admin)(\/|$)/.test(pathname)) return;
+  const isAppPath = /^\/(employee|employer|admin)(\/|$)/.test(pathname);
+  const isPassVerify = /^\/labs\/pass\/verify\/[^/]+\/?$/.test(pathname);
+  if (!isAppPath && !isPassVerify) return;
 
   const target = `${window.location.origin}/#${pathname}${search}`;
   if (window.location.href === target) return;

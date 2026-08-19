@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 
 import type { MouseEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { useSoftAuth } from "../../../../shared/guest/useSoftAuth";
 import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
 import {
   getAppliedCategories,
@@ -22,6 +23,7 @@ import {
 import { getMatchQuality, getTopMatches } from "../helpers/smartMatchEngine";
 import type { MatchablePost } from "../helpers/smartMatchEngine";
 import { filterShiftPosts, hasActiveShiftSearchFilters } from "../helpers/shiftSearchFilters";
+import { filterPostsNearWorker } from "../helpers/nearbyJobs.filter";
 import {
   getBlockedPostIds,
   getShiftCategories,
@@ -44,6 +46,7 @@ import type { ToastTone } from "../../../../shared/components/feedback/GlobalToa
 
 export function useShiftSearchPageState() {
   const nav = useNavigate();
+  const { requireAuthForAction } = useSoftAuth();
   const { feedStatus, feedErrorMessage, retryFeed } = useShiftSearchFeedStatus();
 
   useEffect(() => {
@@ -79,7 +82,18 @@ export function useShiftSearchPageState() {
   const [appliedIds, setAppliedIds] = useState<Set<string>>(() => new Set());
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(() => new Set(getFavoriteShiftIds()));
 
-  const profile = useMemo(() => employeeProfileStorage.get(), []);
+  const locationKey = useSyncExternalStore(
+    employeeProfileStorage.subscribe,
+    () => {
+      const next = employeeProfileStorage.get();
+      return `${next.basePincode}|${next.commuteRadius}|${(next.city ?? "").trim()}|${next.skills.length}`;
+    },
+    () => "",
+  );
+  const profile = useMemo(() => {
+    void locationKey;
+    return employeeProfileStorage.get();
+  }, [locationKey]);
   const profileCity = (profile.city ?? "").trim();
   const hasProfileSkills = Array.isArray(profile.skills) && profile.skills.length > 0;
   const isDiscoveryProfileReady = Boolean(profileCity) && hasProfileSkills;
@@ -98,8 +112,15 @@ export function useShiftSearchPageState() {
   }, [applications, workspaces]);
 
   const discoverablePosts = useMemo(() => {
-    return allPosts.filter((post) => isShiftOpenForDiscovery(post) && !blockedPostIds.has(post.id));
-  }, [allPosts, blockedPostIds]);
+    const open = allPosts.filter(
+      (post) => isShiftOpenForDiscovery(post) && !blockedPostIds.has(post.id),
+    );
+    return filterPostsNearWorker({
+      posts: open,
+      workerPincode: profile.basePincode,
+      commuteRadiusKm: profile.commuteRadius,
+    });
+  }, [allPosts, blockedPostIds, profile.basePincode, profile.commuteRadius]);
 
   const categories = useMemo(() => getShiftCategories(discoverablePosts), [discoverablePosts]);
 
@@ -204,6 +225,16 @@ export function useShiftSearchPageState() {
   const handleQuickApply = useCallback(
     (event: MouseEvent, postId: string) => {
       event.stopPropagation();
+      if (
+        !requireAuthForAction({
+          action: "apply_shift",
+          targetId: postId,
+          returnPath: ROUTE_PATHS.employeeShiftPostDetails.replace(":postId", postId),
+          roleHint: "employee",
+        })
+      ) {
+        return;
+      }
 
       if (appliedIds.has(postId) || isAlreadyApplied(postId)) {
         showToast(SHIFT_APPLY_CONFLICT_MESSAGE, 3200, "warn");
@@ -220,7 +251,7 @@ export function useShiftSearchPageState() {
 
       showToast(SHIFT_APPLY_CONFLICT_MESSAGE, 3200, "warn");
     },
-    [appliedIds, showToast],
+    [appliedIds, requireAuthForAction, showToast],
   );
 
   return {

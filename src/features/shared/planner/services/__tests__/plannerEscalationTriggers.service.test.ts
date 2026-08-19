@@ -38,7 +38,7 @@ describe("Hybrid A2 P2.4 — planner escalation triggers", () => {
     const planId = demandPlannerStorage.create({
       name: "Understaff Plan",
       companyName: "Risk Co",
-      locationName: "Kochi",
+      locationName: "City A",
       category: "Security",
       experience: "experienced",
       startDate: "2026-07-21",
@@ -63,7 +63,7 @@ describe("Hybrid A2 P2.4 — planner escalation triggers", () => {
     const planId = demandPlannerStorage.create({
       name: "Bell Understaff",
       companyName: "Risk Co",
-      locationName: "Kochi",
+      locationName: "City A",
       category: "Security",
       experience: "experienced",
       startDate: "2026-07-21",
@@ -90,7 +90,7 @@ describe("Hybrid A2 P2.4 — planner escalation triggers", () => {
     const planId = demandPlannerStorage.create({
       name: "NoShow Plan",
       companyName: "Risk Co",
-      locationName: "Kochi",
+      locationName: "City A",
       category: "Security",
       experience: "experienced",
       startDate: "2026-07-18",

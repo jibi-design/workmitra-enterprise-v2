@@ -1,18 +1,14 @@
-/** Job Mitra | PulseIndicator.tsx | src/features/pulse/PulseIndicator.tsx */
+/** Job Mitra | PulseIndicator.tsx | Surface inset rail for notification cards */
 
 import type { CSSProperties } from "react";
 
-import { getEdgeTone, getLedModeClassName } from "./pulseEdgeTones";
+import { PulseEdgeLight } from "./pulseEdgeVisuals";
+import { getEdgeTone } from "./pulseEdgeTones";
 import { PULSE_REGISTRY, type NotificationId } from "./pulseRegistry";
 import type { PulseChainSeverity } from "./pulseTypes";
 import { usePulseStore } from "./pulseStore";
 
 type PulseIndicatorSeverity = PulseChainSeverity;
-
-type PulseLedStyle = CSSProperties & {
-  readonly "--wm-led-color-a"?: string;
-  readonly "--wm-led-color-b"?: string;
-};
 
 interface PulseIndicatorProps {
   readonly notificationId: NotificationId;
@@ -22,10 +18,8 @@ interface PulseIndicatorProps {
 }
 
 /**
- * Shows the global Pulse Navigation LED for notification-level cards.
- *
- * Renders only a 10px glass LED dot (left-edge chrome).
- * Does not dim siblings or blink the full card.
+ * Surface-host rail on notification-level cards.
+ * Does not dim siblings or blink the card.
  */
 export function PulseIndicator({
   notificationId,
@@ -33,6 +27,7 @@ export function PulseIndicator({
   severity = "info",
   style,
 }: PulseIndicatorProps) {
+  void style;
   const isPulseActiveInStore = usePulseStore((state) => {
     return state.isPulseActive(notificationId);
   });
@@ -66,34 +61,18 @@ export function PulseIndicator({
         : "breathe";
 
   const toneSeverity: PulseChainSeverity = isResolving ? "success" : severity;
-  const tone = getEdgeTone(String(notificationId), toneSeverity);
-
-  const ledStyle: PulseLedStyle = {
-    position: "absolute",
-    left: 12,
-    top: "50%",
-    transform: "translateY(-50%) translateZ(0)",
-    width: 10,
-    height: 10,
-    borderRadius: "50%",
-    background: tone.background,
-    boxShadow: tone.shadow,
-    zIndex: 9999,
-    pointerEvents: "none",
-    willChange: "opacity, transform",
-    "--wm-led-color-a": tone.ledColorA,
-    "--wm-led-color-b": tone.ledColorB,
-    ...style,
-  };
+  const tone = getEdgeTone({
+    eventId: notificationId,
+    severity: toneSeverity,
+  });
 
   return (
-    <span
-      aria-hidden="true"
-      className={getLedModeClassName(toneSeverity, mode)}
-      data-pulse-visual-mode={mode}
-      style={ledStyle}
-    >
-      <span className="wm-led__core" />
-    </span>
+    <PulseEdgeLight
+      tone={tone}
+      edgeMode="full"
+      severity={toneSeverity}
+      mode={mode}
+      paintHost="surface"
+    />
   );
 }

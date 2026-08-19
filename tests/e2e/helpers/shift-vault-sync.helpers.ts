@@ -45,7 +45,7 @@ export async function ensureVaultWorkerProfile(page: Page): Promise<void> {
       pii.piiSecureStorage.setJson("wm_employee_profile_v1", {
         uniqueId: workerMlId,
         fullName: workerName,
-        city: "Kochi",
+        city: "City A",
         skills: ["loading"],
         experience: "fresher",
         languages: ["Malayalam"],
@@ -236,7 +236,14 @@ export async function submitEmployerVaultRating(page: Page): Promise<void> {
   await page.getByRole("button", { name: "Skilled", exact: true }).click();
   await page.getByRole("button", { name: "Good communication", exact: true }).click();
   await page.getByRole("button", { name: "Yes" }).click();
+  const employerReview = page
+    .waitForResponse(
+      (res) => /\/reviews/.test(res.url()) && (res.status() === 200 || res.status() === 201),
+      { timeout: 15_000 },
+    )
+    .catch(() => null);
   await page.getByRole("button", { name: "Submit Rating" }).click();
+  await employerReview;
   await expect(page.getByRole("button", { name: "Submit Rating" })).toHaveCount(0, {
     timeout: 10_000,
   });
@@ -251,7 +258,14 @@ export async function submitWorkerVaultRating(page: Page): Promise<void> {
   await page.getByRole("button", { name: "Paid on time", exact: true }).click();
   await page.getByRole("button", { name: "Respectful", exact: true }).click();
   await page.getByRole("button", { name: "Yes" }).click();
+  const workerReview = page
+    .waitForResponse(
+      (res) => /\/reviews/.test(res.url()) && (res.status() === 200 || res.status() === 201),
+      { timeout: 15_000 },
+    )
+    .catch(() => null);
   await page.getByRole("button", { name: "Submit Rating" }).click();
+  await workerReview;
   await expect(page.getByRole("button", { name: "Submit Rating" })).toHaveCount(0, {
     timeout: 10_000,
   });

@@ -23,10 +23,9 @@ export function EmployeeCareerAvailabilityBanner({
     <section
       className="wm-ee-card"
       style={{
-        background: "rgba(255, 255, 255, 0.7)",
-        border: "1px solid rgba(255, 255, 255, 0.9)",
+        background: "#ffffff",
+        border: "1px solid rgba(226, 232, 240, 0.9)",
         boxShadow: "0 8px 24px rgba(15, 23, 42, 0.04)",
-        backdropFilter: "blur(var(--wm-blur-md))",
       }}
     >
       <div style={{ display: "flex", gap: "var(--wm-stack-gap)", alignItems: "center" }}>

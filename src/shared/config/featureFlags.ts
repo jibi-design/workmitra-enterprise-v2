@@ -4,7 +4,10 @@
  * Phase 2 domains (Workforce, HR, Manager Console).
  * Launch default: hidden. Opt-in only via VITE_SHOW_PHASE2=1.
  */
-export const showPhase2Features = import.meta.env.VITE_SHOW_PHASE2 === "1";
+export const showPhase2Features =
+  import.meta.env.PROD
+    ? import.meta.env.VITE_SHOW_PHASE2 === "1"
+    : import.meta.env.VITE_SHOW_PHASE2 !== "0";
 
 /**
  * Shift Ops (Field Ops) Phase 0–1 greenfield.

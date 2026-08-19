@@ -6,8 +6,9 @@
  * - Does NOT redefine .wm-shiftEmployee* / .wm-shiftHome* / Framer-bound classes.
  * - EmployeeShiftHome + EmployerShiftHome keep their dedicated CSS + motion as-is.
  *
- * Wave 1 padding contract:
- * - Default pad = --wm-card-padding (same as .wm-ee-card / .wm-er-card)
+ * Wave 1 padding contract (global DNA SSOT):
+ * - Default pad = --wm-dna-card-padding / --wm-card-padding (= 14px)
+ * - Tile min-height = --wm-dna-card-min-height (= 140px) when used as primary tiles
  * - --compact → --wm-card-padding-compact
  * - --inset → --wm-card-padding-inset
  * - --flush → 0 (lists / nested shells that set their own pad)
@@ -21,7 +22,7 @@
   box-sizing: border-box;
   border-radius: var(--wm-radius-employee-card);
   border: 1px solid rgba(226, 232, 240, 0.8); /* slate-200/80 */
-  background: rgba(255, 255, 255, 0.8); /* bg-white/80 */
+  background: #ffffff;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05); /* shadow-sm */
   /* Default pad matches .wm-ee-card / .wm-er-card contract (Wave 1) */
   padding: var(--wm-card-padding);
@@ -39,11 +40,12 @@
   padding: 0;
 }
 
-@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .wm-shift-surface-glass {
-    backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
-    -webkit-backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
-  }
+.wm-shift-card .wm-shift-surface-glass,
+.wm-career-card .wm-shift-surface-glass,
+.wm-ee-card .wm-shift-surface-glass,
+.wm-er-card .wm-shift-surface-glass {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .wm-er-vShift .wm-shift-surface-glass {
@@ -55,11 +57,8 @@
   border-color: rgba(167, 243, 208, 0.72);
   background:
     radial-gradient(circle at 50% 0%, rgba(236, 253, 245, 0.55), transparent 62%),
-    rgba(255, 255, 255, 0.82);
-  box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.05),
-    0 10px 22px rgba(15, 23, 42, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
 }
 
 /* ------------------------------------------------ */
@@ -68,25 +67,22 @@
 /* ------------------------------------------------ */
 .wm-shift-pressable {
   transition:
-    transform var(--wm-motion-base) var(--wm-motion-ease),
     box-shadow var(--wm-motion-base) var(--wm-motion-ease),
     border-color var(--wm-motion-base) var(--wm-motion-ease),
     background var(--wm-motion-base) var(--wm-motion-ease);
-  will-change: transform;
 }
 
 .wm-shift-pressable:active {
-  transform: translateY(0) scale(0.98);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
 }
 
 @media (hover: hover) {
   .wm-shift-pressable:hover {
-    transform: translateY(-2px); /* -translate-y-0.5 */
-    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08); /* shadow-md-ish */
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
   }
 
   .wm-shift-pressable:hover:active {
-    transform: translateY(0) scale(0.98);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
   }
 }
 
@@ -99,7 +95,7 @@
   padding: var(--wm-kpi-padding);
   border-radius: var(--wm-radius-employee-card);
   border: 1px solid rgba(226, 232, 240, 0.8);
-  background: rgba(255, 255, 255, 0.8);
+  background: #ffffff;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
   display: flex;
   flex-direction: column;
@@ -116,13 +112,6 @@
     background 180ms ease;
 }
 
-@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .wm-shift-kpi-tile {
-    backdrop-filter: blur(12px) var(--wm-glass-saturate);
-    -webkit-backdrop-filter: blur(12px) var(--wm-glass-saturate);
-  }
-}
-
 .wm-er-vShift .wm-shift-kpi-tile {
   border-radius: var(--wm-radius-employer-card);
 }
@@ -136,7 +125,7 @@
   .wm-shift-kpi-tile:hover {
     transform: translateY(-1px) scale(1.01);
     border-color: rgba(167, 243, 208, 0.65);
-    background: rgba(255, 255, 255, 0.92);
+    background: #ffffff;
     box-shadow:
       0 8px 18px rgba(15, 23, 42, 0.07),
       inset 0 1px 0 rgba(255, 255, 255, 0.95);
@@ -209,6 +198,7 @@
   justify-content: center;
   gap: var(--wm-space-4);
   white-space: nowrap;
+  flex-shrink: 0;
   transition:
     transform var(--wm-motion-fast) var(--wm-motion-ease),
     border-color var(--wm-motion-base) var(--wm-motion-ease),
@@ -238,9 +228,17 @@
 
 .wm-shift-seg-tab-row {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: var(--wm-kpi-grid-gap);
   align-items: center;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.wm-shift-seg-tab-row::-webkit-scrollbar {
+  display: none;
 }
 
 /* ------------------------------------------------ */

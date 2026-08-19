@@ -16,6 +16,8 @@ import { syncVaultShiftRatings } from "../../workVault/services/shiftVaultHistor
 import { isReadOnlyStatus } from "../helpers/shiftWorkspaceDisplayHelpers";
 import { getSafeExternalMapsUrl } from "../helpers/shiftWorkspacePage.helpers";
 import { shiftWorkspacesStorage } from "../storage/shiftWorkspaces.storage";
+import { useShiftWorkspaceMessageSync } from "../../../shift/services/workspaceMessageSync.service";
+import { shiftWorkspaceIdsMatch } from "../../../shift/utils/shiftIdBridge";
 
 export function useShiftWorkspacePage() {
   const nav = useNavigate();
@@ -30,7 +32,12 @@ export function useShiftWorkspacePage() {
     shiftWorkspacesStorage.getAll,
   );
 
-  const workspace = workspaces.find((item) => item.id === workspaceId) ?? null;
+  const workspace =
+    workspaces.find((item) => item.id === workspaceId) ??
+    workspaces.find((item) => shiftWorkspaceIdsMatch(item.id, workspaceId)) ??
+    null;
+
+  useShiftWorkspaceMessageSync("employee");
 
   useEffect(() => {
     if (!workspace) return;
@@ -102,6 +109,14 @@ export function useShiftWorkspacePage() {
     });
   }, []);
 
+  const handleReplyError = useCallback((message: string) => {
+    setNotice({
+      title: "Reply not sent",
+      message,
+      tone: "error",
+    });
+  }, []);
+
   const derived = useMemo(() => {
     if (!workspace) {
       return null;
@@ -109,9 +124,11 @@ export function useShiftWorkspacePage() {
 
     const readOnly = isReadOnlyStatus(workspace.status);
     const workerMlId = employeeProfileStorage.get().uniqueId ?? "";
-    const employerMlId = employerSettingsStorage.get().uniqueId ?? "";
-    const canRate =
-      workspace.status === "completed" && Boolean(workerMlId) && Boolean(employerMlId);
+    const employerMlId =
+      employerSettingsStorage.get().uniqueId?.trim() ||
+      workspace.companyName.trim() ||
+      "employer";
+    const canRate = workspace.status === "completed" && Boolean(workerMlId);
     const hasRated = workspace.rating
       ? true
       : workerMlId && employerMlId
@@ -158,6 +175,7 @@ export function useShiftWorkspacePage() {
     derived,
     handleRatingSubmitted,
     handleReplySuccess,
+    handleReplyError,
     handleExited,
   };
 }

@@ -7,9 +7,11 @@
 */
 
 /* ------------------------------------------------ */
-/* Press physics — Golden Rulebook Step 3           */
+/* Press physics — Wave 1 touch-first DNA           */
+/* Mobile: :active scale — never rely on :hover alone */
 /* ------------------------------------------------ */
-.wm-press-btn {
+.wm-press-btn,
+.wm-actionPill {
   transition:
     transform var(--wm-motion-fast) var(--wm-motion-spring),
     box-shadow var(--wm-motion-base) var(--wm-motion-spring),
@@ -21,8 +23,9 @@
   touch-action: manipulation;
 }
 
-.wm-press-btn:active {
-  transform: scale(0.96);
+.wm-press-btn:active,
+.wm-actionPill:active {
+  transform: scale(var(--wm-dna-press-scale, 0.95));
 }
 
 .wm-press-card {
@@ -36,7 +39,7 @@
 }
 
 .wm-press-card:active {
-  transform: scale(0.98);
+  transform: scale(var(--wm-dna-press-scale, 0.95));
 }
 
 .wm-pressable {
@@ -48,7 +51,61 @@
 }
 
 .wm-pressable:active {
-  transform: scale(0.98);
+  transform: scale(var(--wm-dna-press-scale, 0.95));
+}
+
+/* Persistent selected / current route — domain accent ring + glow */
+.wm-press-card.is-active,
+.wm-press-card[aria-current="page"],
+.wm-press-card[aria-current="true"],
+.wm-homeGlassCard.is-active,
+.wm-homeGlassCard[aria-current="page"],
+.wm-actionPill.is-active,
+.wm-actionPill[aria-pressed="true"] {
+  border: var(--wm-dna-active-ring, var(--wm-domain-border));
+  box-shadow: var(--wm-dna-active-glow);
+}
+
+/* ActionPill — compact CTA DNA (alias of press-btn + chip radius) */
+.wm-actionPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 8px 14px;
+  border-radius: var(--wm-radius-chip, 16px);
+  border: 1px solid color-mix(in srgb, var(--wm-card-domain-accent, #64748b) 28%, transparent);
+  background: color-mix(in srgb, var(--wm-card-domain-accent, #64748b) 12%, rgba(255, 255, 255, 0.92));
+  color: color-mix(in srgb, var(--wm-card-domain-accent, #64748b) 72%, #0f172a);
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.wm-actionPill--shift {
+  --wm-card-domain-accent: var(--wm-shift-accent, #16a34a);
+}
+
+.wm-actionPill--career {
+  --wm-card-domain-accent: var(--wm-career-accent, #2563eb);
+}
+
+.wm-actionPill--diary {
+  --wm-card-domain-accent: var(--wm-diary-accent, #3b82f6);
+}
+
+.wm-actionPill--planner {
+  --wm-card-domain-accent: var(--wm-planner-accent, #0891b2);
+}
+
+.wm-actionPill--vault {
+  --wm-card-domain-accent: var(--wm-vault-accent, #7c3aed);
+}
+
+.wm-actionPill--neutral {
+  --wm-card-domain-accent: #64748b;
 }
 
 /* ------------------------------------------------ */
@@ -94,12 +151,10 @@
 @keyframes wm-slideUp {
   from {
     opacity: 0;
-    transform: translate3d(0, 8px, 0);
   }
 
   to {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
   }
 }
 
@@ -430,6 +485,7 @@
   .wm-press-btn,
   .wm-press-card,
   .wm-pressable,
+  .wm-actionPill,
   .wm-ent-slide-backdrop,
   .wm-ent-slide-panel,
   .wm-ent-slide--reduced,
@@ -455,6 +511,7 @@
   .wm-press-btn:active,
   .wm-press-card:active,
   .wm-pressable:active,
+  .wm-actionPill:active,
   .wm-ent-tab-btn:active,
   .wm-shift-cta:active,
   .wm-career-cta:active,

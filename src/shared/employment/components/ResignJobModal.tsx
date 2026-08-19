@@ -136,6 +136,7 @@ export function ResignJobModal({
 
           <button
             type="button"
+            data-testid="career-resign-submit"
             onClick={handleConfirm}
             disabled={!reason}
             style={{

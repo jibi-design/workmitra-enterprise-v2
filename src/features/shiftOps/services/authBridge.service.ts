@@ -7,9 +7,9 @@ import { getCurrentActorId, identityBridge } from "../../../app/identity/identit
 import { useAuthStore } from "../../../shared/store/authStore";
 import { getShiftOpsSupabase, isShiftOpsSupabaseConfigured } from "../lib/supabaseClient";
 
+/** Browser-safe bridge payload — no Supabase refresh_token (CRIT-01). */
 type BridgeSessionPayload = {
   access_token: string;
-  refresh_token: string;
   expires_in: number | null;
   expires_at: number | null;
   supabase_user_id: string;
@@ -38,11 +38,16 @@ function isShiftOpsSessionOwnedByCurrentJmUser(session: Session): boolean {
   return readJobmitraUserIdFromSession(session) === jmId;
 }
 
+/**
+ * Install access JWT for RLS. GoTrue setSession requires a non-empty refresh_token field;
+ * we pass a non-refreshable sentinel so real refresh tokens never enter the browser (CRIT-01).
+ * Expiry → ensureShiftOpsAuthSession re-mints via Job Mitra HttpOnly cookie.
+ */
 async function applySession(session: BridgeSessionPayload): Promise<void> {
   const sb = getShiftOpsSupabase();
   const { error } = await sb.auth.setSession({
     access_token: session.access_token,
-    refresh_token: session.refresh_token,
+    refresh_token: `jm_norefresh_${session.supabase_user_id}`,
   });
   if (error) throw error;
 }

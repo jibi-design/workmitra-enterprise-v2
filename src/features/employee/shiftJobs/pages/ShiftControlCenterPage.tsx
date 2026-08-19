@@ -2,6 +2,9 @@
 // File name: ShiftControlCenterPage.tsx
 // Shift Jobs Home — discovery: stats + Find/Applications + Featured preview
 
+import { useNavigate } from "react-router-dom";
+import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { showShiftOpsFeatures } from "../../../../shared/config/featureFlags";
 import { ShiftDirectInviteSafetyModals } from "../components/ShiftDirectInviteSafetyModals";
 import { ShiftToast } from "../components/ShiftPostDetailSections";
 import { useEmployeeDirectInvitePendingFlow } from "../hooks/useEmployeeDirectInvitePendingFlow";
@@ -14,6 +17,7 @@ import { DomainHero } from "../../../../shared/components/layout/DomainHero";
 import { ShiftControlCenterStatsTiles } from "../components/ShiftControlCenterStatsTiles";
 
 export function ShiftControlCenterPage() {
+  const nav = useNavigate();
   useShiftAvailabilityMatchPulse();
   const directInviteFlow = useEmployeeDirectInvitePendingFlow();
 
@@ -32,11 +36,22 @@ export function ShiftControlCenterPage() {
         icon={<ShiftCalendarIcon />}
         title="Shift Jobs Home"
         subtitle="Discover shifts and track applications"
-        description="Browse open shifts, manage applications, and jump into live work from Shift Ops — all in one place."
+        description={
+          showShiftOpsFeatures
+            ? "Browse open shifts, manage applications, and jump into live work from Shift Ops — all in one place."
+            : "Browse open shifts and manage applications — all in one place."
+        }
         trailing={
-          <span className="wm-domainHeroBadge" data-testid="shift-jobs-status-pill">
-            Live work → Shift Ops
-          </span>
+          showShiftOpsFeatures ? (
+            <button
+              type="button"
+              className="wm-domainHeroBadge wm-domainHeroBadge--action"
+              data-testid="shift-jobs-status-pill"
+              onClick={() => nav(ROUTE_PATHS.employeeShiftOpsHub)}
+            >
+              Live work → Shift Ops
+            </button>
+          ) : undefined
         }
       />
 

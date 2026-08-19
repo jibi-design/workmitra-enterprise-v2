@@ -152,7 +152,7 @@ export function ShiftOpsDualVerifyPage({ onComplete }: Props) {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@company.com"
+                  placeholder="Work email"
                   autoComplete="email"
                   disabled={flow.busy}
                   aria-label="Work email"

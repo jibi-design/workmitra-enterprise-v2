@@ -1,6 +1,8 @@
 import { authRepository } from "./auth.repository.js";
 import { hashIp } from "./crypto.js";
 import type { RequestMeta } from "./request-meta.js";
+import { writeAuditLog } from "../../observability/auditLogger.js";
+import { isDbAuthEnabled } from "./env.js";
 
 export const auditService = {
   async log(
@@ -12,6 +14,20 @@ export const auditService = {
       metadata?: Record<string, unknown>;
     },
   ): Promise<void> {
+    // WAVE-5.1 Layer 4 — always emit structured audit line (memory + DB paths).
+    writeAuditLog({
+      action: eventType,
+      requestId: meta.requestId,
+      userId: extra?.userId ?? null,
+      metadata: {
+        ...(extra?.metadata ?? {}),
+        hasSessionId: Boolean(extra?.sessionId),
+        hasIp: Boolean(meta.ip),
+      },
+    });
+
+    if (!isDbAuthEnabled()) return;
+
     try {
       await authRepository.insertAuditEvent({
         eventType,

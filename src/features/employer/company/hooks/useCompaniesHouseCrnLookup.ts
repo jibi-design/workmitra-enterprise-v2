@@ -33,7 +33,7 @@ export function useCompaniesHouseCrnLookup() {
       setCompany(result);
       return result;
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Companies House lookup failed.";
+      const message = err instanceof Error ? err.message : "Company registration lookup failed.";
       setCompany(null);
       setError(message);
       return null;

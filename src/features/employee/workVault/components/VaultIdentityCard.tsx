@@ -9,6 +9,7 @@ type Props = {
   photoDataUrl: string;
   phoneVerified: boolean;
   emailVerified: boolean;
+  showContactVerification?: boolean;
 };
 
 export function VaultIdentityCard({
@@ -18,6 +19,7 @@ export function VaultIdentityCard({
   photoDataUrl,
   phoneVerified,
   emailVerified,
+  showContactVerification = true,
 }: Props) {
   const initials = (fullName || "?")
     .split(/\s+/)
@@ -41,6 +43,7 @@ export function VaultIdentityCard({
         <div className="wm-vault-identity-hero__city">{city || "City not set"}</div>
         {uniqueId ? <div className="wm-vault-identity-hero__id">{uniqueId}</div> : null}
 
+        {showContactVerification ? (
         <div className="wm-vault-identity-hero__badges">
           <StatusBadge
             label={phoneVerified ? "Phone verified" : "Phone pending"}
@@ -51,6 +54,7 @@ export function VaultIdentityCard({
             tone={emailVerified ? "active" : "warning"}
           />
         </div>
+        ) : null}
       </div>
     </div>
   );

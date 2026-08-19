@@ -1,11 +1,8 @@
 // App name: Job Mitra
 // Local Workers Radar — read-only dual-count (Anti-Leakage). No browse, no click action.
 
-import { useEffect, useSyncExternalStore } from "react";
-import {
-  readLocalWorkersRadarMetricsSnapshot,
-  subscribeLocalWorkersRadarMetrics,
-} from "../helpers/localWorkersRadar.helpers";
+import { useEffect } from "react";
+import { useLocalWorkersRadarDisplay } from "../hooks/useLocalWorkersRadarDisplay";
 import { availabilityStorage } from "../../../shared/shift/availability.reader";
 import { AvailabilitySyncDebugChip } from "./AvailabilitySyncDebugChip";
 import { ensureAvailabilitySyncDebugListener } from "../../../shared/shift/availabilitySyncDebug";
@@ -21,29 +18,28 @@ function RadarIcon() {
   );
 }
 
-function readMetrics() {
-  return readLocalWorkersRadarMetricsSnapshot();
-}
-
 export function LocalWorkersRadarCard() {
   useEffect(() => {
     ensureAvailabilitySyncDebugListener();
   }, []);
 
-  const { totalAvailableCount, favoriteAvailableCount } = useSyncExternalStore(
-    subscribeLocalWorkersRadarMetrics,
-    readMetrics,
-    () => readLocalWorkersRadarMetricsSnapshot(),
-  );
+  const { totalAvailableCount, favoriteAvailableCount, usingServer } =
+    useLocalWorkersRadarDisplay();
 
   const hasMatches = totalAvailableCount > 0;
   const hasFavoriteMatches = favoriteAvailableCount > 0;
   const workerLabel = totalAvailableCount === 1 ? "worker" : "workers";
-  const poolIds = availabilityStorage.getAllActive().map((b) => b.workerMlId);
 
   return (
     <section
-      className={`wm-press-card wm-shiftLocalWorkersRadar${hasMatches ? " wm-shiftLocalWorkersRadar--active" : ""}`}
+      className={[
+        "wm-press-card",
+        "wm-shiftLocalWorkersRadar",
+        "wm-homeGlassCard--domainShift",
+        hasMatches ? "wm-shiftLocalWorkersRadar--active is-active" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
       data-testid="local-workers-radar-card"
       aria-label="Local Workers Radar information"
       role="status"
@@ -85,7 +81,7 @@ export function LocalWorkersRadarCard() {
         lines={[
           `total=${totalAvailableCount}`,
           `favoritesFree=${favoriteAvailableCount}`,
-          `pool=[${poolIds.slice(0, 5).join(",")}${poolIds.length > 5 ? "…" : ""}]`,
+          `source=${usingServer ? "server" : "local"}`,
           `event=${availabilityStorage.CHANGED_EVENT}`,
         ]}
       />

@@ -93,8 +93,8 @@ export function formatCareerSalaryDisplay(
   const minLabel = salaryMin > 0 ? salaryMin.toLocaleString() : "—";
   const maxLabel = salaryMax > 0 ? salaryMax.toLocaleString() : minLabel;
 
-  if (minLabel === maxLabel) return `₹${minLabel}/${periodLabel}`;
-  return `₹${minLabel} – ₹${maxLabel}/${periodLabel}`;
+  if (minLabel === maxLabel) return `${minLabel}/${periodLabel}`;
+  return `${minLabel} – ${maxLabel}/${periodLabel}`;
 }
 
 const ACTIVE_POST_STATUSES = new Set<CareerJobPost["status"]>(["draft", "active", "paused"]);

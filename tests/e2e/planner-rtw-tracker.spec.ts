@@ -4,6 +4,11 @@
  */
 
 import { expect, test, type Page } from "@playwright/test";
+import {
+  E2E_VERIFIED_EMPLOYER_PROFILE,
+  ensureVerifiedEmployerProfileOnPage,
+} from "./helpers/e2e-employer-profile";
+import { hydrateGigEmployerApplicationsOnPage } from "./helpers/gig-planner-circuit.helpers";
 
 const SPLASH_KEY = "wm_splash_intro_played_v1";
 const PLAN = "dp_e2e_p25_rtw";
@@ -21,10 +26,14 @@ function expiryInDays(days: number): string {
 async function seedRtwRoster(page: Page): Promise<void> {
   const expiresOn = expiryInDays(7);
   await page.addInitScript(
-    ({ sessionRole, splashKey, planId, worker, expiresOn }) => {
+    ({ sessionRole, splashKey, planId, worker, expiresOn, employerProfile }) => {
       sessionStorage.setItem("wm_role_session_v1", sessionRole);
       sessionStorage.setItem(splashKey, "1");
       localStorage.setItem("wm:pulse-nav-enabled", "true");
+      localStorage.setItem("wm_employer_profile_v1", JSON.stringify(employerProfile));
+      localStorage.setItem("wm:employer-profile", JSON.stringify(employerProfile));
+      localStorage.setItem("wm_employer_onboarding_complete_v1", "1");
+      localStorage.setItem("wm_onboarding_complete_v1", "1");
       localStorage.setItem(
         "wm_employer_demand_plans_v1",
         JSON.stringify([
@@ -32,7 +41,7 @@ async function seedRtwRoster(page: Page): Promise<void> {
             id: planId,
             name: "P25 RTW Plan",
             companyName: "RTW Co",
-            locationName: "Kochi",
+            locationName: "City A",
             category: "Security",
             experience: "experienced",
             startDate: "2026-07-01",
@@ -86,7 +95,14 @@ async function seedRtwRoster(page: Page): Promise<void> {
       localStorage.setItem("wm_planner_rtw_fired_v1", "{}");
       localStorage.setItem("wm_planner_audit_log_v1", "[]");
     },
-    { sessionRole: "employer", splashKey: SPLASH_KEY, planId: PLAN, worker: WORKER, expiresOn },
+    {
+      sessionRole: "employer",
+      splashKey: SPLASH_KEY,
+      planId: PLAN,
+      worker: WORKER,
+      expiresOn,
+      employerProfile: E2E_VERIFIED_EMPLOYER_PROFILE,
+    },
   );
 }
 
@@ -94,6 +110,9 @@ test.describe("Planner RTW Tracker — Hybrid A2 P2.5", () => {
   test("roster detail shows RTW badge and settings", async ({ page }) => {
     await seedRtwRoster(page);
     await page.goto(`/#/employer/planner/roster/${PLAN}`, { waitUntil: "domcontentloaded" });
+    await ensureVerifiedEmployerProfileOnPage(page);
+    await hydrateGigEmployerApplicationsOnPage(page);
+    await page.reload({ waitUntil: "domcontentloaded" });
 
     await expect(page.getByTestId("planner-employer-roster-detail")).toBeVisible();
     await expect(page.getByTestId("planner-roster-rtw-settings")).toBeVisible();

@@ -83,17 +83,22 @@ interface AuthState {
     role: Exclude<UserRole, "admin">;
   }) => Promise<UserProfile>;
   logoutSession: () => Promise<void>;
+  /** Store compliance — delete account via API then clear local auth. */
+  deleteAccountSession: (password: string) => Promise<void>;
 }
 
 /** Legacy UX bridge for components still reading roleStorage — not security. */
 function syncRoleBridge(user: UserProfile | null) {
   if (!AUTH_BACKEND_ENABLED) return;
-  if (user) {
-    const mode = user.activeMode ?? (user.role === "admin" ? null : user.role);
-    if (mode === "employee" || mode === "employer" || user.role === "admin") {
-      roleStorage.set(user.role === "admin" ? "admin" : mode!);
-    }
-  } else roleStorage.clear();
+  if (!user) return;
+  if (user.role === "admin") {
+    roleStorage.set("admin");
+    return;
+  }
+  const mode = user.activeMode ?? user.role;
+  if (mode === "employee" || mode === "employer") {
+    roleStorage.set(mode);
+  }
 }
 
 type AuthStoreSlice = (
@@ -157,13 +162,23 @@ const createAuthSlice: AuthStoreSlice = (set, get) => ({
       set({ sessionChecked: true });
       return;
     }
-    const user = await authService.fetchMe();
-    if (user) {
-      get().setAuth(user, null);
-      void ensureShiftOpsAuthSession().catch(() => {
-        /* bridge optional until server env configured */
-      });
-    } else {
+    try {
+      const user = await Promise.race([
+        authService.fetchMe(),
+        new Promise<null>((resolve) => {
+          window.setTimeout(() => resolve(null), 8_000);
+        }),
+      ]);
+      if (user) {
+        get().setAuth(user, null);
+        void ensureShiftOpsAuthSession().catch(() => {
+          /* bridge optional until server env configured */
+        });
+        return;
+      }
+      get().clearAuth();
+      void clearShiftOpsAuthSession();
+    } catch {
       get().clearAuth();
       void clearShiftOpsAuthSession();
     }
@@ -194,6 +209,14 @@ const createAuthSlice: AuthStoreSlice = (set, get) => ({
       } catch {
         // still clear client state
       }
+    }
+    await clearShiftOpsAuthSession();
+    get().clearAuth();
+  },
+
+  deleteAccountSession: async (password: string) => {
+    if (AUTH_BACKEND_ENABLED) {
+      await authService.deleteAccount(password);
     }
     await clearShiftOpsAuthSession();
     get().clearAuth();

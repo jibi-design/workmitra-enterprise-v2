@@ -3,13 +3,31 @@
 import { createClient } from "@supabase/supabase-js";
 import type { AuthUser } from "./types.js";
 
+/**
+ * Browser-safe bridge payload — CRIT-01: never include Supabase refresh_token.
+ * Access JWT only; re-mint via Job Mitra cookie session when expired.
+ */
 export type SupabaseBridgeSession = {
   access_token: string;
-  refresh_token: string;
   expires_in: number | null;
   expires_at: number | null;
   supabase_user_id: string;
 };
+
+/** Map GoTrue session → public bridge DTO (strips refresh_token). */
+export function toPublicBridgeSession(session: {
+  access_token: string;
+  expires_in?: number | null;
+  expires_at?: number | null;
+  user: { id: string };
+}): SupabaseBridgeSession {
+  return {
+    access_token: session.access_token,
+    expires_in: session.expires_in ?? null,
+    expires_at: session.expires_at ?? null,
+    supabase_user_id: session.user.id,
+  };
+}
 
 function bridgeConfigured(): boolean {
   return Boolean(
@@ -108,13 +126,8 @@ export async function mintSupabaseSessionForJobMitraUser(
   const session = otpData.session;
   return {
     ok: true,
-    session: {
-      access_token: session.access_token,
-      refresh_token: session.refresh_token,
-      expires_in: session.expires_in ?? null,
-      expires_at: session.expires_at ?? null,
-      supabase_user_id: session.user.id,
-    },
+    // CRIT-01 — refresh_token stays on API process only; never serialized to browser JSON.
+    session: toPublicBridgeSession(session),
   };
 }
 

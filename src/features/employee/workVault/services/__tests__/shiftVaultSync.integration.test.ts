@@ -34,7 +34,7 @@ function makeWorkspace(overrides?: Partial<ShiftWorkspace>): ShiftWorkspace {
     companyName: "Vault Corp",
     jobName: "Dock Helper",
     category: "other",
-    locationName: "Kochi",
+    locationName: "City A",
     startAt: now - 8 * 3_600_000,
     endAt: now,
     status: "completed",

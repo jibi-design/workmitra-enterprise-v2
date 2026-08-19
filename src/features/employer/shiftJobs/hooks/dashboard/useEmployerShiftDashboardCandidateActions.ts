@@ -10,6 +10,10 @@ import type { NoticeData } from "../../../../../shared/components/NoticeModal";
 import type { DashboardTab } from "../../helpers/shiftDashboardHelpers";
 import { employerShiftStorage } from "../../storage/employerShift.storage";
 import type { EmployeeShiftApplication, ShiftPost } from "../../storage/employerShift.storage";
+import {
+  confirmSyncFailureCopy,
+  isShiftNetworkFailure,
+} from "../../../../../shared/shift/shiftNetworkUi";
 
 type UseEmployerShiftDashboardCandidateActionsInput = {
   readonly postId: string;
@@ -43,10 +47,12 @@ export function useEmployerShiftDashboardCandidateActions({
     onMoveToShortlist: (id: string) =>
       busy(() => {
         employerShiftStorage.moveToShortlist(postId, id);
+        setTab("shortlisted");
       }),
     onMoveToWaiting: (id: string) =>
       busy(() => {
         employerShiftStorage.moveToWaiting(postId, id);
+        setTab("backup");
       }),
     onConfirm: (id: string) =>
       busy(async () => {
@@ -77,10 +83,14 @@ export function useEmployerShiftDashboardCandidateActions({
                 ? "This candidate is already confirmed for the shift."
                 : result.reason === "membership_failed"
                   ? "Unable to provision Shift Ops group membership. Confirm was not completed."
-                  : result.reason === "missing_site_or_worker"
-                    ? "This shift is missing a Shift Ops group link or worker Mitra Lab ID."
+                  : result.reason === "site_ensure_failed"
+                    ? isShiftNetworkFailure()
+                      ? confirmSyncFailureCopy()
+                      : "Could not create the Shift Ops group for this shift. Confirm was not completed — try again."
+                    : result.reason === "missing_site_or_worker"
+                      ? "This candidate is missing a Mitra Lab ID. Open the worker profile so an ID can be created, then try Confirm again."
                     : result.reason === "api_sync_failed" || result.reason === "api_ids_unavailable"
-                      ? "Server confirm failed. Local changes were rolled back — try again."
+                      ? confirmSyncFailureCopy()
                       : result.reason === "confirm_locked"
                         ? "Another tab is confirming a candidate for this shift. Try again in a moment."
                         : "Unable to confirm this candidate right now.";

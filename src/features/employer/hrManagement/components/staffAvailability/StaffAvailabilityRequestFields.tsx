@@ -108,7 +108,7 @@ export function StaffAvailabilityRequestFields({
             type="text"
             value={location}
             onChange={(event) => onLocationChange(event.target.value)}
-            placeholder="e.g. Site B, Main Office"
+            placeholder="Work location name"
             style={inputStyle}
           />
         </div>

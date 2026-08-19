@@ -1,0 +1,91 @@
+﻿{
+    "authenticatedStress":  {
+                                "rootCause":  "HTTP 429 TOO_MANY_REQUESTS on /auth/me and /auth/sessions at \u003e=200 concurrent (IP/session rate limits). Not HTML fallback. Not 5xx.",
+                                "okRate":  0.6787,
+                                "p95Ms":  1426,
+                                "sessionPool":  3,
+                                "throughputRps":  457.8,
+                                "chaos":  0,
+                                "waveSummary":  [
+                                                    {
+                                                        "authFail":  0,
+                                                        "concurrency":  1,
+                                                        "wave":  1
+                                                    },
+                                                    {
+                                                        "authFail":  0,
+                                                        "concurrency":  50,
+                                                        "wave":  2
+                                                    },
+                                                    {
+                                                        "authFail":  188,
+                                                        "concurrency":  200,
+                                                        "wave":  3
+                                                    },
+                                                    {
+                                                        "authFail":  500,
+                                                        "concurrency":  500,
+                                                        "wave":  4
+                                                    },
+                                                    {
+                                                        "authFail":  1000,
+                                                        "concurrency":  1000,
+                                                        "wave":  5
+                                                    }
+                                                ],
+                                "authP95Ms":  745,
+                                "diagnostic":  {
+                                                   "conc200":  "132/200 HTTP 429; body code TOO_MANY_REQUESTS retryAfterSec~58",
+                                                   "conc50":  "100% HTTP 200 on /me and /sessions"
+                                               },
+                                "vusMax":  1000,
+                                "base":  "https://march-strings-showing-console.trycloudflare.com",
+                                "timeoutCount":  0,
+                                "p99Ms":  1768,
+                                "authOkRate":  0.036,
+                                "verdict":  "FAIL",
+                                "http5xx":  0,
+                                "totalRequests":  5253
+                            },
+    "supabaseMetrics":  {
+                            "instruction":  "Observe Supabase Dashboard → Database → Connections (Supavisor pooler + Postgres) during ramp. Client cannot scrape dashboard.",
+                            "scrapedByHarness":  false,
+                            "note":  "At 429 saturation, many auth requests never reach Postgres — pool pressure understates true RLS capacity until rate limits are raised or multi-IP/multi-user load is used."
+                        },
+    "nextActions":  [
+                        "Provide CLOUDFLARE_API_TOKEN or complete wrangler login, then: cd cloudflare/mitra-access-hub-worker; npx wrangler deploy",
+                        "Verify: curl -D- https://mitraaccesshub.com/v1/jobmitra/health → application/json",
+                        "Decide: temporarily raise AUTH rate limits for certification OR run multi-user/multi-IP harness, then re-run npm run test:load:store-stress:auth"
+                    ],
+    "apex":  {
+                 "contentType":  "text/html",
+                 "verdict":  "FAIL_HTML_SPA_FALLBACK",
+                 "url":  "https://mitraaccesshub.com/v1/jobmitra/health",
+                 "note":  "Worker not redeployed — wrangler OAuth timed out; no CLOUDFLARE_API_TOKEN",
+                 "httpStatus":  200
+             },
+    "tunnelUpstream":  {
+                           "contentType":  "application/json",
+                           "bodySample":  "{\"ok\":true,\"service\":\"workmitra-api\",\"db\":{\"ok\":true}}",
+                           "url":  "https://march-strings-showing-console.trycloudflare.com/v1/jobmitra/health",
+                           "verdict":  "PASS_JSON_API",
+                           "httpStatus":  200
+                       },
+    "blockers":  [
+                     "Cloudflare wrangler not authenticated — cannot deploy mitra-access-hub worker to mitraaccesshub.com",
+                     "Auth IP/session rate limits cap authenticated concurrency ~50–200 from single IP"
+                 ],
+    "generatedAt":  "2026-08-10T09:03:47.1884216Z",
+    "title":  "Authenticated Load Audit Report",
+    "workerScaffold":  {
+                           "setCookieDomainStrip":  true,
+                           "csrfPassthrough":  true,
+                           "path":  "cloudflare/mitra-access-hub-worker",
+                           "proxies":  [
+                                           "/v1/*",
+                                           "/auth/*"
+                                       ],
+                           "apiUpstreamInToml":  "https://march-strings-showing-console.trycloudflare.com",
+                           "deployedToApex":  false
+                       }
+}

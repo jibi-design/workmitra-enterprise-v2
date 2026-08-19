@@ -55,7 +55,7 @@ test.describe("Career Interview RSVP Chaos", () => {
       await gotoEmployeeHomeHub(employeePage);
 
       const actionId = pendingInterviewRsvpActionId();
-      await expect(employeePage.getByTestId(`pending-action-row-${actionId}`)).toBeVisible({
+      await expect(employeePage.getByTestId(`pending-action-row-${actionId}`).first()).toBeVisible({
         timeout: 15_000,
       });
       await clickPendingActionAccept(employeePage, actionId);
@@ -71,24 +71,61 @@ test.describe("Career Interview RSVP Chaos", () => {
     });
 
     await test.step("C. Reset pipeline + DECLINE RSVP → withdrawn (critical)", async () => {
-      // Fresh application for decline path
-      await employeePage.evaluate((postId) => {
-        const raw = localStorage.getItem("wm_employee_career_applications_v1") ?? "[]";
-        const apps = JSON.parse(raw) as Array<{ id: string; jobId: string; stage: string }>;
-        const next = apps.filter((a) => a.jobId !== postId);
-        localStorage.setItem("wm_employee_career_applications_v1", JSON.stringify(next));
+      // Fresh application for decline path — clear legacy + scoped employee partitions.
+      await employeePage.evaluate(({ postId, workerMlId }) => {
+        const scopeId = (raw: string) =>
+          String(raw || "unknown").trim().replace(/[^a-zA-Z0-9_-]/g, "_");
+        const workerScope = scopeId(workerMlId);
+        const workerAppsKey = `wm_employee_${workerScope}_career_applications_v1`;
+
+        const employerProfileRaw = localStorage.getItem("wm_employer_profile_v1");
+        let employerScope = "unknown_employer";
+        try {
+          if (employerProfileRaw) {
+            const profile = JSON.parse(employerProfileRaw) as {
+              uniqueId?: string;
+              companyUniqueId?: string;
+            };
+            employerScope = scopeId(profile.uniqueId || profile.companyUniqueId || employerScope);
+          }
+        } catch {
+          /* demo-safe */
+        }
+        const employerAppsKey = `wm_employer_${employerScope}_career_applications_v1`;
+
+        for (const key of [
+          "wm_employee_career_applications_v1",
+          workerAppsKey,
+          employerAppsKey,
+          "wm_pending_actions_dismissed_v1",
+          "wm_pending_actions_later_v1",
+        ]) {
+          if (key.includes("pending_actions")) {
+            localStorage.removeItem(key);
+            continue;
+          }
+          const raw = localStorage.getItem(key) ?? "[]";
+          const apps = JSON.parse(raw) as Array<{ id: string; jobId: string; stage: string }>;
+          const next = apps.filter((a) => a.jobId !== postId);
+          localStorage.setItem(key, JSON.stringify(next));
+        }
         window.dispatchEvent(new Event("wm:employee-career-applications-changed"));
-      }, CAREER_CIRCUIT_IDS.postId);
+        window.dispatchEvent(new Event("wm:pending-actions-changed"));
+      }, { postId: CAREER_CIRCUIT_IDS.postId, workerMlId: CAREER_CIRCUIT_IDS.workerMlId });
       await syncCareerDataOnly(employeePage, employerPage);
 
       appId = await careerApplyViaUi(employeePage, employerPage);
       await advanceToScheduledInterview(employerPage, employeePage, appId);
       await syncCareerDataOnly(employerPage, employeePage);
       await ensureCareerCircuitWorkerIdentity(employeePage);
+      await employeePage.evaluate(() => {
+        window.dispatchEvent(new Event("wm:employee-career-applications-changed"));
+        window.dispatchEvent(new Event("wm:pending-actions-changed"));
+      });
       await gotoEmployeeHomeHub(employeePage);
 
       const actionId = pendingInterviewRsvpActionId();
-      await expect(employeePage.getByTestId(`pending-action-row-${actionId}`)).toBeVisible({
+      await expect(employeePage.getByTestId(`pending-action-row-${actionId}`).first()).toBeVisible({
         timeout: 15_000,
       });
 

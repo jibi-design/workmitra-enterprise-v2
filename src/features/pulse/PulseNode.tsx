@@ -11,16 +11,16 @@ import {
 import { triggerLightHaptic } from "../../shared/platform/haptics";
 import type { PulseChainSeverity, PulseNodeId } from "./pulseTypes";
 import {
-  CAREER_EDGE_TONE,
-  getEdgeTone,
-  SHIFT_EDGE_TONE,
+  GREEN_EDGE_TONE,
   WARNING_EDGE_TONE,
+  getEdgeTone,
   type PulseEdgeTone,
   type PulseVisualMode,
 } from "./pulseEdgeTones";
 import { PulseButtonHalo, PulseEdgeLight } from "./pulseEdgeVisuals";
 import { renderChildrenWithCardBoundPulse, scrollPulseNodeIntoView } from "./pulseNodeChildren";
-import { usePulseAdvanceChain, usePulseNodeBindings } from "./usePulseNodeBindings";
+import { usePulseNodeBindings } from "./usePulseNodeBindings";
+import { usePulseStore } from "./pulseStore";
 
 type PulseCssVariableValue = string | number;
 type PulseEdgeMode = "full" | "floating";
@@ -48,10 +48,12 @@ type PulseNodeProps = {
 function resolveVisualMode(args: {
   storeIsActive: boolean;
   isResolving: boolean;
+  isFinalDestination: boolean;
   hasViewportBreathingPulse: boolean;
   isLocalGuideOrAlert: boolean;
 }): PulseVisualMode {
   if (args.isResolving) return "arrival";
+  if (args.storeIsActive && args.isFinalDestination) return "destination";
   if (args.storeIsActive) return "breathe";
   if (args.isLocalGuideOrAlert && args.hasViewportBreathingPulse) return "static";
   if (args.isLocalGuideOrAlert) return "breathe";
@@ -75,26 +77,30 @@ export function PulseNode({
   const nodeId = pulseId ?? id ?? "";
   const nodeRef = useRef<HTMLDivElement | null>(null);
 
-  const { storeIsActive, isResolving, severity, hasViewportBreathingPulse } =
+  const { storeIsActive, isResolving, isFinalDestination, severity, hasViewportBreathingPulse } =
     usePulseNodeBindings(nodeId);
-  const advanceChain = usePulseAdvanceChain();
+  const confirmPulseDestination = usePulseStore((state) => state.confirmPulseDestination);
+  const advanceChain = usePulseStore((state) => state.advanceChain);
 
   const canInteract = !disabled && Boolean(nodeId) && (storeIsActive || Boolean(onActivate));
   const focusRingClassName = nodeId
-    ? getEdgeTone(nodeId, severity).focusRing
-    : SHIFT_EDGE_TONE.focusRing;
+    ? getEdgeTone({ nodeId, severity }).focusRing
+    : GREEN_EDGE_TONE.focusRing;
 
   const isLocalGuideOrAlert = isGuiding || isAlert || isActive;
 
   const effectiveTone: PulseEdgeTone | null =
     storeIsActive || isResolving
-      ? getEdgeTone(nodeId, isResolving ? "success" : severity)
+      ? getEdgeTone({
+          nodeId,
+          severity: isResolving ? "success" : severity,
+        })
       : isAlert
         ? WARNING_EDGE_TONE
         : isGuiding
-          ? getEdgeTone(nodeId || "info", "info")
+          ? getEdgeTone({ nodeId: nodeId || undefined, severity: "info" })
           : isActive
-            ? CAREER_EDGE_TONE
+            ? GREEN_EDGE_TONE
             : null;
 
   const edgeSeverity: PulseChainSeverity = isResolving
@@ -108,6 +114,7 @@ export function PulseNode({
   const visualMode = resolveVisualMode({
     storeIsActive,
     isResolving,
+    isFinalDestination,
     hasViewportBreathingPulse,
     isLocalGuideOrAlert,
   });
@@ -122,10 +129,18 @@ export function PulseNode({
     return () => window.clearTimeout(timeoutId);
   }, [disabled, storeIsActive, nodeId]);
 
+  /**
+   * Current hop click moves the light to the next page.
+   * Destination click clears the path.
+   */
   function absorbPulse(): boolean {
     if (disabled || !storeIsActive) return false;
     void triggerLightHaptic();
-    advanceChain();
+    if (isFinalDestination) {
+      confirmPulseDestination(nodeId);
+    } else {
+      advanceChain();
+    }
     return true;
   }
 
@@ -176,11 +191,14 @@ export function PulseNode({
         data-pulse-node-id={nodeId}
         data-pulse-active={storeIsActive ? "true" : "false"}
         data-pulse-visual-mode={visualMode}
+        data-pulse-final={isFinalDestination ? "true" : undefined}
         data-pulse-variant="button"
         aria-disabled={disabled ? "true" : undefined}
         onClickCapture={storeIsActive ? () => absorbPulse() : undefined}
       >
-        {effectiveTone !== null && <PulseButtonHalo tone={effectiveTone} mode={visualMode} />}
+        {effectiveTone !== null && (
+          <PulseButtonHalo tone={effectiveTone} severity={edgeSeverity} mode={visualMode} />
+        )}
         {children}
       </div>
     );
@@ -213,11 +231,19 @@ export function PulseNode({
     <div
       ref={nodeRef}
       className={mergedClassName}
-      style={{ display: "block", width: "100%", boxSizing: "border-box", ...style }}
+      style={{
+        display: "block",
+        width: "100%",
+        boxSizing: "border-box",
+        position: "relative",
+        overflow: "visible",
+        ...style,
+      }}
       data-pulse-node-id={nodeId}
       data-pulse-active={storeIsActive ? "true" : "false"}
       data-pulse-visual-mode={visualMode}
       data-pulse-edge-mode={edgeMode}
+      data-pulse-final={isFinalDestination ? "true" : undefined}
       data-pulse-variant="card"
       role={canInteract ? "button" : undefined}
       tabIndex={canInteract ? 0 : undefined}

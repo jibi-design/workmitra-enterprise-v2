@@ -11,6 +11,7 @@ import { PlannerApplicationsEmptyState } from "./PlannerApplicationsEmptyState";
 type Props = {
   applications: ShiftApplicationData[];
   postMap: Map<string, ShiftPostData>;
+  pipelineHint?: string | null;
   onBrowseProjects: () => void;
   onOpenApplication: (application: ShiftApplicationData) => void;
 };
@@ -18,11 +19,17 @@ type Props = {
 export function PlannerApplicationsList({
   applications,
   postMap,
+  pipelineHint,
   onBrowseProjects,
   onOpenApplication,
 }: Props) {
   if (applications.length === 0) {
-    return <PlannerApplicationsEmptyState onBrowseProjects={onBrowseProjects} />;
+    return (
+      <PlannerApplicationsEmptyState
+        onBrowseProjects={onBrowseProjects}
+        pipelineHint={pipelineHint}
+      />
+    );
   }
 
   const entries = groupApplicationsForMyWork(applications).filter((entry) => entry.kind === "plan");

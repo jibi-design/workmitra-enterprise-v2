@@ -101,7 +101,7 @@ export type SmartEarningsDayLine = {
 export type SmartEarningsMeter = {
   selectedDayCount: number;
   estimatedTotal: number;
-  currency: "INR";
+  currency: "NONE";
   fillRatio: number;
   label: string;
   sublabel?: string;

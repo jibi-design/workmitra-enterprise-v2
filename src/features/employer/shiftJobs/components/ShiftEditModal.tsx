@@ -54,6 +54,7 @@ export function ShiftEditModal({ post, onSave, onClose }: ShiftEditModalProps) {
       startAt: toEpoch(fields.startDateStr),
       endAt: toEpoch(fields.endDateStr),
       locationName: fields.locationName.trim(),
+      locationPincode: fields.locationPincode.trim(),
       dressCode: fields.dressCode.trim() || undefined,
     });
   }

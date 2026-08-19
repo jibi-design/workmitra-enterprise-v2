@@ -2,6 +2,7 @@
 // File name: employerDemandPlanner.helpers.ts
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\helpers\employerDemandPlanner.helpers.ts
 
+import { isValidPincode } from "../../../shared/location/pincode";
 import type { FillStatus, FillStatusConfig } from "../types/employerDemandPlanner.types";
 import type { Step1Data } from "../components/wizard/DemandPlannerStep1.types";
 import type { DaySlot } from "../storage/demandPlannerStorage";
@@ -47,7 +48,8 @@ export function validateDemandPlannerIdentity(step1: Step1Data): string[] {
 
 export function validateDemandPlannerSchedule(step1: Step1Data): string[] {
   const errors = validateDemandPlannerCalendar(step1);
-  if (step1.locationName.trim().length < 2) errors.push("Work location is required.");
+  if (step1.locationName.trim().length < 2) errors.push("Reporting area is required.");
+  if (!isValidPincode(step1.locationPincode)) errors.push("Work area code is required.");
   return errors;
 }
 

@@ -40,7 +40,7 @@ export function EmployerShiftPostCardBody({
       onClick={() => onOpen(post.id)}
       style={{
         width: "100%",
-        padding: "12px 14px",
+        padding: "var(--wm-dna-card-padding, 14px)",
         background: "none",
         border: "none",
         cursor: "pointer",

@@ -8,7 +8,7 @@ import { authService } from "../services/authService";
 import { JobMitraLandingLogo } from "../components/JobMitraLandingLogo";
 import { LandingFooterLinks } from "../components/LandingFooterLinks";
 
-const SUPPORT_EMAIL = "support@mitralabs.app";
+const SUPPORT_EMAIL = "support@mitraaccesshub.com";
 const PRIVACY_POLICY_URL = "https://jibi-design.github.io/workmitra-privacy/";
 
 export function ForgotPasswordPage() {
@@ -25,7 +25,7 @@ export function ForgotPasswordPage() {
     setDebugToken(null);
 
     if (!AUTH_BACKEND_ENABLED) {
-      setError("Password recovery requires auth backend.");
+      setError("Password recovery is temporarily unavailable. Try again later.");
       return;
     }
 
@@ -65,7 +65,8 @@ export function ForgotPasswordPage() {
             <input
               className="wm-auth-input"
               type="email"
-              autoComplete="email"
+              name="email"
+              autoComplete="username"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}

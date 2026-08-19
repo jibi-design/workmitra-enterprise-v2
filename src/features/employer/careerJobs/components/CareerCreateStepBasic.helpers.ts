@@ -44,6 +44,7 @@ export type StepBasicData = {
   jobType: CareerJobType;
   workMode: CareerWorkMode;
   location: string;
+  locationPincode: string;
   vacancies: string;
   probationPeriod: string;
 };

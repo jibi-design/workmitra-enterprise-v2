@@ -1,4 +1,5 @@
 import type { StaffCategory, StaffDepartment, StaffRecord } from "./myStaff.types";
+import { scopeAppLocalId } from "../../../../shared/identity/constants/idConstants";
 
 export const STAFF_KEY = "wm_employer_staff_v1";
 export const CATEGORIES_KEY = "wm_employer_staff_categories_v1";
@@ -54,7 +55,8 @@ export function writeDepartments(departments: StaffDepartment[]): void {
 }
 
 export function genId(prefix: string): string {
-  return prefix + "_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
+  const scoped = scopeAppLocalId(prefix);
+  return scoped + "_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
 }
 
 export function normalizeName(value: string): string {

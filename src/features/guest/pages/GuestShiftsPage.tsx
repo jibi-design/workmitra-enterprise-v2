@@ -10,11 +10,9 @@ import {
 import { isShiftOpenForDiscovery } from "../../employee/shiftJobs/helpers/shiftSearchViewHelpers";
 import { EmployerTrustBadge } from "../../../shared/employerProfile/EmployerTrustBadge";
 import { guestStorage } from "../../../shared/guest/guestStorage";
-import { useSoftAuth } from "../../../shared/guest/useSoftAuth";
 
 export function GuestShiftsPage() {
   const nav = useNavigate();
-  const { requireAuthForAction } = useSoftAuth();
   const posts = useSyncExternalStore(
     subscribeShiftSearchPosts,
     getShiftSearchPostsSnapshot,
@@ -29,23 +27,14 @@ export function GuestShiftsPage() {
   const openPosts = useMemo(() => posts.filter((p) => isShiftOpenForDiscovery(p)), [posts]);
 
   function onSave(postId: string) {
-    const returnPath = ROUTE_PATHS.guestShifts;
-    const allowed = requireAuthForAction({
-      action: "save_shift",
-      targetId: postId,
-      returnPath,
-      roleHint: "employee",
-    });
-    // Always shortlist locally for guest utility (Wave 2).
     guestStorage.toggleShortlistShift(postId);
-    if (!allowed) return;
   }
 
   return (
     <div data-testid="guest-shifts-page" style={{ paddingTop: 14 }}>
       <h1 style={{ margin: 0, fontSize: 24, fontWeight: 900 }}>Open shifts</h1>
       <p style={{ marginTop: 6, fontSize: 13, color: "var(--wm-er-muted)" }}>
-        Browse freely. Saving or applying may ask you to sign in — then we resume here.
+        Browse freely. Applying may ask you to sign in — then we resume here.
       </p>
 
       {openPosts.length === 0 ? (
@@ -64,7 +53,7 @@ export function GuestShiftsPage() {
                 </div>
                 <EmployerTrustBadge variant="compact" />
                 <div style={{ marginTop: 8, fontSize: 14, fontWeight: 850, color: "#16a34a" }}>
-                  £{post.payPerDay} / day
+                  {post.payPerDay} / day
                 </div>
                 <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
                   <button

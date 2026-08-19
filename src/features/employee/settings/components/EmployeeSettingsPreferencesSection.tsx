@@ -57,7 +57,7 @@ export function EmployeeSettingsPreferencesSection({ settings, onSave, onToggle 
       <div className="wm-field">
         <label className="wm-label">Theme</label>
         <input className="wm-input" value="Light (locked)" disabled aria-disabled="true" />
-        <div className="wm-ee-helperText">Theme is locked to Light for now (Phase-0).</div>
+        <div className="wm-ee-helperText">Theme is locked to Light for now.</div>
       </div>
 
       <div

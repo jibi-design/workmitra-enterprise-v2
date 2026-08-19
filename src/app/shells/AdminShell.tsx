@@ -7,6 +7,7 @@ import { useThemeBundle } from "./useThemeBundle";
 import { useAppRole } from "../router/guards/useAppRole";
 import { AUTH_BACKEND_ENABLED } from "../../shared/config/authConfig";
 import { RouteGuardLoading } from "../../shared/components/routes/RouteGuardStatus";
+import { JobMitraBrandName } from "../../shared/components/brand/BrandName";
 
 function IconBack() {
   return (
@@ -47,6 +48,7 @@ const ADMIN_TABS: TabDef[] = [
   { label: "Audit", path: ROUTE_PATHS.adminAlerts, enabled: true },
   { label: "Analytics", path: ROUTE_PATHS.adminAnalytics, enabled: true },
   { label: "Alerts", path: ROUTE_PATHS.adminNotifications, enabled: true },
+  { label: "Moderation", path: ROUTE_PATHS.adminModeration, enabled: true },
   { label: "Settings", path: ROUTE_PATHS.adminSettings, enabled: true },
 ];
 
@@ -121,13 +123,8 @@ export function AdminShell() {
         </div>
 
         <div className="wm-title">
-          <h1>Job Mitra</h1>
-          <p>
-            Admin Control{" "}
-            <span className="wm-roleBadge wm-roleBadgeAdmin" aria-label="Demo workspace badge">
-              DEMO
-            </span>
-          </p>
+          <JobMitraBrandName as="h1" />
+          <p>Admin Control</p>
         </div>
 
         <div

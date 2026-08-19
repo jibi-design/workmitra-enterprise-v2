@@ -3,7 +3,6 @@
  * Source of truth: platform_ops.runtime_flags when DB available; else memory.
  */
 
-import { randomUUID } from "node:crypto";
 import { getPool } from "../../db/pool.js";
 import { isDbAuthEnabled } from "../auth/env.js";
 
@@ -119,35 +118,5 @@ export async function patchRuntimeFlags(
   }
 }
 
-/** Append plain-English audit row when platform_ops.admin_audit exists. */
-export async function writePlatformAudit(input: {
-  who: string;
-  what: string;
-  tone: "green" | "yellow" | "red";
-  action: string;
-  clientIp?: string;
-  meta?: Record<string, unknown>;
-}): Promise<{ ok: boolean; id?: string }> {
-  if (!isDbAuthEnabled() || !process.env.DATABASE_URL) {
-    return { ok: false };
-  }
-  const id = randomUUID();
-  try {
-    await getPool().query(
-      `INSERT INTO platform_ops.admin_audit (id, at_iso, who, what, tone, action, client_ip, meta)
-       VALUES ($1, now(), $2, $3, $4, $5, $6, $7::jsonb)`,
-      [
-        id,
-        input.who,
-        input.what,
-        input.tone,
-        input.action,
-        input.clientIp ?? null,
-        JSON.stringify(input.meta ?? {}),
-      ],
-    );
-    return { ok: true, id };
-  } catch {
-    return { ok: false };
-  }
-}
+/** Append plain-English audit row — delegates to immutable ledger service. */
+export { writePlatformAudit, appendAdminAudit, listAdminAudit } from "./adminAudit.service.js";

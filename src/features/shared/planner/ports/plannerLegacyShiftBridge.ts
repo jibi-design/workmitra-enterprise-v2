@@ -8,6 +8,8 @@
  *
  * Planner feature code must import Shift dual-write helpers ONLY from here
  * (or from plannerExecutionPort). Soft-wrap UI pages remain temporarily exempt until retired.
+ *
+ * Const/object SoT bindings stay as live `export { x } from` (ESM TDZ-safe).
  */
 
 export type { ExperienceLabel } from "../../../employer/shiftJobs/storage/employerShift.types";
@@ -24,13 +26,8 @@ export type { ShiftWorkspace } from "../../../employee/shiftJobs/types/shiftWork
 export type { StatusStyle } from "../../../employee/shiftJobs/helpers/shiftApplicationHelpers";
 
 export { employerShiftStorage } from "../../../employer/shiftJobs/storage/employerShift.storage";
+export { updateEmployerShiftPost } from "../../../employer/shiftJobs/storage/employerShift.postActions";
 export {
-  getEmployerShiftPosts,
-  updateEmployerShiftPost,
-} from "../../../employer/shiftJobs/storage/employerShift.postActions";
-export {
-  readEmployeeApplications,
-  writeEmployeeApplications,
   markEmployeeWorkspaceCancelled,
   broadcastToEmployeeWorkspace,
   readEmployeeWorkspaces,
@@ -39,12 +36,42 @@ export { findWorkspaceIdForPostAndWorker } from "../../../employer/shiftJobs/hel
 export { countApplicationsForPost } from "../../../employer/shiftJobs/helpers/shiftHomeHelpers";
 export { getAutoFillData } from "../../../employer/shiftJobs/helpers/shiftCreateHelpers";
 export { availabilityStorage } from "../../shift/availability.reader";
+export { fetchWorkersRadarCount, fetchWorkersRadarCountsByDates } from "../../../employer/shiftJobs/services/workersRadarApi.service";
 
-export {
-  getEmployerShiftPosts as getEmployerShiftPostsPublic,
-  readEmployeeApplications as readEmployeeApplicationsPublic,
-  findWorkspaceIdForPostAndWorker as findWorkspaceIdForPostAndWorkerPublic,
+import {
+  getEmployerShiftPosts as getEmployerShiftPostsImpl,
+  readEmployeeApplications as readEmployeeApplicationsImpl,
+  writeEmployeeApplications as writeEmployeeApplicationsImpl,
+  findWorkspaceIdForPostAndWorker as findWorkspaceIdForPostAndWorkerPublicImpl,
 } from "../../shift/shiftEmployerPublic";
+
+/** Dual-context-safe: employee sessions use marketplace/worker projections. */
+export function getEmployerShiftPosts(
+  ...args: Parameters<typeof getEmployerShiftPostsImpl>
+): ReturnType<typeof getEmployerShiftPostsImpl> {
+  return getEmployerShiftPostsImpl(...args);
+}
+export const getEmployerShiftPostsPublic = getEmployerShiftPosts;
+
+export function readEmployeeApplications(
+  ...args: Parameters<typeof readEmployeeApplicationsImpl>
+): ReturnType<typeof readEmployeeApplicationsImpl> {
+  return readEmployeeApplicationsImpl(...args);
+}
+export const readEmployeeApplicationsPublic = readEmployeeApplications;
+
+export function writeEmployeeApplications(
+  ...args: Parameters<typeof writeEmployeeApplicationsImpl>
+): ReturnType<typeof writeEmployeeApplicationsImpl> {
+  return writeEmployeeApplicationsImpl(...args);
+}
+
+export function findWorkspaceIdForPostAndWorkerPublic(
+  ...args: Parameters<typeof findWorkspaceIdForPostAndWorkerPublicImpl>
+): ReturnType<typeof findWorkspaceIdForPostAndWorkerPublicImpl> {
+  return findWorkspaceIdForPostAndWorkerPublicImpl(...args);
+}
+
 export type {
   ShiftPost as ShiftPostPublic,
   EmployeeShiftApplication as EmployeeShiftApplicationPublic,

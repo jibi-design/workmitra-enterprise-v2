@@ -106,43 +106,12 @@ export function usePulseResolver(notificationId: NotificationId): void {
     return state.isPulseActive(notificationId);
   });
 
-  const resolvePulse = usePulseStore((state) => {
-    return state.resolvePulse;
-  });
-
   useEffect(() => {
-    if (isActive !== true) {
-      return;
-    }
-
+    if (isActive !== true) return;
     const pulseConfig = PULSE_REGISTRY[notificationId];
-
-    if (!pulseConfig) {
-      if (import.meta.env.DEV) {
-        console.warn(
-          `[Pulse System]: Missing registry config for notificationId "${String(notificationId)}".`,
-        );
-      }
-
-      return;
-    }
-
-    if (pulseConfig.resolutionType !== "ROUTE") {
-      return;
-    }
-
-    const isTargetRoute = doesPathMatchPulseTarget(location.pathname, pulseConfig.targetPath);
-
-    if (!isTargetRoute) {
-      return;
-    }
-
-    resolvePulse(notificationId);
-
-    if (import.meta.env.DEV) {
-      console.info(
-        `[Pulse System]: ${notificationId} resolved on target route ${pulseConfig.targetPath}.`,
-      );
-    }
-  }, [isActive, location.pathname, notificationId, resolvePulse]);
+    if (!pulseConfig) return;
+    void location.pathname;
+    void pulseConfig.resolutionType;
+    /* Destination click owns resolve — opening the target route must not clear lights. */
+  }, [isActive, location.pathname, notificationId]);
 }

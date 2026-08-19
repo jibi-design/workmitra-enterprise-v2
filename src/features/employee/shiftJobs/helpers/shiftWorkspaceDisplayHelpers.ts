@@ -170,9 +170,9 @@ export function buildStatusExplanation(ws: ShiftWorkspace): {
   }
   if (ws.status === "upcoming") {
     return {
-      title: "Upcoming",
-      body: `This job starts on ${fmtDateRange(ws.startAt, ws.endAt)}. Employer updates will appear here.`,
-      tone: "neutral",
+      title: "Upcoming — confirm attendance intent",
+      body: `This job starts on ${fmtDateRange(ws.startAt, ws.endAt)}. Open My Applications → Confirmed to save attendance intent. Employer updates will also appear here.`,
+      tone: "warn",
     };
   }
   return null;

@@ -103,7 +103,7 @@ export function ShiftSearchDiscoveryGuide({
             lineHeight: 1.45,
           }}
         >
-          Add your city and skills to improve shift discovery. You can still view available shifts.
+          Add your city and skills to improve shift discovery. Shifts available for you.
         </div>
       )}
 

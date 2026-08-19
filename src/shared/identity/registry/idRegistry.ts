@@ -65,7 +65,7 @@ export function generateAndRegisterId(
   }
 
   for (let attempt = 0; attempt < ID_MAX_COLLISION_RETRIES; attempt++) {
-    const id = generateRawId(trimmedName);
+    const id = generateRawId(trimmedName, role);
 
     if (!idExists(id)) {
       const entry: IdRegistryEntry = {

@@ -22,11 +22,6 @@ export function PlannerEmployerCommandGrid() {
       primary: true,
     },
     {
-      label: "All Plans",
-      description: "Drafts, active, completed, cancelled",
-      onClick: () => nav(ROUTE_PATHS.employerPlannerPlans),
-    },
-    {
       label: "Applications",
       description: "Plan bundle applicants — teal domain",
       onClick: () => nav(ROUTE_PATHS.employerPlannerApplications),

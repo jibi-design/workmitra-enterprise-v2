@@ -138,7 +138,7 @@ export function AnnounceApplicationCard({
               {application.employeeName}
             </div>
             <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginTop: 2 }}>
-              {categoryName} Â· {shiftNames}
+              {categoryName} · {shiftNames}
             </div>
           </div>
         </div>
@@ -263,7 +263,7 @@ export function AnnounceApplicationCard({
       {application.status === "cancelled" && application.cancelReason && (
         <div style={{ marginTop: 6, fontSize: 11, color: "var(--wm-error)" }}>
           Reason: {application.cancelReason}
-          {application.cancelNote ? ` â€” ${application.cancelNote}` : ""}
+          {application.cancelNote ? ` — ${application.cancelNote}` : ""}
         </div>
       )}
     </div>

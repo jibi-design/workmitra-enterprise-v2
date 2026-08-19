@@ -41,9 +41,11 @@ export function maybeNotifyPleaseRate(rec: EmploymentRecord): void {
   notifyBothPleaseRate(rec.employeeName, rec.companyName, rec.jobTitle, rec.careerPostId);
 }
 
+/** Local circuit/demo employment ids stay on-device; UUID rows dual-write. */
 export function requireDbEmploymentWhenAuthOn(rec: EmploymentRecord): boolean {
   if (!AUTH_BACKEND_ENABLED) return true;
-  return isCareerServerUuid(rec.id);
+  if (isCareerServerUuid(rec.id)) return true;
+  return rec.careerPostId.trim().length > 0;
 }
 
 export async function syncEmploymentToDb(

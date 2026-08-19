@@ -110,6 +110,11 @@ export const piiSecureStorage = {
     }
   },
 
+  /** MED-01 — drop plaintext PII mirrors so shared-device logout cannot leak prior user. */
+  clearMemoryMirror(): void {
+    memoryMirror.clear();
+  },
+
   getJson<T>(key: PiiStorageKey): T | null {
     const raw = this.getItem(key);
     if (!raw) return null;

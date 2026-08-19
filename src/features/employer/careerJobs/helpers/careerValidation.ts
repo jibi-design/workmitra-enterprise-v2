@@ -79,6 +79,7 @@ export function syncToEmployeeCareerSearch(posts: CareerJobPost[]): CareerStorag
       jobType: p.jobType,
       workMode: p.workMode,
       location: p.location,
+      locationPincode: p.locationPincode,
       salaryMin: p.salaryMin,
       salaryMax: p.salaryMax,
       salaryPeriod: p.salaryPeriod,

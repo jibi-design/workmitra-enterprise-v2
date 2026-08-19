@@ -12,6 +12,7 @@
 import { employerSettingsStorage } from "../../employer/company/storage/employerSettings.storage";
 import { getEmployerOrgId } from "../../employer/company/helpers/employerDualId.helpers";
 import { AUTH_BACKEND_ENABLED } from "../../../shared/config/authConfig";
+import { useAuthStore } from "../../../shared/store/authStore";
 import {
   assertCanAccessShiftEmployerScope,
   resolveAuthBoundEmployerScopeId,
@@ -79,7 +80,8 @@ export function getShiftEmployerScopeId(): string {
     const profile = employerSettingsStorage.get();
     const orgId = getEmployerOrgId(profile)?.trim();
     const companyId = profile.companyUniqueId?.trim() || profile.uniqueId?.trim();
-    const raw = orgId || companyId || "";
+    const sessionOrg = useAuthStore.getState().user?.activeOrgId?.trim() || "";
+    const raw = orgId || companyId || sessionOrg || "";
 
     if (!raw) {
       if (import.meta.env.PROD) {

@@ -152,17 +152,21 @@ export async function hydrateEmploymentsFromDb(role: "employee" | "employer"): P
 
     const mapped = rows.map(mapServerEmploymentToLocal);
     const local = readAll();
+    const rank: Record<EmploymentRecord["status"], number> = {
+      selected: 1,
+      working: 2,
+      notice: 3,
+      resigned: 3,
+      completed: 4,
+    };
     const byPost = new Map(mapped.map((r) => [r.careerPostId, r]));
-
-    // Keep local-only demo records (non-UUID ids) that don't collide by post
-    const localOnly = local.filter((r) => {
-      const isUuid =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(r.id);
-      if (isUuid) return false;
-      return !byPost.has(r.careerPostId);
+    const merged = mapped.map((server) => {
+      const loc = local.find((r) => r.careerPostId === server.careerPostId);
+      if (!loc) return server;
+      return (rank[loc.status] ?? 0) > (rank[server.status] ?? 0) ? loc : server;
     });
-
-    writeAllChecked([...mapped, ...localOnly]);
+    const extraLocal = local.filter((r) => !byPost.has(r.careerPostId));
+    writeAllChecked([...merged, ...extraLocal]);
   } catch {
     // keep LS cache
   }

@@ -89,7 +89,9 @@ export function resolveAuthBoundEmployerScopeId(profileScopeId: string): string 
     throw new Error("[WorkMitra] AUTH session required for Shift employer tenant scope.");
   }
 
-  if (user.role === "employee") {
+  // Employee surface must use worker/marketplace projections — never employer SoT bind.
+  const activeMode = user.activeMode ?? (user.role === "admin" ? null : user.role);
+  if (activeMode === "employee" || (activeMode == null && user.role === "employee")) {
     throw new Error("[WorkMitra] Employee AUTH session cannot resolve employer Shift scope.");
   }
 

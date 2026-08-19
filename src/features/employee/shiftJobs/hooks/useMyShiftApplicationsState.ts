@@ -2,7 +2,7 @@
 // File name: useMyShiftApplicationsState.ts
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\hooks\useMyShiftApplicationsState.ts
 
-import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import type { ConfirmData } from "../../../../shared/components/ConfirmModal";
@@ -28,6 +28,7 @@ import {
 } from "../../shiftJobs/helpers/shiftApplicationHelpers";
 import { employeeShiftApplicationsBannerCopy } from "../../shiftJobs/helpers/shiftApplications.smartResume";
 import { settleMyShiftApplicationsConfirm } from "../../shiftJobs/helpers/myShiftApplications.confirm";
+import { ensureConfirmedShiftWorkspace } from "../../shiftJobs/helpers/ensureConfirmedShiftWorkspace";
 import { useMyShiftApplicationsLanding } from "./useMyShiftApplicationsLanding";
 import {
   isPlannerApplication,
@@ -108,6 +109,14 @@ export function useMyShiftApplicationsState(domain: ApplicationsDomain = "shift"
     return map;
   }, [workspaces]);
 
+  useEffect(() => {
+    for (const application of domainApps) {
+      if (application.status !== "confirmed") continue;
+      const post = postMap.get(application.postId);
+      if (post) ensureConfirmedShiftWorkspace(application, post);
+    }
+  }, [domainApps, postMap]);
+
   const filteredApplications = useMemo(
     () => domainApps.filter((application) => tabMatch(application.status, tab)),
     [domainApps, tab],
@@ -129,7 +138,12 @@ export function useMyShiftApplicationsState(domain: ApplicationsDomain = "shift"
         return;
       }
 
-      const workspaceId = workspaceByPostId.get(application.postId);
+      const post = postMap.get(application.postId);
+      const ensuredId =
+        application.status === "confirmed" && post
+          ? ensureConfirmedShiftWorkspace(application, post)
+          : null;
+      const workspaceId = ensuredId ?? workspaceByPostId.get(application.postId);
 
       if (workspaceId && application.status === "confirmed") {
         const workspacePath =
@@ -142,7 +156,7 @@ export function useMyShiftApplicationsState(domain: ApplicationsDomain = "shift"
 
       nav(ROUTE_PATHS.employeeShiftPostDetails.replace(":postId", application.postId));
     },
-    [nav, workspaceByPostId, domain],
+    [nav, workspaceByPostId, domain, postMap],
   );
 
   const requestWithdrawApplication = useCallback(
@@ -195,7 +209,7 @@ export function useMyShiftApplicationsState(domain: ApplicationsDomain = "shift"
       setWithdrawConfirm({
         title: ATTENDANCE_INTENT_TITLE,
         message: ATTENDANCE_INTENT_HELPER,
-        tone: "warn",
+        tone: "neutral",
         confirmLabel: ATTENDANCE_INTENT_ACTION,
         cancelLabel: "Not now",
       });

@@ -11,6 +11,8 @@ import {
   type EmployerShiftPostDraft,
 } from "../storage/employerShiftDraft.storage";
 
+const EMPTY_DRAFTS: EmployerShiftPostDraft[] = [];
+
 function getDraftSnapshot(): EmployerShiftPostDraft[] {
   return employerShiftDraftStorage.getAll();
 }
@@ -21,7 +23,7 @@ function subscribeDrafts(onStoreChange: () => void): () => void {
 
 export function EmployerShiftDraftReminderCard() {
   const nav = useNavigate();
-  const drafts = useSyncExternalStore(subscribeDrafts, getDraftSnapshot, () => []);
+  const drafts = useSyncExternalStore(subscribeDrafts, getDraftSnapshot, () => EMPTY_DRAFTS);
 
   if (drafts.length === 0) return null;
 

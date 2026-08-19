@@ -177,7 +177,9 @@ export function EmployerCareerCandidateWorkVaultReviewPage() {
             />
           </div>
 
-          {activeTab === "profile" && <VaultProfileTab data={vaultData} readOnlyEmployerView />}
+          {activeTab === "profile" && (
+            <VaultProfileTab data={vaultData} readOnlyEmployerView hideContactVerification />
+          )}
 
           {activeTab === "documents" && (
             <DocumentsTabPanel folders={accessState.folders} documents={accessState.documents} />

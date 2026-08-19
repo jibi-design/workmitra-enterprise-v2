@@ -2,14 +2,14 @@
 
 export type EmployerVerificationTrackKind = "none" | "enterprise" | "micro";
 
-/** Track A — Registered enterprise (UK/Global). */
+/** Track A — Registered enterprise. */
 export type EnterpriseVerificationTrack = {
   readonly companiesHouseCrn: string;
   readonly vatId: string;
   readonly registeredAddress: string;
   /** Corporate email used for domain match (defaults to account email when empty). */
   readonly corporateEmail: string;
-  /** Optional declared company domain (e.g. acme.co.uk). */
+  /** Optional declared company domain (e.g. company.com). */
   readonly corporateDomain: string;
   readonly submittedAt?: number;
 };

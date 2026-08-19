@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Job Mitra — Breathing Light Pro Sandbox</title>
+    <!-- Live engine CSS (same file as production) -->
+    <link rel="stylesheet" href="../../../app/theme/components/pulse-engine.css" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0b1220;
+        --panel: #121a2b;
+        --stroke: #243049;
+        --text: #e8eefc;
+        --muted: #8fa0bf;
+        --font: "Segoe UI", system-ui, sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: var(--font);
+        background: radial-gradient(1200px 600px at 20% -10%, #1a2744 0%, var(--bg) 55%);
+        color: var(--text);
+        padding: 28px 20px 48px;
+      }
+      h1 {
+        margin: 0 0 6px;
+        font-size: 1.35rem;
+        font-weight: 650;
+        letter-spacing: 0.01em;
+      }
+      .sub {
+        margin: 0 0 22px;
+        color: var(--muted);
+        font-size: 0.9rem;
+        max-width: 720px;
+        line-height: 1.45;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        max-width: 980px;
+      }
+      @media (max-width: 720px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .card {
+        position: relative;
+        background: var(--panel);
+        border: 1px solid var(--stroke);
+        border-radius: 16px;
+        padding: 18px 18px 18px 36px;
+        min-height: 148px;
+        /* Intentionally NO full-card animation / opacity pulse */
+      }
+      .card h2 {
+        margin: 0 0 4px;
+        font-size: 1rem;
+        font-weight: 600;
+      }
+      .meta {
+        margin: 0 0 14px;
+        color: var(--muted);
+        font-size: 0.78rem;
+        line-height: 1.4;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      /* Left-edge LED host — mirrors PulseEdgeLight placement */
+      .led-host {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%) translateZ(0);
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 2;
+      }
+      .guide {
+        background: radial-gradient(
+          circle at 35% 35%,
+          rgba(255, 255, 255, 0.85) 0%,
+          #22d3ee 40%,
+          #0891b2 100%
+        );
+        box-shadow: 0 0 8px 2px rgba(8, 145, 178, 0.9), 0 0 22px 6px rgba(8, 145, 178, 0.45);
+        --wm-led-color-a: rgba(8, 145, 178, 0.35);
+        --wm-led-color-b: rgba(8, 145, 178, 0.45);
+        --wm-pulse-period: 4000ms;
+        --wm-pulse-hue: 190;
+        --wm-pulse-amp: 0.85;
+        --wm-pulse-amp-min: 0.35;
+        --wm-pulse-amp-max: 0.92;
+        --wm-pulse-scale-min: 0.94;
+        --wm-pulse-scale-max: 1;
+      }
+      .processing {
+        background: radial-gradient(
+          circle at 35% 35%,
+          rgba(255, 255, 255, 0.85) 0%,
+          #fbbf24 40%,
+          #d97706 100%
+        );
+        box-shadow: 0 0 8px 2px rgba(245, 158, 11, 0.9), 0 0 22px 6px rgba(245, 158, 11, 0.45);
+        --wm-led-color-a: rgba(245, 158, 11, 0.35);
+        --wm-led-color-b: rgba(245, 158, 11, 0.5);
+        --wm-pulse-period: 2500ms;
+        --wm-pulse-hue: 38;
+        --wm-pulse-amp: 0.95;
+        --wm-pulse-amp-min: 0.38;
+        --wm-pulse-amp-max: 1;
+        --wm-pulse-scale-min: 0.92;
+        --wm-pulse-scale-max: 1;
+      }
+      .urgent {
+        background: radial-gradient(
+          circle at 35% 35%,
+          rgba(255, 255, 255, 0.85) 0%,
+          #f87171 40%,
+          #dc2626 100%
+        );
+        box-shadow: 0 0 8px 2px rgba(239, 68, 68, 0.9), 0 0 22px 6px rgba(239, 68, 68, 0.45);
+        --wm-led-color-a: rgba(239, 68, 68, 0.35);
+        --wm-led-color-b: rgba(239, 68, 68, 0.5);
+        --wm-pulse-period: 1200ms;
+        --wm-pulse-hue: 0;
+        --wm-pulse-amp: 1;
+        --wm-pulse-amp-min: 0.42;
+        --wm-pulse-amp-max: 1;
+        --wm-pulse-scale-min: 0.9;
+        --wm-pulse-scale-max: 1;
+      }
+      .success {
+        background: radial-gradient(
+          circle at 35% 35%,
+          rgba(255, 255, 255, 0.95) 0%,
+          #4ade80 35%,
+          #16a34a 100%
+        );
+        box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.55), 0 0 18px 6px rgba(22, 163, 74, 0.5);
+        --wm-led-color-a: rgba(22, 163, 74, 0.45);
+        --wm-led-color-b: rgba(22, 163, 74, 0.65);
+        --wm-pulse-period: 2500ms;
+        --wm-pulse-hue: 142;
+        --wm-pulse-amp: 1;
+        --wm-pulse-amp-min: 0.55;
+        --wm-pulse-amp-max: 1;
+        --wm-pulse-scale-min: 0.96;
+        --wm-pulse-scale-max: 1.05;
+      }
+      /* Button halo sample — outer ring only */
+      .btn-wrap {
+        position: relative;
+        display: inline-flex;
+        border-radius: 999px;
+      }
+      .btn {
+        position: relative;
+        z-index: 1;
+        border: 0;
+        border-radius: 999px;
+        padding: 10px 16px;
+        font: inherit;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #0b1220;
+        background: #e8eefc;
+        cursor: pointer;
+      }
+      .halo {
+        position: absolute;
+        inset: -3px;
+        border-radius: inherit;
+        pointer-events: none;
+        z-index: 0;
+        will-change: opacity, transform;
+        transform: translateZ(0);
+      }
+      .halo-guide {
+        border: 2.5px solid #22d3ee;
+        box-shadow: 0 0 8px 2px rgba(8, 145, 178, 0.55);
+        --wm-pulse-period: 4000ms;
+        --wm-pulse-amp: 0.85;
+        --wm-pulse-amp-min: 0.4;
+        --wm-pulse-amp-max: 1;
+        --wm-pulse-scale-min: 1;
+        --wm-pulse-scale-max: 1;
+        --wm-pulse-w125: 0.4142;
+        --wm-pulse-w25: 0.7297;
+        --wm-pulse-w375: 0.928;
+      }
+      .halo-processing {
+        border: 2.5px solid #fbbf24;
+        box-shadow: 0 0 8px 2px rgba(245, 158, 11, 0.55);
+        --wm-pulse-period: 2500ms;
+        --wm-pulse-amp: 0.95;
+        --wm-pulse-amp-min: 0.4;
+        --wm-pulse-amp-max: 1;
+        --wm-pulse-scale-min: 1;
+        --wm-pulse-scale-max: 1;
+        --wm-pulse-w125: 0.4142;
+        --wm-pulse-w25: 0.7297;
+        --wm-pulse-w375: 0.928;
+      }
+      .halo-urgent {
+        border: 2.5px solid #f87171;
+        box-shadow: 0 0 8px 2px rgba(239, 68, 68, 0.55);
+        --wm-pulse-period: 1200ms;
+        --wm-pulse-amp: 1;
+        --wm-pulse-amp-min: 0.4;
+        --wm-pulse-amp-max: 1;
+        --wm-pulse-scale-min: 1;
+        --wm-pulse-scale-max: 1;
+        --wm-pulse-w125: 0.4142;
+        --wm-pulse-w25: 0.7297;
+        --wm-pulse-w375: 0.928;
+      }
+      .halo-success {
+        border: 2.5px solid #16a34a;
+        box-shadow: 0 0 0 1px rgba(22, 163, 74, 0.45), 0 0 14px 4px rgba(22, 163, 74, 0.4);
+        --wm-pulse-period: 2500ms;
+        --wm-pulse-amp: 1;
+        --wm-pulse-amp-min: 0.55;
+        --wm-pulse-amp-max: 1;
+        --wm-pulse-scale-min: 0.96;
+        --wm-pulse-scale-max: 1.05;
+        --wm-led-color-a: rgba(22, 163, 74, 0.45);
+        --wm-led-color-b: rgba(22, 163, 74, 0.65);
+      }
+      .rules {
+        margin-top: 22px;
+        padding: 14px 16px;
+        border: 1px dashed var(--stroke);
+        border-radius: 12px;
+        color: var(--muted);
+        font-size: 0.8rem;
+        line-height: 1.5;
+      }
+      .rules strong {
+        color: var(--text);
+        font-weight: 600;
+      }
+      .replay {
+        margin-top: 10px;
+        font-size: 0.78rem;
+        color: #9fe7c2;
+        background: transparent;
+        border: 1px solid #2d5a45;
+        border-radius: 8px;
+        padding: 6px 10px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Breathing Light Pro — Live Sandbox</h1>
+    <p class="sub">
+      Isolated preview of production <code>pulse-engine.css</code>. Raised-cosine + γ≈2.2
+      perceptual fades, compositor-only opacity/transform on the 10px left-edge LED and button
+      outer halo. Cards themselves do not blink or dim text.
+    </p>
+
+    <div class="grid">
+      <section class="card" aria-label="Idle guide">
+        <span
+          class="led-host wm-led wm-led-guide guide"
+          data-pulse-breath="pro-v1"
+          aria-hidden="true"
+        >
+          <span class="wm-led__core"></span>
+        </span>
+        <h2>Idle / Guide</h2>
+        <p class="meta">Cyan · 4.0s · low amplitude · raised-cosine + γ</p>
+        <div class="row">
+          <div class="btn-wrap">
+            <span class="halo wm-breathe halo-guide" aria-hidden="true"></span>
+            <button type="button" class="btn">Button halo</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" aria-label="Processing">
+        <span
+          class="led-host wm-led wm-led-warning processing"
+          data-pulse-breath="pro-v1"
+          aria-hidden="true"
+        >
+          <span class="wm-led__core"></span>
+        </span>
+        <h2>Processing</h2>
+        <p class="meta">Amber · 2.5s · mid amplitude</p>
+        <div class="row">
+          <div class="btn-wrap">
+            <span class="halo wm-breathe halo-processing" aria-hidden="true"></span>
+            <button type="button" class="btn">Button halo</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" aria-label="Urgent">
+        <span
+          class="led-host wm-led wm-led-urgent urgent"
+          data-pulse-breath="pro-v1"
+          aria-hidden="true"
+        >
+          <span class="wm-led__core"></span>
+        </span>
+        <h2>Urgent</h2>
+        <p class="meta">Red · 1.2s · fast sine · LED/halo only (no card strobe)</p>
+        <div class="row">
+          <div class="btn-wrap">
+            <span class="halo wm-breathe halo-urgent" aria-hidden="true"></span>
+            <button type="button" class="btn">Button halo</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" aria-label="Success arrival">
+        <span
+          id="success-led"
+          class="led-host wm-led wm-led-arrival success"
+          data-pulse-arrival="pro-v3"
+          aria-hidden="true"
+        >
+          <span class="wm-led__core"></span>
+        </span>
+        <h2>Success / Arrival</h2>
+        <p class="meta">Green · 2.5s one-shot · ease-out bloom → hold → ease-in land</p>
+        <div class="row">
+          <div class="btn-wrap">
+            <span
+              id="success-halo"
+              class="halo wm-breathe-arrival halo-success"
+              data-pulse-arrival="pro-v3"
+              aria-hidden="true"
+            ></span>
+            <button type="button" class="btn" id="replay-arrival">Replay bloom</button>
+          </div>
+        </div>
+        <button type="button" class="replay" id="replay-arrival-alt">
+          Replay LED + halo arrival
+        </button>
+      </section>
+    </div>
+
+    <div class="rules">
+      <strong>Board constraints verified in this sandbox:</strong>
+      left-edge 10px LED · button outer halo · no full-card blink · no text dim · no right-edge
+      strip · animations limited to opacity + micro-scale on LED core / halo · engine CSS =
+      <code>src/app/theme/components/pulse-engine.css</code>
+    </div>
+
+    <script>
+      function replayArrival() {
+        const led = document.getElementById("success-led");
+        const halo = document.getElementById("success-halo");
+        for (const el of [led, halo]) {
+          el.classList.remove("wm-led-arrival", "wm-breathe-arrival");
+          // force reflow
+          void el.offsetWidth;
+        }
+        led.classList.add("wm-led", "wm-led-arrival");
+        halo.classList.add("wm-breathe-arrival");
+      }
+      document.getElementById("replay-arrival").addEventListener("click", replayArrival);
+      document.getElementById("replay-arrival-alt").addEventListener("click", replayArrival);
+    </script>
+  </body>
+</html>

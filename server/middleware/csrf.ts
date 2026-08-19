@@ -116,6 +116,9 @@ export async function revokeCsrfForSession(
 /**
  * Validate CSRF for POST/PATCH/PUT/DELETE.
  * Login is exempt (caller skips). Logout still requires token when session exists.
+ *
+ * Session-bound store check first; double-submit cookie match is the grace path
+ * after single-node memory restarts when the session KV entry is gone (HIGH-01).
  */
 export async function enforceCsrf(req: IncomingMessage, res: ServerResponse): Promise<boolean> {
   const cookies = parseCookies(req.headers.cookie);

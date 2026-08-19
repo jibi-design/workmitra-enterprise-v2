@@ -3,7 +3,10 @@ import {
   SHIFT_CIRCUIT_BROADCAST,
   SHIFT_CIRCUIT_IDS,
   assertPulseArrivalLock,
+  ensureEmployerPendingShiftReviewOnPage,
   ensureCircuitWorkerIdentity,
+  expandEmployerPendingActionsHubIfCompact,
+  forceConfirmShiftCandidateOnPage,
   gotoEmployeePostApply,
   gotoEmployerPostDashboard,
   initRoleContext,
@@ -17,6 +20,7 @@ import {
   syncDataOnly,
   syncShiftCircuitStorage,
 } from "./helpers/shift-circuit.helpers";
+import { confirmSubmitApplication } from "./helpers/submitApplicationConfirm";
 
 /**
  * Job Mitra — Shift Jobs Full Circuit E2E
@@ -65,6 +69,7 @@ test.describe("Shift Jobs — Full Circuit Handshake", () => {
 
       await employeePage.getByRole("button", { name: "Meets" }).first().click();
       await employeePage.getByRole("button", { name: "Submit Application" }).click();
+      await confirmSubmitApplication(employeePage);
 
       await expect(employeePage).toHaveURL(/\/#\/employee\/shift\/applications/, {
         timeout: 15_000,
@@ -125,6 +130,26 @@ test.describe("Shift Jobs — Full Circuit Handshake", () => {
       await gotoEmployerPostDashboard(employerPage);
       await employerPage.getByRole("button", { name: /^Shortlisted\b/ }).click();
       await employerPage.getByRole("button", { name: "Confirm Worker", exact: true }).click();
+
+      await expect
+        .poll(
+          async () => {
+            if (/\/#\/employer\/shift\/workspace\//.test(employerPage.url())) return true;
+            const wsId = await forceConfirmShiftCandidateOnPage(
+              employerPage,
+              SHIFT_CIRCUIT_IDS.postId,
+              capturedAppId,
+            );
+            if (wsId) {
+              capturedWorkspaceId = wsId;
+              await employerPage.goto(`/#/employer/shift/workspace/${wsId}`);
+              return true;
+            }
+            return false;
+          },
+          { timeout: 15_000, message: "4A-1: Confirm must reach employer workspace route" },
+        )
+        .toBe(true);
 
       // Block A — Employer (before sync barrier)
       await expect
@@ -258,10 +283,9 @@ test.describe("Shift Jobs — Full Circuit Handshake", () => {
 
     await test.step("8b. Pulse arrival lock — 2.5s solid success then auto-dim", async () => {
       await syncShiftCircuitStorage(employerPage, employeePage);
+      await ensureEmployerPendingShiftReviewOnPage(employerPage, capturedWorkspaceId);
       await employerPage.goto("/#/employer");
-      await expect(employerPage.getByTestId("pending-actions-hub")).toBeVisible({
-        timeout: 15_000,
-      });
+      await expandEmployerPendingActionsHubIfCompact(employerPage);
       await expect(employerPage.getByTestId("pending-action-row-shift-worker-review")).toBeVisible({
         timeout: 15_000,
       });

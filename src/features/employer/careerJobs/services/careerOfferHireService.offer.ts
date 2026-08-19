@@ -4,6 +4,7 @@ import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import {
   careerGateApi,
   isCareerApiSyncEnabled,
+  mustRollbackCareerLocalWrite,
   resolveCareerGateApplicationId,
 } from "../../../career/services/careerGateApi.service";
 import { hydrateCareerApplicationsFromServer } from "../../../career/services/careerDbTruth.service";
@@ -52,26 +53,28 @@ export async function sendOffer(
 
   if (isCareerApiSyncEnabled()) {
     const serverAppId = resolveCareerGateApplicationId(appId);
-    if (!serverAppId) {
+    if (mustRollbackCareerLocalWrite(serverAppId)) {
       writeCareerApps(priorApps);
       return false;
     }
 
-    try {
-      await careerGateApi.issueOffer(serverAppId, {
-        terms: {
-          jobTitle: offerDetails.jobTitle,
-          salary: offerDetails.salary,
-          salaryPeriod: offerDetails.salaryPeriod,
-          startDate: offerDetails.startDate,
-          noticePeriodDays: offerDetails.noticePeriodDays,
-          message: offerDetails.message ?? "",
-        },
-      });
-      await hydrateCareerApplicationsFromServer();
-    } catch {
-      writeCareerApps(priorApps);
-      return false;
+    if (serverAppId) {
+      try {
+        await careerGateApi.issueOffer(serverAppId, {
+          terms: {
+            jobTitle: offerDetails.jobTitle,
+            salary: offerDetails.salary,
+            salaryPeriod: offerDetails.salaryPeriod,
+            startDate: offerDetails.startDate,
+            noticePeriodDays: offerDetails.noticePeriodDays,
+            message: offerDetails.message ?? "",
+          },
+        });
+        await hydrateCareerApplicationsFromServer();
+      } catch {
+        writeCareerApps(priorApps);
+        return false;
+      }
     }
   }
 

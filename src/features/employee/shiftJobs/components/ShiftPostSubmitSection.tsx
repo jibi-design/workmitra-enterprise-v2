@@ -4,6 +4,7 @@ type ShiftPostSubmitSectionProps = {
   show: boolean;
   canSubmit: boolean;
   isSubmitting?: boolean;
+  isApplied?: boolean;
   isClosedOrExpired: boolean;
   allQuestionsAnswered: boolean;
   quickQuestionCount: number;
@@ -17,6 +18,7 @@ export function ShiftPostSubmitSection({
   show,
   canSubmit,
   isSubmitting = false,
+  isApplied = false,
   isClosedOrExpired,
   allQuestionsAnswered,
   quickQuestionCount,
@@ -50,7 +52,7 @@ export function ShiftPostSubmitSection({
         {isSaved ? "Saved Shift" : "Save Shift"}
       </button>
 
-      {show ? (
+      {show && !isApplied ? (
         <>
           {!canSubmit && visibleBlockReason ? (
             <div
@@ -86,6 +88,18 @@ export function ShiftPostSubmitSection({
                 : "Submit Application"}
           </button>
         </>
+      ) : null}
+
+      {isApplied ? (
+        <button
+          type="button"
+          className="wm-primarybtn wm-shift-pressable"
+          disabled
+          aria-disabled="true"
+          style={{ width: "100%" }}
+        >
+          Submitted
+        </button>
       ) : null}
     </div>
   );

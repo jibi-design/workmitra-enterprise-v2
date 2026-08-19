@@ -1,5 +1,8 @@
 // Employee-safe read surface for employer planner discoverability + pay display.
 // Do not import employer/planner/* directly from employee features.
+//
+// Const/object SoT bindings stay as live `export { x } from` to avoid ESM TDZ
+// under circular planner↔shift bridge imports. Functions may use thin wrappers.
 
 export type { PlannerPublicIndexEntry } from "../../employer/planner/storage/plannerPublicIndex.storage";
 export { plannerPublicIndex } from "../../employer/planner/storage/plannerPublicIndex.storage";

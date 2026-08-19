@@ -13,6 +13,7 @@ import { acceptDirectInviteShift } from "../../employer/shift/shift.saga.js";
 import { employeeShiftService } from "./shift.service.js";
 import { listNearbyPostsForEmployee } from "./nearbyPosts.service.js";
 import { handleEmployeeShiftOpsRoutes } from "./shiftOps.routes.js";
+import { tryHandleWorkspaceMessageRoutes } from "../../shift/workspaceMessages.routes.js";
 
 const SHIFT_PREFIX = "/v1/jobmitra/employee/shift";
 
@@ -32,6 +33,18 @@ export async function handleEmployeeShiftRoutes(
 
   const { requestId } = req;
   if (await handleEmployeeShiftOpsRoutes(req, res, url, method)) return true;
+  if (
+    await tryHandleWorkspaceMessageRoutes(
+      req,
+      res,
+      url,
+      method,
+      SHIFT_PREFIX,
+      "employee",
+    )
+  ) {
+    return true;
+  }
   const subpath = pathname.slice(SHIFT_PREFIX.length) || "/";
 
   // GET /v1/jobmitra/employee/shift/nearby-posts

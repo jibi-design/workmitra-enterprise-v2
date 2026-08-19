@@ -4,11 +4,12 @@ import { useEffect } from "react";
 import { AUTH_BACKEND_ENABLED } from "../config/authConfig";
 import { useAuthStore } from "../store/authStore";
 import { subscribeAuthSessionEpoch } from "../auth/authSessionSync";
-import { RouteGuardLoading } from "./routes/RouteGuardStatus";
+import { applyPulseStoreFromStorage } from "../../features/pulse/pulseStore";
 
 export function AuthSessionBootstrap() {
   const hydrateSession = useAuthStore((s) => s.hydrateSession);
   const sessionChecked = useAuthStore((s) => s.sessionChecked);
+  const pulseScope = useAuthStore((s) => s.user?.activeMode ?? s.user?.role ?? "guest");
 
   useEffect(() => {
     if (AUTH_BACKEND_ENABLED) {
@@ -27,9 +28,10 @@ export function AuthSessionBootstrap() {
     });
   }, [hydrateSession]);
 
-  if (AUTH_BACKEND_ENABLED && !sessionChecked) {
-    return <RouteGuardLoading overlay label="Loading session" />;
-  }
+  useEffect(() => {
+    if (!sessionChecked && AUTH_BACKEND_ENABLED) return;
+    applyPulseStoreFromStorage();
+  }, [pulseScope, sessionChecked]);
 
   return null;
 }

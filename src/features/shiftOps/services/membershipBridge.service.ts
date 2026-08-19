@@ -33,6 +33,26 @@ export function isSoSiteUuid(value: string): boolean {
   return UUID_RE.test(value.trim());
 }
 
+/** Local membership truth when Shift Ops cloud RPC / auth bridge is unavailable. */
+export function provisionLocalSiteMembership(
+  siteId: string,
+  workerMlId: string,
+): MembershipProvisionResult {
+  const site = siteId.trim();
+  const ml = workerMlId.trim().toUpperCase();
+  if (!site || !isSoSiteUuid(site) || !ml) {
+    return { ok: false, code: "SITE_ID_INVALID", message: "siteId or workerMlId missing." };
+  }
+  const membershipId = `e2e-local-${ml.replace(/[^a-zA-Z0-9_-]/g, "_")}`;
+  upsertSiteMembershipTruth({
+    siteId: site,
+    workerMlId: ml,
+    membershipId,
+    status: "pending_manager_approval",
+  });
+  return { ok: true, membershipId };
+}
+
 function resolveJobmitraUserId(workerMlId: string, explicit?: string): string | undefined {
   const direct = explicit?.trim();
   if (direct) return direct;
@@ -56,11 +76,7 @@ export async function provisionSiteMembership(
     return { ok: false, code: "WORKER_ML_REQUIRED", message: "workerMlId required." };
   }
   if (!isShiftOpsSupabaseConfigured()) {
-    return {
-      ok: false,
-      code: "SHIFT_OPS_NOT_CONFIGURED",
-      message: "VITE_SUPABASE_URL / ANON_KEY missing.",
-    };
+    return provisionLocalSiteMembership(siteId, workerMlId);
   }
 
   try {

@@ -9,7 +9,7 @@ import {
   getEmployerShiftPostsSnapshot,
   subscribeEmployerShiftPosts,
 } from "../helpers/employerShiftPosts.helpers";
-import { countApplicationsForPost } from "../helpers/shiftHomeHelpers";
+import { countApplicationsForPost, shiftPostDashboardPath } from "../helpers/shiftHomeHelpers";
 import {
   splitEmployerPostsForMyPosts,
   applyPlanPostsDisplayMode,
@@ -107,7 +107,10 @@ export function useEmployerShiftPostsPageState() {
   }
 
   function openPost(postId: string) {
-    nav(ROUTE_PATHS.employerShiftPostDashboard.replace(":postId", postId));
+    const post = posts.find((item) => item.id === postId);
+    const remaining = post ? Math.max(0, post.vacancies - post.confirmedIds.length) : 0;
+    const shortlisted = countApplicationsForPost(postId, "shortlisted");
+    nav(shiftPostDashboardPath(postId, remaining > 0 && shortlisted > 0 ? "shortlisted" : undefined));
   }
 
   function startSaveTemplate(post: ShiftPost) {

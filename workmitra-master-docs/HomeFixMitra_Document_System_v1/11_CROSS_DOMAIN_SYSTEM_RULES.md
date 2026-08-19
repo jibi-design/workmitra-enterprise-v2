@@ -53,29 +53,32 @@ The system must not create separate duplicate permanent public identities for Cu
 
 Final model:
 
-- `hfmId` = permanent person/account identity
+- **Mitra Labs ID** (`mitraLabsId`, format `ML-XXXX-ABC-XXXX`) = permanent public person/account identity
+- Legacy alias `hfmId` = **same value** as Mitra Labs ID (not a second ID) — see `19_UNIQUE_ID_STANDARD_AND_DISPLAY.md`
 - `roleProfileId` = role-specific working profile identity
 - `activeRoleContext` = the role/workspace currently being used
 - `providerContext` / `sourceContext` = source truth for service, receipt, complaint, revisit, claim and record ownership
+- Document/record refs = `HFX-<TYPE>-<OPAQUE>` (never labeled as Mitra Labs ID)
 
 ## 5. Permanent Person Identity Rule
 
-`hfmId` is the permanent person/account identity.
+The permanent person/account identity is the **Mitra Labs ID** (UniCard Option A).
 
 Rules:
 
-- `hfmId` must remain stable over time
-- `hfmId` must not change only because phone number changes
-- `hfmId` may link to multiple role profiles
-- `hfmId` identifies the person/account, not the current work context
-- `hfmId` must not be treated as permission to mix customer and provider records
+- Mitra Labs ID must remain stable over time
+- Mitra Labs ID must not change only because phone number changes
+- Mitra Labs ID may link to multiple role profiles
+- Mitra Labs ID identifies the person/account, not the current work context
+- Mitra Labs ID must not be treated as permission to mix customer and provider records
 - phone number is not identity proof
 - phone number is only a contact, login, continuity or matching signal where allowed
+- do **not** mint or display a separate “HFM ID” / `HFM-…` person identity
 
-Public UI may show `hfmId` as:
+Public UI must show the person ID as:
 
-- HomeFix Mitra ID
-- Your HomeFix Mitra ID
+- Mitra Labs ID
+- Your Mitra Labs ID
 
 ## 6. Role Profile Identity Rule
 

@@ -23,16 +23,32 @@ async function loadWithChunkRetry<T extends ComponentType>(
     sessionStorage.removeItem(CHUNK_RELOAD_KEY);
     return module;
   } catch (error) {
-    if (isDynamicImportError(error) && !sessionStorage.getItem(CHUNK_RELOAD_KEY)) {
-      sessionStorage.setItem(CHUNK_RELOAD_KEY, "1");
-      window.location.reload();
-      return new Promise(() => {
-        /* page reload in progress */
-      });
+    if (!isDynamicImportError(error)) {
+      sessionStorage.removeItem(CHUNK_RELOAD_KEY);
+      throw error;
     }
 
-    sessionStorage.removeItem(CHUNK_RELOAD_KEY);
-    throw error;
+    await new Promise((resolve) => {
+      window.setTimeout(resolve, 120);
+    });
+
+    try {
+      const retried = await loader();
+      sessionStorage.removeItem(CHUNK_RELOAD_KEY);
+      return retried;
+    } catch (retryError) {
+      const reloads = Number(sessionStorage.getItem(CHUNK_RELOAD_KEY) ?? "0");
+      if (isDynamicImportError(retryError) && Number.isFinite(reloads) && reloads < 2) {
+        sessionStorage.setItem(CHUNK_RELOAD_KEY, String(reloads + 1));
+        window.location.reload();
+        return new Promise(() => {
+          /* page reload in progress */
+        });
+      }
+
+      sessionStorage.removeItem(CHUNK_RELOAD_KEY);
+      throw retryError;
+    }
   }
 }
 

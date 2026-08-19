@@ -15,17 +15,27 @@ import {
 } from "../helpers/shiftWorkspaceDisplayHelpers";
 import { shiftWorkspacesStorage } from "../../shiftJobs/storage/shiftWorkspaces.storage";
 import type { ShiftWorkspace } from "../../shiftJobs/storage/shiftWorkspaces.storage";
+import {
+  formatWorkspaceSendError,
+  isWorkspaceMessageApiEnabled,
+  sendAndSyncWorkspaceMessage,
+} from "../../../shift/services/workspaceMessageSync.service";
 
-const REPLY_LIMIT = 360;
-const REPLY_WARN_AT = 300;
+import { ShiftWorkspaceReplyBox, REPLY_LIMIT } from "./ShiftWorkspaceReplyBox";
 
 type Props = {
   workspace: ShiftWorkspace;
   readOnly: boolean;
   onReplySuccess: () => void;
+  onReplyError: (message: string) => void;
 };
 
-export function ShiftWorkspaceUpdateFeed({ workspace, readOnly, onReplySuccess }: Props) {
+export function ShiftWorkspaceUpdateFeed({
+  workspace,
+  readOnly,
+  onReplySuccess,
+  onReplyError,
+}: Props) {
   const [replyText, setReplyText] = useState("");
 
   const sendReply = useCallback(() => {
@@ -34,10 +44,45 @@ export function ShiftWorkspaceUpdateFeed({ workspace, readOnly, onReplySuccess }
     const message = clampText(replyText, REPLY_LIMIT);
     if (!message) return;
 
-    shiftWorkspacesStorage.replyToEmployer(workspace.id, message);
-    setReplyText("");
-    onReplySuccess();
-  }, [readOnly, replyText, workspace.id, onReplySuccess]);
+    void (async () => {
+      if (isWorkspaceMessageApiEnabled()) {
+        let synced = false;
+        try {
+          synced = await sendAndSyncWorkspaceMessage({
+            role: "employee",
+            postId: workspace.postId,
+            kind: "direct",
+            title: "Reply (Employee)",
+            body: message,
+            jobName: workspace.jobName,
+            startAt: workspace.startAt,
+          });
+        } catch (error) {
+          onReplyError(formatWorkspaceSendError(error));
+          return;
+        }
+        if (!synced) {
+          onReplyError("Could not match this work group to a live server shift. Refresh, then try again.");
+          return;
+        }
+        setReplyText("");
+        onReplySuccess();
+        return;
+      }
+      shiftWorkspacesStorage.replyToEmployer(workspace.id, message);
+      setReplyText("");
+      onReplySuccess();
+    })();
+  }, [
+    readOnly,
+    replyText,
+    workspace.id,
+    workspace.postId,
+    workspace.jobName,
+    workspace.startAt,
+    onReplySuccess,
+    onReplyError,
+  ]);
 
   return (
     <section
@@ -55,13 +100,13 @@ export function ShiftWorkspaceUpdateFeed({ workspace, readOnly, onReplySuccess }
       >
         <div>
           <div style={{ fontWeight: 950, fontSize: 14, color: "var(--wm-neutral-900)" }}>
-            Updates
+            Work group
           </div>
 
           <div
             style={{ marginTop: 4, fontSize: 12, color: "var(--wm-neutral-600)", lineHeight: 1.45 }}
           >
-            Shift updates, replies, and local workspace records.
+            This is your shift work group. Employer announcements and replies live here.
           </div>
         </div>
 
@@ -88,7 +133,7 @@ export function ShiftWorkspaceUpdateFeed({ workspace, readOnly, onReplySuccess }
         )}
       </div>
 
-      <ReplyBox
+      <ShiftWorkspaceReplyBox
         readOnly={readOnly}
         replyText={replyText}
         onReplyTextChange={setReplyText}
@@ -186,99 +231,6 @@ function UpdatePill({ label, tone }: { label: string; tone: Parameters<typeof ba
     >
       {label}
     </span>
-  );
-}
-
-function ReplyBox({
-  readOnly,
-  replyText,
-  onReplyTextChange,
-  onSendReply,
-}: {
-  readOnly: boolean;
-  replyText: string;
-  onReplyTextChange: (value: string) => void;
-  onSendReply: () => void;
-}) {
-  const nearLimit = replyText.length > REPLY_WARN_AT;
-  const counterColor = nearLimit ? "var(--wm-amber-700)" : "var(--wm-neutral-600)";
-
-  return (
-    <div style={{ marginTop: 14, borderTop: "1px solid rgba(226,232,240,0.95)", paddingTop: 14 }}>
-      <div style={{ fontWeight: 950, fontSize: 14, color: "var(--wm-neutral-900)" }}>
-        Reply to Employer
-      </div>
-
-      {readOnly ? (
-        <div
-          style={{
-            marginTop: 8,
-            fontSize: 12,
-            color: "var(--wm-neutral-600)",
-            fontWeight: 600,
-            lineHeight: 1.45,
-          }}
-        >
-          Reply is disabled because this work group is read-only.
-        </div>
-      ) : (
-        <>
-          <div className="wm-field" style={{ marginTop: 10 }}>
-            <textarea
-              className="wm-input"
-              style={{
-                height: 92,
-                paddingTop: 10,
-                fontFamily: "inherit",
-                ...(nearLimit
-                  ? {
-                      borderColor: "var(--wm-amber-600)",
-                      boxShadow:
-                        "0 0 0 1px color-mix(in srgb, var(--wm-amber-600) 35%, transparent)",
-                    }
-                  : null),
-              }}
-              value={replyText}
-              onChange={(event) => onReplyTextChange(event.target.value)}
-              placeholder="Type your reply"
-              maxLength={REPLY_LIMIT}
-              aria-describedby="shift-reply-limit-hint"
-            />
-
-            <div
-              id="shift-reply-limit-hint"
-              style={{
-                marginTop: 5,
-                fontSize: 11,
-                color: counterColor,
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 10,
-              }}
-            >
-              <span>
-                {nearLimit
-                  ? "Approaching the 360-character limit."
-                  : "Keep it clear and professional."}
-              </span>
-              <span style={{ fontWeight: nearLimit ? 850 : 600 }}>
-                {replyText.length}/{REPLY_LIMIT}
-              </span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            className="wm-primarybtn wm-shift-pressable"
-            onClick={onSendReply}
-            disabled={!replyText.trim()}
-            style={{ width: "100%", marginTop: 12 }}
-          >
-            Send Reply
-          </button>
-        </>
-      )}
-    </div>
   );
 }
 

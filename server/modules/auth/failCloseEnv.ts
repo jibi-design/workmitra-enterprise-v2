@@ -114,6 +114,17 @@ export function assertFailCloseEnvironment(): void {
 
   assertCorsOrigins();
 
+  // §8.1 backup gate — operator must attest after Supabase Pro (or approved) backups.
+  // Set WM_BACKUP_GATE=cleared only after scripts/phase-2-1-operator-8-1-backup.mjs PASSes §8.1.
+  const backupGate = (process.env.WM_BACKUP_GATE ?? "").trim().toLowerCase();
+  if (backupGate !== "cleared" && backupGate !== "pass") {
+    fatal(
+      "WM_BACKUP_GATE must be 'cleared' in production (Phase 2.1 §8.1 scheduled backups). " +
+        "Upgrade Supabase (or approved strategy), run node scripts/phase-2-1-operator-8-1-backup.mjs, " +
+        "then set WM_BACKUP_GATE=cleared on the API host.",
+    );
+  }
+
   // Production always requires DB auth + DATABASE_URL
   if (getAuthUserSource() !== "db") {
     fatal("AUTH_USER_SOURCE must be 'db' in production.");

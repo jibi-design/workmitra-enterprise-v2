@@ -61,10 +61,11 @@ export function ShiftOpsInviteLandingPage() {
     stashPendingGroupJoin({
       token: trimmed,
       groupId: (groupHint || restored?.groupId || "").trim() || undefined,
+      companyName: restored?.companyName,
       useDailyOtpGate,
       savedAt: Date.now(),
     });
-  }, [token, useDailyOtpGate, groupHint, restored?.groupId]);
+  }, [token, useDailyOtpGate, groupHint, restored?.groupId, restored?.companyName]);
 
   useEffect(() => {
     const trimmed = token.trim();
@@ -85,6 +86,13 @@ export function ShiftOpsInviteLandingPage() {
         setPeekedLabel(peek.group_name);
         setErrorInfo(null);
         setStep((s) => (s === "error" ? "verify" : s));
+        stashPendingGroupJoin({
+          token: trimmed,
+          groupId: peek.group_id || (groupHint || restored?.groupId || "").trim() || undefined,
+          companyName: peek.group_name,
+          useDailyOtpGate,
+          savedAt: Date.now(),
+        });
       })
       .catch((err) => {
         if (cancelled) return;
@@ -98,7 +106,7 @@ export function ShiftOpsInviteLandingPage() {
     return () => {
       cancelled = true;
     };
-  }, [token, useDailyOtpGate, fallbackLabel]);
+  }, [token, useDailyOtpGate, fallbackLabel, groupHint, restored?.groupId]);
 
   function resetJoinForm() {
     setStep("verify");
@@ -175,7 +183,7 @@ export function ShiftOpsInviteLandingPage() {
         <p style={{ fontSize: 12, color: "var(--wm-neutral-500)" }}>
           {requireShiftOpsChannelOtpVerify
             ? "After channel verification, enter today’s Active Daily OTP from your manager. The group link is taken from the QR/URL only — no token paste field."
-            : "Enter today’s Active Daily OTP from your manager. Channel OTP verification is temporarily skipped. The group link is taken from the QR/URL only."}
+            : "Enter today’s Active Daily OTP from your manager. The group link is taken from the QR/URL only."}
         </p>
         {groupLabel ? (
           <p

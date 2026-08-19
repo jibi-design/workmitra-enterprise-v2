@@ -23,6 +23,7 @@ export const EMPLOYER_DOMAINS: Record<string, NotificationDomainStyle> = {
   shift:     { color: "#16a34a", bgTint: "rgba(22,163,74,0.05)",  bgBadge: "rgba(22,163,74,0.1)",  bgTab: "rgba(22,163,74,0.06)",  label: "Shift" },
   career:    { color: "#1d4ed8", bgTint: "rgba(29,78,216,0.05)",  bgBadge: "rgba(29,78,216,0.1)",  bgTab: "rgba(29,78,216,0.06)",  label: "Career" },
   workforce: { color: "#b45309", bgTint: "rgba(180,83,9,0.05)",   bgBadge: "rgba(180,83,9,0.1)",   bgTab: "rgba(180,83,9,0.06)",   label: "Workforce" },
+  employment: { color: "#7c3aed", bgTint: "rgba(124,58,237,0.05)", bgBadge: "rgba(124,58,237,0.1)", bgTab: "rgba(124,58,237,0.06)", label: "Employment" },
 };
 
 /* ------------------------------------------------ */
@@ -49,6 +50,7 @@ export const EMPLOYER_TABS: NotificationTab[] = [
   { key: "console", label: "Console" },
   { key: "shift", label: "Shift" },
   { key: "career", label: "Career" },
+  { key: "employment", label: "Employment" },
   { key: "workforce", label: "Workforce" },
 ];
 

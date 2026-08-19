@@ -1,6 +1,6 @@
 # Pending Work Board — Mitra Labs / Job Mitra
 
-> **Last updated:** 2026-07-27  
+> **Last updated:** 2026-08-18  
 > **Leader rule:** Finish product/ops pending before launch cosmetics.  
 > **v2.0 release focus:** Job Posting → Recruitment → Group Formation → Privacy-Locked Call/Chat → Shift Completion → Reviews.  
 > **Live notes:** `CLOUDFLARE_LIVE_STATE_NOTE.md` · `SUPABASE_LIVE_STATE_NOTE.md` · Planner `07` · `SHIFT_OPS_LIVE_STATE_NOTE.md` · `TRACK_GROUP_JOIN_LIVE_NOTE.md`
@@ -70,7 +70,9 @@ All T1-1…T1-5 done. Further Planner work = P2 open items / D-xx deferred in do
 | Pepper                | **ready=true**                   |
 | T2-5 SQL smoke        | **PASS**                         |
 | OTP Edge              | Stub only — not deployed         |
-| App `VITE_SUPABASE_*` | Not set yet                      |
+| `ensure_site_for_shift_post` SQL | **APPLIED** 2026-08-18 (table `shift_post_sites` + RPC verify true) |
+| App `VITE_SUPABASE_*` | **SET** (browser client READY)   |
+| API `SUPABASE_SERVICE_ROLE_KEY` | **MISSING** — supabase-bridge 503; Confirm fail-opens local group |
 
 **Patches T2-0…T2-5 (SQL):** **DONE**
 

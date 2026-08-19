@@ -33,7 +33,7 @@ export function JobDetailsCard({ data, onChange }: JobDetailsCardProps) {
           onChange={(event) =>
             onChange({ companyName: normalizeTextInput(data.companyName, event.target.value) })
           }
-          placeholder="e.g. Greenfield Corp"
+          placeholder="Company name"
           maxLength={100}
           autoComplete="off"
           spellCheck={false}

@@ -106,7 +106,7 @@ export function EmployeeWorkforceCompanyPage({ onBack, onOpenAnnouncement, onOpe
         </div>
         <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginTop: 2 }}>
           ID: {staff.employeeUniqueId}
-          {staff.employeeCity && ` Â· ${staff.employeeCity}`}
+          {staff.employeeCity && ` · ${staff.employeeCity}`}
         </div>
         {staff.rating !== null && (
           <div style={{ marginTop: 4, fontSize: 12, color: AMBER, fontWeight: 700 }}>
@@ -188,7 +188,7 @@ export function EmployeeWorkforceCompanyPage({ onBack, onOpenAnnouncement, onOpe
                       month: "long",
                       day: "numeric",
                     })}{" "}
-                    Â· Created {timeAgo(group.createdAt)}
+                    · Created {timeAgo(group.createdAt)}
                   </div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
@@ -238,7 +238,7 @@ export function EmployeeWorkforceCompanyPage({ onBack, onOpenAnnouncement, onOpe
                     month: "long",
                     day: "numeric",
                   })}{" "}
-                  Â· {ann.status}
+                  · {ann.status}
                 </div>
               </div>
             ))}

@@ -33,7 +33,11 @@ function parseStatus(snapshot: string): DailyAvailabilityStatus | null {
   }
 }
 
-export function AvailabilityPulseWidget() {
+type Props = {
+  readonly compact?: boolean;
+};
+
+export function AvailabilityPulseWidget({ compact = false }: Props) {
   const snapshot = useSyncExternalStore(
     shiftAvailabilityDailyStorage.subscribe,
     shiftAvailabilityDailyStorage.getSnapshot,
@@ -42,20 +46,26 @@ export function AvailabilityPulseWidget() {
   const active = parseStatus(snapshot);
 
   return (
-    <section
-      className="wm-dashWidget"
+    <div
+      className={compact ? "wm-dailyOsPulse" : "wm-dashWidget"}
       data-testid="availability-pulse-widget"
-      aria-label="Availability Pulse"
+      aria-label={compact ? undefined : "Availability Pulse"}
     >
-      <div className="wm-dashWidget__head">
-        <div className="wm-dashWidget__kicker">Daily status</div>
-        <h2 className="wm-dashWidget__title">Availability Pulse</h2>
-        <p className="wm-dashWidget__sub">
-          One tap — persists for today only. Not your work diary.
-        </p>
-      </div>
+      {compact ? null : (
+        <div className="wm-dashWidget__head">
+          <div className="wm-dashWidget__kicker">Daily status</div>
+          <h2 className="wm-dashWidget__title">Availability Pulse</h2>
+          <p className="wm-dashWidget__sub">
+            One tap — persists for today only. Not your work diary.
+          </p>
+        </div>
+      )}
 
-      <div className="wm-dashPulseGrid" role="group" aria-label="Set availability for today">
+      <div
+        className={compact ? "wm-dailyOsPulse__grid" : "wm-dashPulseGrid"}
+        role="group"
+        aria-label="Set availability for today"
+      >
         {STATUS_OPTIONS.map((option) => {
           const isActive = active === option.id;
           return (
@@ -74,11 +84,11 @@ export function AvailabilityPulseWidget() {
               }}
             >
               <span className="wm-dashPulseBtn__label">{option.label}</span>
-              <span className="wm-dashPulseBtn__hint">{option.hint}</span>
+              {compact ? null : <span className="wm-dashPulseBtn__hint">{option.hint}</span>}
             </button>
           );
         })}
       </div>
-    </section>
+    </div>
   );
 }

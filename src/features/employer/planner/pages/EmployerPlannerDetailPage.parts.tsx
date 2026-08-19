@@ -31,7 +31,7 @@ export function PlannerDetailBudgetSection({ estBudget }: { estBudget: number })
         <strong style={{ color: "var(--wm-planner-accent-strong)" }}>
           {formatPlannerPayTotal(estBudget)}
         </strong>
-        {" · "}Full ledger in Finance tab (P3)
+        {" · "}Full ledger coming soon in Finance
       </div>
     </div>
   );

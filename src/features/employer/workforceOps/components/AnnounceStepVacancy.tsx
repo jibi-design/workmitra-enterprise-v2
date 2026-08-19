@@ -167,7 +167,7 @@ export function AnnounceStepVacancy({
                             {shift.name}
                           </div>
                           <div style={{ fontSize: 10, color: "var(--wm-er-muted)" }}>
-                            {shift.startTime} â€” {shift.endTime}
+                            {shift.startTime} — {shift.endTime}
                           </div>
                         </div>
 
@@ -278,7 +278,7 @@ export function AnnounceStepVacancy({
           padding: "12px",
         }}
       >
-        Next â€” Announcement Details
+        Next — Announcement Details
       </button>
     </div>
   );

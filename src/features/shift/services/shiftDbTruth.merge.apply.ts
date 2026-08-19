@@ -1,9 +1,49 @@
 /** Job Mitra | shiftDbTruth.merge.apply.ts — pure in-memory merge (no LS write) */
 
 import type { EmployeeShiftApplication, ShiftPost } from "../../shared/shift/shiftEmployerPublic";
-import { shiftAppIdBridge, shiftPostIdBridge } from "../utils/shiftIdBridge";
+import { isShiftServerUuid, shiftAppIdBridge, shiftAppIdsMatch, shiftPostIdBridge } from "../utils/shiftIdBridge";
 import type { ServerShiftApplicationDto, ServerShiftPostDto } from "./shiftGateApi.service";
 import { isRecord, parseMs } from "./shiftDbTruth.mappers.helpers";
+
+const HIRING_STATUS_RANK: Record<EmployeeShiftApplication["status"], number> = {
+  applied: 0,
+  shortlisted: 1,
+  waiting: 1,
+  rejected: 2,
+  confirmed: 3,
+  withdrawn: 4,
+  replaced: 4,
+  exited: 4,
+};
+
+export function resolveMergedAppStatus(
+  serverStatus: EmployeeShiftApplication["status"],
+  localStatus: EmployeeShiftApplication["status"] | undefined,
+): EmployeeShiftApplication["status"] {
+  if (!localStatus) return serverStatus;
+  return (HIRING_STATUS_RANK[localStatus] ?? 0) > (HIRING_STATUS_RANK[serverStatus] ?? 0)
+    ? localStatus
+    : serverStatus;
+}
+
+export function foldLiveHiringStatuses(
+  merged: EmployeeShiftApplication[],
+  live: EmployeeShiftApplication[],
+): EmployeeShiftApplication[] {
+  return merged.map((row) => {
+    const local = live.find((app) => shiftAppIdsMatch(app.id, row.id));
+    if (!local) return row;
+    return { ...row, status: resolveMergedAppStatus(row.status, local.status) };
+  });
+}
+
+function pickPersistedSiteId(detailSiteId: unknown, existingSiteId?: string): string | undefined {
+  const fromDetail = typeof detailSiteId === "string" ? detailSiteId.trim() : "";
+  const fromExisting = existingSiteId?.trim() ?? "";
+  if (isShiftServerUuid(fromDetail)) return fromDetail;
+  if (isShiftServerUuid(fromExisting)) return fromExisting;
+  return fromDetail || fromExisting || undefined;
+}
 
 export function applyServerPostMerge(
   posts: ShiftPost[],
@@ -26,7 +66,7 @@ export function applyServerPostMerge(
   const endAt = parseMs(dto.end_at, existing?.endAt ?? startAt + 3_600_000);
 
   const merged: ShiftPost = {
-    id: existing?.id ?? dto.id,
+    id: dto.id,
     companyName:
       typeof details.companyName === "string"
         ? details.companyName
@@ -52,6 +92,10 @@ export function applyServerPostMerge(
       typeof details.locationName === "string"
         ? details.locationName
         : (existing?.locationName ?? ""),
+    locationPincode:
+      typeof details.locationPincode === "string"
+        ? details.locationPincode
+        : existing?.locationPincode,
     locationAddress:
       typeof details.locationAddress === "string"
         ? details.locationAddress
@@ -76,6 +120,7 @@ export function applyServerPostMerge(
       details.source === "planner" || details.source === "single"
         ? details.source
         : existing?.source,
+    siteId: pickPersistedSiteId(details.siteId, existing?.siteId),
     mustHave: Array.isArray(details.mustHave)
       ? (details.mustHave as string[])
       : (existing?.mustHave ?? []),
@@ -133,6 +178,12 @@ export function applyServerPostMerge(
   return { posts: next, merged };
 }
 
+function readOptionalMs(raw: unknown, fallback?: number): number | undefined {
+  if (typeof raw === "number" && Number.isFinite(raw)) return raw;
+  if (typeof fallback === "number" && Number.isFinite(fallback)) return fallback;
+  return undefined;
+}
+
 export function applyServerApplicationMerge(
   apps: EmployeeShiftApplication[],
   dto: ServerShiftApplicationDto,
@@ -161,7 +212,7 @@ export function applyServerApplicationMerge(
   const details = isRecord(dto.details) ? dto.details : {};
   const createdAt = parseMs(dto.created_at, existing?.createdAt ?? Date.now());
 
-  const status = (
+  const serverStatus = (
     [
       "applied",
       "shortlisted",
@@ -176,11 +227,19 @@ export function applyServerApplicationMerge(
     ? (dto.status as EmployeeShiftApplication["status"])
     : (existing?.status ?? "applied");
 
+  const status = resolveMergedAppStatus(serverStatus, existing?.status);
+
+  const attendanceConfirmedAt = readOptionalMs(
+    details.attendanceConfirmedAt,
+    existing?.attendanceConfirmedAt,
+  );
+
   const merged: EmployeeShiftApplication = {
-    id: existing?.id ?? dto.id,
-    postId: existing?.postId ?? dto.post_id,
+    id: dto.id,
+    postId: dto.post_id,
     createdAt,
     status,
+    statusChangedAt: existing?.statusChangedAt,
     profileSnapshot: {
       ...(existing?.profileSnapshot ?? {}),
       uniqueId: dto.worker_wm_id || existing?.profileSnapshot?.uniqueId,
@@ -198,6 +257,17 @@ export function applyServerApplicationMerge(
     quickAnswers: isRecord(details.quickAnswers)
       ? (details.quickAnswers as EmployeeShiftApplication["quickAnswers"])
       : existing?.quickAnswers,
+    withdrawnAt: existing?.withdrawnAt,
+    attendanceConfirmedAt,
+    replacedAt: existing?.replacedAt,
+    replacedReason: existing?.replacedReason,
+    planId: existing?.planId,
+    planApplyBatchId: existing?.planApplyBatchId,
+    selectedDates: existing?.selectedDates,
+    rating: existing?.rating,
+    ratingComment: existing?.ratingComment,
+    ratedAt: existing?.ratedAt,
+    priorityTag: existing?.priorityTag,
   };
 
   const next = existing ? apps.map((a) => (a.id === existing.id ? merged : a)) : [merged, ...apps];

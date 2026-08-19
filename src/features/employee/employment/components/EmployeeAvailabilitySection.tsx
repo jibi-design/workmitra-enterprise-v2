@@ -65,7 +65,7 @@ export function EmployeeAvailabilitySection({ hrCandidateId }: Props) {
       {/* Header */}
       <div style={{ marginBottom: 12 }}>
         <div
-          style={{ fontWeight: 900, fontSize: 14, color: "var(--wm-emp-text, var(--wm-er-text))" }}
+          style={{ fontWeight: "var(--wm-weight-bold, 700)", fontSize: 14, color: "var(--wm-emp-text, var(--wm-er-text))" }}
         >
           Availability Requests
         </div>
@@ -82,7 +82,7 @@ export function EmployeeAvailabilitySection({ hrCandidateId }: Props) {
           <div
             style={{
               fontSize: 11,
-              fontWeight: 800,
+              fontWeight: "var(--wm-weight-bold, 700)",
               color: "#d97706",
               textTransform: "uppercase",
               letterSpacing: 0.5,
@@ -132,7 +132,7 @@ export function EmployeeAvailabilitySection({ hrCandidateId }: Props) {
                   {req.timeNeeded && <span>🕐 {req.timeNeeded}</span>}
                   {req.location && <span>📍 {req.location}</span>}
                 </div>
-                <div style={{ fontSize: 11, fontWeight: 800, color: "#d97706", marginTop: 2 }}>
+                <div style={{ fontSize: 11, fontWeight: "var(--wm-weight-bold, 700)", color: "#d97706", marginTop: 2 }}>
                   Tap to respond →
                 </div>
               </button>
@@ -148,7 +148,7 @@ export function EmployeeAvailabilitySection({ hrCandidateId }: Props) {
             <div
               style={{
                 fontSize: 11,
-                fontWeight: 800,
+                fontWeight: "var(--wm-weight-bold, 700)",
                 color: "var(--wm-emp-muted, var(--wm-er-muted))",
                 textTransform: "uppercase",
                 letterSpacing: 0.5,
@@ -208,7 +208,7 @@ export function EmployeeAvailabilitySection({ hrCandidateId }: Props) {
                         padding: "2px 8px",
                         borderRadius: 6,
                         fontSize: 10,
-                        fontWeight: 800,
+                        fontWeight: "var(--wm-weight-bold, 700)",
                         background: `${statusColor}15`,
                         color: statusColor,
                         textTransform: "uppercase",

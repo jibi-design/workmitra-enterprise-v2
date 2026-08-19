@@ -9,8 +9,9 @@ import {
   hydrateShiftPostsFromServer,
   mergeServerPostIntoLsCache,
 } from "../../../shift/services/shiftDbTruth.service";
+import { ApiRequestError } from "../../../../shared/services/apiService";
 import { isShiftApiSyncEnabled, shiftGateApi } from "../../../shift/services/shiftGateApi.service";
-import { isShiftServerUuid, shiftPostIdBridge } from "../../../shift/utils/shiftIdBridge";
+import { isShiftServerUuid, shiftPostIdBridge, shiftPostIdsMatch } from "../../../shift/utils/shiftIdBridge";
 import type { ShiftPost } from "./employerShift.types";
 import { createLocalId, notifyEmployerShiftPostsChanged, uniq } from "./employerShift.utils";
 
@@ -22,7 +23,7 @@ export function getEmployerShiftPosts(): ShiftPost[] {
 }
 
 export function getEmployerShiftPost(postId: string): ShiftPost | null {
-  return getEmployerShiftPosts().find((post) => post.id === postId) ?? null;
+  return readEmployerPosts().find((post) => shiftPostIdsMatch(post.id, postId)) ?? null;
 }
 
 export async function saveEmployerShiftPost(
@@ -49,27 +50,39 @@ export async function saveEmployerShiftPost(
 
   if (isShiftApiSyncEnabled() && !exists) {
     try {
-      const dto = await shiftGateApi.createPost(buildShiftPostCreateBody(post));
-      const merged = mergeServerPostIntoLsCache(dto, post.id);
-      if (!merged) {
+      let dto: Awaited<ReturnType<typeof shiftGateApi.createPost>> | null = null;
+      for (let attempt = 0; attempt < 4 && !dto; attempt += 1) {
+        try {
+          dto = await shiftGateApi.createPost(buildShiftPostCreateBody(post));
+        } catch (error) {
+          const retry =
+            error instanceof ApiRequestError && (error.status === 429 || error.status >= 500);
+          if (!retry || attempt === 3) throw error;
+          await new Promise((resolve) => window.setTimeout(resolve, 2_000 * (attempt + 1)));
+        }
+      }
+      const merged = dto ? mergeServerPostIntoLsCache(dto, post.id) : null;
+      if (merged) {
+        pushEmployerActivity({
+          postId: merged.id,
+          kind: "post_created",
+          title: "Shift post created",
+          body: `${merged.jobName} at ${merged.companyName}`,
+          route: `/employer/shift/post/${merged.id}`,
+        });
+        return merged;
+      }
+      if (import.meta.env.PROD) {
         writeEmployerPosts(prior);
         syncToEmployeeSearch(prior);
         return null;
       }
-
-      pushEmployerActivity({
-        postId: merged.id,
-        kind: "post_created",
-        title: "Shift post created",
-        body: `${merged.jobName} at ${merged.companyName}`,
-        route: `/employer/shift/post/${merged.id}`,
-      });
-
-      return merged;
     } catch {
-      writeEmployerPosts(prior);
-      syncToEmployeeSearch(prior);
-      return null;
+      if (import.meta.env.PROD) {
+        writeEmployerPosts(prior);
+        syncToEmployeeSearch(prior);
+        return null;
+      }
     }
   }
 
@@ -91,7 +104,7 @@ export function updateEmployerShiftPost(
   patch: Partial<ShiftPost>,
 ): ShiftPost | null {
   const posts = readEmployerPosts();
-  const current = posts.find((post) => post.id === postId);
+  const current = posts.find((post) => shiftPostIdsMatch(post.id, postId));
 
   if (!current) return null;
 

@@ -62,7 +62,7 @@ export function createShiftPostApplyWithdrawActions(input: {
     setWithdrawConfirm({
       title: ATTENDANCE_INTENT_TITLE,
       message: ATTENDANCE_INTENT_HELPER,
-      tone: "warn",
+      tone: "neutral",
       confirmLabel: ATTENDANCE_INTENT_ACTION,
       cancelLabel: "Not now",
     });

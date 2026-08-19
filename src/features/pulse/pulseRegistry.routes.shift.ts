@@ -11,7 +11,16 @@ export const PULSE_EVENT_ROUTES_SHIFT: Partial<
     eventId: PulseEvent.SHIFT_APPLICATION_RECEIVED,
     affectedUserRole: "employer",
     domain: "shift",
-    severity: "urgent",
+    severity: "info",
+    chain: ["home-shift-card", "shift-dashboard-applications"],
+    targetSectionId: PulseSectionId.EMPLOYER_SHIFT_APPLICATION_CARD,
+  },
+
+  SHIFT_APPLICATION_WITHDRAWN: {
+    eventId: PulseEvent.SHIFT_APPLICATION_RECEIVED,
+    affectedUserRole: "employer",
+    domain: "shift",
+    severity: "warning",
     chain: ["home-shift-card", "shift-dashboard-applications"],
     targetSectionId: PulseSectionId.EMPLOYER_SHIFT_APPLICATION_CARD,
   },
@@ -20,7 +29,7 @@ export const PULSE_EVENT_ROUTES_SHIFT: Partial<
     eventId: PulseEvent.SHIFT_SHORTLISTED,
     affectedUserRole: "employee",
     domain: "shift",
-    severity: "urgent",
+    severity: "warning",
     chain: [
       "employee-home-shift-card",
       "shift-dashboard-applications",
@@ -59,7 +68,7 @@ export const PULSE_EVENT_ROUTES_SHIFT: Partial<
     eventId: PulseEvent.SHIFT_EMPLOYEE_SELECTED,
     affectedUserRole: "employee",
     domain: "shift",
-    severity: "urgent",
+    severity: "warning",
     chain: [
       "employee-home-shift-card",
       "employee-shift-workspaces",

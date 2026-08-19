@@ -1,6 +1,7 @@
 /** Admin About — honest enterprise backend / storage status. */
 
 import { AUTH_BACKEND_ENABLED } from "../../../../../shared/config/authConfig";
+import { JobMitraBrandName } from "../../../../../shared/components/brand/BrandName";
 import { AdminSettingsAboutRow } from "./AdminSettingsSharedUi";
 
 export function AdminSettingsAboutCard() {
@@ -10,7 +11,7 @@ export function AdminSettingsAboutCard() {
 
   const phaseLabel = AUTH_BACKEND_ENABLED
     ? "Hybrid — DB authoritative; encrypted browser cache for profile PII"
-    : "Demo cache — encrypted profile PII in browser; enable auth for DB SoT";
+    : "Local sealed cache — encrypted profile PII in browser; enable auth for DB SoT";
 
   const storageLabel = AUTH_BACKEND_ENABLED
     ? "PostgreSQL/API + sealed localStorage profile cache"
@@ -19,7 +20,10 @@ export function AdminSettingsAboutCard() {
   return (
     <div className="wm-ad-domainCard" style={{ paddingLeft: 20 }}>
       <div style={{ display: "grid", gap: 10 }}>
-        <AdminSettingsAboutRow label="Application" value="Job Mitra Enterprise" />
+        <AdminSettingsAboutRow
+          label="Application"
+          value={<><JobMitraBrandName size="sm" /> Enterprise</>}
+        />
         <AdminSettingsAboutRow label="Version" value="1.0.0" />
         <AdminSettingsAboutRow label="Phase" value={phaseLabel} />
         <AdminSettingsAboutRow label="Build" value="React + TypeScript + Vite" />

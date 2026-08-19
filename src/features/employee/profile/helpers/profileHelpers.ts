@@ -1,5 +1,6 @@
 // src/features/employee/profile/helpers/profileHelpers.ts
 
+import { getContactVerificationState } from "../../../../shared/phone";
 import type { EmployeeProfile } from "../storage/employeeProfile.storage";
 import type { ChecklistRow, ChecklistId } from "../types/profileTypes";
 import { CHECKLIST_ITEMS } from "../types/profileTypes";
@@ -47,6 +48,9 @@ export function isSameProfile(a: EmployeeProfile, b: EmployeeProfile): boolean {
   return (
     a.fullName === b.fullName &&
     a.city === b.city &&
+    a.basePincode === b.basePincode &&
+    a.commuteRadius === b.commuteRadius &&
+    a.careerCommuteRadius === b.careerCommuteRadius &&
     a.photoDataUrl === b.photoDataUrl &&
     a.phoneMasked === b.phoneMasked &&
     a.emailMasked === b.emailMasked &&
@@ -64,14 +68,21 @@ export function computeChecklist(p: EmployeeProfile): { doneCount: number; total
   const anyDay = av.weekdays || av.weekends;
   const anyTime = av.morning || av.afternoon || av.evening;
 
+  const contact = getContactVerificationState();
+  const phoneVerified = contact.phoneVerified === true || p.phoneVerified === true;
+  const emailVerified = contact.emailVerified === true || p.emailVerified === true;
+
   const doneMap: Record<ChecklistId, boolean> = {
     fullName: !!p.fullName.trim(),
     city: !!p.city.trim(),
+    basePincode: !!p.basePincode.trim(),
     skills: p.skills.length > 0,
     experience: !!p.experience,
     languages: p.languages.length > 0,
     jobTypes: p.preferShiftJobs || p.preferCareerJobs,
     availability: !!anyDay && !!anyTime,
+    phoneVerified,
+    emailVerified,
   };
 
   const rows: ChecklistRow[] = CHECKLIST_ITEMS.map((it) => ({ ...it, done: doneMap[it.id] }));

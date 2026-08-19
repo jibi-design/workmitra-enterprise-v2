@@ -116,6 +116,7 @@ export function normalizeCareerPost(raw: unknown): CareerJobPost | null {
     jobType: clampJobType(raw["jobType"]),
     workMode: clampWorkMode(raw["workMode"]),
     location: getString(raw, "location") ?? "",
+    locationPincode: getString(raw, "locationPincode") ?? "",
     vacancies: Math.max(1, vacancies),
     probationPeriod: probationPeriod as CareerJobPost["probationPeriod"],
     salaryMin: Math.max(0, salaryMin),

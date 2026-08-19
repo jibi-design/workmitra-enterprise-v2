@@ -105,7 +105,6 @@ export function EmployeeCareerJobCard({
               }}
             >
               {post.companyName}
-              {post.location ? ` • ${post.location}` : ""}
             </p>
             <EmployerTrustBadge variant="compact" />
           </div>
@@ -114,22 +113,27 @@ export function EmployeeCareerJobCard({
         <button
           type="button"
           className="wm-career-tap"
+          data-testid="career-save-job"
+          data-post-id={post.id}
           onClick={(event) => {
             event.stopPropagation();
             onToggleSaved(post.id);
           }}
           aria-label={isSaved ? "Unsave job" : "Save job"}
           style={{
-            background: "transparent",
-            border: "none",
+            background: isSaved ? "rgba(29, 78, 216, 0.08)" : "rgba(248, 250, 252, 0.95)",
+            border: "1px solid rgba(148, 163, 184, 0.35)",
             cursor: "pointer",
-            padding: 10,
-            borderRadius: "50%",
-            color: isSaved ? "var(--wm-career-accent)" : "#94a3b8",
-            display: "flex",
+            padding: "6px 10px",
+            borderRadius: "var(--wm-radius-pill)",
+            color: isSaved ? "var(--wm-career-accent)" : "var(--wm-career-muted, #64748b)",
+            display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
+            gap: 6,
             flexShrink: 0,
+            fontSize: 12,
+            fontWeight: 800,
           }}
         >
           <svg
@@ -144,6 +148,7 @@ export function EmployeeCareerJobCard({
           >
             <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
           </svg>
+          <span>{isSaved ? "Saved" : "Save"}</span>
         </button>
       </div>
 

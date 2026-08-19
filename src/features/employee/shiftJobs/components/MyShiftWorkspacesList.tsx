@@ -29,7 +29,7 @@ export function MyShiftWorkspacesList({
   return (
     <div
       className="wm-shiftWorkspacesList"
-      style={{ display: "grid", gap: 12, minHeight: 240 }}
+      style={{ display: "grid", gap: 12 }}
       data-testid="shift-workspaces-list"
     >
       {workspaces.length === 0 ? <WorkspaceEmptyState tab={tab} domain={domain} /> : null}

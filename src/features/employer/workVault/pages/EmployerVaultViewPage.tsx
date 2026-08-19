@@ -6,7 +6,6 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   clearStoredEmployerSessionId,
-  createSession,
   createSessionFromApiResult,
   endEmployerLocalSession,
   expireOldSessions,
@@ -17,7 +16,6 @@ import {
   getVisibleFolders,
   isSessionValid,
   isVaultApiSyncEnabled,
-  verifyOtp,
   verifyOtpViaApi,
   type VaultDocument,
   type VaultFolder,
@@ -153,22 +151,10 @@ export function EmployerVaultViewPage() {
         return;
       }
 
-      const verified = await verifyOtp(code);
-
-      if (!verified) {
-        setOtpError("Invalid or expired code. Please ask the employee for a new code.");
-        return;
-      }
-
-      const newSession = createSession(employerMlId, employerName);
-
-      if (!newSession.ok) {
-        setOtpError("Could not start vault session. Free up browser storage and try again.");
-        return;
-      }
-
-      setSession(newSession.session);
-      loadVaultData();
+      // DEC-012 / MIG-008: local client OTP verify removed — server auth required.
+      setOtpError(
+        "Vault access requires signed-in server auth. Enable VITE_AUTH_BACKEND_ENABLED and sign in.",
+      );
     } finally {
       setSubmitting(false);
     }

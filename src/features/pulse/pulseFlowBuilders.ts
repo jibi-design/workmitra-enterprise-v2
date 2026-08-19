@@ -13,9 +13,9 @@ import type {
 export function normalizeSeverityFromRegistry(id: NotificationId): PulseChainSeverity {
   const registrySeverity = PULSE_REGISTRY[id]?.severity;
 
-  if (registrySeverity === "WARNING" || registrySeverity === "CRITICAL") {
-    return "urgent";
-  }
+  if (registrySeverity === "CRITICAL") return "urgent";
+  if (registrySeverity === "WARNING") return "warning";
+  if (registrySeverity === "SUCCESS") return "success";
 
   return "info";
 }
@@ -61,7 +61,7 @@ const PULSE_FLOW_BUILDERS: Readonly<Record<KnownPulseFlowNotificationType, Pulse
         "shift-dashboard-applications",
         buildNodeId("applicant-", normalizedTargetId),
       ]),
-      defaultSeverity: "urgent",
+      defaultSeverity: "info",
     };
   },
 
@@ -87,7 +87,7 @@ const PULSE_FLOW_BUILDERS: Readonly<Record<KnownPulseFlowNotificationType, Pulse
         "career-funnel-interviews",
         buildNodeId("candidate-", normalizedTargetId),
       ]),
-      defaultSeverity: "urgent",
+      defaultSeverity: "warning",
     };
   },
 
@@ -100,7 +100,7 @@ const PULSE_FLOW_BUILDERS: Readonly<Record<KnownPulseFlowNotificationType, Pulse
         "career-dashboard-applications",
         buildNodeId("candidate-", normalizedTargetId),
       ]),
-      defaultSeverity: "urgent",
+      defaultSeverity: "info",
     };
   },
 

@@ -185,7 +185,7 @@
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-  padding: 16px;
+  padding: var(--wm-dna-card-padding, var(--wm-card-padding, 14px));
   border-radius: 1rem;
   border: 1px solid rgba(167, 243, 208, 0.55);
   background:
@@ -289,16 +289,19 @@
     transform 120ms ease;
 }
 
-.wm-shiftHomeQuickPill:hover {
-  background: rgba(255, 255, 255, 0.85);
-  border-color: rgba(167, 243, 208, 0.45);
+@media (hover: hover) {
+  .wm-shiftHomeQuickPill:hover {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(167, 243, 208, 0.45);
+  }
 }
 
 .wm-shiftHomeQuickPill:active {
-  transform: scale(0.985);
+  transform: scale(var(--wm-dna-press-scale, 0.95));
 }
 
-.wm-shiftHomeQuickPill.isActive {
+.wm-shiftHomeQuickPill.isActive,
+.wm-shiftHomeQuickPill.is-active {
   background: rgba(255, 255, 255, 0.98);
   border-color: rgba(22, 163, 74, 0.28);
   box-shadow:
@@ -454,9 +457,9 @@
 }
 
 .wm-shiftHomeActionButton {
-  min-height: 112px;
+  min-height: var(--wm-dna-card-min-height, 140px);
   justify-content: flex-start;
-  padding: 14px 8px 12px;
+  padding: var(--wm-dna-card-padding, 14px);
   border-radius: var(--wm-radius-employer-card);
   border: 1px solid rgba(148, 163, 184, 0.22);
   background:
@@ -959,9 +962,8 @@
   }
 
   .wm-shiftHomeActionButton {
-    min-height: 108px;
-    padding-left: 6px;
-    padding-right: 6px;
+    min-height: var(--wm-dna-card-min-height, 140px);
+    padding: var(--wm-dna-card-padding, 14px);
   }
 
   .wm-shiftHomeActionIcon {
@@ -1145,7 +1147,7 @@
     0 1px 2px rgba(15, 23, 42, 0.04),
     0 12px 28px rgba(15, 23, 42, 0.045),
     inset 0 1px 0 rgba(255, 255, 255, 0.95);
-  padding: 16px;
+  padding: var(--wm-dna-card-padding, var(--wm-card-padding, 14px));
   display: grid;
   gap: 12px;
 }
@@ -1509,4 +1511,37 @@
 
 .wm-shiftOpsReadyToggleKnob {
   transition: transform 160ms ease;
+}
+
+.wm-shiftPostCard__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--wm-er-muted);
+  line-height: 1.4;
+}
+
+.wm-shiftPostCard__status {
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.wm-shiftPostCard__dates {
+  white-space: nowrap;
+}
+
+.wm-shiftPostCard__rate {
+  font-weight: 800;
+  color: var(--wm-er-accent-shift);
+  white-space: nowrap;
+}
+
+.wm-shiftPostCard__sep {
+  display: inline-block;
+  margin: 0 6px;
+  font-weight: 700;
+  color: var(--wm-er-muted);
 }

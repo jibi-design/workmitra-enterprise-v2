@@ -11,8 +11,19 @@ import {
   type CareerCreateDraft,
 } from "../storage/careerCreateDraft.storage";
 
+let cachedDraftRaw: string | null = "__init__";
+let cachedDraft: CareerCreateDraft | null = null;
+
 function getDraftSnapshot(): CareerCreateDraft | null {
-  return careerCreateDraftStorage.get();
+  // useSyncExternalStore requires referentially stable snapshots when data is unchanged.
+  const next = careerCreateDraftStorage.get();
+  const raw = next ? JSON.stringify(next) : null;
+  if (raw === cachedDraftRaw) {
+    return cachedDraft;
+  }
+  cachedDraftRaw = raw;
+  cachedDraft = next;
+  return cachedDraft;
 }
 
 function subscribeDraft(onStoreChange: () => void): () => void {

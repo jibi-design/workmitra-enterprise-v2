@@ -1,9 +1,27 @@
 // vite.config.ts
+import os from "node:os";
 import { loadEnv } from "vite";
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import MillionLint from "@million/lint";
 import { VitePWA } from "vite-plugin-pwa";
+
+function pickDevLanOrigin(port: string): string {
+  const ips: string[] = [];
+  for (const list of Object.values(os.networkInterfaces())) {
+    for (const net of list ?? []) {
+      const v4 = net.family === "IPv4" || Number(net.family) === 4;
+      if (!v4 || net.internal) continue;
+      ips.push(net.address);
+    }
+  }
+  const ip =
+    ips.find((item) => item.startsWith("192.168.")) ??
+    ips.find((item) => item.startsWith("10.")) ??
+    ips[0] ??
+    "";
+  return ip ? `http://${ip}:${port}` : "";
+}
 
 // https://vite.dev/config/
 const isKnipRun = process.env.npm_lifecycle_event === "check:dead";
@@ -27,12 +45,16 @@ export default defineConfig(({ mode, command }) => {
 
   // Layer 6: production build integrity — drop debug instrumentation
   const dropConsole = command === "build" && mode === "production";
+  const lanOrigin = command === "serve" ? pickDevLanOrigin("5173") : "";
+  const define: Record<string, string> = {
+    "import.meta.env.VITE_DEV_LAN_ORIGIN": JSON.stringify(lanOrigin),
+  };
+  if (mode === "auth") {
+    define["import.meta.env.VITE_AUTH_BACKEND_ENABLED"] = JSON.stringify("true");
+  }
 
   return {
-    define:
-      mode === "auth"
-        ? { "import.meta.env.VITE_AUTH_BACKEND_ENABLED": JSON.stringify("true") }
-        : undefined,
+    define,
     esbuild: dropConsole
       ? {
           /** Drop debugger statements in production bundles. */
@@ -43,9 +65,27 @@ export default defineConfig(({ mode, command }) => {
     resolve: {
       dedupe: ["react", "react-dom", "react-router", "react-router-dom"],
     },
+    css: {
+      devSourcemap: false,
+    },
     server: {
+      host: true,
+      hmr: {
+        overlay: false,
+      },
       watch: {
-        ignored: ["**/.tmp/**"],
+        ignored: [
+          "**/node_modules/**",
+          "**/.git/**",
+          "**/dist/**",
+          "**/coverage/**",
+          "**/android/**",
+          "**/.tmp/**",
+          "**/playwright-report/**",
+          "**/test-results/**",
+          "**/*.log",
+          "**/node_modules/.vite/**",
+        ],
       },
       proxy: {
         "/v1": {
@@ -53,6 +93,36 @@ export default defineConfig(({ mode, command }) => {
           changeOrigin: true,
           ws: true,
         },
+      },
+    },
+    optimizeDeps: {
+      holdUntilCrawlEnd: false,
+      include: [
+        "react",
+        "react-dom",
+        "react-dom/client",
+        "react-router",
+        "react-router-dom",
+        "zustand",
+        "lucide-react",
+        "framer-motion",
+        "zod",
+        "@supabase/supabase-js",
+        "@tanstack/react-virtual",
+        "@dnd-kit/core",
+        "@dnd-kit/sortable",
+        "@dnd-kit/utilities",
+      ],
+      exclude: [
+        "agora-rtc-sdk-ng",
+        "jspdf",
+        "html2canvas",
+        "@sentry/react",
+        "@capacitor/core",
+        "@capacitor/android",
+      ],
+      esbuildOptions: {
+        target: "esnext",
       },
     },
     plugins: [

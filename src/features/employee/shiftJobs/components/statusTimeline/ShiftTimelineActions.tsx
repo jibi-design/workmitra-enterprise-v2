@@ -22,7 +22,7 @@ export function ShiftTimelineActions({ actions }: ShiftTimelineActionsProps) {
       }}
       aria-label="Next actions"
     >
-      <div style={{ fontSize: 12, fontWeight: 950, color: TEXT_DARK }}>Next action</div>
+      <div style={{ fontSize: 12, fontWeight: 800, color: TEXT_DARK }}>Next action</div>
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
         {actions.map((action) => (
@@ -46,7 +46,7 @@ function TimelineActionButton({ action }: { readonly action: ShiftTimelineAction
     justifyContent: "center",
     gap: 6,
     fontSize: 12,
-    fontWeight: 950,
+    fontWeight: 800,
     textDecoration: "none",
     outline: "none",
   };

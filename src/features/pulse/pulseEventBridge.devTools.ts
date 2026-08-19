@@ -25,18 +25,49 @@ function isLocalPulseQaHost(): boolean {
   );
 }
 
+function readUrlQueryParam(name: string): string | null {
+  if (typeof window === "undefined") return null;
+
+  const fromSearch = new URLSearchParams(window.location.search).get(name);
+  if (fromSearch != null) return fromSearch;
+
+  // HashRouter: #/employer?wmPulseDemo=1
+  const hash = window.location.hash;
+  const queryIndex = hash.indexOf("?");
+  if (queryIndex < 0) return null;
+
+  return new URLSearchParams(hash.slice(queryIndex + 1)).get(name);
+}
+
 function hasPulseQaOptInFlag(): boolean {
   if (typeof window === "undefined") return false;
 
-  const searchParams = new URLSearchParams(window.location.search);
-
-  if (searchParams.get("wmPulseDev") === "1") return true;
+  if (readUrlQueryParam("wmPulseDev") === "1") return true;
 
   try {
     return window.localStorage.getItem("wm_enable_pulse_dev_tools") === "true";
   } catch {
     return false;
   }
+}
+
+/** DEV-only sample: ?wmPulseDemo=1|shift|final */
+function maybeAutoTriggerPulseDemo(api: PulseDevConsoleApi): number | undefined {
+  if (typeof window === "undefined") return undefined;
+  if (!import.meta.env.DEV && !isLocalPulseQaHost()) return undefined;
+
+  const flag = readUrlQueryParam("wmPulseDemo");
+  if (flag !== "1" && flag !== "shift" && flag !== "final") return undefined;
+
+  // Wait one tick so Employer Home PulseNodes mount before chain activate.
+  return window.setTimeout(() => {
+    if (flag === "final") {
+      // Single-node chain → destination double-blink (“this is it”).
+      api.activateNode("home-shift-card", "urgent");
+      return;
+    }
+    api.trigger("SHIFT_APPLICATION_SUBMITTED");
+  }, 400);
 }
 
 function shouldInstallPulseDevTools(): boolean {
@@ -72,6 +103,11 @@ function createPulseDevConsoleApi(): PulseDevConsoleApi {
       return [nodeId];
     },
 
+    setChain: (chain, options) => {
+      usePulseStore.getState().setChain(chain, options);
+      return [...chain];
+    },
+
     clear: () => {
       usePulseStore.getState().clearAllPulses();
     },
@@ -105,10 +141,14 @@ export function installPulseDevTools(): () => void {
   if (!shouldInstallPulseDevTools()) return () => undefined;
 
   const previousDevTools = window.wmPulseDev;
+  const api = createPulseDevConsoleApi();
 
-  window.wmPulseDev = createPulseDevConsoleApi();
+  window.wmPulseDev = api;
+  const demoTimerId = maybeAutoTriggerPulseDemo(api);
 
   return () => {
+    if (demoTimerId != null) window.clearTimeout(demoTimerId);
+
     if (previousDevTools) {
       window.wmPulseDev = previousDevTools;
       return;

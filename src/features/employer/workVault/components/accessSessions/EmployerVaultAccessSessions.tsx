@@ -63,8 +63,8 @@ export function EmployerVaultAccessSessions() {
         </div>
 
         <div className="wm-vault-acl-card__note">
-          Phase-0 local session record only. This is not cloud security, official verification, or
-          compliance validation.
+          Session history is stored for this workplace. Cloud security and official verification
+          layers arrive later.
         </div>
       </div>
 

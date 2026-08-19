@@ -24,6 +24,10 @@ import type { CandidateReviewFilters } from "./candidateReview/candidateReview.t
 import { SlideOver, StatusBadge } from "../../../../shared/components/enterprise";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { useNavigate } from "react-router-dom";
+import {
+  fitVirtualListViewportPx,
+  virtualListNeedsInnerScroll,
+} from "../../../../shared/layout/fitVirtualListViewport";
 
 type CandidateCardActions = {
   isBusy: boolean;
@@ -49,6 +53,11 @@ type EmployerShiftCandidateListProps = {
   onPriorityTag: (appId: string, tag: PriorityTag | undefined) => void;
   cardActions: CandidateCardActions;
   onRequestTabChange: (tab: DashboardTab) => void;
+  laterPipeline: {
+    shortlisted: number;
+    backup: number;
+    selected: number;
+  };
 };
 
 const DEFAULT_REVIEW_FILTERS: CandidateReviewFilters = {
@@ -58,8 +67,7 @@ const DEFAULT_REVIEW_FILTERS: CandidateReviewFilters = {
   sort: "recommended",
 };
 
-const ROW_ESTIMATE_PX = 168;
-const LIST_HEIGHT_CSS = "min(560px, 70dvh)";
+const ROW_ESTIMATE_PX = 280;
 
 export function EmployerShiftCandidateList({
   postId,
@@ -74,6 +82,7 @@ export function EmployerShiftCandidateList({
   onOpenCompare,
   cardActions,
   onRequestTabChange,
+  laterPipeline,
 }: EmployerShiftCandidateListProps) {
   const [compareMode, setCompareMode] = useState(false);
   const [reviewFilters, setReviewFilters] =
@@ -107,11 +116,17 @@ export function EmployerShiftCandidateList({
     overscan: 4,
   });
 
+  const listContentHeight = virtualizer.getTotalSize();
+  const listViewportHeight = fitVirtualListViewportPx(listContentHeight, visibleApps.length, {
+    rowEstimatePx: ROW_ESTIMATE_PX,
+  });
+  const listInnerScroll = virtualListNeedsInnerScroll(listContentHeight);
+
   const hasAnyCandidates = sourceApps.length > 0;
   const mode = getCandidateCardMode(tab);
 
   return (
-    <div style={{ marginTop: 10, display: "grid", gap: 12, minHeight: 260 }}>
+    <div style={{ marginTop: 10, display: "grid", gap: 12 }}>
       <CandidateReviewToolbar
         filters={reviewFilters}
         summary={reviewSummary}
@@ -133,6 +148,7 @@ export function EmployerShiftCandidateList({
           tab={tab}
           filters={reviewFilters}
           hasAnyCandidates={hasAnyCandidates}
+          laterPipeline={laterPipeline}
           onReset={() => setReviewFilters(DEFAULT_REVIEW_FILTERS)}
           onRequestTabChange={onRequestTabChange}
         />
@@ -141,12 +157,9 @@ export function EmployerShiftCandidateList({
           ref={parentRef}
           data-testid="employer-shift-candidate-virtual-list"
           style={{
-            height: LIST_HEIGHT_CSS,
-            overflow: "auto",
+            height: listViewportHeight,
+            overflow: listInnerScroll ? "auto" : "hidden",
             position: "relative",
-            contain: "paint layout",
-            willChange: "scroll-position",
-            transform: "translateZ(0)",
           }}
         >
           <div
@@ -154,7 +167,6 @@ export function EmployerShiftCandidateList({
               height: virtualizer.getTotalSize(),
               width: "100%",
               position: "relative",
-              contain: "layout style",
             }}
           >
             {virtualizer.getVirtualItems().map((virtualRow) => {
@@ -173,9 +185,8 @@ export function EmployerShiftCandidateList({
                     top: 0,
                     left: 0,
                     width: "100%",
-                    transform: `translate3d(0, ${virtualRow.start}px, 0)`,
+                    transform: `translateY(${virtualRow.start}px)`,
                     paddingBottom: 12,
-                    contain: "layout paint style",
                   }}
                 >
                   <CandidatePulseRowChrome

@@ -13,6 +13,7 @@ import {
   LEGACY_STORAGE_KEY,
   STORAGE_KEY,
 } from "./employerSettings.storage.constants";
+import { parsePincode } from "../../../shared/location/pincode";
 import { piiSecureStorage } from "../../../../shared/security/piiSecureStorage";
 
 function syncHandleHistory(existing: EmployerProfile, nextHandle: string): string[] {
@@ -32,6 +33,7 @@ function migrateProfile(parsed: Partial<EmployerProfile>): EmployerProfile {
     previousHandles: parsed.previousHandles ?? [],
     transferStatus: parsed.transferStatus ?? "none",
     contactVerified: parsed.contactVerified ?? false,
+    locationPincode: parsePincode(parsed.locationPincode) ?? "",
   };
 
   if (merged.uniqueId && !merged.companyUniqueId) {
@@ -236,6 +238,9 @@ export function validateProfile(profile: EmployerProfile): ValidationResult {
   }
   if (profile.companyDescription.length > 200) {
     errors.push("Company Description must be 200 characters or less.");
+  }
+  if (profile.locationPincode.trim() && !parsePincode(profile.locationPincode)) {
+    errors.push("Work area code is invalid.");
   }
 
   const handle = profile.publicHandle?.trim();

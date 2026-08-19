@@ -49,7 +49,12 @@ export function CareerEmptyState({
       <div className="wm-career-empty__subtitle">{subtitle}</div>
       {ctaLabel && onCta ? (
         <div className="wm-career-empty__cta">
-          <button type="button" className="wm-career-cta wm-career-cta--primary" onClick={onCta}>
+          <button
+            type="button"
+            className="wm-career-cta wm-career-cta--primary"
+            data-testid={ctaLabel === "Save Job" ? "career-save-job" : undefined}
+            onClick={onCta}
+          >
             {ctaLabel}
           </button>
         </div>

@@ -1,10 +1,7 @@
-// WARNING DEC-012 / MIG-008: Client-side OTP path (plaintext)
-// Server OTP path (Argon2 hashed) exists at server/modules/vault/
-// This client path MUST BE REMOVED before production cutover
-// See architecture-audits/Phase-DB-Migration-Readiness-Audit-001.md
 // src/features/employer/workVault/components/EmployerVaultOtpInput.tsx
 
 import { useRef, useState } from "react";
+import { JobMitraAppLabel } from "../../../../shared/components/brand/JobMitraAppLabel";
 import { OTP_CODE_LENGTH, validateOtpFormat } from "../../../shared/workVault/vaultPublic";
 
 type EmployerVaultOtpInputProps = {
@@ -73,8 +70,8 @@ export function EmployerVaultOtpInput({
       </div>
       <div className="wm-vault-otp-verify__title">Enter Access Code</div>
       <div className="wm-vault-otp-verify__sub">
-        Ask <strong>{employeeName}</strong> to share their 6-digit access code from the Job Mitra
-        app.
+        Ask <strong>{employeeName}</strong> to share their 6-digit access code from the{" "}
+        <JobMitraAppLabel />.
       </div>
 
       <div className="wm-vault-otp-verify__digits">

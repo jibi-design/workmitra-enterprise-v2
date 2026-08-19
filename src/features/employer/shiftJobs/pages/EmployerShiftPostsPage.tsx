@@ -2,6 +2,7 @@
 // File name: EmployerShiftPostsPage.tsx
 // My Posts — adopt shared Shift design primitives (Step 2)
 
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { EmployerShiftPostsHeader } from "../components/EmployerShiftPostsHeader";
@@ -18,6 +19,10 @@ const STATUS_FILTER_LABELS: Record<string, string> = {
 export function EmployerShiftPostsPage() {
   const nav = useNavigate();
   const state = useEmployerShiftPostsPageState();
+
+  useEffect(() => {
+    void import("./EmployerShiftPostDashboardPage");
+  }, []);
   const filterLabel =
     state.statusFilter && STATUS_FILTER_LABELS[state.statusFilter]
       ? STATUS_FILTER_LABELS[state.statusFilter]

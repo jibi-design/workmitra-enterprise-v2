@@ -11,7 +11,7 @@ import {
 } from "../registry/idRegistry";
 import { deriveNameBlock } from "../generators/uniqueIdGenerator";
 import { validateId, isValidId } from "../validators/idValidator";
-import { ID_REGISTRY_KEY, ID_DISPLAY_LENGTH, ID_PREFIX } from "../constants/idConstants";
+import { ID_REGISTRY_KEY, ID_DISPLAY_LENGTH, ID_PREFIX, APP_SHORT_CODE } from "../constants/idConstants";
 
 /* ── Setup ── */
 beforeEach(() => {
@@ -28,8 +28,9 @@ describe("generateAndRegisterId", () => {
 
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.id).toMatch(/^ML-[A-Z2-9]{4}-RAH-[A-Z2-9]{4}$/);
+      expect(result.id).toMatch(/^ML-JBEM-RAH-[A-Z2-9]{4}$/);
       expect(result.id.length).toBe(ID_DISPLAY_LENGTH);
+      expect(result.id.startsWith(`${ID_PREFIX}-${APP_SHORT_CODE}`)).toBe(true);
     }
   });
 
@@ -49,6 +50,7 @@ describe("generateAndRegisterId", () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.id).toContain("-TEC-");
+      expect(result.id.split("-")[1]).toBe("JBER");
     }
   });
 

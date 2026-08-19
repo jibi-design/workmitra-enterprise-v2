@@ -6,7 +6,7 @@ import { useDynamicNav } from "../../../hooks/useDynamicNav";
 import styles from "./BottomNav.module.css";
 
 const BottomNav: React.FC = () => {
-  const { navItems, themeColor } = useDynamicNav();
+  const { navItems, themeColor, activeDomain } = useDynamicNav();
   const navigate = useNavigate();
 
   const handleNavigation = (path: string, isActive: boolean) => {
@@ -17,6 +17,7 @@ const BottomNav: React.FC = () => {
   return (
     <nav
       className={styles.navContainer}
+      data-nav-domain={activeDomain}
       style={
         {
           "--nav-theme-color": themeColor,
@@ -38,9 +39,6 @@ const BottomNav: React.FC = () => {
               <Icon size={22} strokeWidth={item.isActive ? 2.5 : 2} className={styles.icon} />
               {item.hasUnreadBadge && !item.isActive && (
                 <span className={styles.unreadDot} aria-label="Pending direct invites" />
-              )}
-              {item.isPulsing && !item.isActive && (
-                <span className={styles.pulseDot} aria-hidden="true" />
               )}
             </div>
             <span className={styles.label}>{item.label}</span>

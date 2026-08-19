@@ -6,6 +6,12 @@
 import { AUTH_BACKEND_ENABLED } from "../../../shared/config/authConfig";
 import { apiService } from "../../../shared/services/apiService";
 import { isShiftServerUuid } from "../utils/shiftIdBridge";
+import {
+  archiveShiftOpsSite,
+  completeShiftWorkspace,
+  listShiftReviews,
+  submitShiftReview,
+} from "./shiftGateApi.reviews";
 
 const EMPLOYER_SHIFT = "/v1/jobmitra/employer/shift";
 const EMPLOYEE_SHIFT = "/v1/jobmitra/employee/shift";
@@ -106,8 +112,20 @@ export const shiftGateApi = {
     return post;
   },
 
+  async listPostApplications(postId: string): Promise<ServerShiftApplicationDto[]> {
+    const res = await apiService.get<ApiEnvelope<{ applications: unknown }>>(
+      `${EMPLOYER_SHIFT}/posts/${encodeURIComponent(postId)}/applications`,
+    );
+    const raw = res.data.applications;
+    if (!Array.isArray(raw)) return [];
+    return raw.map(asServerApp).filter((a): a is ServerShiftApplicationDto => a !== null);
+  },
+
   async listMyApplications(workerMlId?: string): Promise<ServerShiftApplicationDto[]> {
-    const params = workerMlId?.trim() ? { worker_wm_id: workerMlId.trim() } : undefined;
+    const params =
+      workerMlId?.trim() && isShiftServerUuid(workerMlId.trim())
+        ? { worker_wm_id: workerMlId.trim() }
+        : undefined;
     const res = await apiService.get<ApiEnvelope<{ applications: unknown }>>(
       `${EMPLOYEE_SHIFT}/applications`,
       params,
@@ -136,7 +154,10 @@ export const shiftGateApi = {
     workerMlId?: string,
     options?: { idempotencyKey?: string },
   ): Promise<{ workspace: unknown; events: unknown[] }> {
-    const body = workerMlId?.trim() ? { worker_wm_id: workerMlId.trim() } : {};
+    const body =
+      workerMlId?.trim() && isShiftServerUuid(workerMlId.trim())
+        ? { worker_wm_id: workerMlId.trim() }
+        : {};
     const headers: HeadersInit = {};
     const idempotencyKey = options?.idempotencyKey?.trim();
     if (idempotencyKey) {
@@ -234,4 +255,33 @@ export const shiftGateApi = {
       status: typeof w.status === "string" ? w.status : "",
     };
   },
+
+  async withdrawApplication(applicationId: string): Promise<ServerShiftApplicationDto> {
+    const res = await apiService.post<ApiEnvelope<{ application: unknown }>>(
+      `${EMPLOYEE_SHIFT}/applications/${encodeURIComponent(applicationId)}/withdraw`,
+      {},
+    );
+    const application = asServerApp(res.data.application);
+    if (!application) throw new Error("Invalid withdraw response");
+    return application;
+  },
+
+  async patchApplicationStatus(
+    postId: string,
+    appId: string,
+    status: "shortlisted" | "waiting" | "rejected",
+  ): Promise<ServerShiftApplicationDto> {
+    const res = await apiService.post<ApiEnvelope<{ application: unknown }>>(
+      `${EMPLOYER_SHIFT}/posts/${encodeURIComponent(postId)}/applications/${encodeURIComponent(appId)}/status`,
+      { status },
+    );
+    const application = asServerApp(res.data.application);
+    if (!application) throw new Error("Invalid application status response");
+    return application;
+  },
+
+  completeWorkspace: completeShiftWorkspace,
+  submitReview: submitShiftReview,
+  listReviews: listShiftReviews,
+  archiveSite: archiveShiftOpsSite,
 };

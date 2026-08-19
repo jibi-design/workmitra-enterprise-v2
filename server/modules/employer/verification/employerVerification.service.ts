@@ -12,7 +12,8 @@ import {
   type MicroTrackPayload,
   type PublishGateResult,
 } from "./employerMaturity.policy.js";
-import { employerVerificationStore } from "./employerVerification.store.js";
+import { employerVerificationStore, markLabDemoEmployerVerified } from "./employerVerification.store.js";
+import { seedLabDemoEmployerVerificationFromDb } from "./employerVerification.demoSeed.js";
 import { companiesHouseService } from "./companiesHouse.service.js";
 
 export type EmployerVerificationDto = {
@@ -88,6 +89,7 @@ function parseMicroTrack(body: Record<string, unknown>): MicroTrackPayload | nul
 
 export const employerVerificationService = {
   getForEmployer(employer: AuthUser): EmployerVerificationDto {
+    markLabDemoEmployerVerified(employer.id, employer.email);
     return toDto(employer.id);
   },
 
@@ -224,6 +226,11 @@ export const employerVerificationService = {
   },
 
   assertEmployerCanPublishLive(employer: AuthUser): PublishGateResult {
+    markLabDemoEmployerVerified(employer.id, employer.email);
     return assertCanPublishLive(employerVerificationStore.get(employer.id));
   },
 };
+
+void seedLabDemoEmployerVerificationFromDb().catch(() => {
+  /* retry happens on first publish via markLabDemoEmployerVerified */
+});

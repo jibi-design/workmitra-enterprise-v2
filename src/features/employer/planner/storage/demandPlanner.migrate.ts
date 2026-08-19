@@ -118,6 +118,7 @@ export function migrateDemandPlanToV2(raw: unknown): DemandPlan | null {
     name: asString(rec.name),
     companyName: asString(rec.companyName),
     locationName: asString(rec.locationName),
+    locationPincode: asString(rec.locationPincode).trim() || undefined,
     category: asString(rec.category),
     experience: asExperience(rec.experience),
     startDate: asString(rec.startDate),

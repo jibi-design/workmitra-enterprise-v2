@@ -4,6 +4,8 @@
 
 import { availabilityStorage } from "./availabilityStorage";
 import type { AvailabilityBroadcast } from "./availabilityStorage";
+import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
+import { filterPostsNearWorker } from "../helpers/nearbyJobs.filter";
 import type {
   ShiftControlCenterCounts,
   ShiftControlCenterSnapshot,
@@ -52,6 +54,7 @@ export function subscribeControlCenter(callback: () => void): () => void {
   window.addEventListener(WORKSPACES_CHANGED_EVENT, handler);
   window.addEventListener(EMPLOYER_POSTS_CHANGED, handler);
   window.addEventListener(EMPLOYEE_POSTS_CHANGED, handler);
+  window.addEventListener(employeeProfileStorage.CHANGED_EVENT, handler);
 
   return () => {
     window.removeEventListener("storage", handler);
@@ -61,6 +64,7 @@ export function subscribeControlCenter(callback: () => void): () => void {
     window.removeEventListener(WORKSPACES_CHANGED_EVENT, handler);
     window.removeEventListener(EMPLOYER_POSTS_CHANGED, handler);
     window.removeEventListener(EMPLOYEE_POSTS_CHANGED, handler);
+    window.removeEventListener(employeeProfileStorage.CHANGED_EVENT, handler);
   };
 }
 
@@ -148,14 +152,22 @@ function getDiscoverablePosts(
   workspaces: ShiftControlRecord[],
 ): ShiftControlRecord[] {
   const blockedPostIds = getBlockedPostIds(apps, workspaces);
+  const profile = employeeProfileStorage.get();
 
-  return posts.filter((post) => {
+  const open = posts.filter((post) => {
     const postId = post["id"];
-
     if (post["isHiddenFromSearch"]) return false;
     if (typeof postId !== "string") return false;
-
     return !blockedPostIds.has(postId);
+  });
+
+  return filterPostsNearWorker({
+    posts: open.map((post) => ({
+      ...post,
+      locationPincode: typeof post["locationPincode"] === "string" ? post["locationPincode"] : undefined,
+    })),
+    workerPincode: profile.basePincode,
+    commuteRadiusKm: profile.commuteRadius,
   });
 }
 

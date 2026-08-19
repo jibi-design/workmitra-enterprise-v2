@@ -205,7 +205,7 @@ export function CandidateLocationDeptEdit({ hrCandidateId, currentDepartment, cu
             type="text"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            placeholder="e.g. Main Office, Site A"
+            placeholder="Work location name"
             style={{
               width: "100%", padding: "8px 10px", fontSize: 13,
               border: "1px solid var(--wm-er-border, #e5e7eb)",

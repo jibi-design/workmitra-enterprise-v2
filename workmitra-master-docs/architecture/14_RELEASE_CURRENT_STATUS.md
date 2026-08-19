@@ -149,3 +149,21 @@ All date bounds were `null` (no eligible rows). No destructive action was execut
 | Production deployment            | **NOT APPROVED**  | Requires Phase 2.1 PASS + separate deploy gate                                                                       |
 
 **Phase 2.1 scope:** environment separation, production secrets, cookie security, CORS, rate limits, session cleanup, audit retention, Supabase backup/restore, deployment gate. **No domain APIs in this step.**
+
+---
+
+## Play Store production sprint (2026-08-10)
+
+**In-repo code gates (landed):** Android signingConfigs + upload keystore generator, App Links intent-filters, Companies House mock OFF in PROD, Vault basic-only flags, DomainHero device-local disclosure, `WM_BACKUP_GATE` fail-close on API, brand/version lock **Job Mitra 2.0.0 / versionCode 20000**, assert scripts + Play listing/Data Safety doc.
+
+**Operator still required before Review Submission:**
+
+| Gate | Action |
+|------|--------|
+| §8.1 + `WM_BACKUP_GATE=cleared` | Supabase Pro (or approved) backups → `phase-2-1-operator-8-1-backup.mjs` → set env on API |
+| `google-services.json` | Firebase Console → `android/app/google-services.json` for `com.mitralabs.jobmitra` |
+| Live Capacitor smoke | `WM_SMOKE_REQUIRE_LIVE=1 npm run assert:capacitor-smoke` against staging/prod API |
+| Play Console assets | Screenshots + feature graphic + Data Safety form (`docs/play-store/PLAY_STORE_LISTING_AND_DATA_SAFETY.md`) |
+| `assetlinks.json` | Host with upload-key SHA-256 (`docs/play-store/assetlinks.json.example`) |
+
+**Production deployment:** still **NOT APPROVED** until §8.1 clears.

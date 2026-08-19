@@ -9,6 +9,7 @@ export type PlannerEmployerAutofill = {
   companyName: string;
   industryType: string;
   locationCity: string;
+  locationPincode: string;
 };
 
 export function getPlannerEmployerAutofill(): PlannerEmployerAutofill {
@@ -17,5 +18,6 @@ export function getPlannerEmployerAutofill(): PlannerEmployerAutofill {
     companyName: profile.companyName || "",
     industryType: profile.industryType || "",
     locationCity: profile.locationCity || "",
+    locationPincode: profile.locationPincode || "",
   };
 }

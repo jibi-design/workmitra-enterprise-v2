@@ -72,7 +72,7 @@ describe("Hybrid A2 P2.5 — planner RTW tracker", () => {
     const planId = demandPlannerStorage.create({
       name: "RTW Plan",
       companyName: "RTW Co",
-      locationName: "Kochi",
+      locationName: "City A",
       category: "Security",
       experience: "experienced",
       startDate: "2026-07-01",

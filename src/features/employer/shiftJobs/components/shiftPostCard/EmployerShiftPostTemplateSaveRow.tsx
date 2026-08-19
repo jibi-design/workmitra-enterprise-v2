@@ -27,7 +27,7 @@ export function EmployerShiftPostTemplateSaveRow({
     <div
       style={{
         borderTop: "1px solid var(--wm-er-border)",
-        padding: "8px 14px",
+        padding: "var(--wm-dna-card-padding, 14px)",
         background: "var(--wm-er-surface)",
       }}
     >

@@ -8,7 +8,6 @@ import type {
 } from "../types/shiftSearch.types";
 import {
   hydrateShiftApplicationsFromServer,
-  hydrateShiftPostsFromServer,
 } from "../../../shift/services/shiftDbTruth.service";
 import { isShiftApiSyncEnabled } from "../../../shift/services/shiftGateApi.service";
 
@@ -120,6 +119,7 @@ function normalizePost(raw: unknown): ShiftPostDemo | null {
     payPerDay: readNumber(raw, "payPerDay", 0),
     payBasis: normalizePayBasis(raw["payBasis"]),
     locationName: readString(raw, "locationName", "Work location"),
+    locationPincode: readString(raw, "locationPincode") || undefined,
     distanceKm: readNumber(raw, "distanceKm", 0),
     startAt,
     endAt: readNumber(raw, "endAt", startAt),
@@ -192,10 +192,6 @@ function normalizeWorkspace(raw: unknown): ShiftWorkspaceRecord | null {
 }
 
 export function getShiftSearchPostsSnapshot(): ShiftPostDemo[] {
-  if (isShiftApiSyncEnabled()) {
-    void hydrateShiftPostsFromServer();
-  }
-
   const raw = localStorage.getItem(POSTS_KEY);
 
   if (raw === cachedPostsRaw) {

@@ -4,7 +4,7 @@
 > **Companions:** `PENDING_WORK_BOARD.md` · `SHIFT_OPS_OTP_EDGE_DESIGN.md` · `SHIFT_OPS_CHANNEL_PEPPER_OPERATOR_RUNBOOK.md` · `SHIFT_OPS_T2_5_SMOKE.md` · `SUPABASE_OPERATOR_UI_NAV_NOTE.md`  
 > **Rule:** `.cursor/rules/infra-live-state-notes.mdc`
 
-**Last verified:** 2026-07-27 (v2.0 descope: live QR check-in / shift timers → v2.1)  
+**Last verified:** 2026-08-18 (Confirm fail-close: remote Shift Ops on + bridge/RPC fail → Confirm stops and asks retry; no fake local group UUID)  
 **Overall status:** T2-6 PASS. T2-7 Edge deploy parked (code ready). Group Join patches complete. **v2.0 does not ship live attendance punch-in or shift timers.**  
 **Domain lock:** `shift_ops` schema only — never mix with Career / Planner localStorage
 
@@ -20,7 +20,8 @@
 | T2-5 live SQL smoke         | **PASS** (tables 13, fns 13, vault privileges locked, channels_safe OK) |
 | Router / nav                | **DONE (T2-1)** behind `showShiftOpsFeatures`                           |
 | OTP Edge                    | Stub in repo — **not deployed**                                         |
-| Browser client env          | `.env.local` set (operator); invite page **PASS**                       |
+| Browser client env          | `VITE_SUPABASE_*` **present** — Confirm used remote path                |
+| API auth bridge             | **NOT READY** — `SUPABASE_SERVICE_ROLE_KEY` missing on API env          |
 | T2-6 Browser invite smoke   | **DONE / PASS** (2026-07-26)                                            |
 
 ---
@@ -38,6 +39,7 @@
 | T2-5            | Post-apply SQL smoke         | **DONE / PASS**                                        |
 | T2-6            | Browser env + invite smoke   | **DONE / PASS**                                        |
 | T2-7            | OTP Edge deploy              | **PARKED** — CLI login deferred; resume: `T2-7 resume` |
+| Ensure site RPC | `ensure_site_for_shift_post` | **APPLIED** — `202608180001_ensure_site_for_shift_post.sql` — table `shift_post_sites` + RPC verify true |
 
 **Optional later:** deploy `shift-ops-otp-dispatch` after T2-6 (T2-7)
 
@@ -61,3 +63,6 @@
 | 2026-07-26 | Operator + Cursor | T2-6 PASS — invite page screenshot (dual verify + site invite + Shift Ops nav).                   |
 | 2026-07-26 | Founder + Cursor  | Global UX (no ₹ hardcode; country phone; premium Shift Ops UI) parked as Track 5 — after pending. |
 | 2026-07-27 | Founder + Cursor  | Descope live attendance QR/timers + settlement payout from v2.0 → v2.1 roadmap (board).           |
+| 2026-08-18 | Founder + Cursor  | Zero-effort group: first Confirm ensures one site per post (client). SQL mapping RPC not applied. |
+| 2026-08-18 | Founder + Cursor  | Founder said apply. `ensure_site_for_shift_post` + `shift_post_sites` **APPLIED** (verify table/fn true). |
+| 2026-08-18 | Founder + Cursor  | Confirm error: Vite Supabase **on**, API service_role **off** → AUTH_BRIDGE 503. App now **fail-closes** Confirm (retry). No local site UUID when remote is configured. |

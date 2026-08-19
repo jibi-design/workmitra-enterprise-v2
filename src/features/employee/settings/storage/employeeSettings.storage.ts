@@ -1,24 +1,37 @@
 // src/features/employee/settings/storage/employeeSettings.storage.ts
 export type EmployeeLanguage = "en" | "ml";
+export type DocumentVisibility = "private" | "employers_on_hire" | "verified_employers";
+
 export type EmployeeSettings = {
   language: EmployeeLanguage;
   // Home preference (Phase-0)
   defaultHomeTab: "home" | "jobs" | "alerts";
-  // Notifications (demo toggles)
+  // Notifications
   pushEnabled: boolean;
   shiftAlerts: boolean;
   careerAlerts: boolean;
   workforceAlerts: boolean;
+  /** Escrow credit / release alerts */
+  escrowCreditAlerts: boolean;
   quietHoursEnabled: boolean;
   quietFrom: string; // "22:00"
   quietTo: string; // "07:00"
-  // Security (Phase-0 safe)
+  // Security (device)
   appLockEnabled: boolean;
   // Quick Apply (Shift Jobs)
   quickApplyEnabled: boolean;
   // Sound & Haptics
   hapticFeedback: boolean;
   globalMute: boolean;
+  // Work & payout preferences
+  searchRadiusKm: number;
+  preferredHourlyMin: number;
+  preferredHourlyMax: number;
+  payoutBankLinked: boolean;
+  payoutUpiLinked: boolean;
+  // Privacy & compliance
+  openToWork: boolean;
+  documentVisibility: DocumentVisibility;
 };
 const KEY = "wm_employee_settings_v1";
 const DEBOUNCE_MS = 350;
@@ -30,6 +43,7 @@ const DEFAULTS: EmployeeSettings = {
   shiftAlerts: true,
   careerAlerts: true,
   workforceAlerts: true,
+  escrowCreditAlerts: true,
   quietHoursEnabled: false,
   quietFrom: "22:00",
   quietTo: "07:00",
@@ -37,6 +51,13 @@ const DEFAULTS: EmployeeSettings = {
   quickApplyEnabled: false,
   hapticFeedback: true,
   globalMute: false,
+  searchRadiusKm: 15,
+  preferredHourlyMin: 12,
+  preferredHourlyMax: 45,
+  payoutBankLinked: false,
+  payoutUpiLinked: false,
+  openToWork: true,
+  documentVisibility: "employers_on_hire",
 };
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -98,11 +119,7 @@ export const employeeSettingsStorage = {
   },
 
   clear() {
-    if (debounceTimer != null) {
-      clearTimeout(debounceTimer);
-      debounceTimer = null;
-      pendingDebounced = null;
-    }
     localStorage.removeItem(KEY);
+    window.dispatchEvent(new Event("wm:app-settings-changed"));
   },
 };

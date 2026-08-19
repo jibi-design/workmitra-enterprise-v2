@@ -32,7 +32,7 @@ export function EmployerFutureVerificationPanel() {
           letterSpacing: 0.4,
         }}
       >
-        Future backend feature
+        Upcoming feature
       </div>
 
       <div style={{ marginTop: 10, fontSize: 14, fontWeight: 950, color: "var(--wm-er-text)" }}>
@@ -65,8 +65,7 @@ export function EmployerFutureVerificationPanel() {
           lineHeight: 1.45,
         }}
       >
-        Phase-0 note: no official verification, government validation, secure cloud storage, or
-        compliance approval is active in this demo.
+        Coming soon: official document checks and compliance review for business verification.
       </div>
     </section>
   );

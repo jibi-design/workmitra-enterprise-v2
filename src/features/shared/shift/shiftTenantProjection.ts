@@ -3,6 +3,7 @@
  * Step 1 Board Remediation — isolation clean-up.
  */
 
+import { expandShiftPostIdAliases, shiftPostIdsMatch } from "../../shift/utils/shiftIdBridge";
 import {
   getShiftEmployerScopeId,
   resolveShiftEmployerScopedKey,
@@ -45,7 +46,8 @@ export function findScopeIdForPostId(postId: string): string | null {
   try {
     for (const item of safeParseArray(localStorage.getItem(EMPLOYEE_SEARCH_POSTS_KEY))) {
       if (!isRec(item)) continue;
-      if (item.id !== id) continue;
+      const itemId = typeof item.id === "string" ? item.id.trim() : "";
+      if (!itemId || !shiftPostIdsMatch(itemId, id)) continue;
       const stamped = typeof item.employerScopeId === "string" ? item.employerScopeId.trim() : "";
       if (stamped) return sanitizeShiftEmployerScopeId(stamped);
     }
@@ -58,7 +60,7 @@ export function findScopeIdForPostId(postId: string): string | null {
       const match = POSTS_KEY_RE.exec(key);
       if (!match) continue;
       for (const item of safeParseArray(localStorage.getItem(key))) {
-        if (isRec(item) && item.id === id) {
+        if (isRec(item) && typeof item.id === "string" && shiftPostIdsMatch(item.id, id)) {
           return sanitizeShiftEmployerScopeId(match[1] ?? "");
         }
       }
@@ -79,7 +81,9 @@ export function listActiveEmployerPostIds(): Set<string> {
     const key = resolveShiftEmployerScopedKey("shift_posts_v1");
     for (const item of safeParseArray(localStorage.getItem(key))) {
       if (isRec(item) && typeof item.id === "string" && item.id.trim()) {
-        ids.add(item.id.trim());
+        const postId = item.id.trim();
+        ids.add(postId);
+        for (const alias of expandShiftPostIdAliases(postId)) ids.add(alias);
       }
     }
   } catch {
@@ -223,7 +227,7 @@ export function ensureEmployerAppsHydrated(): string {
     for (const item of safeParseArray(localStorage.getItem(WORKER_APPS_PROJECTION_KEY))) {
       if (!isRec(item) || typeof item.id !== "string") continue;
       const postId = typeof item.postId === "string" ? item.postId.trim() : "";
-      if (postId && postIds.has(postId)) {
+      if (postId && (postIds.has(postId) || [...postIds].some((owned) => shiftPostIdsMatch(owned, postId)))) {
         mine.push(item);
       }
     }

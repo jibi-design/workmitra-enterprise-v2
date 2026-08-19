@@ -15,13 +15,11 @@ function useRoleFromStorage(): AppRole | null {
 
 /** Active app role for route chrome / shell gates. */
 export function useAppRole(): AppRole | null {
-  const sessionChecked = useAuthStore((s) => s.sessionChecked);
   const authRole = useAuthStore((s) => s.user?.role ?? null);
   const storageRole = useRoleFromStorage();
 
   if (AUTH_BACKEND_ENABLED) {
-    if (!sessionChecked) return null;
-    return authRole;
+    return authRole ?? storageRole;
   }
 
   return storageRole;
@@ -30,9 +28,8 @@ export function useAppRole(): AppRole | null {
 /** Sync helper for non-React paths (prefer auth role when backend auth is on). */
 export function resolveAppRole(): AppRole | null {
   if (AUTH_BACKEND_ENABLED) {
-    const { sessionChecked, user } = useAuthStore.getState();
-    if (!sessionChecked) return null;
-    return user?.role ?? null;
+    const { user } = useAuthStore.getState();
+    return user?.role ?? roleStorage.get();
   }
   return roleStorage.get();
 }

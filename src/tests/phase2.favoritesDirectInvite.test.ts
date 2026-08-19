@@ -6,7 +6,7 @@
  * Run: npm test -- src/tests/phase2.favoritesDirectInvite.test.ts
  */
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   availabilityStorage,
   getRolling7Days,
@@ -30,6 +30,8 @@ import {
 import type { ShiftPost } from "../features/employer/shiftJobs/storage/employerShift.types";
 import { upsertSiteMembershipTruth } from "../features/shiftOps/storage/siteMembershipTruth.storage";
 import { getEmployerShiftPost } from "../features/employer/shiftJobs/storage/employerShift.postActions.crud";
+import { employerSettingsStorage } from "../features/employer/company/storage/employerSettings.storage";
+import { resolveShiftEmployerScopedKey } from "../features/shared/shift/shiftEmployerScope";
 
 const WORKER_ML_ID = "ML_QA_PHASE2_WORKER";
 const WORKER_NAME = "QA Phase2 Worker";
@@ -40,6 +42,22 @@ const INVITE_KEY = "wm_shift_direct_invites_v1";
 const MEMBERSHIP_KEY = "wm_shift_ops_site_membership_truth_v1";
 const FAV_CHANGED = "wm:employer-shift-favorites-changed";
 const INVITE_CHANGED = "wm:shift-direct-invites-changed";
+const PINCODE = "670001";
+
+let profileGetSpy: ReturnType<typeof vi.spyOn> | undefined;
+
+function seedMatchingLocation(): void {
+  profileGetSpy?.mockRestore();
+  profileGetSpy = vi.spyOn(employerSettingsStorage, "get").mockReturnValue({
+    ...employerSettingsStorage.EMPTY_PROFILE,
+    locationPincode: PINCODE,
+    locationCity: "City A",
+  });
+}
+
+function workerLocation() {
+  return { city: "City A", basePincode: PINCODE, commuteRadius: 15 as const };
+}
 
 function makeActivePost(overrides?: Partial<ShiftPost>): ShiftPost {
   const now = Date.now();
@@ -50,7 +68,8 @@ function makeActivePost(overrides?: Partial<ShiftPost>): ShiftPost {
     category: "general",
     experience: "fresher_ok",
     payPerDay: 900,
-    locationName: "Kochi",
+    locationName: "City A",
+    locationPincode: PINCODE,
     distanceKm: 2,
     startAt: now + 86_400_000,
     endAt: now + 86_400_000 + 8 * 3_600_000,
@@ -75,11 +94,21 @@ function makeActivePost(overrides?: Partial<ShiftPost>): ShiftPost {
 }
 
 function seedPost(post: ShiftPost): void {
-  localStorage.setItem(EMP_POSTS_KEY, JSON.stringify([post]));
+  localStorage.setItem(resolveShiftEmployerScopedKey("shift_posts_v1"), JSON.stringify([post]));
   window.dispatchEvent(new Event("wm:employer-shift-posts-changed"));
 }
 
 function clearPhase2Keys(): void {
+  profileGetSpy?.mockRestore();
+  profileGetSpy = undefined;
+  const extra = [
+    resolveShiftEmployerScopedKey("shift_posts_v1"),
+    resolveShiftEmployerScopedKey("shift_favorites_v1"),
+    resolveShiftEmployerScopedKey("shift_direct_invites_v1"),
+    `${resolveShiftEmployerScopedKey("shift_posts_v1")}__migrated_v1`,
+    `${resolveShiftEmployerScopedKey("shift_favorites_v1")}__migrated_v1`,
+    `${resolveShiftEmployerScopedKey("shift_direct_invites_v1")}__migrated_v1`,
+  ];
   for (const key of [
     FAV_KEY,
     INVITE_KEY,
@@ -91,6 +120,7 @@ function clearPhase2Keys(): void {
     ALL_KEY,
     "wm_employee_notifications_v1",
     "wm_employer_notifications_v1",
+    ...extra,
   ]) {
     localStorage.removeItem(key);
   }
@@ -130,6 +160,7 @@ describe("Phase 2 — Step 3: Employer Favorites", () => {
 
   it("favoriteAvailableCount rises when favorited worker broadcasts availability", () => {
     const dayA = getRolling7Days()[1]!.iso;
+    seedMatchingLocation();
     favoritesStorage.addManual({ workerMlId: WORKER_ML_ID, workerName: WORKER_NAME });
 
     expect(readLocalWorkersRadarMetricsSnapshot().favoriteAvailableCount).toBe(0);
@@ -138,7 +169,7 @@ describe("Phase 2 — Step 3: Employer Favorites", () => {
       workerMlId: WORKER_ML_ID,
       workerName: WORKER_NAME,
       selectedDates: [dayA],
-      city: "Kochi",
+      ...workerLocation(),
     });
 
     const metrics = readLocalWorkersRadarMetricsSnapshot();
@@ -149,11 +180,13 @@ describe("Phase 2 — Step 3: Employer Favorites", () => {
 
   it("removes favorite and drops favoriteAvailableCount while total stays", () => {
     const dayA = getRolling7Days()[1]!.iso;
+    seedMatchingLocation();
     favoritesStorage.addManual({ workerMlId: WORKER_ML_ID, workerName: WORKER_NAME });
     availabilityStorage.saveMyAvailability({
       workerMlId: WORKER_ML_ID,
       workerName: WORKER_NAME,
       selectedDates: [dayA],
+      ...workerLocation(),
     });
 
     expect(readLocalWorkersRadarMetricsSnapshot().favoriteAvailableCount).toBe(1);
@@ -273,7 +306,7 @@ describe("Phase 2 — Step 4: Direct Invite Flow", () => {
       inviteId,
       workerMlId: WORKER_ML_ID,
       workerName: WORKER_NAME,
-      city: "Kochi",
+      city: "City A",
     });
 
     expect(result.ok).toBe(true);

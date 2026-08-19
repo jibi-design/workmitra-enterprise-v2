@@ -9,6 +9,7 @@ import { assertFailCloseEnvironment } from "./modules/auth/failCloseEnv.js";
 import { handleAuthRoutes } from "./modules/auth/auth.routes.js";
 import { handleEmployeeRoutes } from "./modules/employee/employee.routes.js";
 import { handleEmployerRoutes } from "./modules/employer/employer.routes.js";
+import { handlePublicEventDayRoutes } from "./modules/employer/eventDay/eventDay.public.routes.js";
 import { handleAvailabilityRoutes } from "./modules/shift/availability.routes.js";
 import { handleFavoritesRoutes } from "./modules/shift/favorites.routes.js";
 import { handleCallingRoutes } from "./routes/calling.routes.js";
@@ -23,6 +24,7 @@ import { handleUnhandledDispatchError } from "./middleware/errorHandler.js";
 import { initServerMonitor } from "./observability/monitor.js";
 import { logSecurityEvent } from "./observability/securityEvents.js";
 import { handleOpsRoutes } from "./modules/ops/ops.routes.js";
+import { handleAdminModerationRoutes } from "./modules/moderation/moderation.admin.routes.js";
 import { enforceOpsMaintenanceGate } from "./middleware/opsMaintenanceGate.js";
 import {
   recordPostingSpikeSignal,
@@ -218,7 +220,9 @@ async function dispatchRequest(req: IncomingMessage, res: ServerResponse): Promi
     (method === "POST" && url.pathname === "/v1/jobmitra/ops/audit") ||
     (method === "POST" && url.pathname === "/v1/jobmitra/ops/step-up") ||
     (method === "POST" && url.pathname === "/v1/jobmitra/ops/privileged");
-  const skipCsrf = isLogin || isOpsMutating || (isContractMockPath && !isAuthEnabled());
+  const isPublicEventDay = url.pathname.startsWith("/v1/jobmitra/public/event-day/");
+  const skipCsrf =
+    isLogin || isOpsMutating || isPublicEventDay || (isContractMockPath && !isAuthEnabled());
   if (isMutatingMethod(method) && !skipCsrf) {
     if (!(await enforceCsrf(req, res))) return;
   }
@@ -227,7 +231,8 @@ async function dispatchRequest(req: IncomingMessage, res: ServerResponse): Promi
     isMutatingMethod(method) &&
     url.pathname.startsWith("/v1/jobmitra/") &&
     !url.pathname.startsWith("/v1/jobmitra/ops/") &&
-    !url.pathname.startsWith("/v1/jobmitra/auth/")
+    !url.pathname.startsWith("/v1/jobmitra/auth/") &&
+    !url.pathname.startsWith("/v1/jobmitra/public/")
   ) {
     recordPostingSpikeSignal(clientKeyFromReq(req), url.pathname);
   }
@@ -256,6 +261,8 @@ async function dispatchRequest(req: IncomingMessage, res: ServerResponse): Promi
 
   if (await handleAuthRoutes(req, res, url.pathname, method)) return;
   if (await handleCallingRoutes(req, res, url, method)) return;
+  if (await handlePublicEventDayRoutes(req, res, url, method)) return;
+  if (await handleAdminModerationRoutes(req, res, url, method)) return;
   if (await handleEmployeeRoutes(req, res, url, method)) return;
   if (await handleEmployerRoutes(req, res, url, method)) return;
 
@@ -280,7 +287,10 @@ server.listen(PORT, () => {
     `[Job Mitra API] employee: /v1/jobmitra/employee/career/* (requireAuth + requireEmployeeRole)`,
   );
   console.log(
-    `[Job Mitra API] employer: /v1/jobmitra/employer/career|shift|vault|hr|workforce/* (requireAuth + requireEmployerRole)`,
+    `[Job Mitra API] employer: /v1/jobmitra/employer/career|shift|vault|hr|workforce|event-day/* (requireAuth + requireEmployerRole)`,
+  );
+  console.log(
+    `[Job Mitra API] public:   GET /v1/jobmitra/public/event-day/passes/:token | POST /v1/jobmitra/public/event-day/check-in`,
   );
   console.log(
     `[Job Mitra API] calling:  POST /v1/jobmitra/call/{initiate|answer|end|fallback|register-device} (alias /api/call/*)`,

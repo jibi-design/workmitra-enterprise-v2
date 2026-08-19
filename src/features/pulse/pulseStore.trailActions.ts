@@ -2,8 +2,10 @@
 
 import type { NotificationId } from "./pulseRegistry";
 import { normalizeSeverityFromRegistry } from "./pulseFlowBuilders";
+import { collectGuidanceRoots } from "./pulseGuidance.helpers";
 import { getPulseNavEnabled } from "./pulseNavStore";
 import { persistPulseState } from "./pulseStorage";
+import { markInboxHandledForTargetPath } from "./pulseInboxSync";
 import {
   createNodeIdFromTrailLike,
   createTrailId,
@@ -53,11 +55,21 @@ export function createPulseTrailActions(get: PulseStoreGetter, set: PulseStoreSe
         };
 
         const nextChain = state.chain.length > 0 ? state.chain : [nodeId];
+        const pendingGuidanceRoots =
+          state.pendingGuidanceRoots.length > 0
+            ? state.pendingGuidanceRoots
+            : collectGuidanceRoots(nextChain);
 
         const nextSeverityByNodeId: Record<PulseNodeId, PulseChainSeverity> = {
           ...state.severityByNodeId,
           [nodeId]: severity,
         };
+
+        for (const rootId of pendingGuidanceRoots) {
+          if (!nextSeverityByNodeId[rootId]) {
+            nextSeverityByNodeId[rootId] = severity;
+          }
+        }
 
         const nextActivePulses: ActivePulses = {
           ...state.activePulses,
@@ -71,6 +83,7 @@ export function createPulseTrailActions(get: PulseStoreGetter, set: PulseStoreSe
 
         const nextState = {
           chain: nextChain,
+          pendingGuidanceRoots,
           resolvingNodeId: state.resolvingNodeId,
           severityByNodeId: nextSeverityByNodeId,
           activePulses: nextActivePulses,
@@ -90,8 +103,13 @@ export function createPulseTrailActions(get: PulseStoreGetter, set: PulseStoreSe
       if (!trail) return;
 
       const trailNodeId = createNodeIdFromTrailLike(trail);
+      const chainHeadMatchesDestination = currentState.chain[0] === trailNodeId;
 
-      if (currentState.chain[0] === trailNodeId) {
+      /**
+       * Destination confirm (green arrival on target section/route).
+       * Clears hop chain + home pending roots — only here may home LED turn off.
+       */
+      if (chainHeadMatchesDestination) {
         currentState.advanceChain();
       }
 
@@ -114,6 +132,11 @@ export function createPulseTrailActions(get: PulseStoreGetter, set: PulseStoreSe
           [trailId]: nextTrail,
         };
 
+        // Destination confirm: always clear guidance chain + home roots.
+        const nextChain: PulseNodeId[] = [];
+        const pendingGuidanceRoots: PulseNodeId[] = [];
+        const nextSeverityByNodeId: Record<PulseNodeId, PulseChainSeverity> = {};
+
         const eventStillActive = Object.values(nextActiveTrails).some((entry) => {
           return (
             entry.trailId !== trailId &&
@@ -124,20 +147,21 @@ export function createPulseTrailActions(get: PulseStoreGetter, set: PulseStoreSe
 
         const nextActivePulses: ActivePulses = {
           ...state.activePulses,
-          [currentTrail.eventId]: eventStillActive || state.chain.includes(currentTrail.eventId),
+          [currentTrail.eventId]: eventStillActive,
         };
+
+        markInboxHandledForTargetPath(currentTrail.targetPath);
 
         const nextState = {
+          chain: nextChain,
+          pendingGuidanceRoots,
+          resolvingNodeId: null,
+          severityByNodeId: nextSeverityByNodeId,
           activeTrails: nextActiveTrails,
           activePulses: nextActivePulses,
         };
 
-        persistPulseState({
-          chain: state.chain,
-          severityByNodeId: state.severityByNodeId,
-          activePulses: nextActivePulses,
-          activeTrails: nextActiveTrails,
-        });
+        persistPulseState(nextState);
 
         return nextState;
       });

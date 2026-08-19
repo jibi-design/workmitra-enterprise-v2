@@ -7,6 +7,7 @@ import { notifyCrossRole } from "../../../../features/pulse/pulseEventBridge";
 import {
   careerGateApi,
   isCareerApiSyncEnabled,
+  mustRollbackCareerLocalWrite,
   resolveCareerGateApplicationId,
   resolveCareerGatePostId,
 } from "../../../career/services/careerGateApi.service";
@@ -68,16 +69,18 @@ export async function shortlistCandidate(postId: string, appId: string): Promise
 
   if (isCareerApiSyncEnabled()) {
     const serverAppId = resolveCareerGateApplicationId(appId);
-    if (!serverAppId) {
+    if (mustRollbackCareerLocalWrite(serverAppId)) {
       writeCareerApps(priorApps);
       return false;
     }
 
-    try {
-      await careerGateApi.shortlistApplication(serverAppId);
-    } catch {
-      writeCareerApps(priorApps);
-      return false;
+    if (serverAppId) {
+      try {
+        await careerGateApi.shortlistApplication(serverAppId);
+      } catch {
+        writeCareerApps(priorApps);
+        return false;
+      }
     }
   }
 
@@ -144,16 +147,18 @@ export async function rejectCandidate(
   if (isCareerApiSyncEnabled()) {
     const serverAppId = resolveCareerGateApplicationId(appId);
     const serverPostId = resolveCareerGatePostId(postId);
-    if (!serverAppId || !serverPostId) {
+    if (mustRollbackCareerLocalWrite(serverAppId) || mustRollbackCareerLocalWrite(serverPostId)) {
       writeCareerApps(priorApps);
       return false;
     }
 
-    try {
-      await careerGateApi.updateApplicationStatus(serverPostId, serverAppId, "rejected");
-    } catch {
-      writeCareerApps(priorApps);
-      return false;
+    if (serverAppId && serverPostId) {
+      try {
+        await careerGateApi.updateApplicationStatus(serverPostId, serverAppId, "rejected");
+      } catch {
+        writeCareerApps(priorApps);
+        return false;
+      }
     }
   }
 

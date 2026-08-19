@@ -56,8 +56,8 @@ export function VerificationSection({
       <div style={EXECUTIVE_SECTION_KICKER}>Verification</div>
       <h2 style={EXECUTIVE_SECTION_TITLE}>Verification status</h2>
       <p style={EXECUTIVE_HELPER}>
-        Start with contact OTP to publish. Then choose Enterprise (CRN/VAT) or Micro/Trade track for
-        stronger trust — CRN is not required for micro businesses.
+        Start with contact OTP to publish. Then choose Enterprise (registration / tax ID) or Micro/Trade track for
+        stronger trust — a company registration number is not required for micro businesses.
       </p>
 
       <div
@@ -173,7 +173,7 @@ export function VerificationSection({
           Business Compliance Hub →
         </div>
         <div style={{ marginTop: 4, fontSize: 11.5, color: "var(--wm-er-muted)", lineHeight: 1.4 }}>
-          Insurance, H&amp;S, Companies House pack, and employer RTW audit evidence — not Worker
+          Insurance, H&amp;S, business registration pack, and employer right-to-work audit evidence — not Worker
           Vault.
         </div>
       </button>

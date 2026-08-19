@@ -6,6 +6,7 @@ import type { StatusMeta } from "../../helpers/staffDetailHelpers";
 import { formatDate } from "../../helpers/staffDetailHelpers";
 import type { StaffRecord } from "../../storage/myStaff.storage";
 import { FieldRow } from "../staffDetailComponents";
+import { JobMitraAppLabel } from "../../../../../shared/components/brand/JobMitraAppLabel";
 
 type EmploymentDetailsProps = {
   record: StaffRecord;
@@ -49,7 +50,7 @@ export function EmploymentDetails({ record, sm, duration }: EmploymentDetailsPro
         <FieldRow label="Status" value={sm.label} />
         <FieldRow
           label="Added Via"
-          value={record.addMethod === "via_app" ? "Job Mitra App" : "Manually Added"}
+          value={record.addMethod === "via_app" ? <JobMitraAppLabel /> : "Manually Added"}
         />
       </div>
     </div>

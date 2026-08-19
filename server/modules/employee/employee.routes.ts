@@ -5,6 +5,7 @@ import { handleEmployeeCareerRoutes } from "./career/career.routes.js";
 import { handleEmployeeVaultRoutes } from "./vault/vault.routes.js";
 import { handleEmployeeShiftRoutes } from "./shift/shift.routes.js";
 import { handleEmployeeNotificationRoutes } from "./notifications/notifications.routes.js";
+import { handleEmployeeModerationRoutes } from "../moderation/moderation.employee.routes.js";
 import { handleEmployeeCareerExitRoutes } from "../career/career.exit.routes.js";
 import { sendNotFound } from "../../utils/http.js";
 
@@ -52,6 +53,14 @@ export async function handleEmployeeRoutes(
             method,
           );
           if (handledNotifications) return;
+
+          const handledModeration = await handleEmployeeModerationRoutes(
+            authedReq,
+            res,
+            url,
+            method,
+          );
+          if (handledModeration) return;
 
           // Career sub-domain
           const handledExit = await handleEmployeeCareerExitRoutes(authedReq, res, url, method);

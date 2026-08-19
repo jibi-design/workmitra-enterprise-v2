@@ -136,6 +136,7 @@ describe("Shift UI scale @ 500", () => {
             onOpenCompare: noop,
             onPriorityTag: noop,
             onRequestTabChange: noop,
+            laterPipeline: { shortlisted: 0, backup: 0, selected: 0 },
             cardActions: {
               isBusy: false,
               onMoveToShortlist: noop,

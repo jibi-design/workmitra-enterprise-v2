@@ -1,0 +1,11 @@
+/** Event Day — opaque QR token + SHA-256 hash (never persist raw token). */
+
+import { createHash, randomBytes } from "node:crypto";
+
+export function mintEventDayPassToken(): string {
+  return randomBytes(24).toString("base64url");
+}
+
+export function hashEventDayPassToken(token: string): string {
+  return createHash("sha256").update(token, "utf8").digest("hex");
+}

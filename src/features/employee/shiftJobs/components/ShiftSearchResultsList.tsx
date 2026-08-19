@@ -8,11 +8,14 @@ import { isAlreadyApplied } from "../../shiftJobs/helpers/shiftSearchHelpers";
 import type { ShiftSearchFeedStatus } from "../services/shiftSearchFeed.service";
 import type { ShiftPostDemo } from "../types/shiftSearch.types";
 import { ShiftSearchResultCard } from "./ShiftSearchResultCard";
+import {
+  fitVirtualListViewportPx,
+  virtualListNeedsInnerScroll,
+} from "../../../../shared/layout/fitVirtualListViewport";
 
 const SHIFT_GREEN = "var(--wm-shift-accent, #16a34a)";
 const TEXT_DARK = "#0f172a";
 const ROW_ESTIMATE_PX = 176;
-const LIST_HEIGHT_PX = 560;
 
 type Props = {
   feedStatus: ShiftSearchFeedStatus;
@@ -60,6 +63,11 @@ export function ShiftSearchResultsList({
     estimateSize: () => ROW_ESTIMATE_PX,
     overscan: 4,
   });
+  const listContentHeight = virtualizer.getTotalSize();
+  const listViewportHeight = fitVirtualListViewportPx(listContentHeight, filteredPosts.length, {
+    rowEstimatePx: ROW_ESTIMATE_PX,
+  });
+  const listInnerScroll = virtualListNeedsInnerScroll(listContentHeight);
 
   return (
     <section className="wm-ee-vShift" style={{ marginTop: 18, marginBottom: 20 }}>
@@ -68,10 +76,10 @@ export function ShiftSearchResultsList({
           <div style={{ fontSize: 16, fontWeight: 950, color: TEXT_DARK }}>Available Shifts</div>
           <div style={{ marginTop: 3, fontSize: 12, color: "var(--wm-er-muted)" }}>
             {feedStatus === "ready"
-              ? `${filteredPosts.length} of ${discoverableCount} shift${discoverableCount !== 1 ? "s" : ""} shown`
+              ? `${filteredPosts.length} of ${discoverableCount} shift${discoverableCount !== 1 ? "s" : ""} shown · ${appliedIds.size} application${appliedIds.size === 1 ? "" : "s"}`
               : feedStatus === "loading"
                 ? "Loading shifts…"
-                : "Unable to load shifts"}
+                : "Couldn't load shifts"}
           </div>
         </div>
 
@@ -114,7 +122,7 @@ export function ShiftSearchResultsList({
         >
           <div className="wm-ent-error__title">Could not load shifts</div>
           <div className="wm-ent-error__subtitle">
-            {feedErrorMessage || "Something went wrong while refreshing your shift feed."}
+            {feedErrorMessage || "We couldn't refresh this list. Try again in a moment."}
           </div>
           <div className="wm-ent-error__actions">
             <button type="button" className="wm-primarybtn" onClick={onRetryFeed}>
@@ -150,7 +158,12 @@ export function ShiftSearchResultsList({
         <div
           ref={parentRef}
           data-testid="shift-search-virtual-list"
-          style={{ marginTop: 10, height: LIST_HEIGHT_PX, overflow: "auto", position: "relative" }}
+          style={{
+            marginTop: 10,
+            height: listViewportHeight,
+            overflow: listInnerScroll ? "auto" : "hidden",
+            position: "relative",
+          }}
         >
           <div style={{ height: virtualizer.getTotalSize(), width: "100%", position: "relative" }}>
             {virtualizer.getVirtualItems().map((virtualRow) => {

@@ -7,6 +7,7 @@ import { EmployerRateWorkerModal } from "../../../../shared/components/rating/Em
 import { ratingStorage } from "../../../../shared/rating/ratingStorage";
 import { employerSettingsStorage } from "../..//company/storage/employerSettings.storage";
 import { employerShiftStorage } from "../../shiftJobs/storage/employerShift.storage";
+import { getWorkspacesSnapshot } from "../storage/shiftWorkspaceStorage";
 import type {
   EmployeeShiftApplication,
   ShiftPost,
@@ -128,6 +129,11 @@ export function ShiftRatingSection({ post, confirmedApps, onShiftClosed }: Props
     return <ShiftCompletedBanner />;
   }
 
+  const currentWorkspaceId =
+    getWorkspacesSnapshot().find(
+      (item) => item.postId === post.id && item.appId === currentApp?.id,
+    )?.id ?? "";
+
   return (
     <>
       {modalOpen && currentApp && (
@@ -139,6 +145,8 @@ export function ShiftRatingSection({ post, confirmedApps, onShiftClosed }: Props
           workerMlId={getWorkerMlId(currentApp)}
           workerName={getWorkerName(currentApp)}
           domain="shift"
+          workspaceId={currentWorkspaceId || undefined}
+          appId={currentApp.id}
           onSubmitted={handleRated}
           onClose={handleCloseModal}
         />

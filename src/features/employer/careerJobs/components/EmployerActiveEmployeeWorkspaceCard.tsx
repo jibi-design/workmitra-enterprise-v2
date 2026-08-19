@@ -52,7 +52,7 @@ export function EmployerActiveEmployeeWorkspaceCard({ records, onOpenStaff }: Pr
   const hasActiveFilters = Boolean(query.trim() || statusFilter !== "all" || departmentFilter);
 
   return (
-    <section className="wm-er-card wm-career-card wm-career-card--employer" style={CARD_STYLE}>
+    <section className="wm-er-card wm-career-card wm-career-card--employer wm-homeGlassCard--domainCareer" style={CARD_STYLE}>
       <div
         style={{
           display: "flex",

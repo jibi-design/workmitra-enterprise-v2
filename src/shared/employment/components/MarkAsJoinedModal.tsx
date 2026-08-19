@@ -78,6 +78,7 @@ export function MarkAsJoinedModal({ open, employeeName, onConfirm, onCancel }: M
           </button>
           <button
             type="button"
+            data-testid="career-confirm-joining"
             onClick={handleConfirm}
             style={{
               minWidth: 120,

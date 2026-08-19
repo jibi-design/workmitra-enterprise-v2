@@ -40,7 +40,7 @@ export function AdminBroadcastModal({
         <div
           style={{ fontSize: 12, color: "var(--wm-ad-navy-400)", marginTop: 4, lineHeight: 1.5 }}
         >
-          Send a notification to selected user groups. Phase-0: stored in their notification list.
+          Send a notification to selected user groups.
         </div>
 
         <div style={{ marginTop: 16 }}>

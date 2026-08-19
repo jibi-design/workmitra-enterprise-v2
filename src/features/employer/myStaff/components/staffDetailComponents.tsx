@@ -1,5 +1,6 @@
 // src/features/employer/myStaff/components/staffDetailComponents.tsx
 
+import type { ReactNode } from "react";
 /* ------------------------------------------------ */
 /* Icons                                            */
 /* ------------------------------------------------ */
@@ -38,7 +39,7 @@ export function IconCheckCircle() {
 /* ------------------------------------------------ */
 /* FieldRow                                         */
 /* ------------------------------------------------ */
-export function FieldRow({ label, value }: { label: string; value: string }) {
+export function FieldRow({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div
       style={{

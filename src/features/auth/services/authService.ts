@@ -74,6 +74,59 @@ export const authService = {
     });
   },
 
+  async changePassword(currentPassword: string, newPassword: string): Promise<{
+    ok: true;
+    revokedOtherSessions: number;
+  }> {
+    await ensureCsrfReady();
+    const res = await apiService.post<
+      ApiEnvelope<{ ok: true; revokedOtherSessions: number }>
+    >(`${AUTH_API_PREFIX}/change-password`, { currentPassword, newPassword });
+    return res.data;
+  },
+
+  async listSessions(): Promise<
+    Array<{
+      id: string;
+      current: boolean;
+      createdAt: string;
+      lastSeenAt: string;
+      userAgent: string | null;
+    }>
+  > {
+    const res = await apiService.get<
+      ApiEnvelope<{
+        sessions: Array<{
+          id: string;
+          current: boolean;
+          createdAt: string;
+          lastSeenAt: string;
+          userAgent: string | null;
+        }>;
+      }>
+    >(`${AUTH_API_PREFIX}/sessions`);
+    return res.data.sessions;
+  },
+
+  async revokeOtherSessions(): Promise<number> {
+    await ensureCsrfReady();
+    const res = await apiService.post<ApiEnvelope<{ ok: true; revoked: number }>>(
+      `${AUTH_API_PREFIX}/sessions/revoke-others`,
+      {},
+    );
+    return res.data.revoked;
+  },
+
+  /** Store compliance — permanently delete the signed-in account (server soft-delete + session revoke). */
+  async deleteAccount(password: string): Promise<void> {
+    await ensureCsrfReady();
+    await apiService.post<ApiEnvelope<{ ok: true }>>(`${AUTH_API_PREFIX}/delete-account`, {
+      password,
+      confirmation: "DELETE",
+    });
+    setStoredCsrfToken(null);
+  },
+
   async logout(): Promise<void> {
     try {
       await apiService.post<ApiEnvelope<{ ok: boolean }>>(`${AUTH_API_PREFIX}/logout`, {});

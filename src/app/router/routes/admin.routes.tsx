@@ -9,6 +9,7 @@ import {
   AdminAnalyticsPage,
   AdminHomePage,
   AdminNotificationsPage,
+  AdminModerationPage,
   AdminSettingsPage,
   AdminUsersPage,
 } from "./adminLazyPages";
@@ -19,6 +20,7 @@ export const adminRouteTree = IS_DEV_ADMIN_ENABLED ? (
     <Route path={AC.alerts} element={<AdminAlertsPage />} />
     <Route path={AC.users} element={<AdminUsersPage />} />
     <Route path={AC.notifications} element={<AdminNotificationsPage />} />
+    <Route path={AC.moderation} element={<AdminModerationPage />} />
     <Route path={AC.analytics} element={<AdminAnalyticsPage />} />
     <Route path={AC.settings} element={<AdminSettingsPage />} />
   </>

@@ -53,7 +53,7 @@ export function ContactVerificationPanel({ profile, onVerified, onNotice }: Prop
     >
       <div style={{ fontSize: 13, fontWeight: 900, color: "#0f172a" }}>Verify phone or email</div>
       <div style={{ marginTop: 6, fontSize: 11, color: "var(--wm-er-muted)", lineHeight: 1.5 }}>
-        Level 1 unlocks job post publishing. Phase-0 uses a demo code on this device.
+        Level 1 unlocks job post publishing. We’ll send a one-time code to your phone or email.
       </div>
 
       {target ? (
@@ -80,8 +80,10 @@ export function ContactVerificationPanel({ profile, onVerified, onNotice }: Prop
               return;
             }
             onNotice({
-              title: "Demo code sent",
-              message: `Phase-0 demo OTP: ${result.demoCode}\n(In production this would go to your phone/email.)`,
+              title: "Code sent",
+              message: import.meta.env.DEV
+                ? `Dev OTP: ${result.demoCode}\n(Shown only in development builds.)`
+                : "Enter the 6-digit code sent to your phone or email.",
               tone: "success",
             });
           }}

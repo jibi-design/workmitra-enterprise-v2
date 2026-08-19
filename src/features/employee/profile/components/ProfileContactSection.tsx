@@ -1,6 +1,6 @@
 // src/features/employee/profile/components/ProfileContactSection.tsx
 
-import { useSyncExternalStore } from "react";
+import { useSyncExternalStore, type RefObject } from "react";
 import {
   ContactVerifiedBadge,
   getContactVerificationState,
@@ -30,7 +30,12 @@ function useContactVerification() {
   );
 }
 
-export function ProfileContactSection({ draft }: Pick<ProfileSectionProps, "draft">) {
+export function ProfileContactSection({
+  draft,
+  sectionRef,
+}: Pick<ProfileSectionProps, "draft"> & {
+  sectionRef?: RefObject<HTMLElement | null>;
+}) {
   const verified = useContactVerification();
   const phoneVerified = verified.phoneVerified === true || draft.phoneVerified === true;
   const emailVerified = verified.emailVerified === true || draft.emailVerified === true;
@@ -38,7 +43,7 @@ export function ProfileContactSection({ draft }: Pick<ProfileSectionProps, "draf
   const emailHint = verified.emailMasked ?? draft.emailMasked ?? "••••@••••";
 
   return (
-    <section className="wm-profileSectionCard" style={{ marginTop: 12 }}>
+    <section ref={sectionRef} className="wm-profileSectionCard" style={{ marginTop: 12 }}>
       <SectionHead
         icon={<IconContact />}
         title="Contact & Verification"

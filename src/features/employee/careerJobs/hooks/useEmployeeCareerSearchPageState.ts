@@ -244,7 +244,6 @@ export function useEmployeeCareerSearchPageState() {
       setNotice("This job is no longer available to save.");
       return;
     }
-
     const result = employeeCareerSavedJobsStorage.toggle(postId);
     setNotice(result.saved ? "Job saved." : "Job removed from saved jobs.");
   }

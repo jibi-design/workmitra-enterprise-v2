@@ -3,7 +3,6 @@
 import { Navigate, Route } from "react-router-dom";
 import { ROUTE_PATHS } from "../routePaths";
 import {
-  showPhase2Features,
   showShiftOpsFeatures,
   showMitraLabsAiPhotoDelivery,
 } from "../../../shared/launch/launchVisibility";
@@ -11,6 +10,7 @@ import { LaunchModuleBoundary } from "./routerHelpers";
 import { ER } from "./routeSegments";
 import { HelpSupportPage } from "./adminLazyPages";
 import { EmployerCareerScopeGuard } from "../../../features/employer/careerJobs/components/EmployerCareerScopeGuard";
+import { GuestCreateRouteGuard } from "../../../shared/guest/GuestCreateRouteGuard";
 import {
   BulkAttendancePage,
   BulkNotificationsPage,
@@ -66,6 +66,8 @@ import {
   MitraLabsHubPage,
   DigitalInviteBuilderPage,
   ArtisticQrStudioPage,
+  EventDayReportPage,
+  EventDayReportFolderPage,
   AiPhotoDeliveryBetaPage,
   EmployerWorkforceStaffPage,
   HRCandidateDetailPage,
@@ -84,6 +86,8 @@ export const employerRouteTree = (
     <Route path={ER.labs} element={<MitraLabsHubPage />} />
     <Route path={ER.labsInvites} element={<DigitalInviteBuilderPage />} />
     <Route path={ER.labsQr} element={<ArtisticQrStudioPage />} />
+    <Route path={ER.labsReport} element={<EventDayReportPage />} />
+    <Route path={ER.labsReportFolder} element={<EventDayReportFolderPage />} />
     <Route
       element={
         <LaunchModuleBoundary
@@ -103,7 +107,14 @@ export const employerRouteTree = (
         <Route path={ER.career} element={<EmployerCareerHomePage />} />
         <Route path={ER.careerPosts} element={<EmployerCareerPostsPage />} />
         <Route path={ER.careerCompletedRecords} element={<EmployerCareerCompletedRecordsPage />} />
-        <Route path={ER.careerCreate} element={<EmployerCareerCreatePage />} />
+        <Route
+          path={ER.careerCreate}
+          element={
+            <GuestCreateRouteGuard action="create_career">
+              <EmployerCareerCreatePage />
+            </GuestCreateRouteGuard>
+          }
+        />
         <Route path={ER.careerPostDashboard} element={<EmployerCareerPostDashboardPage />} />
         <Route path={ER.careerCandidateDetail} element={<EmployerCareerCandidateDetailPage />} />
         <Route
@@ -114,7 +125,7 @@ export const employerRouteTree = (
     </Route>
     <Route
       element={
-        <LaunchModuleBoundary enabled={showPhase2Features} fallback={ROUTE_PATHS.employerHome} />
+        <LaunchModuleBoundary enabled fallback={ROUTE_PATHS.employerHome} />
       }
     >
       <Route path={ER.workforce} element={<EmployerWorkforceHomePage />} />
@@ -141,7 +152,7 @@ export const employerRouteTree = (
     <Route path={ER.hrCandidateDetail} element={<HRCandidateDetailPage />} />
     <Route
       element={
-        <LaunchModuleBoundary enabled={showPhase2Features} fallback={ROUTE_PATHS.employerHome} />
+        <LaunchModuleBoundary enabled fallback={ROUTE_PATHS.employerHome} />
       }
     >
       <Route path={ER.console} element={<ManagerConsolePage />} />
@@ -165,7 +176,14 @@ export const employerRouteTree = (
         path={ER.shiftDemandPlanner}
         element={<Navigate to={ROUTE_PATHS.employerPlannerHome} replace />}
       />
-      <Route path={ER.shiftCreate} element={<EmployerShiftCreatePage />} />
+      <Route
+        path={ER.shiftCreate}
+        element={
+          <GuestCreateRouteGuard action="create_shift">
+            <EmployerShiftCreatePage />
+          </GuestCreateRouteGuard>
+        }
+      />
       <Route path={ER.shiftPostDashboard} element={<EmployerShiftPostDashboardPage />} />
       <Route path={ER.shiftWorkspaces} element={<EmployerShiftWorkspacesPage />} />
       <Route path={ER.shiftShortlist} element={<EmployerShiftPostDashboardPage />} />
@@ -184,7 +202,14 @@ export const employerRouteTree = (
         path={ER.plannerCreate}
         element={<Navigate to={ROUTE_PATHS.employerPlannerNew} replace />}
       />
-      <Route path={ER.plannerNew} element={<EmployerDemandPlannerPage />} />
+      <Route
+        path={ER.plannerNew}
+        element={
+          <GuestCreateRouteGuard action="create_planner">
+            <EmployerDemandPlannerPage />
+          </GuestCreateRouteGuard>
+        }
+      />
       <Route path={ER.plannerDetail} element={<EmployerPlannerDetailPage />} />
       <Route path={ER.plannerFinance} element={<EmployerPlannerFinancePlaceholderPage />} />
       <Route path={ER.plannerApplications} element={<EmployerPlannerApplicationsPage />} />

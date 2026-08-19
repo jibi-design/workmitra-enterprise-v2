@@ -101,7 +101,7 @@ export function EmployerCareerPostCard({
           <CareerPostStatusBadge status={post.status} />
         </div>
 
-        <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8 }}>
+        <div style={{ marginTop: 12 }} className="wm-stable-row">
           <span className="wm-career-pill wm-career-pill--pay">
             {post.totalApplications} Applicants
           </span>

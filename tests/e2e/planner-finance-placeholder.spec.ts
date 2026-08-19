@@ -20,7 +20,7 @@ async function seedFinancePlan(page: Page): Promise<void> {
             id: planId,
             name: "Finance Snapshot Plan",
             companyName: "Finance Co",
-            locationName: "Kochi",
+            locationName: "City A",
             category: "Security",
             experience: "experienced",
             startDate: "2026-11-01",
@@ -63,7 +63,9 @@ test.describe("Planner Finance Placeholder — T1-1", () => {
     await expect(page.getByTestId("planner-employer-finance-snapshot")).toBeVisible();
     await expect(page.getByTestId("planner-employer-finance-worker-days")).toHaveText("3");
     await expect(page.getByTestId("planner-employer-finance-est-budget")).toBeVisible();
-    await expect(page.getByTestId("planner-employer-finance-ledger-gate")).toContainText("P3");
+    await expect(page.getByTestId("planner-employer-finance-ledger-gate")).toContainText(
+      /Not available yet|P3/i,
+    );
     await expect(page.getByTestId("planner-employer-finance-missing")).toHaveCount(0);
 
     await page.getByTestId("planner-employer-finance-back").click();

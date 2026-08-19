@@ -25,6 +25,17 @@ export const resetPasswordBodySchema = z.object({
   password: z.string().min(8).max(256),
 });
 
+export const changePasswordBodySchema = z.object({
+  currentPassword: z.string().min(1).max(256),
+  newPassword: z.string().min(8).max(256),
+});
+
+/** Store compliance — in-app account deletion (password re-auth). */
+export const deleteAccountBodySchema = z.object({
+  password: z.string().min(1).max(256),
+  confirmation: z.literal("DELETE"),
+});
+
 export const supabaseBridgeBodySchema = z.object({
   mitraLabId: z.string().min(1).max(128).optional(),
   jobmitra_ml_id: z.string().min(1).max(128).optional(),
@@ -39,4 +50,6 @@ export type LoginBody = z.infer<typeof loginBodySchema>;
 export type RegisterBody = z.infer<typeof registerBodySchema>;
 export type ForgotPasswordBody = z.infer<typeof forgotPasswordBodySchema>;
 export type ResetPasswordBody = z.infer<typeof resetPasswordBodySchema>;
+export type ChangePasswordBody = z.infer<typeof changePasswordBodySchema>;
+export type DeleteAccountBody = z.infer<typeof deleteAccountBodySchema>;
 export type SwitchContextBody = z.infer<typeof switchContextBodySchema>;

@@ -1,6 +1,17 @@
 /** Employee profile storage — PII sealed at rest. */
 
 import { generateAndRegisterId } from "../../../../shared/identity/registry/idRegistry";
+import {
+  DEFAULT_COMMUTE_RADIUS_KM,
+  parseCommuteRadius,
+  type CommuteRadiusKm,
+} from "../../../shared/location/commuteRadius";
+import {
+  DEFAULT_CAREER_COMMUTE_RADIUS_KM,
+  parseCareerCommuteRadius,
+  type CareerCommuteRadiusKm,
+} from "../../../shared/location/careerCommuteRadius";
+import { parsePincode } from "../../../shared/location/pincode";
 import { piiSecureStorage } from "../../../../shared/security/piiSecureStorage";
 
 export type ExperienceLevel = "fresher" | "1-3" | "3-7" | "7+";
@@ -17,6 +28,10 @@ export type EmployeeProfile = {
   uniqueId?: string;
   fullName: string;
   city: string;
+  /** Work area code used for nearby matching. Empty = excluded. */
+  basePincode: string;
+  commuteRadius: CommuteRadiusKm;
+  careerCommuteRadius: CareerCommuteRadiusKm;
   photoDataUrl?: string;
   skills: string[];
   experience: ExperienceLevel;
@@ -38,6 +53,9 @@ const CHANGED = "wm:employee-profile-changed";
 const DEFAULT_PROFILE: EmployeeProfile = {
   fullName: "",
   city: "",
+  basePincode: "",
+  commuteRadius: DEFAULT_COMMUTE_RADIUS_KM,
+  careerCommuteRadius: DEFAULT_CAREER_COMMUTE_RADIUS_KM,
   skills: [],
   experience: "fresher",
   languages: [],
@@ -71,6 +89,9 @@ function safeParse(raw: string | null): EmployeeProfile {
         ...DEFAULT_PROFILE.availability,
         ...(parsed.availability ?? {}),
       },
+      basePincode: parsePincode(parsed.basePincode) ?? "",
+      commuteRadius: parseCommuteRadius(parsed.commuteRadius),
+      careerCommuteRadius: parseCareerCommuteRadius(parsed.careerCommuteRadius),
     };
   } catch {
     return { ...DEFAULT_PROFILE };

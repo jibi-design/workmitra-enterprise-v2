@@ -3,9 +3,14 @@
 import { create } from "zustand";
 import { showPhase2Features } from "../../shared/config/featureFlags";
 import { buildDynamicPulseFlow, normalizeSeverityFromRegistry } from "./pulseFlowBuilders";
+import {
+  isDestinationNodeId,
+  stripHomeGuidanceSeverity,
+} from "./pulseGuidance.helpers";
 import { getPulseNavEnabled } from "./pulseNavStore";
-import { persistPulseState, safeRemovePulseStorage } from "./pulseStorage";
+import { hydratePulseState, persistPulseState, safeRemovePulseStorage } from "./pulseStorage";
 import type { ActivePulses, PulseChainSeverity, PulseNodeId, PulseState } from "./pulseTypes";
+import { buildAdvanceChainPatch } from "./pulseStore.advance";
 import {
   createSeverityMap,
   hydratedPulseState,
@@ -18,6 +23,7 @@ import {
   bindPulseStoreTimers,
   clearResolvingTimer,
   scheduleResolvingNodeClear,
+  scheduleResolvingTrailCleanup,
 } from "./pulseStore.timers";
 
 export type {
@@ -50,6 +56,7 @@ export const usePulseStore = create<PulseState>((set, get) => {
 
   return {
     chain: hydratedPulseState.chain,
+    pendingGuidanceRoots: hydratedPulseState.pendingGuidanceRoots,
     resolvingNodeId: hydratedPulseState.resolvingNodeId,
     severityByNodeId: hydratedPulseState.severityByNodeId,
     activePulses: hydratedPulseState.activePulses,
@@ -77,6 +84,7 @@ export const usePulseStore = create<PulseState>((set, get) => {
 
         const nextState = {
           chain: nextChain,
+          pendingGuidanceRoots: [],
           resolvingNodeId: null,
           severityByNodeId: nextSeverityByNodeId,
           activePulses: nextActivePulses,
@@ -111,42 +119,37 @@ export const usePulseStore = create<PulseState>((set, get) => {
       return buildDynamicPulseFlow(notificationType, targetId).chain;
     },
 
-    advanceChain: () => {
+    advanceChain: (options) => {
       const currentChain = get().chain;
+      const skipArrival = options?.skipArrival === true;
+      /* Mid-path clicks/views must not consume hops. Destination confirm owns clear. */
+      if (skipArrival) return;
 
       if (currentChain.length === 0) return;
 
       const resolvedNodeId = currentChain[0];
       const nextChain = currentChain.slice(1);
 
+      let trailIdsToCleanup: string[] = [];
+
       set((state) => {
-        const nextSeverityByNodeId: Record<PulseNodeId, PulseChainSeverity> = {
-          ...state.severityByNodeId,
-        };
-        delete nextSeverityByNodeId[resolvedNodeId];
-
-        const nextActivePulses: ActivePulses = { ...state.activePulses };
-
-        if (nextChain.length === 0) {
-          for (const key of Object.keys(nextActivePulses)) {
-            nextActivePulses[key] = false;
-          }
-        }
-
-        const nextState = {
-          chain: nextChain,
-          resolvingNodeId: resolvedNodeId,
-          severityByNodeId: nextSeverityByNodeId,
-          activePulses: nextActivePulses,
-          activeTrails: state.activeTrails,
-        };
-
-        persistPulseState(nextState);
-
-        return nextState;
+        const { patch, trailIdsToCleanup: cleanupIds } = buildAdvanceChainPatch({
+          state,
+          resolvedNodeId,
+          nextChain,
+          skipArrival,
+        });
+        trailIdsToCleanup = cleanupIds;
+        return patch;
       });
 
-      scheduleResolvingNodeClear();
+      if (trailIdsToCleanup.length > 0) {
+        scheduleResolvingTrailCleanup(trailIdsToCleanup);
+      }
+
+      if (!skipArrival) {
+        scheduleResolvingNodeClear();
+      }
     },
 
     clearAll: () => {
@@ -155,6 +158,7 @@ export const usePulseStore = create<PulseState>((set, get) => {
 
       set({
         chain: [],
+        pendingGuidanceRoots: [],
         resolvingNodeId: null,
         severityByNodeId: {},
         activePulses: {},
@@ -172,6 +176,28 @@ export const usePulseStore = create<PulseState>((set, get) => {
 
     isNodeActive: (id) => {
       return get().chain[0] === id;
+    },
+
+    confirmPulseDestination: (nodeId) => {
+      const currentChain = get().chain;
+      if (!isDestinationNodeId(currentChain, nodeId)) return;
+
+      let trailIdsToCleanup: string[] = [];
+      set((state) => {
+        const { patch, trailIdsToCleanup: cleanupIds } = buildAdvanceChainPatch({
+          state,
+          resolvedNodeId: nodeId,
+          nextChain: [],
+          skipArrival: false,
+        });
+        trailIdsToCleanup = cleanupIds;
+        return patch;
+      });
+
+      if (trailIdsToCleanup.length > 0) {
+        scheduleResolvingTrailCleanup(trailIdsToCleanup);
+      }
+      scheduleResolvingNodeClear();
     },
 
     isNodeResolving: (id) => {
@@ -224,6 +250,12 @@ export const usePulseStore = create<PulseState>((set, get) => {
         };
         delete nextSeverityByNodeId[id];
 
+        const chainComplete = nextChain.length === 0;
+        const pendingGuidanceRoots = chainComplete ? [] : currentState.pendingGuidanceRoots;
+        const severityByNodeId = chainComplete
+          ? stripHomeGuidanceSeverity(nextSeverityByNodeId, currentState.pendingGuidanceRoots)
+          : nextSeverityByNodeId;
+
         const nextActivePulses: ActivePulses = {
           ...currentState.activePulses,
           [id]: false,
@@ -231,8 +263,9 @@ export const usePulseStore = create<PulseState>((set, get) => {
 
         const nextState = {
           chain: nextChain,
+          pendingGuidanceRoots,
           resolvingNodeId: currentState.resolvingNodeId,
-          severityByNodeId: nextSeverityByNodeId,
+          severityByNodeId,
           activePulses: nextActivePulses,
           activeTrails: currentState.activeTrails,
         };
@@ -248,3 +281,16 @@ export const usePulseStore = create<PulseState>((set, get) => {
 });
 
 bindPulseStoreTimers(usePulseStore);
+
+/** Swap in-memory pulse for the signed-in role's persist key. */
+export function applyPulseStoreFromStorage(): void {
+  const next = hydratePulseState();
+  usePulseStore.setState({
+    chain: next.chain,
+    pendingGuidanceRoots: [],
+    resolvingNodeId: null,
+    severityByNodeId: next.severityByNodeId,
+    activePulses: next.activePulses,
+    activeTrails: next.activeTrails,
+  });
+}

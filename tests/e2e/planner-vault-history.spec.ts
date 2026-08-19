@@ -20,7 +20,7 @@ async function initEmployee(page: Page): Promise<void> {
         JSON.stringify({
           uniqueId: worker,
           fullName: "E2E Vault Worker",
-          city: "Kochi",
+          city: "City A",
           skills: ["security"],
         }),
       );
@@ -63,7 +63,12 @@ test.describe("Planner Vault History — Hybrid A2 S5", () => {
     await page.goto("/#/employee/vault", { waitUntil: "domcontentloaded" });
     await expect(page.locator("body")).not.toContainText("Something went wrong");
 
-    await expect(page.getByText("Planner epochs")).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole("button", { name: "Vault Profile" })).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByTestId("vault-work-stats").getByText("Planner epochs")).toBeVisible({
+      timeout: 15_000,
+    });
     await expect(page.getByText("E2E Security Co").first()).toBeVisible();
     await expect(page.getByTestId("vault-planner-review")).toBeVisible();
 

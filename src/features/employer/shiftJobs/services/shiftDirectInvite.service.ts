@@ -20,11 +20,7 @@ import {
 import { withShiftConfirmLock } from "../storage/employerShift.confirmLock";
 import { shiftDirectInviteStorage } from "../storage/shiftDirectInvite.storage";
 import { findWorkspaceIdForPostAndWorker } from "../helpers/directInviteWorkspace.helpers";
-import {
-  getSiteMembershipTruth,
-  provisionSiteMembership,
-  resolveShiftOpsSiteIdForPost,
-} from "../../../shared/shiftOps/shiftJobsMembershipBridge";
+import { bindShiftOpsGroupAndWorker } from "../storage/employerShift.confirmSiteMembership";
 import {
   isShiftServerUuid,
   shiftAppIdBridge,
@@ -32,6 +28,7 @@ import {
 } from "../../../shift/utils/shiftIdBridge";
 import { shiftGateApi } from "../../../shift/services/shiftGateApi.service";
 import { appendSelectionAuditEvent } from "../../../shared/shift/selectionAudit.storage";
+import { activateShiftHireMyStaff } from "./shiftHireMyStaffActivation.service";
 
 export type SendShiftDirectInviteInput = {
   postId: string;
@@ -134,31 +131,22 @@ export async function acceptShiftDirectInvite(
         return { ok: false, reason: "This shift post is no longer available." };
       }
 
-      const siteId = resolveShiftOpsSiteIdForPost(post);
-      if (!siteId) {
+      const bound = await bindShiftOpsGroupAndWorker({
+        post,
+        workerMlId,
+        context: "accept_direct_invite",
+      });
+      if (!bound.ok) {
         return {
           ok: false,
-          reason: "This shift is not linked to an active Shift Ops group yet.",
+          reason:
+            bound.reason === "site_ensure_failed"
+              ? "Could not create the Shift Ops group for this shift. Try again."
+              : "Unable to join the Shift Ops group. Try again.",
         };
       }
 
-      const existingMembership = getSiteMembershipTruth(siteId, workerMlId);
-      if (!existingMembership?.membershipId) {
-        const provision = await provisionSiteMembership({
-          siteId,
-          workerMlId,
-          planId: post.planId?.trim() || undefined,
-          context: "accept_direct_invite",
-        });
-        if (!provision.ok) {
-          return {
-            ok: false,
-            reason: "Unable to join the formal Shift Ops group. Try again after group setup.",
-          };
-        }
-      }
-
-      const livePost = getEmployerShiftPost(invite.postId) ?? post;
+      const livePost = getEmployerShiftPost(invite.postId) ?? bound.post;
       const priorApplications = readEmployeeApplications();
       const priorWorkspaces = readEmployeeWorkspaces();
       const priorPost = livePost;
@@ -268,6 +256,12 @@ export async function acceptShiftDirectInvite(
           ? ROUTE_PATHS.employeeShiftWorkspace.replace(":workspaceId", workspaceId)
           : ROUTE_PATHS.employeeShiftWorkspaces,
       );
+
+      const confirmedApp = readEmployeeApplications().find((item) => item.id === result.appId);
+      const liveAfter = getEmployerShiftPost(livePost.id) ?? result.post;
+      if (confirmedApp) {
+        activateShiftHireMyStaff(liveAfter, confirmedApp);
+      }
 
       return { ok: true, appId: result.appId, workspaceId };
     });

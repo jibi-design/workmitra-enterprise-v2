@@ -74,6 +74,45 @@ if (isProdBuild) {
       "[WARN:build-env] Session pepper is shorter than 32 chars — API boot will refuse production start.",
     );
   }
+
+  const docAccessPepper = process.env.VITE_DOC_ACCESS_SESSION_PEPPER?.trim();
+  if (!docAccessPepper) {
+    fail(
+      "VITE_DOC_ACCESS_SESSION_PEPPER is required for production builds " +
+        "(doc-access session HMAC — set in .env.production or the environment).",
+    );
+  } else if (docAccessPepper.length < 32) {
+    fail(
+      "VITE_DOC_ACCESS_SESSION_PEPPER must be at least 32 characters for production builds.",
+    );
+  }
+
+  // Play Store honesty — never ship Companies House offline mock in production builds.
+  const chMock = process.env.VITE_COMPANIES_HOUSE_MOCK?.trim();
+  if (chMock === "1") {
+    fail(
+      "VITE_COMPANIES_HOUSE_MOCK=1 is forbidden for production builds. " +
+        "Unset it (prod default is mock OFF) or use a non-production mode.",
+    );
+  }
+
+  if (process.env.VITE_SHOW_PHASE2 === "1") {
+    console.warn(
+      "[WARN:build-env] VITE_SHOW_PHASE2=1 — Phase 2 Workforce/HR will ship in this build.",
+    );
+  }
+  if (process.env.VITE_SHIFT_OPS === "1") {
+    console.warn(
+      "[WARN:build-env] VITE_SHIFT_OPS=1 — Shift Ops UI will ship in this build.",
+    );
+  }
+
+  const backupGate = (process.env.WM_BACKUP_GATE ?? "").trim().toLowerCase();
+  if (backupGate !== "cleared" && backupGate !== "pass") {
+    console.warn(
+      "[WARN:build-env] WM_BACKUP_GATE is not cleared — API production boot will refuse until §8.1 backups are attested.",
+    );
+  }
 }
 
 console.log("[build-env] Production build environment checks passed.");

@@ -6,11 +6,9 @@
  * Ensures consistent data presentation across all dashboards.
  */
 
-// 1. Currency Formatter (Default to INR)
-export const formatCurrency = (amount: number, currency = "INR", locale = "en-IN"): string => {
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency,
+// 1. Amount formatter — symbol-free (no £ / $ / ₹ in UI)
+export const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat("en-GB", {
     maximumFractionDigits: 0,
   }).format(amount);
 };

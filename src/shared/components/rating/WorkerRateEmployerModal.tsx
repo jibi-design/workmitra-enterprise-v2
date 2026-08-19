@@ -20,6 +20,8 @@ type Props = {
   /** Required when domain === "planner". */
   plannerMeta?: RatingPlannerMeta;
   editMode?: boolean;
+  workspaceId?: string;
+  appId?: string;
   onSubmitted: () => void;
   onClose: () => void;
 };
@@ -34,6 +36,8 @@ export function WorkerRateEmployerModal({
   domain,
   plannerMeta,
   editMode,
+  workspaceId,
+  appId,
   onSubmitted,
   onClose,
 }: Props) {
@@ -92,11 +96,12 @@ export function WorkerRateEmployerModal({
         tags,
         comment: comment.trim() || undefined,
         workAgain,
+        workspaceId,
+        appId,
       });
 
-      setSubmitting(false);
-
       if (!sagaResult.ok) {
+        setSubmitting(false);
         if (sagaResult.reason === "already_rated") {
           setError("You have already submitted a rating for this work record.");
         } else {
@@ -105,7 +110,10 @@ export function WorkerRateEmployerModal({
         return;
       }
 
-      onSubmitted();
+      void sagaResult.persist.finally(() => {
+        setSubmitting(false);
+        onSubmitted();
+      });
       return;
     }
 
@@ -169,6 +177,8 @@ export function WorkerRateEmployerModal({
     jobId,
     editMode,
     onSubmitted,
+    workspaceId,
+    appId,
   ]);
 
   if (!isOpen) return null;

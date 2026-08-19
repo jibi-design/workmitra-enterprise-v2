@@ -11,16 +11,15 @@ import {
   createRoutesFromElements,
 } from "react-router-dom";
 import { ROUTE_PATHS } from "./routePaths";
-import { ErrorBoundary } from "../../shared/components/ErrorBoundary";
+import { ErrorBoundary, RouteErrorBoundary } from "../../shared/components/ErrorBoundary";
 import { RequireActiveContext } from "./guards/RequireActiveContext";
-import { RequireRole } from "./guards/RequireRole";
+import { RoleGate } from "./guards/RoleGate";
 import { LandingRolePickPage } from "../../features/auth/pages/LandingRolePickPage";
 import { LoginPage } from "../../features/auth/pages/LoginPage";
 import { RegisterPage } from "../../features/auth/pages/RegisterPage";
 import { ForgotPasswordPage } from "../../features/auth/pages/ForgotPasswordPage";
 import { ResetPasswordPage } from "../../features/auth/pages/ResetPasswordPage";
 import { PublicLandingPage } from "../../features/public/pages/PublicLandingPage";
-import { AUTH_BACKEND_ENABLED } from "../../shared/config/authConfig";
 import { EmployeeShell } from "../shells/EmployeeShell";
 import { EmployerShell } from "../shells/EmployerShell";
 import { AdminShell } from "../shells/AdminShell";
@@ -37,6 +36,7 @@ import { adminDisabledRoute, adminRouteTree } from "./routes/admin.routes";
 import { NotFoundPage } from "./routes/adminLazyPages";
 import { employeeRouteTree } from "./routes/employee.routes";
 import { employerRouteTree } from "./routes/employer.routes";
+import { PublicPassVerifyPage } from "./routes/employerLazyPages";
 import { IS_DEV_ADMIN_ENABLED, PageLoader, RoleHomeRedirect } from "./routes/routerHelpers";
 
 const appRouter = createHashRouter(
@@ -90,12 +90,8 @@ const appRouter = createHashRouter(
       <Route
         path={ROUTE_PATHS.landing}
         element={
-          <ErrorBoundary homePath={AUTH_BACKEND_ENABLED ? ROUTE_PATHS.login : ROUTE_PATHS.landing}>
-            {AUTH_BACKEND_ENABLED ? (
-              <Navigate to={ROUTE_PATHS.login} replace />
-            ) : (
-              <LandingRolePickPage />
-            )}
+          <ErrorBoundary homePath={ROUTE_PATHS.landing}>
+            <LandingRolePickPage />
           </ErrorBoundary>
         }
       />
@@ -132,13 +128,23 @@ const appRouter = createHashRouter(
         <Route path={ROUTE_PATHS.guestCareerDetails} element={<GuestCareerDetailPage />} />
       </Route>
 
+      {/* Mitra Labs — public pass verification (opaque token only) */}
+      <Route
+        path={ROUTE_PATHS.labsPassVerify}
+        element={
+          <ErrorBoundary homePath={ROUTE_PATHS.landing}>
+            <PublicPassVerifyPage />
+          </ErrorBoundary>
+        }
+      />
+
       <Route
         path={ROUTE_PATHS.employeeHome}
         element={
           <RequireActiveContext mode="employee">
-            <ErrorBoundary homePath={ROUTE_PATHS.employeeHome}>
+            <RouteErrorBoundary homePath={ROUTE_PATHS.employeeHome}>
               <EmployeeShell />
-            </ErrorBoundary>
+            </RouteErrorBoundary>
           </RequireActiveContext>
         }
       >
@@ -149,9 +155,9 @@ const appRouter = createHashRouter(
         path={ROUTE_PATHS.employerHome}
         element={
           <RequireActiveContext mode="employer">
-            <ErrorBoundary homePath={ROUTE_PATHS.employerHome}>
+            <RouteErrorBoundary homePath={ROUTE_PATHS.employerHome}>
               <EmployerShell />
-            </ErrorBoundary>
+            </RouteErrorBoundary>
           </RequireActiveContext>
         }
       >
@@ -162,11 +168,11 @@ const appRouter = createHashRouter(
         <Route
           path={ROUTE_PATHS.adminHome}
           element={
-            <RequireRole role="admin">
+            <RoleGate roles="admin">
               <ErrorBoundary homePath={ROUTE_PATHS.adminHome}>
                 <AdminShell />
               </ErrorBoundary>
-            </RequireRole>
+            </RoleGate>
           }
         >
           {adminRouteTree}

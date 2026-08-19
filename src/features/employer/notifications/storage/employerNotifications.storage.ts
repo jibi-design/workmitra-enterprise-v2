@@ -181,6 +181,12 @@ export const employerNotificationsStorage = {
     return cacheUnread;
   },
 
+  replaceFromHydrate(list: EmployerNotification[]) {
+    safeWrite(list);
+    cacheRaw = null;
+    safeDispatch(CHANGED_EVENT);
+  },
+
   markRead(idVal: string) {
     const cleanId = cleanNotificationText(idVal, 120);
     if (!cleanId) return;
@@ -188,12 +194,28 @@ export const employerNotificationsStorage = {
     safeWrite(readAllCached().map((n) => (n.id === cleanId ? { ...n, isRead: true } : n)));
     cacheRaw = null;
     safeDispatch(CHANGED_EVENT);
+
+    void import("../../../employee/notifications/services/notificationsGateApi.service").then(
+      ({ isNotificationsApiSyncEnabled, notificationsGateApi }) => {
+        if (!isNotificationsApiSyncEnabled()) return;
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(cleanId)) {
+          return;
+        }
+        return notificationsGateApi.markEmployerRead(cleanId).catch(() => undefined);
+      },
+    );
   },
 
   markAllRead() {
     safeWrite(readAllCached().map((n) => (n.isRead ? n : { ...n, isRead: true })));
     cacheRaw = null;
     safeDispatch(CHANGED_EVENT);
+    void import("../../../employee/notifications/services/notificationsGateApi.service").then(
+      ({ isNotificationsApiSyncEnabled, notificationsGateApi }) => {
+        if (!isNotificationsApiSyncEnabled()) return;
+        return notificationsGateApi.markEmployerAllRead().catch(() => undefined);
+      },
+    );
   },
 
   pushShift(title: string, body?: string, route?: string) {

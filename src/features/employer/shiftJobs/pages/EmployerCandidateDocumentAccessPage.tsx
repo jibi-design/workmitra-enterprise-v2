@@ -72,7 +72,7 @@ export function EmployerCandidateDocumentAccessPage() {
         trailing={<span className="wm-domainHeroBadge">Safe view</span>}
       />
 
-      <VaultProfileTab data={vaultData} readOnlyEmployerView />
+      <VaultProfileTab data={vaultData} readOnlyEmployerView hideContactVerification />
 
       <button
         className="wm-outlineBtn"
@@ -107,6 +107,7 @@ function buildCandidateSafeVaultData(application: EmployeeShiftApplication): Vau
       city: profile?.city?.trim() || "Not specified",
       photoDataUrl: "",
       uniqueId: profile?.uniqueId?.trim() || "",
+      // Contact SoT unavailable on employer snapshot — badges hidden via hideContactVerification.
       phoneVerified: false,
       emailVerified: false,
       memberSince: application.createdAt || Date.now(),

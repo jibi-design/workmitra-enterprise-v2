@@ -141,6 +141,7 @@ export function EmployerCareerCreatePage() {
         confirm={page.confirmData}
         onCancel={page.clearConfirm}
         onConfirm={page.confirmLeave}
+        variant="obsidian"
       />
       <CareerCreateConfirmModal
         open={page.publishPreviewOpen}

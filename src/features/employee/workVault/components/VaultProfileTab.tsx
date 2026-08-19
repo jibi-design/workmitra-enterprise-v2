@@ -37,6 +37,7 @@ import { PlannerGrowthSection } from "./profileSections/PlannerGrowthSection";
 type Props = {
   data: VaultSectionData;
   readOnlyEmployerView?: boolean;
+  hideContactVerification?: boolean;
 };
 
 function parseApprovedFeedbackSnapshot(
@@ -64,7 +65,11 @@ function getUniqueFeedbackTags(
   return [...tags];
 }
 
-export function VaultProfileTab({ data: d, readOnlyEmployerView = false }: Props) {
+export function VaultProfileTab({
+  data: d,
+  readOnlyEmployerView = false,
+  hideContactVerification = false,
+}: Props) {
   const nav = useNavigate();
   const workerId = d.identity.uniqueId ?? "";
 
@@ -93,6 +98,7 @@ export function VaultProfileTab({ data: d, readOnlyEmployerView = false }: Props
             photoDataUrl={d.identity.photoDataUrl}
             phoneVerified={d.identity.phoneVerified}
             emailVerified={d.identity.emailVerified}
+            showContactVerification={!hideContactVerification}
           />
         </>
       ) : (
@@ -209,8 +215,10 @@ export function VaultProfileTab({ data: d, readOnlyEmployerView = false }: Props
 
       {VAULT_FEATURE_FLAGS.references ? (
         <>
-          <VaultSectionHead number={11} title="Work Reviews" auto />
-          <ReviewsSection data={d.references} />
+          <div data-testid="vault-work-reviews">
+            <VaultSectionHead number={11} title="Work Reviews" auto />
+            <ReviewsSection data={d.references} />
+          </div>
         </>
       ) : (
         <VaultSectionLock title="Work Reviews" />

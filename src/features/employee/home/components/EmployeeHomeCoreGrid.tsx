@@ -1,8 +1,8 @@
-/** Job Mitra | EmployeeHomeCoreGrid.tsx | 2-col domain / Hub entry (dynamic nudges live above) */
+/** Job Mitra | EmployeeHomeCoreGrid.tsx | 2-col domain tiles */
 
 import type { ReactNode } from "react";
 import { CareerJobsCard, GigProjectsCard, ShiftJobsCard } from "./EmployeeJobCards";
-import { UnifiedWorkplaceHubCard } from "./UnifiedWorkplaceHubCard";
+import { WorkVaultCard } from "./EmployeeWorkVaultCard";
 import { EmployeeHomeGetStartedCard } from "./EmployeeHomeGetStartedCard";
 
 type Props = {
@@ -11,7 +11,6 @@ type Props = {
   showCareer: boolean;
   onFindShifts: () => void;
   onCareerSearch: () => void;
-  onOpenWorkplaceHub: () => void;
 };
 
 function GridCell({ children }: { children: ReactNode }) {
@@ -24,7 +23,6 @@ export function EmployeeHomeCoreGrid({
   showCareer,
   onFindShifts,
   onCareerSearch,
-  onOpenWorkplaceHub,
 }: Props) {
   return (
     <section
@@ -57,7 +55,7 @@ export function EmployeeHomeCoreGrid({
       ) : null}
 
       <GridCell>
-        <UnifiedWorkplaceHubCard onOpen={onOpenWorkplaceHub} />
+        <WorkVaultCard />
       </GridCell>
     </section>
   );

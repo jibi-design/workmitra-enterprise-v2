@@ -10,7 +10,9 @@ import { AUTH_BACKEND_ENABLED } from "../config/authConfig";
 import { authService } from "../../features/auth/services/authService";
 import { useAuthStore, type ActiveMode, type UserProfile } from "../store/authStore";
 import { purgeOppositeWorkspaceLocalState } from "../auth/purgeOppositeWorkspaceLocalState";
+import { ensureEmployerLocalTenantIdentity } from "../auth/ensureEmployerLocalTenantIdentity";
 import type { ConfirmData } from "../components/ConfirmModal";
+import { applyPulseStoreFromStorage } from "../../features/pulse/pulseStore";
 import { employerSettingsStorage } from "../../features/employer/company/storage/employerSettings.storage";
 
 function homeForMode(mode: ActiveMode): string {
@@ -60,27 +62,28 @@ export function useActiveContextSwitch(currentShellMode: ActiveMode) {
         if (AUTH_BACKEND_ENABLED) {
           const orgId =
             targetMode === "employer"
-              ? (employerSettingsStorage.get().employerOrgId ??
+              ? (ensureEmployerLocalTenantIdentity(authUser) ??
+                employerSettingsStorage.get().employerOrgId ??
                 employerSettingsStorage.get().uniqueId ??
                 null)
               : null;
           const user = await authService.switchContext({ mode: targetMode, orgId });
+          if (targetMode === "employer") {
+            ensureEmployerLocalTenantIdentity(user);
+          }
           setAuth(user, null);
         } else {
           roleStorage.set(targetMode);
           if (authUser) {
+            const seededOrg =
+              targetMode === "employer" ? ensureEmployerLocalTenantIdentity(authUser) : null;
             const nextUser: UserProfile = {
               id: authUser.id,
               fullName: authUser.fullName,
               email: authUser.email,
               role: targetMode,
               activeMode: targetMode,
-              activeOrgId:
-                targetMode === "employer"
-                  ? (employerSettingsStorage.get().employerOrgId ??
-                    employerSettingsStorage.get().uniqueId ??
-                    null)
-                  : null,
+              activeOrgId: targetMode === "employer" ? seededOrg : null,
               entitlements: [
                 { mode: "employee", status: "verified" },
                 { mode: "employer", status: "verified" },
@@ -92,6 +95,7 @@ export function useActiveContextSwitch(currentShellMode: ActiveMode) {
         }
 
         purgeOppositeWorkspaceLocalState(targetMode);
+        applyPulseStoreFromStorage();
         nav(homeForMode(targetMode), { replace: true });
       } catch (err) {
         console.error("[switch-context]", err);

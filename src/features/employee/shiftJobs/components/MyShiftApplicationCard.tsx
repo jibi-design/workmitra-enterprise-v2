@@ -82,7 +82,7 @@ export function MyShiftApplicationCard({
           <div
             style={{
               fontSize: 16,
-              fontWeight: 950,
+              fontWeight: 800,
               color: TEXT_DARK,
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -120,7 +120,7 @@ export function MyShiftApplicationCard({
         <span
           style={{
             fontSize: 10,
-            fontWeight: 950,
+            fontWeight: 800,
             padding: "6px 10px",
             borderRadius: "var(--wm-radius-pill)",
             background: statusStyle.badgeBg,
@@ -139,7 +139,7 @@ export function MyShiftApplicationCard({
           padding: "9px 10px",
           color: GREEN,
           fontSize: 12,
-          fontWeight: 850,
+          fontWeight: 700,
           lineHeight: 1.4,
         }}
       >
@@ -197,7 +197,7 @@ function MiniInfo({
       <div
         style={{
           fontSize: 9,
-          fontWeight: 950,
+          fontWeight: 800,
           color: MUTED,
           textTransform: "uppercase",
           letterSpacing: 0.35,
@@ -210,7 +210,7 @@ function MiniInfo({
         style={{
           marginTop: 4,
           fontSize: 11,
-          fontWeight: 950,
+          fontWeight: 800,
           color: highlight ? GREEN : TEXT_DARK,
           lineHeight: 1.25,
           overflow: "hidden",

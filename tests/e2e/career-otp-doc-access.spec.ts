@@ -109,7 +109,8 @@ test.describe("Career OTP & Document Access Locks", () => {
       expect(result.remainingMs).toBeLessThanOrEqual(FIVE_MIN_MS);
       expect(result.verified).toBe(true);
       expect(result.sessionOk).toBe(true);
-      expect(result.sessionDurationMs).toBe(THIRTY_MIN_MS);
+      expect(result.sessionDurationMs).toBeGreaterThanOrEqual(THIRTY_MIN_MS - 2_000);
+      expect(result.sessionDurationMs).toBeLessThanOrEqual(THIRTY_MIN_MS);
       expect(result.sessionHasSig).toBe(true);
       expect(result.forgedRejected).toBe(true);
       expect(result.otpKeyPresent).toBe(true);
@@ -150,7 +151,11 @@ test.describe("Career OTP & Document Access Locks", () => {
 
     await test.step("4. GAP — Vault OTP key ≠ Doc Access OTP key", async () => {
       const gap = await employeePage.evaluate(async () => {
-        // Ensure folders exist for vault OTP
+        const { VAULT_STORAGE_KEYS } =
+          await import("/src/features/employee/workVault/constants/vaultConstants.ts");
+        const vaultOtp =
+          await import("/src/features/employee/workVault/services/vaultOtpService.ts");
+
         try {
           const folders =
             await import("/src/features/employee/workVault/services/vaultFolderService.ts");
@@ -159,30 +164,23 @@ test.describe("Career OTP & Document Access Locks", () => {
           /* ignore */
         }
 
-        const vaultOtp =
-          await import("/src/features/employee/workVault/services/vaultOtpService.ts");
         const vaultResult = await vaultOtp.generateOtp();
 
-        const vaultKey = localStorage.getItem("wm_employee_vault_otp_v1");
-        const docKey = localStorage.getItem("wm_doc_access_otp_v1");
-
         return {
-          vaultSuccess: vaultResult.success === true,
-          vaultKeyPresent: Boolean(vaultKey),
-          docKeyOnEmployee: Boolean(docKey),
-          keysAreDistinct: true,
-          vaultKeyName: "wm_employee_vault_otp_v1",
+          vaultSuccess: vaultResult.ok === true,
+          vaultAuthRequired:
+            !vaultResult.ok &&
+            "reason" in vaultResult &&
+            vaultResult.reason === "auth_required",
+          vaultPendingKey: VAULT_STORAGE_KEYS.otpPending,
+          legacyVaultKeyScrubbed: localStorage.getItem("wm_employee_vault_otp_v1") === null,
           docKeyName: "wm_doc_access_otp_v1",
         };
       });
 
-      expect(gap.vaultKeyName).not.toBe(gap.docKeyName);
-      expect
-        .soft(
-          gap.vaultSuccess || gap.vaultKeyPresent,
-          "Vault OTP generate should succeed or persist challenge key",
-        )
-        .toBeTruthy();
+      expect(gap.vaultPendingKey).not.toBe(gap.docKeyName);
+      expect(gap.legacyVaultKeyScrubbed).toBe(true);
+      expect(gap.vaultSuccess || gap.vaultAuthRequired).toBeTruthy();
 
       // Cross-verify: vault code cannot satisfy doc-access verify (architectural gap)
       const cross = await employerPage.evaluate(async () => {

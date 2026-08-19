@@ -2,6 +2,7 @@
 // Wave 1 P0-4 — stable batchId + apply lock + dedupe
 
 import { useMemo, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import type { PlannerPublicIndexEntry } from "../../../shared/planner/plannerPublic";
 import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
 import { employeeAvailabilityService } from "../services/employeeAvailability.service";
@@ -9,6 +10,7 @@ import { smartEarningsPredictorService } from "../services/smartEarningsPredicto
 import { multiApplyGroup } from "../../../shared/planner/ports/plannerLegacyShiftBridge";
 import { plannerCommitmentStreakService } from "../services/plannerCommitmentStreak.service";
 import { plannerEmployeeNotifications } from "../services/plannerEmployeeNotifications.service";
+import { useSoftAuth } from "../../../../shared/guest/useSoftAuth";
 import {
   applicationsContainBatchId,
   claimBatchActionLock,
@@ -40,6 +42,8 @@ export function usePlannerPickChooseState({
   onNeedProfile,
   isProfileComplete,
 }: Args) {
+  const loc = useLocation();
+  const { requireAuthForAction } = useSoftAuth();
   const workerMlId = employeeProfileStorage.get().uniqueId ?? "local-worker";
   const [selectionByPlan, setSelectionByPlan] = useState<Record<string, string[]>>({});
   const planDateKeys = selectionByPlan[entry.planId];
@@ -97,6 +101,16 @@ export function usePlannerPickChooseState({
 
   function submit() {
     if (submitInFlightRef.current) return;
+    if (
+      !requireAuthForAction({
+        action: "apply_planner",
+        targetId: entry.planId,
+        returnPath: `${loc.pathname}${loc.search}`,
+        roleHint: "employee",
+      })
+    ) {
+      return;
+    }
     if (!isProfileComplete) {
       onNeedProfile();
       return;

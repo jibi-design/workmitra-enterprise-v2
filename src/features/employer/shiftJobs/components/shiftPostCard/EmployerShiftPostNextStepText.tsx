@@ -3,6 +3,7 @@
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\components\shiftPostCard\EmployerShiftPostNextStepText.tsx
 
 import type { ShiftPost } from "../../storage/employerShift.storage";
+import { countApplicationsForPost } from "../../helpers/shiftHomeHelpers";
 
 type Props = {
   post: ShiftPost;
@@ -12,10 +13,13 @@ type Props = {
 
 export function EmployerShiftPostNextStepText({ post, appliedCount, needsAnalysis }: Props) {
   const remaining = Math.max(0, post.vacancies - post.confirmedIds.length);
+  const shortlistedCount = countApplicationsForPost(post.id, "shortlisted");
 
   let text = "Tap to manage this post";
 
-  if (appliedCount > 0 && needsAnalysis) {
+  if (remaining > 0 && shortlistedCount > 0) {
+    text = `Confirm ${shortlistedCount} waiting — tap Confirm Worker`;
+  } else if (appliedCount > 0 && needsAnalysis) {
     text = `${appliedCount} applied - tap to find best candidates`;
   } else if (!needsAnalysis && post.confirmedIds.length === 0) {
     text = "Candidates ready - tap to confirm workers";

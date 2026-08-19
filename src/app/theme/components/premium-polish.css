@@ -150,7 +150,7 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 18px 16px;
+  padding: var(--wm-dna-card-padding, 14px);
   border-radius: 20px;
   margin-bottom: 12px;
   background: linear-gradient(180deg, rgba(248, 250, 252, 1), rgba(255, 255, 255, 0.92));
@@ -229,7 +229,7 @@
 
 .wm-profileSectionCard {
   margin-top: 12px;
-  padding: 16px;
+  padding: var(--wm-dna-card-padding, var(--wm-card-padding, 14px));
   border-radius: 20px;
   border: 1px solid rgba(148, 163, 184, 0.16);
   background: rgba(255, 255, 255, 0.94);
@@ -243,6 +243,13 @@
 .wm-profileSectionCard select.wm-input {
   min-height: 44px;
   border-radius: 12px;
+}
+
+.wm-profileHint {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--wm-emp-muted, var(--wm-neutral-500));
 }
 
 .wm-profileSaveBar {
@@ -578,7 +585,7 @@
 .wm-helpFaqCard,
 .wm-helpContactCard {
   margin-top: 12px;
-  padding: 16px;
+  padding: var(--wm-dna-card-padding, var(--wm-card-padding, 14px));
   border-radius: 20px;
   border: 1px solid rgba(148, 163, 184, 0.16);
   background: rgba(255, 255, 255, 0.94);
@@ -867,7 +874,7 @@
 
 /* Review center */
 .wm-reviewHero {
-  padding: 20px 18px;
+  padding: var(--wm-dna-card-padding, 14px);
   border-radius: 20px;
   border: 1px solid rgba(217, 119, 6, 0.2);
   background: linear-gradient(135deg, rgba(251, 191, 36, 0.16), rgba(255, 255, 255, 0.94) 58%);
@@ -915,7 +922,7 @@
 }
 
 .wm-reviewCard {
-  padding: 16px;
+  padding: var(--wm-dna-card-padding, var(--wm-card-padding, 14px));
   border-radius: 20px;
   border: 1px solid rgba(148, 163, 184, 0.16);
   background: rgba(255, 255, 255, 0.94);

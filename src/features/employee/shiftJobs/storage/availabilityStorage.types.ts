@@ -12,4 +12,6 @@ export type AvailabilityBroadcast = {
   expiresAt: number;
   city?: string;
   category?: string;
+  basePincode?: string;
+  commuteRadius?: number;
 };

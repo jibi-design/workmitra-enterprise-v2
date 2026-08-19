@@ -12,9 +12,9 @@ type Props = {
 
 export function AdminHomeResetModal({ open, onCancel, onReset }: Props) {
   return (
-    <CenterModal open={open} onBackdropClose={onCancel} ariaLabel="Reset Demo Data">
+    <CenterModal open={open} onBackdropClose={onCancel} ariaLabel="Reset local data">
       <div style={{ padding: 20 }}>
-        <div style={{ fontSize: 15, fontWeight: 1000, color: "#dc2626" }}>Reset All Demo Data?</div>
+        <div style={{ fontSize: 15, fontWeight: 1000, color: "#dc2626" }}>Reset all local data?</div>
 
         <div style={{ fontSize: 13, color: "#6b7280", marginTop: 8, lineHeight: 1.6 }}>
           This will clear ALL localStorage data — posts, applications, workspaces, notifications,

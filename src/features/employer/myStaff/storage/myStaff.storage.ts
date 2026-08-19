@@ -73,6 +73,10 @@ export const myStaffStorage = {
     return readStaff().find((r) => r.careerPostId === postId) ?? null;
   },
 
+  findByShiftPostId(postId: string): StaffRecord | null {
+    return readStaff().find((r) => r.shiftPostId === postId) ?? null;
+  },
+
   addStaff(data: Omit<StaffRecord, "id" | "createdAt" | "updatedAt">): string {
     const now = Date.now();
     const id = genId("stf");

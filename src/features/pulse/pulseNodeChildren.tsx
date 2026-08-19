@@ -1,23 +1,6 @@
-/** Inject Pulse LED into a single host-element child when possible. */
+/** Inject hardware LED as PulseNode sibling — top-right inner corner, never the gutter. */
 
-import {
-  Children,
-  cloneElement,
-  isValidElement,
-  type CSSProperties,
-  type ReactElement,
-  type ReactNode,
-} from "react";
-
-type PulseInjectableChildProps = {
-  readonly children?: ReactNode;
-  readonly style?: CSSProperties;
-  readonly className?: string;
-};
-
-function isHostElementChild(value: ReactNode): value is ReactElement<PulseInjectableChildProps> {
-  return isValidElement<PulseInjectableChildProps>(value) && typeof value.type === "string";
-}
+import { type ReactNode } from "react";
 
 export function renderChildrenWithCardBoundPulse({
   children,
@@ -26,42 +9,13 @@ export function renderChildrenWithCardBoundPulse({
   readonly children: ReactNode;
   readonly edgeLight: ReactNode;
 }): ReactNode {
-  const childList = Children.toArray(children);
-
-  if (childList.length !== 1 || !isHostElementChild(childList[0])) {
-    return (
-      <>
-        {edgeLight}
-        {children}
-      </>
-    );
-  }
-
-  const child = childList[0];
-  const originalStyle = child.props.style;
-
-  const nextStyle: CSSProperties = {
-    ...originalStyle,
-    position:
-      !originalStyle?.position || originalStyle.position === "static"
-        ? "relative"
-        : originalStyle.position,
-    overflow: originalStyle?.overflow ?? "hidden",
-    isolation: "isolate",
-  };
-
-  return cloneElement(child, {
-    style: nextStyle,
-    className:
-      [child.props.className, edgeLight ? "wm-pulse-glowSwapHost" : ""].filter(Boolean).join(" ") ||
-      undefined,
-    children: (
-      <>
-        {edgeLight}
-        {child.props.children}
-      </>
-    ),
-  });
+  // Sibling after the card so overflow:hidden children cannot clip the LED.
+  return (
+    <>
+      {children}
+      {edgeLight}
+    </>
+  );
 }
 
 export function shouldScrollPulseNodeIntoView(element: HTMLElement): boolean {

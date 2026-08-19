@@ -1,9 +1,16 @@
-/** Job Mitra | EmployeeWorkVaultCard.tsx | Glass vault card */
+/** Job Mitra | EmployeeWorkVaultCard.tsx | Purple Work Vault home tile */
 
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
-import { HomeGlassCardShell } from "../../../../shared/components/layout/HomeGlassCardShell";
+import { DESIGN_TOKENS } from "../../../../app/theme/designTokens";
+import { DomainCard } from "../../../../shared/components/layout/designDna";
+import {
+  DOMAIN_BY_KEY,
+  domainAccentCssVar,
+  getDomainCopy,
+} from "../../../../shared/config/domainRegistry";
+import { PulseNode } from "../../../pulse/PulseNode";
 
 function VaultIcon() {
   return (
@@ -25,27 +32,34 @@ function VaultIcon() {
 
 export function WorkVaultCard() {
   const nav = useNavigate();
+  const domain = DOMAIN_BY_KEY.vault;
+  const accent = domainAccentCssVar("vault");
   const handleOpen = useCallback(() => {
     nav(ROUTE_PATHS.employeeVaultHome);
   }, [nav]);
 
   return (
-    <HomeGlassCardShell
-      audience="employee"
-      title="My Work Vault"
-      subtitle="Secure work identity"
-      ariaLabel="Open Work Vault"
-      onClick={handleOpen}
-      icon={<VaultIcon />}
-      iconStyle={{
-        background: "color-mix(in srgb, var(--wm-vault-accent, #9333ea) 12%, transparent)",
-        color: "var(--wm-vault-accent, #9333ea)",
-      }}
-      trailing={
-        <span className="wm-homeGlassCard__chevron" aria-hidden="true">
-          →
+    <PulseNode
+      id="employee-home-vault-card"
+      style={{ "--wm-pulse-node-radius": DESIGN_TOKENS.geometry.radiusCard, width: "100%" }}
+    >
+      <DomainCard
+        domain="vault"
+        title={domain.title}
+        subtitle={getDomainCopy("vault", "employee")}
+        ariaLabel={`Open ${domain.title}`}
+        onClick={handleOpen}
+        icon={<VaultIcon />}
+        iconStyle={{
+          background: `color-mix(in srgb, ${accent} 12%, transparent)`,
+          color: accent,
+        }}
+      >
+        <span className="wm-homeVaultChip" aria-hidden="true">
+          <span className="wm-homeVaultChip__dot" />
+          Identity & records
         </span>
-      }
-    />
+      </DomainCard>
+    </PulseNode>
   );
 }

@@ -17,6 +17,7 @@ import {
 import { EmployerVerificationBadges } from "../../../../shared/employerProfile/EmployerVerificationBadges";
 import { resolveEmployerVerificationBadges } from "../../../../shared/employerProfile/employerVerificationBadge.helpers";
 import { ratingStorage } from "../../../../shared/rating/ratingStorage";
+import { JobMitraBrandName } from "../../../../shared/components/brand/BrandName";
 
 const PURPLE = "#7c3aed";
 
@@ -113,7 +114,7 @@ export function PublicProfilePreview({ profile }: PublicProfilePreviewProps) {
             Public trust preview
           </div>
           <p style={{ marginTop: 6, fontSize: 12, color: "var(--wm-er-muted)", lineHeight: 1.5 }}>
-            This is how candidates see your business on Job Mitra.
+            This is how candidates see your business on <JobMitraBrandName size="sm" />.
           </p>
         </div>
         {profile.companyLogo ? (

@@ -1,4 +1,5 @@
 import { employeeCareerRepository, isCareerUuid } from "./career.repository.js";
+import { emitCareerInboxNotification } from "../../notifications/careerNotifications.emit.js";
 import type { AuthUser } from "../../auth/types.js";
 import type {
   CareerApplicationRow,
@@ -129,6 +130,17 @@ export const employeeCareerService = {
       eventType: "application_submitted",
       previousStatus: null,
       newStatus: "pending",
+    });
+
+    void emitCareerInboxNotification({
+      recipientUserId: post.employer_user_id,
+      eventType: "CAREER_APPLICATION_SUBMITTED",
+      title: "New career application received",
+      body: `A candidate applied to ${post.title}.`,
+      route: "/employer/career",
+      postId,
+      appId: application.id,
+      actorRole: "employee",
     });
 
     return { ok: true, application };
@@ -325,6 +337,19 @@ export const employeeCareerService = {
     }
 
     const updated = await employeeCareerRepository.findApplicationById(applicationId);
+    const post = await employeeCareerRepository.findPublishedPostById(application.post_id);
+    if (post) {
+      void emitCareerInboxNotification({
+        recipientUserId: post.employer_user_id,
+        eventType: "CAREER_APPLICATION_REJECTED",
+        title: "Career application withdrawn",
+        body: `A candidate withdrew from ${post.title}.`,
+        route: "/employer/career",
+        postId: application.post_id,
+        appId: applicationId,
+        actorRole: "employee",
+      });
+    }
     return { ok: true, application: updated! };
   },
 

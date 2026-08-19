@@ -11,6 +11,21 @@
   color-scheme: light;
 
   /* ------------------------------------------------ */
+  /* Global Brand Constants (Mitra Labs hierarchy)    */
+  /* Cross-platform lock — do not remix per product.  */
+  /* Mitra = #0f172a (black/slate). Labs = #00a3ff.   */
+  /* Always render via MitraLabsBrandMark + base.css. */
+  /* ------------------------------------------------ */
+  /* UNIVERSAL "MITRA" — never changes logic */
+  --wm-brand-mitra: #0f172a;
+  --wm-brand-mitra-on-dark: #ffffff;
+  --wm-brand-mitra-current: var(--wm-brand-mitra);
+  /* PRODUCT "JOB" accent */
+  --wm-brand-job: #059669;
+  /* PARENT "LABS" accent */
+  --wm-brand-labs: #00a3ff;
+
+  /* ------------------------------------------------ */
   /* Core neutral palette                             */
   /* ------------------------------------------------ */
   --wm-white: #ffffff;
@@ -49,6 +64,7 @@
   --wm-blue-50: #eff6ff;
   --wm-blue-100: #dbeafe;
   --wm-blue-200: #bfdbfe;
+  --wm-blue-500: #3b82f6;
   --wm-blue-600: #1d4ed8;
   --wm-blue-700: #1e40af;
   --wm-blue-800: #1e3a8a;
@@ -74,6 +90,7 @@
   --wm-purple-700: #6d28d9;
 
   --wm-cyan-50: #ecfeff;
+  --wm-teal-50: var(--wm-cyan-50);
   --wm-cyan-600: #0891b2;
   --wm-cyan-700: #0e7490;
   --wm-ocean-600: #0369a1;
@@ -93,6 +110,22 @@
   --wm-career-accent-strong: var(--wm-blue-700);
   --wm-career-accent-soft: rgba(29, 78, 216, 0.1);
   --wm-career-accent-border: rgba(29, 78, 216, 0.18);
+
+  /* Personal Work Diary — light variety of Career blue (never Career royal CTA) */
+  --wm-diary-accent: var(--wm-blue-500);
+  --wm-diary-accent-strong: #2563eb;
+  --wm-diary-accent-soft: rgba(59, 130, 246, 0.12);
+  --wm-diary-accent-border: rgba(59, 130, 246, 0.22);
+  --wm-diary-wash: rgba(59, 130, 246, 0.07);
+  --wm-diary-bg: var(--wm-blue-50);
+  --wm-er-accent-diary: var(--wm-diary-accent);
+
+  /* Employer Dashboard identity — teal / dark emerald (never Career blue) */
+  --wm-dashboard-accent: #0f766e;
+  --wm-dashboard-accent-strong: #115e59;
+  --wm-dashboard-accent-soft: rgba(15, 118, 110, 0.12);
+  --wm-dashboard-accent-border: rgba(15, 118, 110, 0.22);
+  --wm-home-dashboard-accent: var(--wm-dashboard-accent);
   --wm-career-text: var(--wm-neutral-900);
   --wm-career-muted: var(--wm-neutral-600);
   --wm-career-border: rgba(148, 163, 184, 0.18);
@@ -109,6 +142,10 @@
   --wm-workforce-accent-border: rgba(180, 83, 9, 0.18);
 
   --wm-vault-accent: var(--wm-purple-600);
+  --wm-vault-accent-strong: #6d28d9;
+  --wm-vault-accent-soft: rgba(124, 58, 237, 0.1);
+  --wm-vault-accent-border: rgba(124, 58, 237, 0.2);
+  --wm-er-accent-vault: var(--wm-vault-accent);
   --wm-insights-accent: var(--wm-neutral-500);
   --wm-console-accent: var(--wm-ocean-600);
   --wm-rating-accent: var(--wm-amber-600);
@@ -137,7 +174,14 @@
     rgba(255, 255, 255, 0.9) 100%
   );
   --wm-planner-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+
+  /* Mitra Labs — utility / invite / QR (distinct from Shift/Career/Vault/Planner) */
+  --wm-labs-accent: var(--wm-indigo-600);
+  --wm-labs-accent-strong: #4338ca;
+  --wm-labs-accent-soft: rgba(79, 70, 229, 0.1);
+  --wm-labs-accent-border: rgba(79, 70, 229, 0.2);
   --wm-er-accent-planner: var(--wm-planner-accent);
+  --wm-er-accent-labs: var(--wm-labs-accent);
   --wm-er-planner-wash: var(--wm-planner-wash);
   --wm-ee-planner-accent: var(--wm-planner-accent);
   --wm-ee-planner-wash: var(--wm-planner-wash);
@@ -163,11 +207,18 @@
   --wm-emp-border: rgba(148, 163, 184, 0.18);
   --wm-emp-divider: rgba(226, 232, 240, 0.9);
 
-  /* Employee Shift specific */
+  /* Employee Shift specific — accent defaults stay for Shift roots only;
+     do NOT bind global DNA to shift green (leaks across domains). */
   --wm-ee-accent: var(--wm-shift-accent);
   --wm-ee-accent-strong: var(--wm-shift-accent-strong);
   --wm-ee-accent-soft: var(--wm-shift-accent-soft);
   --wm-ee-wash: var(--wm-er-shift-wash);
+
+  /* Shared Domain DNA helpers — neutral until a domain root/variant sets accent.
+     Shadow/border composites are re-declared on domain scopes so accents resolve
+     locally (avoid :root baking shift-green into inherited computed shadows). */
+  --wm-card-domain-accent: var(--wm-neutral-500, #64748b);
+  --wm-domain-surface-inset: inset 0 1px 0 rgba(255, 255, 255, 0.9);
 
   /* ------------------------------------------------ */
   /* Employer light glass command-center theme         */
@@ -265,9 +316,31 @@
   --wm-space-32: 32px;
 
   --wm-stack-gap: var(--wm-space-16);
-  --wm-card-padding: var(--wm-space-16);
+  /* Mobile-first global card chrome (not desktop website sizing) */
+  --wm-card-padding: var(--wm-space-14);
   --wm-card-padding-compact: var(--wm-space-12);
   --wm-card-padding-inset: var(--wm-space-10);
+
+  /* ------------------------------------------------ */
+  /* Design DNA lock — GLOBAL mobile-first card SSOT  */
+  /* ALL primary glass / domain / landing tiles MUST: */
+  /*   padding    → var(--wm-dna-card-padding) = 14px */
+  /*   min-height → var(--wm-dna-card-min-height)=140px */
+  /* Do NOT invent local 16px / 20px / 168px overrides.*/
+  /* ------------------------------------------------ */
+  --wm-dna-card-padding: var(--wm-card-padding);
+  --wm-dna-card-padding-compact: var(--wm-card-padding-compact);
+  --wm-dna-card-min-height: 140px;
+  --wm-dna-card-radius-employee: var(--wm-radius-employee-card);
+  --wm-dna-card-radius-employer: var(--wm-radius-employer-card);
+  --wm-dna-card-title-size: var(--wm-type-card-title-size);
+  --wm-dna-card-helper-size: var(--wm-type-helper-size);
+  --wm-dna-press-scale: 0.95;
+  --wm-dna-active-ring: 1.5px solid color-mix(in srgb, var(--wm-card-domain-accent, #64748b) 55%, transparent);
+  --wm-dna-active-glow:
+    0 0 0 1px color-mix(in srgb, var(--wm-card-domain-accent, #64748b) 28%, transparent),
+    0 10px 28px -6px color-mix(in srgb, var(--wm-card-domain-accent, #64748b) 34%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
 
   /* Prose / hero description width lock (Wave 1 token contract) */
   --wm-prose-max: 410px;
@@ -276,7 +349,7 @@
   --wm-kpi-min-height: 76px;
   --wm-kpi-padding: var(--wm-space-12);
   --wm-kpi-grid-gap: var(--wm-space-8);
-  --wm-seg-min-height: 32px;
+  --wm-seg-min-height: 40px;
   --wm-seg-padding-x: var(--wm-space-12);
 
   /* ------------------------------------------------ */
@@ -338,12 +411,30 @@
   --wm-emp-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
   --wm-emp-surface-shadow: none;
 
-  /* Employer (Mitra Executive): depth and authority */
-  --wm-er-glass-bg: rgba(255, 255, 255, 0.9);
-  --wm-er-glass-bg-strong: rgba(255, 255, 255, 0.9);
-  --wm-er-elevation-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+  /* Employer (Mitra Executive): Obsidian Metallic glass — one tier above Employee frost */
+  --wm-er-obsidian-top: rgba(248, 250, 252, 0.92);
+  --wm-er-obsidian-mid: rgba(226, 232, 240, 0.55);
+  --wm-er-obsidian-deep: rgba(15, 23, 42, 0.06);
+  --wm-er-obsidian-sheen: rgba(255, 255, 255, 0.55);
+  --wm-er-glass-bg: linear-gradient(
+    145deg,
+    var(--wm-er-obsidian-top) 0%,
+    color-mix(in srgb, #e2e8f0 35%, rgba(255, 255, 255, 0.88)) 48%,
+    color-mix(in srgb, #0f172a 4%, rgba(255, 255, 255, 0.9)) 100%
+  );
+  --wm-er-glass-bg-strong: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.94) 0%,
+    color-mix(in srgb, #cbd5e1 28%, rgba(255, 255, 255, 0.9)) 42%,
+    color-mix(in srgb, #0f172a 5%, rgba(241, 245, 249, 0.92)) 100%
+  );
+  --wm-er-elevation-shadow:
+    0 14px 40px rgba(15, 23, 42, 0.1),
+    inset 0 1px 0 var(--wm-er-obsidian-sheen);
   --wm-er-card-shadow: var(--wm-er-elevation-shadow);
   --wm-er-surface-shadow: var(--wm-er-elevation-shadow);
+  --wm-er-card: var(--wm-er-glass-bg-strong);
+  --wm-er-card-strong: var(--wm-er-glass-bg-strong);
 
   /* Composed glass border for translucent surfaces */
   --wm-material-glass-border: 1px solid var(--wm-glass-border);
@@ -411,6 +502,8 @@ html[data-theme="dark"],
 :root[data-theme="dark"] {
   color-scheme: dark;
   --wm-theme-scaffold-dark: 1;
+  /* UNIVERSAL MITRA on dark surfaces */
+  --wm-brand-mitra-current: var(--wm-brand-mitra-on-dark);
   --wm-er-bg-scaffold: #0b1220;
   --wm-er-card-scaffold: rgba(15, 23, 42, 0.92);
   --wm-er-text-scaffold: #e8eef9;

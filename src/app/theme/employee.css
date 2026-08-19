@@ -112,13 +112,6 @@
     background var(--wm-motion-base) var(--wm-motion-spring);
 }
 
-@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .wm-ee-tile {
-    backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
-    -webkit-backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
-  }
-}
-
 .wm-ee-tile:active {
   transform: scale(0.98);
 }
@@ -218,13 +211,6 @@
     box-shadow var(--wm-motion-base) var(--wm-motion-spring),
     border-color var(--wm-motion-base) var(--wm-motion-spring),
     background var(--wm-motion-base) var(--wm-motion-spring);
-}
-
-@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .wm-ee-card {
-    backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
-    -webkit-backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
-  }
 }
 
 .wm-ee-card:hover {

@@ -1,0 +1,200 @@
+/* Candidate Pro Daily OS — pipeline stepper + schedule widget. */
+
+.wm-dailyOs .wm-dashWidget.wm-dailyOsBento {
+  padding: 10px 12px 12px;
+  border-radius: 14px;
+}
+
+.wm-dailyOsBento__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wm-dailyOsBento__head .wm-dashWidget__title {
+  margin: 0;
+  font-size: 14px;
+}
+
+.wm-dailyOsBento__head .wm-dashWidget__sub {
+  margin: 1px 0 0;
+  font-size: 11px;
+}
+
+.wm-dailyOsBentoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+@media (max-width: 360px) {
+  .wm-dailyOsBentoGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.wm-dailyOsBento--planner {
+  background: color-mix(in srgb, var(--wm-planner-accent, #0891b2) 8%, #fff);
+  border-color: color-mix(in srgb, var(--wm-planner-accent, #0891b2) 22%, transparent);
+}
+
+.wm-dailyOsBento--career {
+  background: color-mix(in srgb, var(--wm-career-accent, #2563eb) 6%, #fff);
+  border-color: color-mix(in srgb, var(--wm-career-accent, #2563eb) 20%, transparent);
+}
+
+.wm-dailyOsBento--shift {
+  background: color-mix(in srgb, var(--wm-shift-accent, #16a34a) 6%, #fff);
+  border-color: color-mix(in srgb, var(--wm-shift-accent, #16a34a) 20%, transparent);
+}
+
+.wm-dailyOsBento .wm-ent-empty {
+  margin-top: 8px;
+  padding: 8px 0 2px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.wm-dailyOsBento .wm-ent-skeleton {
+  margin-top: 8px;
+}
+
+.wm-dailyOsBento .wm-ent-error {
+  margin-top: 8px;
+}
+
+.wm-dailyOsStepper {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0;
+  position: relative;
+}
+
+.wm-dailyOsStepper::before {
+  content: "";
+  position: absolute;
+  top: 13px;
+  left: 12%;
+  right: 12%;
+  height: 2px;
+  background: color-mix(in srgb, var(--wm-career-accent, #2563eb) 18%, transparent);
+}
+
+.wm-dailyOsStepper__step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.wm-dailyOsStepper__node {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 2px solid color-mix(in srgb, var(--wm-career-accent, #2563eb) 22%, transparent);
+  background: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--wm-neutral-500, #64748b);
+}
+
+.wm-dailyOsStepper__step.isReached .wm-dailyOsStepper__node {
+  background: color-mix(in srgb, var(--wm-career-accent, #2563eb) 14%, #fff);
+  border-color: var(--wm-career-accent, #2563eb);
+  color: var(--wm-career-accent, #2563eb);
+}
+
+.wm-dailyOsStepper__step.isCurrent .wm-dailyOsStepper__node {
+  background: var(--wm-career-accent, #2563eb);
+  border-color: var(--wm-career-accent, #2563eb);
+  color: #fff;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--wm-career-accent, #2563eb) 22%, transparent);
+}
+
+.wm-dailyOsStepper__name {
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.2;
+  color: var(--wm-neutral-500, #64748b);
+}
+
+.wm-dailyOsStepper__step.isCurrent .wm-dailyOsStepper__name {
+  color: var(--wm-career-accent, #2563eb);
+}
+
+.wm-dailyOsHeat {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.wm-dailyOsHeat__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 2px 7px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--wm-neutral-400, #94a3b8) 28%, transparent);
+  background: color-mix(in srgb, var(--wm-neutral-100, #f1f5f9) 88%, #fff);
+  min-width: 0;
+}
+
+.wm-dailyOsHeat__cell--confirmed {
+  border-color: color-mix(in srgb, var(--wm-shift-accent, #16a34a) 42%, transparent);
+  background: color-mix(in srgb, var(--wm-shift-accent, #16a34a) 14%, #fff);
+}
+
+.wm-dailyOsHeat__day {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--wm-neutral-500, #64748b);
+}
+
+.wm-dailyOsHeat__num {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--wm-neutral-900, #0f172a);
+}
+
+.wm-dailyOsHeat__dot {
+  width: 7px;
+  height: 7px;
+  margin-top: 3px;
+  border-radius: 999px;
+  background: var(--wm-neutral-400, #94a3b8);
+}
+
+.wm-dailyOsHeat__dot.isBooked {
+  background: var(--wm-shift-accent, #16a34a);
+}
+
+.wm-dailyOsHeat__kind {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--wm-neutral-500, #64748b);
+}
+
+.wm-dailyOsHeat__cell--confirmed .wm-dailyOsHeat__kind {
+  color: var(--wm-shift-accent, #16a34a);
+}

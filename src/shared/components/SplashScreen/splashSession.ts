@@ -4,6 +4,9 @@ const SESSION_KEY = "wm_splash_intro_played_v1";
 const REPLAY_EVENT = "wm:splash-replay";
 
 export function shouldPlaySplashIntro(): boolean {
+  if (typeof navigator !== "undefined" && navigator.webdriver) {
+    return false;
+  }
   if (typeof sessionStorage === "undefined") {
     return true;
   }

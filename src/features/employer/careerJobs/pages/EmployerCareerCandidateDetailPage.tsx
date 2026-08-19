@@ -42,7 +42,7 @@ export function EmployerCareerCandidateDetailPage() {
         />
 
         <ReviewCard title="Application unavailable">
-          <BodyText value="This application could not be found in the current local demo data." />
+          <BodyText value="This application could not be found." />
           <button
             className="wm-outlineBtn"
             type="button"

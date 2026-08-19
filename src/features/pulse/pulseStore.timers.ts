@@ -83,6 +83,7 @@ export function scheduleResolvingTrailCleanup(trailIds: readonly string[]): void
 
       persistPulseState({
         chain: [...state.chain],
+        pendingGuidanceRoots: [...state.pendingGuidanceRoots],
         severityByNodeId: state.severityByNodeId,
         activePulses: nextActivePulses,
         activeTrails: nextTrails,

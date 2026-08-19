@@ -17,6 +17,7 @@ export function AppliedCandidateActions({ appId, isBusy, onMoveToShortlist, onRe
       <button
         className="wm-outlineBtn"
         type="button"
+        data-testid="shift-candidate-shortlist"
         onClick={() => onMoveToShortlist(appId)}
         disabled={isBusy}
         style={OUTLINE_BUTTON_STYLE}

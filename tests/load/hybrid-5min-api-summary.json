@@ -1,0 +1,55 @@
+{
+  "harness": "hybrid-5min-background",
+  "durationMs": 300005,
+  "base": "http://127.0.0.1:3001",
+  "logins": {
+    "employer": {
+      "status": 200,
+      "hasSession": true
+    },
+    "employee": {
+      "status": 200,
+      "hasSession": true
+    }
+  },
+  "burst": {
+    "employerVus": 50,
+    "employeeActions": 500
+  },
+  "totals": {
+    "count": 4450,
+    "avgMs": 198.00516440449425,
+    "p95Ms": 365.9511999999995,
+    "http429": 0,
+    "http5xx": 0,
+    "http5xxByPath": {},
+    "transportFail": 0,
+    "statuses": {
+      "200": 4450
+    }
+  },
+  "employer": {
+    "count": 1350,
+    "avgMs": 200.62762244444448,
+    "p95Ms": 246.64280000000144,
+    "http429": 0,
+    "http5xx": 0,
+    "http5xxByPath": {},
+    "transportFail": 0,
+    "statuses": {
+      "200": 1350
+    }
+  },
+  "employee": {
+    "count": 3100,
+    "avgMs": 196.86312622580667,
+    "p95Ms": 377.66239999999925,
+    "http429": 0,
+    "http5xx": 0,
+    "http5xxByPath": {},
+    "transportFail": 0,
+    "statuses": {
+      "200": 3100
+    }
+  }
+}

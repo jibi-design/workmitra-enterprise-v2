@@ -2,10 +2,10 @@
 // File name: ShiftHomeRecentPosts.tsx
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\components\ShiftHomeRecentPosts.tsx
 
-import { PulseNode } from "../../../pulse/PulseNode";
 import { countApplicationsForPost, getPostStatusDisplay } from "../helpers/shiftHomeHelpers";
 import type { ShiftPost } from "../../shiftJobs/storage/employerShift.storage";
 import { IconPlus } from "./ShiftHomeIcons";
+import { ShiftHomeRecentPostMeta } from "./ShiftHomeRecentPostMeta";
 import { shiftHomeRecentPostButton, shiftHomeSectionTitle } from "./ShiftHomeSectionStyles";
 
 type ShiftHomeRecentPostsProps = {
@@ -19,15 +19,13 @@ export function ShiftHomeRecentPosts({ posts, onOpen, onCreate }: ShiftHomeRecen
     return <ShiftHomeNoPostsState onCreate={onCreate} />;
   }
 
-  const pulseTargetPostId = findPulseTargetPostId(posts);
-
   return (
     <div style={{ marginTop: 16, marginBottom: 24 }}>
       <div style={shiftHomeSectionTitle}>Recent Posts</div>
 
       <div style={{ display: "grid", gap: 10 }}>
-        {posts.map((post) => {
-          const postButton = (
+        {posts.map((post) => (
+          <div key={post.id}>
             <button
               type="button"
               className="wm-press-card"
@@ -36,33 +34,11 @@ export function ShiftHomeRecentPosts({ posts, onOpen, onCreate }: ShiftHomeRecen
             >
               <RecentPostButtonContent post={post} />
             </button>
-          );
-
-          if (post.id !== pulseTargetPostId) {
-            return <div key={post.id}>{postButton}</div>;
-          }
-
-          return (
-            <PulseNode
-              key={post.id}
-              id="shift-dashboard-applications"
-              style={{ "--wm-pulse-node-radius": "20px" }}
-            >
-              {postButton}
-            </PulseNode>
-          );
-        })}
+          </div>
+        ))}
       </div>
     </div>
   );
-}
-
-function findPulseTargetPostId(posts: readonly ShiftPost[]): string | undefined {
-  const postWithPendingApplications = posts.find((post) => {
-    return countApplicationsForPost(post.id, "applied") > 0;
-  });
-
-  return postWithPendingApplications?.id ?? posts[0]?.id;
 }
 
 function ShiftHomeNoPostsState({ onCreate }: { onCreate: () => void }) {
@@ -125,22 +101,6 @@ function RecentPostButtonContent({ post }: { post: ShiftPost }) {
 
           {applied > 0 ? <ReviewPendingBadge count={applied} /> : null}
         </div>
-
-        <span
-          style={{
-            padding: "4px 9px",
-            borderRadius: "var(--wm-radius-pill)",
-            background: "rgba(22,163,74,0.08)",
-            border: "1px solid rgba(22,163,74,0.14)",
-            fontSize: 11,
-            fontWeight: 800,
-            color: statusDisplay.color,
-            flexShrink: 0,
-            whiteSpace: "nowrap",
-          }}
-        >
-          {statusDisplay.label}
-        </span>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 6 }}>
@@ -162,27 +122,19 @@ function RecentPostButtonContent({ post }: { post: ShiftPost }) {
         />
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          gap: 8,
-          fontSize: 11,
-          color: "var(--wm-er-muted)",
-        }}
-      >
-        <span>{dateText}</span>
-        <span style={{ fontWeight: 800, color: "var(--wm-er-accent-shift, #16a34a)" }}>
-          {post.payPerDay > 0 ? `${post.payPerDay} / day` : "Pay not set"}
-        </span>
-      </div>
+      <ShiftHomeRecentPostMeta
+        statusLabel={statusDisplay.label}
+        statusColor={statusDisplay.color}
+        dateText={dateText}
+        payText={post.payPerDay > 0 ? `${post.payPerDay} / day` : "Pay not set"}
+      />
     </div>
   );
 }
 
 function ReviewPendingBadge({ count }: { count: number }) {
   return (
-    <span
+    <div
       style={{
         marginTop: 7,
         width: "fit-content",
@@ -200,7 +152,7 @@ function ReviewPendingBadge({ count }: { count: number }) {
         whiteSpace: "nowrap",
       }}
     >
-      <span
+      <div
         aria-hidden="true"
         style={{
           width: 6,
@@ -211,7 +163,7 @@ function ReviewPendingBadge({ count }: { count: number }) {
         }}
       />
       {count} Review{count !== 1 ? "s" : ""} Pending
-    </span>
+    </div>
   );
 }
 

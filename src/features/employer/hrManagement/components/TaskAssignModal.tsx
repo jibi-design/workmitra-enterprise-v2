@@ -138,7 +138,7 @@ export function TaskAssignModal({ open, onClose, onAssign }: TaskAssignModalProp
               type="text"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="e.g. Site B"
+              placeholder="Work location name"
               style={inputStyle}
             />
           </div>

@@ -22,8 +22,20 @@ export type RateLimitClass =
 
 type LimitConfig = { windowMs: number; maxHits: number };
 
+/**
+ * Load-harness exception (temporary certification window).
+ * Enable only on the API process under test:
+ *   WM_LOAD_TEST_RELAX_RATE_LIMIT=1
+ * Never set this in production edge/API without an explicit rollback plan.
+ */
+function isLoadHarnessRateLimitRelaxed(): boolean {
+  const v = (process.env.WM_LOAD_TEST_RELAX_RATE_LIMIT ?? "").trim().toLowerCase();
+  return v === "1" || v === "true" || v === "yes";
+}
+
 const IP_LIMITS: Record<RateLimitClass, LimitConfig> = {
-  auth: { windowMs: 60_000, maxHits: 10 },
+  /** WAVE-5.1 Layer 3 — stricter auth budget (brute-force). */
+  auth: { windowMs: 60_000, maxHits: 5 },
   invite: { windowMs: 60_000, maxHits: 15 },
   shift_confirm: { windowMs: 60_000, maxHits: 20 },
   shift_apply: { windowMs: 60_000, maxHits: 20 },
@@ -33,13 +45,34 @@ const IP_LIMITS: Record<RateLimitClass, LimitConfig> = {
   global: { windowMs: 60_000, maxHits: 120 },
 };
 
+/** Raised ceilings used only when WM_LOAD_TEST_RELAX_RATE_LIMIT is enabled. */
+const LOAD_HARNESS_IP_LIMITS: Record<RateLimitClass, LimitConfig> = {
+  auth: { windowMs: 60_000, maxHits: 50_000 },
+  invite: { windowMs: 60_000, maxHits: 50_000 },
+  shift_confirm: { windowMs: 60_000, maxHits: 50_000 },
+  shift_apply: { windowMs: 60_000, maxHits: 50_000 },
+  shift: { windowMs: 60_000, maxHits: 50_000 },
+  call_initiate: { windowMs: 60_000, maxHits: 50_000 },
+  call: { windowMs: 60_000, maxHits: 50_000 },
+  global: { windowMs: 60_000, maxHits: 200_000 },
+};
+
 const SESSION_LIMITS: Partial<Record<RateLimitClass, LimitConfig>> = {
-  auth: { windowMs: 60_000, maxHits: 8 },
+  auth: { windowMs: 60_000, maxHits: 4 },
   invite: { windowMs: 60_000, maxHits: 10 },
   shift_confirm: { windowMs: 60_000, maxHits: 12 },
   shift_apply: { windowMs: 60_000, maxHits: 12 },
   call_initiate: { windowMs: 60_000, maxHits: 8 },
   call: { windowMs: 60_000, maxHits: 15 },
+};
+
+const LOAD_HARNESS_SESSION_LIMITS: Partial<Record<RateLimitClass, LimitConfig>> = {
+  auth: { windowMs: 60_000, maxHits: 50_000 },
+  invite: { windowMs: 60_000, maxHits: 50_000 },
+  shift_confirm: { windowMs: 60_000, maxHits: 50_000 },
+  shift_apply: { windowMs: 60_000, maxHits: 50_000 },
+  call_initiate: { windowMs: 60_000, maxHits: 50_000 },
+  call: { windowMs: 60_000, maxHits: 50_000 },
 };
 
 const SESSION_COOKIE = "wm_session";
@@ -55,10 +88,19 @@ export function classifyRateLimitPath(pathname: string, method: string): RateLim
   const m = method.toUpperCase();
   const p = pathname;
 
+  // WAVE-5.1 Layer 3 — all auth mutation endpoints share strict auth class.
   if (
-    (m === "POST" && p === "/v1/jobmitra/auth/login") ||
-    (m === "POST" && p === "/v1/jobmitra/auth/supabase-bridge") ||
-    (m === "POST" && p === "/v1/jobmitra/auth/logout")
+    m === "POST" &&
+    (p === "/v1/jobmitra/auth/login" ||
+      p === "/v1/jobmitra/auth/register" ||
+      p === "/v1/jobmitra/auth/forgot-password" ||
+      p === "/v1/jobmitra/auth/reset-password" ||
+      p === "/v1/jobmitra/auth/change-password" ||
+      p === "/v1/jobmitra/auth/logout" ||
+      p === "/v1/jobmitra/auth/supabase-bridge" ||
+      p === "/v1/jobmitra/auth/sessions/revoke-others" ||
+      p === "/v1/jobmitra/auth/switch-context" ||
+      p === "/v1/jobmitra/public/event-day/check-in")
   ) {
     return "auth";
   }
@@ -100,7 +142,8 @@ export type RateLimitResult = {
   blocked: boolean;
   retryAfterSec: number;
   rateClass: RateLimitClass;
-  dimension: "ip" | "session" | "none";
+  /** "store_error" = limiter unavailable — fail-closed (HIGH-02). */
+  dimension: "ip" | "session" | "none" | "store_error";
 };
 
 /**
@@ -123,7 +166,8 @@ export async function applyApiRateLimit(
     })();
   const verb = method ?? req.method ?? "GET";
   const rateClass = classifyRateLimitPath(path, verb);
-  const ipConfig = IP_LIMITS[rateClass];
+  const loadHarness = isLoadHarnessRateLimitRelaxed();
+  const ipConfig = (loadHarness ? LOAD_HARNESS_IP_LIMITS : IP_LIMITS)[rateClass];
   const ip = resolveClientIp(req);
   const store = getRateLimitStore();
 
@@ -132,21 +176,15 @@ export async function applyApiRateLimit(
     ipResult = await store.consume(`ip:${rateClass}:${ip}`, ipConfig.windowMs, ipConfig.maxHits);
   } catch (err) {
     console.error(
-      "[Job Mitra API] rate-limit store error:",
+      "[Job Mitra API] rate-limit store error (fail-closed):",
       err instanceof Error ? err.message : "unknown",
     );
-    // HIGH-2 — fail CLOSED for auth / call initiate; fail-open elsewhere with warning
-    if (rateClass === "auth" || rateClass === "call_initiate") {
-      res.setHeader("Retry-After", "30");
-      res.setHeader("X-RateLimit-Class", rateClass);
-      res.setHeader("X-RateLimit-Dimension", "store_error");
-      return { blocked: true, retryAfterSec: 30, rateClass, dimension: "none" };
-    }
-    console.warn(
-      "[Job Mitra API] rate-limit store error — fail-open for non-sensitive class:",
-      rateClass,
-    );
-    return { blocked: false, retryAfterSec: 0, rateClass, dimension: "none" };
+    // HIGH-02 / STEP 10 — never fail-open when the store is unreachable.
+    res.setHeader("Retry-After", "30");
+    res.setHeader("X-RateLimit-Class", rateClass);
+    res.setHeader("X-RateLimit-Dimension", "store_error");
+    res.setHeader("X-RateLimit-Store", store.name);
+    return { blocked: true, retryAfterSec: 30, rateClass, dimension: "store_error" };
   }
 
   if (ipResult.blocked) {
@@ -164,7 +202,7 @@ export async function applyApiRateLimit(
     };
   }
 
-  const sessionCfg = SESSION_LIMITS[rateClass];
+  const sessionCfg = (loadHarness ? LOAD_HARNESS_SESSION_LIMITS : SESSION_LIMITS)[rateClass];
   const sessionFp = sessionFingerprint(req);
   if (sessionCfg && sessionFp) {
     let sessResult;
@@ -176,21 +214,14 @@ export async function applyApiRateLimit(
       );
     } catch (err) {
       console.error(
-        "[Job Mitra API] rate-limit session store error:",
+        "[Job Mitra API] rate-limit session store error (fail-closed):",
         err instanceof Error ? err.message : "unknown",
       );
-      if (rateClass === "auth" || rateClass === "call_initiate") {
-        res.setHeader("Retry-After", "30");
-        res.setHeader("X-RateLimit-Class", rateClass);
-        res.setHeader("X-RateLimit-Dimension", "store_error");
-        return { blocked: true, retryAfterSec: 30, rateClass, dimension: "none" };
-      }
-      sessResult = {
-        blocked: false,
-        retryAfterSec: 0,
-        remaining: sessionCfg.maxHits,
-        limit: sessionCfg.maxHits,
-      };
+      res.setHeader("Retry-After", "30");
+      res.setHeader("X-RateLimit-Class", rateClass);
+      res.setHeader("X-RateLimit-Dimension", "store_error");
+      res.setHeader("X-RateLimit-Store", store.name);
+      return { blocked: true, retryAfterSec: 30, rateClass, dimension: "store_error" };
     }
     if (sessResult.blocked) {
       res.setHeader("X-RateLimit-Limit", String(sessResult.limit));

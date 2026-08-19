@@ -23,6 +23,7 @@ export async function publishEmployerShiftPost(params: {
     payPerDay: payBasis === "not_listed" ? 0 : clampInt(payPerDay, 0, 1_000_000),
     payBasis: toCreatePayBasis(payBasis),
     locationName: snapshot.locationName.trim(),
+    locationPincode: snapshot.locationPincode.trim(),
     locationAddress: snapshot.locationAddress.trim(),
     distanceKm: 0,
     startAt: snapshot.startAt,
@@ -52,6 +53,7 @@ export async function publishEmployerShiftPost(params: {
     postId,
     startAt: snapshot.startAt,
     endAt: snapshot.endAt,
+    locationPincode: snapshot.locationPincode,
   });
 
   if (draftId) {

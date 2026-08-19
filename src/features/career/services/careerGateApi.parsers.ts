@@ -78,6 +78,7 @@ export function asServerPost(value: unknown): ServerCareerPostDto | null {
     title: typeof value.title === "string" ? value.title : "",
     description: typeof value.description === "string" ? value.description : "",
     location: typeof value.location === "string" ? value.location : null,
+    location_pincode: typeof value.location_pincode === "string" ? value.location_pincode : null,
     status: typeof value.status === "string" ? value.status : "",
     details,
     created_at: created,

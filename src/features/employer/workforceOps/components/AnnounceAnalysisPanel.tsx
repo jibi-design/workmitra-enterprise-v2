@@ -183,8 +183,8 @@ export function AnnounceAnalysisPanel({
                 {group.categoryName}
               </div>
               <div style={{ fontSize: 11, color: "var(--wm-er-muted)" }}>
-                {group.shiftName} Â· {group.selectedCount}/{group.vacancy} selected
-                {group.waitingCount > 0 && ` Â· ${group.waitingCount} waiting`}
+                {group.shiftName} · {group.selectedCount}/{group.vacancy} selected
+                {group.waitingCount > 0 && ` · ${group.waitingCount} waiting`}
               </div>
             </div>
 

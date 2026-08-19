@@ -1,19 +1,28 @@
 // App: Job Mitra / WorkMitra_Enterprise_v2
-// File: LandingRoleHero.tsx
-// Path: C:\projects\WorkMitra_Enterprise_v2\src\features\auth\components\LandingRoleHero.tsx
+// File: LandingRoleHero.tsx — Job Mitra main title + Mitra Labs product tag
 
+import { MitraLabsBrandName } from "../../../shared/components/brand/BrandName";
 import { JobMitraLandingLogo } from "./JobMitraLandingLogo";
 
 export function LandingRoleHero() {
   return (
-    <div className="wm-auth-hero">
-      <div className="wm-auth-hero__logo">
-        <JobMitraLandingLogo size="large" />
+    <div className="wm-auth-hero wm-auth-hero--erDna">
+      <div className="wm-auth-hero__brand">
+        {/* Main title = Job Mitra (brand hierarchy). Welcome stays secondary. */}
+        <h1 className="wm-auth-hero__logo">
+          <JobMitraLandingLogo size="large" />
+        </h1>
+        <p className="wm-auth-hero__productOf">
+          A Product of <MitraLabsBrandName as="span" className="wm-auth-hero__labsMark" />
+        </p>
       </div>
 
-      <h1 className="wm-auth-hero__title">Sign in to your workspace</h1>
-
-      <p className="wm-auth-hero__sub">Select the role that matches your account type.</p>
+      <div className="wm-auth-hero__greeting">
+        <p className="wm-auth-hero__title wm-auth-hero__title--erDna">Welcome</p>
+        <p className="wm-auth-hero__sub wm-auth-hero__sub--erDna">
+          Select your role to continue
+        </p>
+      </div>
     </div>
   );
 }

@@ -1,31 +1,7 @@
-/** PublicLandingDomainStrip — four product pillars */
+/** PublicLandingDomainStrip — Day-1 product pillars from DOMAIN_REGISTRY */
 
-const DOMAINS = [
-  {
-    key: "shift",
-    title: "Shift Jobs",
-    copy: "Browse and fill short-term local work.",
-    tone: "shift",
-  },
-  {
-    key: "career",
-    title: "Career Jobs",
-    copy: "Post and apply for longer-term roles.",
-    tone: "career",
-  },
-  {
-    key: "vault",
-    title: "Work Vault",
-    copy: "Keep work identity and records in one place.",
-    tone: "vault",
-  },
-  {
-    key: "planner",
-    title: "Demand Planner",
-    copy: "Plan upcoming staffing needs ahead of time.",
-    tone: "planner",
-  },
-] as const;
+import { DOMAIN_REGISTRY } from "../../../shared/config/domainRegistry";
+import { MitraLabsBrandName } from "../../../shared/components/brand/BrandName";
 
 export function PublicLandingDomainStrip() {
   return (
@@ -35,10 +11,11 @@ export function PublicLandingDomainStrip() {
         Built around real work domains
       </h2>
       <p className="wm-publicLanding__sectionLead">
-        Shift, Career, Vault, and Planner stay separate so each flow stays clear.
+        Shift, Career, Vault, Planner, and <MitraLabsBrandName size="sm" /> stay separate so each
+        flow stays clear.
       </p>
       <div className="wm-publicLanding__domains">
-        {DOMAINS.map((domain) => (
+        {DOMAIN_REGISTRY.map((domain) => (
           <article
             key={domain.key}
             className={`wm-publicLanding__domain wm-publicLanding__domain--${domain.tone}`}

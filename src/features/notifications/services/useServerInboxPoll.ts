@@ -17,6 +17,7 @@ import {
 } from "../../employee/notifications/services/notificationsGateApi.service";
 import { employeeNotificationsStorage } from "../../employee/notifications/storage/employeeNotifications.storage";
 import { employerNotificationsStorage } from "../../employer/notifications/storage/employerNotifications.storage";
+import type { EmployerNotificationDomain } from "../../employer/notifications/storage/employerNotifications.storage";
 import {
   hydrateShiftApplicationsFromServer,
   hydrateShiftPostsFromServer,
@@ -33,6 +34,20 @@ function isBackendEventType(value: string): value is PulseBackendEventType {
 function readMetaId(meta: Record<string, unknown>, key: string): string | undefined {
   const value = meta[key];
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function toEmployerNotificationDomain(raw: string): EmployerNotificationDomain {
+  if (
+    raw === "career" ||
+    raw === "workforce" ||
+    raw === "employment" ||
+    raw === "hr" ||
+    raw === "console" ||
+    raw === "shift"
+  ) {
+    return raw;
+  }
+  return "shift";
 }
 
 const primedRoles = new Set<PulseAffectedUserRole>();
@@ -105,10 +120,7 @@ export async function pollServerInbox(role: PulseAffectedUserRole): Promise<void
       employerNotificationsStorage.replaceFromHydrate([
         ...items.map((n) => ({
           id: n.id,
-          domain:
-            n.domain === "career" || n.domain === "workforce" || n.domain === "employment"
-              ? n.domain
-              : "shift",
+          domain: toEmployerNotificationDomain(n.domain),
           title: n.title,
           body: n.body || undefined,
           createdAt: n.createdAt,
@@ -179,12 +191,14 @@ export function useServerInboxPoll(role: PulseAffectedUserRole | null): void {
 
     hydrate();
     connect();
+    const pollTimer = window.setInterval(hydrate, 8_000);
     const onWake = () => hydrate();
     window.addEventListener("focus", onWake);
     document.addEventListener("visibilitychange", onWake);
     return () => {
       closed = true;
       window.clearTimeout(reconnectTimer);
+      window.clearInterval(pollTimer);
       socket?.close();
       window.removeEventListener("focus", onWake);
       document.removeEventListener("visibilitychange", onWake);

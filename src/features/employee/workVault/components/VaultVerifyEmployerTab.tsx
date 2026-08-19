@@ -1,10 +1,11 @@
 /** Job Mitra | VaultVerifyEmployerTab.tsx | C:\projects\WorkMitra_Enterprise_v2\src\features\employee\workVault\components\VaultVerifyEmployerTab.tsx */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { EnterpriseEmpty } from "../../../../shared/components/enterprise/EnterpriseEmpty";
 import { EnterpriseSkeleton } from "../../../../shared/components/enterprise/EnterpriseSkeleton";
 import { StatusBadge } from "../../../../shared/components/enterprise/StatusBadge";
 import { TrustStrip } from "../../../../shared/components/enterprise/TrustStrip";
+import { MitraLabsIdLabel } from "../../../../shared/components/brand/MitraLabsIdLabel";
 import {
   getEmployerPublicProfile,
   getEmployerReviews,
@@ -28,7 +29,7 @@ export function VaultVerifyEmployerTab() {
   const [profile, setProfile] = useState<EmployerPublicProfile | null>(null);
   const [reviews, setReviews] = useState<EmployerReview[]>([]);
   const [searched, setSearched] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<ReactNode>("");
   const [loading, setLoading] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -41,7 +42,11 @@ export function VaultVerifyEmployerTab() {
   const handleSearch = useCallback(() => {
     const trimmed = normalizeMlId(jmInput);
     if (!trimmed) {
-      setError("Please enter a Mitra Labs ID");
+      setError(
+        <>
+          Please enter a <MitraLabsIdLabel />
+        </>,
+      );
       setSearched(false);
       setProfile(null);
       setReviews([]);
@@ -49,7 +54,11 @@ export function VaultVerifyEmployerTab() {
     }
 
     if (!isPlausibleMlId(trimmed)) {
-      setError("ID format looks incomplete. Use the employer Mitra Labs ID exactly.");
+      setError(
+        <>
+          ID format looks incomplete. Use the employer <MitraLabsIdLabel /> exactly.
+        </>,
+      );
       setSearched(false);
       setProfile(null);
       setReviews([]);
@@ -91,7 +100,12 @@ export function VaultVerifyEmployerTab() {
         kind="info"
         tone="neutral"
         title="Verify before you apply"
-        message="Look up an employer Mitra Labs ID to review trust level, ratings, and hiring activity."
+        message={
+          <>
+            Look up an employer <MitraLabsIdLabel /> to review trust level, ratings, and hiring
+            activity.
+          </>
+        }
         badgeLabel="Trust check"
       />
 
@@ -106,7 +120,7 @@ export function VaultVerifyEmployerTab() {
 
         <div className="wm-ent-cmd-search">
           <label className="wm-ent-cmd-search-label" htmlFor="vault-verify-ml-id">
-            Mitra Labs ID
+            <MitraLabsIdLabel />
           </label>
           <div className="wm-vault-verify-search__row">
             <input
@@ -156,7 +170,12 @@ export function VaultVerifyEmployerTab() {
         <div className="wm-vault-verify-empty">
           <EnterpriseEmpty
             title="No employer found"
-            subtitle="Check the Mitra Labs ID and try again. Ask the employer for the ID on their company profile."
+            subtitle={
+              <>
+                Check the <MitraLabsIdLabel /> and try again. Ask the employer for the ID on their
+                company profile.
+              </>
+            }
             primaryLabel="Clear search"
             onPrimary={handleClear}
             domain="career"

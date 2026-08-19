@@ -13,11 +13,13 @@
 }
 
 .wm-er-topbar {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
   background:
-    radial-gradient(circle at 50% -80%, rgba(255, 255, 255, 0.96), transparent 68%),
-    rgba(255, 255, 255, 0.85);
-  box-shadow: var(--wm-er-elevation-shadow);
+    radial-gradient(circle at 50% -80%, rgba(255, 255, 255, 0.9), transparent 70%),
+    rgba(255, 255, 255, 0.72);
+  box-shadow:
+    0 8px 24px rgba(15, 23, 42, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
   height: 56px;
   min-height: 56px;
   padding: 0 var(--wm-space-16);
@@ -26,8 +28,8 @@
 
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .wm-er-topbar {
-    backdrop-filter: blur(16px) var(--wm-glass-saturate);
-    -webkit-backdrop-filter: blur(16px) var(--wm-glass-saturate);
+    backdrop-filter: blur(18px) saturate(1.2);
+    -webkit-backdrop-filter: blur(18px) saturate(1.2);
   }
 }
 
@@ -40,7 +42,7 @@
 .wm-er-topbar .wm-title p {
   color: var(--wm-er-muted);
   font-size: 11px;
-  font-weight: 650;
+  font-weight: 600;
 }
 
 .wm-er-topbar .wm-iconbtn {
@@ -211,13 +213,6 @@
     background var(--wm-motion-base) var(--wm-motion-spring);
 }
 
-@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .wm-er-card {
-    backdrop-filter: blur(var(--wm-blur-lg)) var(--wm-glass-saturate);
-    -webkit-backdrop-filter: blur(var(--wm-blur-lg)) var(--wm-glass-saturate);
-  }
-}
-
 .wm-er-card::after {
   content: "";
   position: absolute;
@@ -369,9 +364,19 @@
   --wm-er-wash: rgba(29, 78, 216, 0.08);
 }
 
+.wm-er-vPlanner {
+  --wm-er-accent: var(--wm-er-accent-planner, var(--wm-planner-accent));
+  --wm-er-wash: var(--wm-planner-soft, rgba(8, 145, 178, 0.08));
+}
+
 .wm-er-vWorkforce {
   --wm-er-accent: var(--wm-er-accent-workforce);
   --wm-er-wash: rgba(180, 83, 9, 0.08);
+}
+
+.wm-er-vVault {
+  --wm-er-accent: var(--wm-vault-accent, #7c3aed);
+  --wm-er-wash: rgba(124, 58, 237, 0.08);
 }
 
 /* ------------------------------------------------ */
@@ -383,7 +388,7 @@
   background:
     radial-gradient(circle at 100% 0%, rgba(22, 163, 74, 0.055), transparent 35%), var(--wm-er-card);
   border-radius: var(--wm-radius-employer-card);
-  padding: 16px;
+  padding: var(--wm-dna-card-padding, var(--wm-card-padding, 14px));
   box-shadow: var(--wm-er-card-shadow);
 }
 
@@ -492,7 +497,7 @@
 }
 
 .wm-compHero {
-  padding: 16px;
+  padding: var(--wm-dna-card-padding, var(--wm-card-padding, 14px));
   border-radius: var(--wm-radius-employer-card, 24px);
   border: 1px solid var(--wm-glass-border, rgba(148, 163, 184, 0.28));
   background: var(--wm-er-glass-bg-strong, rgba(255, 255, 255, 0.9));
@@ -610,7 +615,7 @@
 }
 
 .wm-compShelf {
-  padding: 16px;
+  padding: var(--wm-dna-card-padding, var(--wm-card-padding, 14px));
   border-radius: var(--wm-radius-employer-card, 24px);
   border: 1px solid rgba(148, 163, 184, 0.28);
   background: rgba(255, 255, 255, 0.92);
@@ -755,7 +760,7 @@
   display: block;
   width: 100%;
   box-sizing: border-box;
-  padding: 16px;
+  padding: var(--wm-dna-card-padding, var(--wm-card-padding, 14px));
   border-radius: var(--wm-radius-employer-card, 24px);
   border: 1px solid rgba(148, 163, 184, 0.28);
   background: rgba(255, 255, 255, 0.92);

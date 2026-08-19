@@ -43,6 +43,7 @@ export function ShortlistCandidateActions({
         <button
           className="wm-primarybtn"
           type="button"
+          data-testid="shift-candidate-confirm-worker"
           onClick={() => onConfirm(app.id)}
           disabled={isBusy}
           style={PRIMARY_BUTTON_STYLE}

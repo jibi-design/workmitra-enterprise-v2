@@ -13,6 +13,7 @@ export type PlannerPublicIndexEntry = {
   planName: string;
   companyName: string;
   locationName: string;
+  locationPincode?: string;
   category: string;
   experience: ExperienceLabel;
   dayCount: number;
@@ -179,6 +180,7 @@ export const plannerPublicIndex = {
       planName: plan.name,
       companyName: plan.companyName,
       locationName: plan.locationName,
+      locationPincode: plan.locationPincode,
       category: plan.category,
       experience: plan.experience,
       dayCount: slotDates.length,

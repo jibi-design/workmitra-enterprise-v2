@@ -50,7 +50,7 @@ export function EmployeeScheduleSection({ hrCandidateId }: Props) {
       {/* Header */}
       <div style={{ marginBottom: 12 }}>
         <div
-          style={{ fontWeight: 900, fontSize: 14, color: "var(--wm-emp-text, var(--wm-er-text))" }}
+          style={{ fontWeight: "var(--wm-weight-bold, 700)", fontSize: 14, color: "var(--wm-emp-text, var(--wm-er-text))" }}
         >
           My Schedule
         </div>
@@ -94,7 +94,7 @@ export function EmployeeScheduleSection({ hrCandidateId }: Props) {
                   <div
                     style={{
                       fontSize: 9,
-                      fontWeight: 800,
+                      fontWeight: "var(--wm-weight-bold, 700)",
                       color: "#2563eb",
                       textTransform: "uppercase",
                       marginBottom: 1,

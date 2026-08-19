@@ -1,5 +1,5 @@
-/* src/app/theme/components/auth-entry.css
-   Apple-grade auth entry stage — Splash → Role Pick → Login continuity.
+﻿/* src/app/theme/components/auth-entry.css
+   Apple-grade auth entry stage â€” Splash â†’ Role Pick â†’ Login continuity.
    Uses WorkMitra slate + splash teal/royal wash (no purple dialect).
 */
 
@@ -154,10 +154,10 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 12px;
-  min-height: 148px;
+  min-height: var(--wm-dna-card-min-height, 140px);
   min-width: 0;
-  padding: 16px 14px 14px;
-  border-radius: 18px;
+  padding: var(--wm-dna-card-padding, 14px);
+  border-radius: var(--wm-dna-card-radius-employee, 20px);
   border: 1px solid rgba(15, 23, 42, 0.1);
   background: color-mix(in srgb, #ffffff 88%, transparent);
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
@@ -168,7 +168,8 @@
     border-color 180ms var(--wm-auth-ease),
     background 180ms var(--wm-auth-ease),
     box-shadow 180ms var(--wm-auth-ease),
-    transform 160ms var(--wm-auth-ease);
+    opacity 150ms var(--wm-auth-ease),
+    transform 150ms var(--wm-auth-ease);
 }
 
 .wm-auth-role-card:hover {
@@ -189,6 +190,19 @@
   box-shadow:
     0 12px 28px rgba(8, 145, 178, 0.12),
     0 0 0 1px color-mix(in srgb, var(--wm-auth-teal) 22%, transparent);
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Unselected card recedes while a role is chosen (Apple picker pattern). */
+.wm-auth-role-card--dimmed {
+  opacity: 0.6;
+  transform: scale(0.97);
+}
+
+.wm-auth-role-card--dimmed:hover,
+.wm-auth-role-card--dimmed:focus-visible {
+  opacity: 0.82;
 }
 
 .wm-auth-role-card__icon {
@@ -254,7 +268,105 @@
 }
 
 .wm-auth-banner-slot {
-  margin-bottom: 20px;
+  margin-bottom: 14px;
+}
+
+/* Compact returning-workspace strip (STEP 9) â€” secondary to role bento */
+.wm-auth-workspace-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-height: 40px;
+  padding: 8px 10px 8px 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: color-mix(in srgb, #ffffff 72%, transparent);
+  box-shadow: none;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.wm-auth-workspace-strip__meta {
+  margin: 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--wm-neutral-500, #64748b);
+}
+
+.wm-auth-workspace-strip__label {
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 10px;
+}
+
+.wm-auth-workspace-strip__role {
+  font-weight: 600;
+  color: var(--wm-neutral-800, #1e293b);
+  text-transform: capitalize;
+}
+
+.wm-auth-workspace-strip__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.wm-auth-workspace-strip__continue {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #fff;
+  background: var(--wm-neutral-900, #0f172a);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    transform 140ms var(--wm-auth-ease),
+    opacity 140ms var(--wm-auth-ease);
+}
+
+.wm-auth-workspace-strip__continue:hover {
+  opacity: 0.92;
+}
+
+.wm-auth-workspace-strip__continue:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--wm-auth-teal) 70%, #fff);
+  outline-offset: 2px;
+}
+
+.wm-auth-workspace-strip__clear {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wm-neutral-500, #64748b);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.wm-auth-workspace-strip__clear:hover {
+  color: var(--wm-neutral-800, #1e293b);
+}
+
+.wm-auth-workspace-strip__clear:focus-visible {
+  outline: 2px solid rgba(8, 145, 178, 0.45);
+  outline-offset: 2px;
 }
 
 .wm-auth-continue {
@@ -284,6 +396,40 @@
 
 .wm-auth-continue:active {
   transform: scale(0.985);
+}
+
+/* ---------- Role pick: committed exit before route swap ---------- */
+@keyframes wm-auth-commit-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px) scale(1.015);
+  }
+}
+
+.wm-landing-role-pick.is-committing .wm-auth-panel {
+  animation: wm-auth-commit-out 280ms var(--wm-auth-ease) forwards;
+  pointer-events: none;
+}
+
+.wm-landing-role-pick.is-committing .wm-auth-role-card--selected {
+  transform: scale(1.02);
+  box-shadow:
+    0 14px 32px rgba(8, 145, 178, 0.2),
+    0 0 0 1px color-mix(in srgb, var(--wm-auth-teal) 35%, transparent);
+}
+
+.wm-landing-role-pick.is-committing .wm-auth-continue {
+  transform: scale(1.02);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.28);
+}
+
+.wm-landing-role-pick.is-committing .wm-auth-footer {
+  opacity: 0;
+  transition: opacity 200ms var(--wm-auth-ease);
 }
 
 .wm-auth-footer {
@@ -332,6 +478,120 @@
     border-color 160ms var(--wm-auth-ease),
     box-shadow 160ms var(--wm-auth-ease),
     background 160ms var(--wm-auth-ease);
+}
+
+.wm-auth-password {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+.wm-auth-password__input {
+  padding-right: 48px;
+}
+
+.wm-auth-password__toggle {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--wm-neutral-500, #64748b);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.wm-auth-password__toggle:hover {
+  color: var(--wm-neutral-800, #1e293b);
+  background: rgba(15, 23, 42, 0.05);
+}
+
+.wm-auth-password__toggle:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--wm-auth-teal) 70%, #fff);
+  outline-offset: 2px;
+}
+
+.wm-auth-password__toggle:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.wm-auth-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 2px;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.wm-auth-consent__input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  accent-color: var(--wm-neutral-900, #0f172a);
+}
+
+.wm-auth-consent__text {
+  font-size: 12px;
+  font-weight: 550;
+  line-height: 1.45;
+  color: var(--wm-neutral-600, #475569);
+}
+
+.wm-auth-consent__text a {
+  color: var(--wm-neutral-800, #1e293b);
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.wm-auth-consent__text a:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--wm-auth-teal) 70%, #fff);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.wm-auth-footer-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.wm-auth-footer-links__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 2px;
+  color: inherit;
+  text-decoration: none;
+  touch-action: manipulation;
+}
+
+.wm-auth-footer-links__link:hover {
+  color: var(--wm-neutral-700, #334155);
+  text-decoration: underline;
+}
+
+.wm-auth-footer-links__link:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--wm-auth-teal) 70%, #fff);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 .wm-auth-input:hover {
@@ -431,8 +691,13 @@
 }
 
 .wm-auth-nav-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 4px;
   color: var(--wm-neutral-700, #334155);
   text-decoration: none;
+  touch-action: manipulation;
 }
 
 .wm-auth-nav-links a:hover {
@@ -529,8 +794,8 @@ html[data-theme="dark"] .wm-auth-role-card__title,
   }
 
   .wm-auth-role-card {
-    min-height: 136px;
-    padding: 14px 12px 12px;
+    min-height: var(--wm-dna-card-min-height, 140px);
+    padding: var(--wm-dna-card-padding, 14px);
   }
 
   .wm-auth-role-card__desc {
@@ -567,6 +832,20 @@ html[data-theme="dark"] .wm-auth-role-card__title,
     transition: none;
   }
 
+  .wm-auth-role-card--dimmed {
+    transform: none;
+  }
+
+  .wm-landing-role-pick.is-committing .wm-auth-panel {
+    animation: none;
+    opacity: 0;
+  }
+
+  .wm-landing-role-pick.is-committing .wm-auth-role-card--selected,
+  .wm-landing-role-pick.is-committing .wm-auth-continue {
+    transform: none;
+  }
+
   .wm-auth-submit__spinner {
     animation: none;
     border-top-color: rgba(255, 255, 255, 0.85);
@@ -574,6 +853,499 @@ html[data-theme="dark"] .wm-auth-role-card__title,
 
   .wm-auth-continue:active,
   .wm-auth-submit:active:not(:disabled) {
+    transform: none;
+  }
+}
+
+
+/* ============================================================ */
+/* Role-pick Employer DNA — match Employer Home glass finish    */
+/* Scoped under .wm-landing-role-pick--erDna                    */
+/* ============================================================ */
+
+.wm-landing-role-pick--erDna {
+  --wm-auth-hire: #059669;
+  --wm-auth-candidate: #2563eb;
+  --wm-er-glass-bg-strong: rgba(255, 255, 255, 0.9);
+  --wm-er-elevation-shadow: 0 12px 34px -8px rgba(15, 23, 42, 0.1);
+  font-family: "Plus Jakarta Sans", var(--wm-font-sans, system-ui, sans-serif);
+  color: #0f172a;
+}
+
+.wm-landing-role-pick--erDna.wm-auth-stage {
+  background: #f1f5f9;
+}
+
+.wm-landing-role-pick--erDna.wm-auth-stage::before {
+  opacity: 1;
+  background:
+    radial-gradient(60% 50% at 12% 0%, color-mix(in srgb, var(--wm-auth-hire) 14%, transparent), transparent 58%),
+    radial-gradient(55% 45% at 92% 8%, color-mix(in srgb, var(--wm-auth-candidate) 12%, transparent), transparent 55%),
+    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 48%, #eef2f7 100%);
+}
+
+.wm-landing-role-pick--erDna.wm-auth-stage::after {
+  opacity: 0.02;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-panel--erDna {
+  max-width: 560px;
+  padding: 28px 22px 24px;
+  border-radius: 28px;
+  border: 1px solid color-mix(in srgb, #64748b 22%, rgba(255, 255, 255, 0.65));
+  background: var(--wm-er-glass-bg-strong, rgba(255, 255, 255, 0.9));
+  box-shadow:
+    var(--wm-er-elevation-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(22px) saturate(1.35);
+  -webkit-backdrop-filter: blur(22px) saturate(1.35);
+  color: #0f172a;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-hero--erDna {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-hero__brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-hero__logo {
+  margin-bottom: 0;
+  justify-content: flex-start;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-hero__productOf {
+  margin: 0;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35em;
+  max-width: 100%;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.35;
+  color: var(--wm-text-muted, #475569);
+}
+
+.wm-landing-role-pick--erDna .wm-auth-hero__labsMark.wm-brandMark,
+.wm-landing-role-pick--erDna .wm-auth-hero__productOf .wm-brandMark {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-hero__greeting {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--wm-brand-job, #059669) 16%, rgba(148, 163, 184, 0.28));
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--wm-brand-job, #059669) 7%, rgba(255, 255, 255, 0.72)) 0%,
+      color-mix(in srgb, var(--wm-auth-royal, #2563eb) 5%, rgba(255, 255, 255, 0.78)) 48%,
+      rgba(255, 255, 255, 0.7) 100%
+    );
+  box-shadow:
+    0 10px 28px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+}
+
+.wm-landing-role-pick--erDna .wm-auth-hero__title--erDna {
+  margin: 0;
+  font-family: "Plus Jakarta Sans", var(--wm-font-sans, system-ui, sans-serif);
+  font-size: 20px;
+  font-weight: 780;
+  letter-spacing: -0.028em;
+  line-height: 1.2;
+  color: #0f172a;
+  text-align: left;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-hero__sub--erDna {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 550;
+  line-height: 1.35;
+  color: var(--wm-text-muted, #475569);
+}
+
+.wm-landing-role-pick--erDna .wm-auth-bento--erDna {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 2px;
+  margin: -2px;
+}
+
+/* Full-width horizontal role row: icon | title+badge+sub | radio */
+.wm-landing-role-pick--erDna .wm-auth-role-card--erDna {
+  --wm-auth-role-glow: color-mix(in srgb, var(--wm-card-domain-accent, #059669) 18%, transparent);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-height: 0;
+  padding: 16px 20px;
+  text-align: left;
+  position: relative;
+  overflow: visible;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  border-radius: 20px;
+  border: 1.5px solid color-mix(in srgb, #94a3b8 32%, transparent);
+  background:
+    linear-gradient(165deg, rgba(255, 255, 255, 0.94) 0%, rgba(255, 255, 255, 0.82) 100%);
+  box-shadow:
+    0 8px 20px rgba(15, 23, 42, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px) saturate(1.15);
+  -webkit-backdrop-filter: blur(12px) saturate(1.15);
+  transition:
+    border-color 200ms var(--wm-auth-ease),
+    box-shadow 220ms var(--wm-auth-ease),
+    transform 180ms var(--wm-auth-ease),
+    background 220ms var(--wm-auth-ease);
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-card--hire {
+  --wm-card-domain-accent: var(--wm-auth-hire, #059669);
+  --wm-shift-accent: var(--wm-auth-hire, #059669);
+  --wm-er-accent: var(--wm-auth-hire, #059669);
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-card--candidate {
+  --wm-card-domain-accent: var(--wm-auth-candidate, #2563eb);
+  --wm-career-accent: var(--wm-auth-candidate, #2563eb);
+  --wm-er-accent: var(--wm-auth-candidate, #2563eb);
+}
+
+/* Idle — plain brand-neutral border only */
+.wm-landing-role-pick--erDna .wm-auth-role-card--idle {
+  opacity: 1;
+  border-color: color-mix(in srgb, #94a3b8 34%, transparent);
+  box-shadow:
+    0 6px 16px rgba(15, 23, 42, 0.035),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+@media (hover: hover) {
+  .wm-landing-role-pick--erDna .wm-auth-role-card--idle:hover {
+    border-color: color-mix(in srgb, var(--wm-card-domain-accent, #059669) 34%, #94a3b8);
+    box-shadow:
+      0 10px 22px rgba(15, 23, 42, 0.055),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    transform: translateY(-1px);
+  }
+}
+
+/* Selected — premium brand accent glow + strong border */
+.wm-landing-role-pick--erDna .wm-auth-role-card--selected,
+.wm-landing-role-pick--erDna .wm-auth-role-card--erDna.is-active {
+  opacity: 1;
+  border: 1.5px solid color-mix(in srgb, var(--wm-card-domain-accent, #059669) 78%, #0f172a);
+  background:
+    linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--wm-card-domain-accent, #059669) 8%, rgba(255, 255, 255, 0.96)) 0%,
+      rgba(255, 255, 255, 0.9) 55%,
+      rgba(255, 255, 255, 0.86) 100%
+    );
+  box-shadow:
+    0 10px 25px -5px color-mix(in srgb, var(--wm-card-domain-accent, #059669) 18%, transparent),
+    0 16px 34px -12px color-mix(in srgb, var(--wm-card-domain-accent, #059669) 24%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--wm-card-domain-accent, #059669) 18%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-card--erDna .wm-homeGlassCard__icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  margin: 0;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-card--erDna .wm-homeGlassCard__copy {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "title badge"
+    "sub sub";
+  column-gap: 8px;
+  row-gap: 4px;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-card--erDna .wm-homeGlassCard__title {
+  grid-area: title;
+  margin: 0;
+  width: auto;
+  max-width: 100%;
+  padding: 0;
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: #0f172a;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-card--erDna .wm-homeGlassCard__subtitle {
+  grid-area: sub;
+  display: block;
+  margin: 0;
+  width: 100%;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 550;
+  letter-spacing: -0.005em;
+  line-height: 1.35;
+  color: var(--wm-text-muted, #475569);
+  opacity: 1;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-catBadge {
+  grid-area: badge;
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  max-width: 100%;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 9.5px;
+  font-weight: 780;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--wm-card-domain-accent, #059669) 72%, #0f172a);
+  background: color-mix(in srgb, var(--wm-card-domain-accent, #059669) 12%, rgba(255, 255, 255, 0.94));
+  border: 1px solid color-mix(in srgb, var(--wm-card-domain-accent, #059669) 26%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  pointer-events: none;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-card--erDna .wm-homeGlassCard__trailing {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+  align-self: center;
+  overflow: visible;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-selectMark {
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid #94a3b8;
+  background: rgba(255, 255, 255, 0.96);
+  color: transparent;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.06);
+  flex-shrink: 0;
+  transition:
+    border-color 180ms var(--wm-auth-ease),
+    background 180ms var(--wm-auth-ease),
+    box-shadow 200ms var(--wm-auth-ease),
+    color 160ms var(--wm-auth-ease),
+    transform 180ms var(--wm-auth-ease);
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-selectMark.isOn {
+  border-color: transparent;
+  background: var(--wm-card-domain-accent, #059669);
+  color: #ffffff;
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--wm-card-domain-accent, #059669) 22%, transparent),
+    0 6px 16px color-mix(in srgb, var(--wm-card-domain-accent, #059669) 36%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transform: scale(1.04);
+}
+
+.wm-landing-role-pick--erDna .wm-auth-continue--erDna {
+  margin-top: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--wm-auth-continue-accent, var(--wm-auth-hire, #059669)) 92%, #ffffff) 0%,
+    var(--wm-auth-continue-accent, var(--wm-auth-hire, #059669)) 42%,
+    color-mix(in srgb, var(--wm-auth-continue-accent, var(--wm-auth-hire, #059669)) 68%, #0f172a)
+      100%
+  );
+  color: #ffffff;
+  font-family: "Plus Jakarta Sans", var(--wm-font-sans, system-ui, sans-serif);
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  box-shadow:
+    0 14px 32px -8px color-mix(in srgb, var(--wm-auth-continue-accent, var(--wm-auth-hire, #059669)) 42%, transparent),
+    0 8px 16px -6px rgba(15, 23, 42, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  transition:
+    transform 160ms var(--wm-auth-ease),
+    box-shadow 220ms var(--wm-auth-ease),
+    filter 200ms var(--wm-auth-ease),
+    background 200ms var(--wm-auth-ease);
+}
+
+.wm-landing-role-pick--erDna .wm-auth-continue--hire {
+  --wm-auth-continue-accent: var(--wm-auth-hire, #059669);
+}
+
+.wm-landing-role-pick--erDna .wm-auth-continue--candidate {
+  --wm-auth-continue-accent: var(--wm-auth-candidate, #2563eb);
+}
+
+.wm-landing-role-pick--erDna .wm-auth-continue__label {
+  line-height: 1.2;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-continue__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+@media (hover: hover) {
+  .wm-landing-role-pick--erDna .wm-auth-continue--erDna:hover:not(:disabled) {
+    filter: brightness(1.04);
+    box-shadow:
+      0 20px 40px -10px
+        color-mix(in srgb, var(--wm-auth-continue-accent, var(--wm-auth-hire, #059669)) 48%, transparent),
+      0 12px 22px -8px rgba(15, 23, 42, 0.22),
+      inset 0 1px 0 rgba(255, 255, 255, 0.38);
+  }
+}
+
+.wm-landing-role-pick--erDna .wm-auth-continue--erDna:active:not(:disabled) {
+  transform: scale(var(--wm-dna-press-scale, 0.95));
+}
+
+.wm-landing-role-pick--erDna .wm-auth-continue--erDna:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-footer--erDna {
+  margin-top: 22px;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-brand-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  text-align: center;
+  max-width: 100%;
+  margin-inline: auto;
+  padding-inline: 8px;
+  box-sizing: border-box;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-brand-footer--compact .wm-auth-brand-footer__line {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 6px;
+  max-width: 100%;
+  font-size: 11px;
+  font-weight: 550;
+  line-height: 1.35;
+  color: var(--wm-text-muted, #64748b);
+}
+
+.wm-landing-role-pick--erDna .wm-auth-brand-footer__sep {
+  color: var(--wm-text-muted, #94a3b8);
+  font-weight: 500;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-brand-footer--compact .wm-auth-footer-links__link {
+  font-size: inherit;
+  font-weight: 550;
+  color: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.wm-landing-role-pick--erDna.wm-auth-stage .wm-auth-footer a,
+.wm-landing-role-pick--erDna.wm-auth-stage .wm-auth-footer span:not(.wm-brandMark):not(.wm-brandMark__mitra):not(.wm-brandMark__labs):not(.wm-brandMark__sep) {
+  color: var(--wm-text-muted, #64748b) !important;
+}
+
+.wm-landing-role-pick--erDna.wm-auth-stage .wm-auth-footer a:hover {
+  color: #0f172a !important;
+}
+
+.wm-landing-role-pick--erDna.is-committing .wm-auth-panel--erDna {
+  animation: wm-auth-commit-out 280ms var(--wm-auth-ease) forwards;
+}
+
+@media (max-width: 420px) {
+  .wm-landing-role-pick--erDna .wm-auth-bento--erDna {
+    gap: 12px;
+  }
+
+  .wm-landing-role-pick--erDna .wm-auth-role-card--erDna {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wm-landing-role-pick--erDna .wm-auth-role-card--erDna,
+  .wm-landing-role-pick--erDna .wm-auth-continue--erDna,
+  .wm-landing-role-pick--erDna .wm-auth-role-selectMark {
+    transition: none;
+  }
+
+  .wm-landing-role-pick--erDna .wm-auth-role-card--idle:hover {
     transform: none;
   }
 }

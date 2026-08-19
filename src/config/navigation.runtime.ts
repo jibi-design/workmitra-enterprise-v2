@@ -12,7 +12,9 @@ export function resolveDomainNavConfig(domain: NavDomain): DomainConfig {
 
   const base = NAVIGATION_CONFIG[domain];
 
-  if (showPhase2Features && domain === "employeeDefault") {
+  const employeeHomeLike = domain === "employeeDefault" || domain === "diary";
+
+  if (showPhase2Features && employeeHomeLike) {
     const withWorkforce: DomainConfig = {
       ...base,
       items: [
@@ -21,7 +23,7 @@ export function resolveDomainNavConfig(domain: NavDomain): DomainConfig {
           label: "Workforce",
           path: ROUTE_PATHS.employeeWorkforceHome,
           icon: Users,
-          domain: "employeeDefault",
+          domain: domain === "diary" ? "diary" : "employeeDefault",
         },
         base.items[3]!,
       ],
@@ -35,7 +37,7 @@ export function resolveDomainNavConfig(domain: NavDomain): DomainConfig {
           label: "Shift Ops",
           path: ROUTE_PATHS.employeeShiftOpsHub,
           icon: Radio,
-          domain: "employeeDefault",
+          domain: domain === "diary" ? "diary" : "employeeDefault",
         },
       ],
     };
@@ -69,7 +71,7 @@ export function resolveDomainNavConfig(domain: NavDomain): DomainConfig {
     };
   }
 
-  if (showShiftOpsFeatures && domain === "employeeDefault") {
+  if (showShiftOpsFeatures && employeeHomeLike) {
     return {
       ...base,
       items: [
@@ -78,7 +80,7 @@ export function resolveDomainNavConfig(domain: NavDomain): DomainConfig {
           label: "Shift Ops",
           path: ROUTE_PATHS.employeeShiftOpsHub,
           icon: Radio,
-          domain: "employeeDefault",
+          domain: domain === "diary" ? "diary" : "employeeDefault",
         },
       ],
     };

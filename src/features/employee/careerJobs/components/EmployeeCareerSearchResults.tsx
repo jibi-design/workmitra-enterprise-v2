@@ -24,6 +24,7 @@ type EmployeeCareerSearchResultsProps = {
   onOpenApplications: () => void;
   onToggleSaved: (id: string) => void;
   onClearFilters: () => void;
+  onOpenSaved: () => void;
 };
 
 const CAREER_ACCENT = "var(--wm-er-accent-career, #1d4ed8)";
@@ -42,6 +43,7 @@ export function EmployeeCareerSearchResults({
   onOpenApplications,
   onToggleSaved,
   onClearFilters,
+  onOpenSaved,
 }: EmployeeCareerSearchResultsProps) {
   const cleanQuery = query.trim();
 
@@ -125,6 +127,7 @@ export function EmployeeCareerSearchResults({
             hasFilters={hasFilters}
             query={cleanQuery}
             onClearFilters={onClearFilters}
+            onOpenSaved={onOpenSaved}
           />
         ) : (
           posts.map((post) => renderCard(post))
@@ -150,7 +153,7 @@ function getResultHelperText(
   if (count === 0) {
     if (query) return "No jobs matched this search. Try another title or location.";
     if (activeTab === "recent") return "Recently viewed jobs will appear here.";
-    return hasFilters ? "No active roles match these filters." : "No active career roles yet.";
+    return hasFilters ? "No active roles match these filters." : "Empty catalog — no career jobs listed yet.";
   }
   if (activeTab === "saved") return "Open saved jobs and apply from the detail page.";
   if (activeTab === "applied") return "View submitted applications from here.";
@@ -162,19 +165,20 @@ type EmptyCareerResultsProps = {
   hasFilters: boolean;
   query: string;
   onClearFilters: () => void;
+  onOpenSaved: () => void;
 };
 
-function EmptyCareerResults({ hasFilters, query, onClearFilters }: EmptyCareerResultsProps) {
+function EmptyCareerResults({ hasFilters, query, onClearFilters, onOpenSaved }: EmptyCareerResultsProps) {
   return (
     <CareerEmptyState
-      title={query ? "No matching roles found" : "No jobs found"}
+      title={query ? "No matching roles found" : "Empty catalog"}
       subtitle={
         query
-          ? `No results for "${query}". Try different keywords or location.`
-          : "Try different keywords or location"
+          ? `No results for "${query}". Try another title or location.`
+          : "No career jobs are listed yet. When roles appear, save them from each card."
       }
-      ctaLabel={hasFilters ? "Clear filters" : undefined}
-      onCta={hasFilters ? onClearFilters : undefined}
+      ctaLabel={hasFilters ? "Clear filters" : "Save Job"}
+      onCta={hasFilters ? onClearFilters : onOpenSaved}
     />
   );
 }

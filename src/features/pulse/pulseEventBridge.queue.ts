@@ -89,11 +89,11 @@ function emitPulseQueueChanged(): void {
 }
 
 /**
- * AUTH on: cross-role delivery is server inbox + WebSocket pulse (two devices).
- * AUTH off: localStorage queue for E2E/demo on one origin.
+ * PROD AUTH: cross-role delivery is server inbox + WebSocket (no LS queue).
+ * DEV: localStorage queue still fills so same-origin / E2E copy can consume pulse.
  */
 export function queuePulseEventForAffectedUser(payload: GlobalPulseEventPayload): void {
-  if (AUTH_BACKEND_ENABLED) {
+  if (AUTH_BACKEND_ENABLED && import.meta.env.PROD) {
     return;
   }
 

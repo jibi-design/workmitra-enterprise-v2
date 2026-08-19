@@ -12,7 +12,7 @@ type CurrentEmploymentListCardProps = {
 
 const TEXT = "var(--wm-emp-text, var(--wm-er-text, #1e293b))";
 const MUTED = "var(--wm-emp-muted, var(--wm-er-muted, #64748b))";
-const BLUE = "var(--wm-er-accent-console, #0369a1)";
+const BLUE = "var(--wm-diary-accent, #3b82f6)";
 const GREEN = "#15803d";
 
 function getStatusLabel(status: EmploymentRecord["status"]): string {
@@ -34,12 +34,12 @@ export function CurrentEmploymentListCard({
       style={{
         position: "relative",
         overflow: "hidden",
-        border: isPrimary ? "1.5px solid rgba(3,105,161,0.52)" : "1px solid rgba(3,105,161,0.12)",
+        border: isPrimary ? "1.5px solid rgba(59,130,246,0.52)" : "1px solid rgba(59,130,246,0.12)",
         background: isPrimary
           ? "linear-gradient(135deg, rgba(225,245,255,1), rgba(248,253,255,1) 58%, rgba(255,255,255,1))"
           : "#ffffff",
         boxShadow: isPrimary
-          ? "0 16px 34px rgba(3,105,161,0.13)"
+          ? "0 16px 34px rgba(59,130,246,0.13)"
           : "0 8px 18px rgba(15,23,42,0.045)",
       }}
     >
@@ -52,7 +52,7 @@ export function CurrentEmploymentListCard({
             top: 0,
             bottom: 0,
             width: 5,
-            background: "linear-gradient(180deg, #0369a1, #0ea5e9)",
+            background: "linear-gradient(180deg, #3b82f6, #60a5fa)",
           }}
         />
       )}
@@ -74,17 +74,17 @@ export function CurrentEmploymentListCard({
                   marginBottom: 7,
                   padding: "4px 8px",
                   borderRadius: 999,
-                  background: "rgba(3,105,161,0.12)",
+                  background: "rgba(59,130,246,0.12)",
                   color: BLUE,
                   fontSize: 10.5,
-                  fontWeight: 950,
+                  fontWeight: "var(--wm-weight-bold, 700)",
                 }}
               >
                 Shown on Home
               </div>
             )}
 
-            <div style={{ fontSize: 14.5, fontWeight: 950, color: TEXT }}>{record.jobTitle}</div>
+            <div style={{ fontSize: 14.5, fontWeight: "var(--wm-weight-bold, 700)", color: TEXT }}>{record.jobTitle}</div>
 
             <div
               style={{
@@ -111,9 +111,9 @@ export function CurrentEmploymentListCard({
                 background: BLUE,
                 color: "#ffffff",
                 fontSize: 10.5,
-                fontWeight: 950,
+                fontWeight: "var(--wm-weight-bold, 700)",
                 whiteSpace: "nowrap",
-                boxShadow: "0 8px 18px rgba(3,105,161,0.2)",
+                boxShadow: "0 8px 18px rgba(59,130,246,0.2)",
               }}
             >
               Primary
@@ -126,10 +126,10 @@ export function CurrentEmploymentListCard({
             style={{
               padding: "5px 9px",
               borderRadius: 999,
-              background: isPrimary ? "rgba(3,105,161,0.11)" : "rgba(3,105,161,0.07)",
+              background: isPrimary ? "rgba(59,130,246,0.11)" : "rgba(59,130,246,0.07)",
               color: BLUE,
               fontSize: 10.5,
-              fontWeight: 850,
+              fontWeight: "var(--wm-weight-medium, 600)",
             }}
           >
             {getStatusLabel(record.status)}
@@ -143,7 +143,7 @@ export function CurrentEmploymentListCard({
                 background: "rgba(22,163,74,0.1)",
                 color: GREEN,
                 fontSize: 10.5,
-                fontWeight: 850,
+                fontWeight: "var(--wm-weight-medium, 600)",
               }}
             >
               Verified
@@ -158,11 +158,11 @@ export function CurrentEmploymentListCard({
             style={{
               minHeight: 36,
               borderRadius: 12,
-              border: "1px solid rgba(3,105,161,0.18)",
-              background: "rgba(3,105,161,0.07)",
+              border: "1px solid rgba(59,130,246,0.18)",
+              background: "rgba(59,130,246,0.07)",
               color: BLUE,
               fontSize: 12,
-              fontWeight: 900,
+              fontWeight: "var(--wm-weight-bold, 700)",
               cursor: "pointer",
             }}
           >

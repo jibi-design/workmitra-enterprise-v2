@@ -4,21 +4,29 @@ import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { logoutApp, postLogoutRoute } from "../../shared/auth/logoutApp";
 import { ROUTE_PATHS } from "../router/routePaths";
-import { employeeNotificationsStorage } from "../../features/employee/notifications/storage/employeeNotifications.storage";
+import { filterLaunchVisibleEmployeeNotifications } from "../../shared/components/notifications/notificationLaunchFilters";
 import { initEmployeeNotificationService } from "../../features/employee/notifications/helpers/employeeNotificationService";
+import { employeeNotificationsStorage } from "../../features/employee/notifications/storage/employeeNotifications.storage";
 import { employeeProfileStorage } from "../../features/employee/profile/storage/employeeProfile.storage";
 import { AccountMenuSheet } from "../../shared/components/AccountMenuSheet";
 import { jobAlertStorage } from "../../shared/utils/jobAlertStorage";
 import { ConfirmModal, type ConfirmData } from "../../shared/components/ConfirmModal";
 import { usePulseEventBridgeConsumer } from "../../features/pulse/pulseEventBridge";
+import { useServerInboxPoll } from "../../features/notifications/services/useServerInboxPoll";
 import { showPhase2Features } from "../../shared/config/featureFlags";
 import BottomNav from "../../components/layout/BottomNav/BottomNav";
+import { JobMitraBrandName } from "../../shared/components/brand/BrandName";
 import { useThemeBundle } from "./useThemeBundle";
 import { useAppRole } from "../router/guards/useAppRole";
 import { AUTH_BACKEND_ENABLED } from "../../shared/config/authConfig";
 import { RouteGuardLoading } from "../../shared/components/routes/RouteGuardStatus";
 import { useActiveContextSwitch } from "../../shared/auth/useActiveContextSwitch";
 import { useAuthStore } from "../../shared/store/authStore";
+import {
+  CommandPalette,
+  EMPLOYEE_COMMAND_PALETTE_ITEMS,
+  useCommandPaletteHub,
+} from "../../shared/components/enterprise";
 
 function IconBack() {
   return (
@@ -48,11 +56,12 @@ function getInitials(name: string): string {
 }
 
 function useUnreadCount(): number {
-  return useSyncExternalStore(
+  const all = useSyncExternalStore(
     employeeNotificationsStorage.subscribe,
-    employeeNotificationsStorage.getUnreadCount,
-    employeeNotificationsStorage.getUnreadCount,
+    employeeNotificationsStorage.getAll,
+    employeeNotificationsStorage.getAll,
   );
+  return filterLaunchVisibleEmployeeNotifications(all).filter((row) => !row.isRead).length;
 }
 
 function safeCanGoBack(): boolean {
@@ -72,6 +81,7 @@ export function EmployeeShell() {
   const [showSheet, setShowSheet] = useState(false);
   const [logoutConfirm, setLogoutConfirm] = useState<ConfirmData | null>(null);
   const [topbarScrolled, setTopbarScrolled] = useState(false);
+  const { open: commandOpen, close: closeCommandPalette } = useCommandPaletteHub();
   const activeOrgId = useAuthStore((s) => s.user?.activeOrgId ?? null);
   const { requestSwitch, switchConfirm, confirmSwitch, cancelSwitch } =
     useActiveContextSwitch("employee");
@@ -95,6 +105,7 @@ export function EmployeeShell() {
   }, []);
 
   usePulseEventBridgeConsumer(role === "employee" ? "employee" : null);
+  useServerInboxPoll(role === "employee" ? "employee" : null);
 
   useEffect(() => {
     if (role === "employee") jobAlertStorage.checkAlerts();
@@ -197,7 +208,7 @@ export function EmployeeShell() {
             role={isHome ? undefined : "button"}
             tabIndex={isHome ? undefined : 0}
           >
-            <h1>Job Mitra</h1>
+            <JobMitraBrandName as="h1" />
             <p>Your career, your control.</p>
           </div>
         </div>
@@ -270,6 +281,15 @@ export function EmployeeShell() {
       />
 
       <ConfirmModal confirm={switchConfirm} onConfirm={confirmSwitch} onCancel={cancelSwitch} />
+
+      <CommandPalette
+        open={commandOpen}
+        onClose={closeCommandPalette}
+        onNavigate={(path) => nav(path)}
+        items={EMPLOYEE_COMMAND_PALETTE_ITEMS}
+        searchPlaceholder="Search Shift, Career, Vault, Planner…"
+        testId="wm-ent-command-palette-employee"
+      />
     </div>
   );
 }

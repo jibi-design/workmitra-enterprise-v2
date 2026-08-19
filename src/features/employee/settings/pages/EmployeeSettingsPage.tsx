@@ -1,62 +1,48 @@
-// App: Job Mitra / WorkMitra_Enterprise_v2
-// File: EmployeeSettingsPage.tsx (Phase 3 — Premium Settings Dashboard)
+/** Job Mitra | EmployeeSettingsPage.tsx — Pro / Advanced Settings (Module B) */
 
 import { useMemo, useState } from "react";
-import { roleStorage } from "../../../../app/storage/roleStorage";
-import { logoutApp, postLogoutRoute } from "../../../../shared/auth/logoutApp";
-import { purgeUserLocalStateOnLogout } from "../../../../shared/auth/logoutLocalPurge";
-import { DeleteAccountModal } from "../../../../shared/components/DeleteAccountModal";
-import { ExportImportSection } from "../../../../shared/components/ExportImportSection";
+import { useNavigate } from "react-router-dom";
+import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { DomainHero } from "../../../../shared/components/layout/DomainHero";
-import { EmployeeSettingsAboutSection } from "../components/EmployeeSettingsAboutSection";
-import {
-  EmployeeSettingsConfirmDialog,
-  type EmployeeSettingsConfirmState,
-} from "../components/EmployeeSettingsConfirmDialog";
-import { EmployeeSettingsHapticsSection } from "../components/EmployeeSettingsHapticsSection";
-import { EmployeeSettingsHelpLegalSection } from "../components/EmployeeSettingsHelpLegalSection";
+import { DeleteAccountModal } from "../../../../shared/components/DeleteAccountModal";
+import { AccountSecurityPanel } from "../../../../shared/settings/AccountSecurityPanel";
+import { DangerZoneSection } from "../../../../shared/settings/DangerZoneSection";
+import { useAuthStore } from "../../../../shared/store/authStore";
 import {
   EmployeeSettingsNoticeDialog,
   type EmployeeSettingsNotice,
   type EmployeeSettingsNoticeTone,
 } from "../components/EmployeeSettingsNoticeDialog";
-import { EmployeeSettingsNotificationsSection } from "../components/EmployeeSettingsNotificationsSection";
-import { EmployeeSettingsPreferencesSection } from "../components/EmployeeSettingsPreferencesSection";
-import { EmployeeSettingsSecuritySection } from "../components/EmployeeSettingsSecuritySection";
+import { EmployeeSettingsWorkPayoutSection } from "../components/EmployeeSettingsWorkPayoutSection";
+import { EmployeeSettingsPrivacySection } from "../components/EmployeeSettingsPrivacySection";
+import { EmployeeSettingsNotificationControlsSection } from "../components/EmployeeSettingsNotificationControlsSection";
 import {
   employeeSettingsStorage,
   type EmployeeSettings,
 } from "../storage/employeeSettings.storage";
 
+type SettingsTab = "security" | "work" | "privacy" | "notifications";
+
+const TABS: Array<{ id: SettingsTab; label: string }> = [
+  { id: "security", label: "Account & Security" },
+  { id: "work", label: "Work & Payout" },
+  { id: "privacy", label: "Privacy & Compliance" },
+  { id: "notifications", label: "Notifications" },
+];
+
 export function EmployeeSettingsPage() {
+  const nav = useNavigate();
+  const deleteAccountSession = useAuthStore((s) => s.deleteAccountSession);
   const initial = useMemo(() => employeeSettingsStorage.get(), []);
   const [settings, setSettings] = useState<EmployeeSettings>(initial);
-
+  const [tab, setTab] = useState<SettingsTab>("security");
   const [notice, setNotice] = useState<EmployeeSettingsNotice>(null);
-  const [confirm, setConfirm] = useState<EmployeeSettingsConfirmState>(null);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   function openNotice(title: string, message: string, tone: EmployeeSettingsNoticeTone = "info") {
     setNotice({ title, message, tone });
-  }
-
-  function closeNotice() {
-    setNotice(null);
-  }
-  function openConfirm(next: EmployeeSettingsConfirmState) {
-    setConfirm(next);
-  }
-  function closeConfirm() {
-    setConfirm(null);
-  }
-
-  function runConfirmAction() {
-    if (!confirm) return;
-    try {
-      confirm.onConfirm();
-    } finally {
-      setConfirm(null);
-    }
   }
 
   function save(next: EmployeeSettings) {
@@ -65,108 +51,110 @@ export function EmployeeSettingsPage() {
     setSettings(safeNext);
   }
 
-  /** Quiet-hours time inputs — UI immediate, storage/event coalesced (P1-1). */
-  function saveDebounced(next: EmployeeSettings) {
-    const safeNext: EmployeeSettings = { ...next, language: "en" };
-    setSettings(safeNext);
-    employeeSettingsStorage.setDebounced(safeNext);
-  }
-
   function toggle<K extends keyof EmployeeSettings>(key: K) {
     save({ ...settings, [key]: !settings[key] });
   }
 
-  function clearLocalData() {
-    openConfirm({
-      title: "Clear local data on this device?",
-      message:
-        "This will remove vault documents, profile, settings, notifications, shift/career local caches, identity bridge, and the device PII key on this browser.",
-      confirmText: "Clear local data",
-      danger: true,
-      onConfirm: () => {
-        purgeUserLocalStateOnLogout();
-        openNotice("Cleared", "Local data cleared. The app will reload now.", "info");
-        window.setTimeout(() => window.location.reload(), 450);
-      },
-    });
-  }
-
-  function logout() {
-    openConfirm({
-      title: "Logout from this device?",
-      message:
-        "You will be signed out and local vault, profile, and PII caches on this device will be cleared.",
-      confirmText: "Logout",
-      danger: false,
-      onConfirm: () => {
-        void logoutApp().then(() => {
-          window.location.href = postLogoutRoute();
-        });
-      },
-    });
-  }
-
-  function deleteAccount() {
-    setDeleteModalOpen(true);
-  }
-
-  function runDeleteAccount() {
-    setDeleteModalOpen(false);
-    localStorage.clear();
-    roleStorage.clear();
-    window.location.href = "/";
+  async function handleDeleteConfirm(password: string) {
+    setDeleteBusy(true);
+    setDeleteError(null);
+    try {
+      await deleteAccountSession(password);
+      setDeleteOpen(false);
+      nav(ROUTE_PATHS.landing, { replace: true });
+    } catch (err) {
+      const message =
+        err instanceof Error && err.message.trim()
+          ? err.message
+          : "Could not delete account. Check your password and try again.";
+      setDeleteError(message);
+    } finally {
+      setDeleteBusy(false);
+    }
   }
 
   return (
     <div className="wm-stackGrid">
-      {/* Dialogs */}
-      <EmployeeSettingsNoticeDialog notice={notice} onClose={closeNotice} />
-      <EmployeeSettingsConfirmDialog
-        confirm={confirm}
-        onCancel={closeConfirm}
-        onConfirm={runConfirmAction}
-      />
+      <EmployeeSettingsNoticeDialog notice={notice} onClose={() => setNotice(null)} />
+
       <DeleteAccountModal
-        open={deleteModalOpen}
-        onCancel={() => setDeleteModalOpen(false)}
-        onConfirm={runDeleteAccount}
-        deletionMessage="This will permanently remove ALL your data — profile, ratings, work history, documents, and settings."
+        open={deleteOpen}
+        onCancel={() => {
+          if (deleteBusy) return;
+          setDeleteOpen(false);
+          setDeleteError(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        busy={deleteBusy}
+        errorMessage={deleteError}
+        deletionMessage="This will permanently remove your employee profile, shift history, vault data on this account, and settings."
       />
 
-      {/* Premium page header */}
       <DomainHero
         variant="settings"
         audience="employee"
         icon={<SettingsGearIcon />}
-        title="App Settings"
-        subtitle="Notifications, security, and app behaviour"
-        description="Profile fields are managed elsewhere. Use this page for app preferences only."
+        title="Pro / Advanced Settings"
+        subtitle="Security, payout preferences, privacy, and alerts"
+        description="Identity is bound to your signed-in auth session. App preferences save on this device."
       />
 
-      {/* Sections */}
-      <EmployeeSettingsNotificationsSection
-        settings={settings}
-        onSaveDebounced={saveDebounced}
-        onToggle={toggle}
-      />
+      <div
+        role="tablist"
+        aria-label="Advanced settings sections"
+        style={{
+          display: "flex",
+          flexWrap: "nowrap",
+          gap: 8,
+          marginTop: 4,
+          overflowX: "auto",
+          WebkitOverflowScrolling: "touch",
+        }}
+      >
+        {TABS.map((t) => {
+          const active = tab === t.id;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              className={active ? "wm-primarybtn" : "wm-outlineBtn"}
+              onClick={() => setTab(t.id)}
+              style={{ fontSize: 12, padding: "8px 12px" }}
+            >
+              {t.label}
+            </button>
+          );
+        })}
+      </div>
 
-      <EmployeeSettingsHapticsSection settings={settings} onToggle={toggle} />
-
-      <EmployeeSettingsPreferencesSection settings={settings} onSave={save} onToggle={toggle} />
-
-      <EmployeeSettingsSecuritySection
-        settings={settings}
-        onToggle={toggle}
-        onClearLocalData={clearLocalData}
-        onDeleteAccount={deleteAccount}
-        onLogout={logout}
-      />
-
-      <EmployeeSettingsHelpLegalSection />
-
-      <ExportImportSection />
-
-      <EmployeeSettingsAboutSection />
+      <div role="tabpanel" style={{ marginTop: 4 }}>
+        {tab === "security" ? (
+          <>
+            <AccountSecurityPanel
+              variant="employee"
+              onNotice={(title, message, tone) =>
+                openNotice(
+                  title,
+                  message,
+                  tone === "warn" ? "warn" : tone === "success" ? "success" : "info",
+                )
+              }
+            />
+            <DangerZoneSection onDeleteAccount={() => setDeleteOpen(true)} />
+          </>
+        ) : null}
+        {tab === "work" ? (
+          <EmployeeSettingsWorkPayoutSection settings={settings} onSave={save} />
+        ) : null}
+        {tab === "privacy" ? (
+          <EmployeeSettingsPrivacySection settings={settings} onSave={save} onToggle={toggle} />
+        ) : null}
+        {tab === "notifications" ? (
+          <EmployeeSettingsNotificationControlsSection settings={settings} onToggle={toggle} />
+        ) : null}
+      </div>
     </div>
   );
 }

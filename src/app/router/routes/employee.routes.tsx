@@ -2,7 +2,7 @@
 
 import { Navigate, Route } from "react-router-dom";
 import { ROUTE_PATHS } from "../routePaths";
-import { showPhase2Features, showShiftOpsFeatures } from "../../../shared/launch/launchVisibility";
+import { showShiftOpsFeatures } from "../../../shared/launch/launchVisibility";
 import {
   LegacyShiftPlanSummaryRedirect,
   LegacyShiftProjectApplyRedirect,
@@ -25,6 +25,7 @@ import {
   EmployeeDashboardPage,
   EmployeeEarningsPage,
   EmployeeEmploymentDetailPage,
+  PersonalWorkDiaryPage,
   EmployeeGroupWrapper,
   EmployeeHomePage,
   EmployeeNotificationsPage,
@@ -41,12 +42,14 @@ import {
   EmployeeProjectPickApplyPage,
   EmployeeReviewCenterPage,
   EmployeeSettingsPage,
+  EmployeeSwapRequestPage,
   EmployeeTimesheetWrapper,
   EmployeeVaultAccessLogPage,
   EmployeeVaultEditProfilePage,
   EmployeeVaultFolderPage,
   EmployeeVaultHomePage,
   EmployeeVaultOtpPage,
+  EmployeeWeeklyShiftPlannerPage,
   EmployeeWorkforceHomePage,
   MyShiftApplicationsPage,
   MyShiftWorkspacesPage,
@@ -92,7 +95,7 @@ export const employeeRouteTree = (
     </Route>
     <Route
       element={
-        <LaunchModuleBoundary enabled={showPhase2Features} fallback={ROUTE_PATHS.employeeHome} />
+        <LaunchModuleBoundary enabled fallback={ROUTE_PATHS.employeeHome} />
       }
     >
       <Route path={EC.workforce} element={<EmployeeWorkforceHomePage />} />
@@ -128,6 +131,8 @@ export const employeeRouteTree = (
       <Route path={EC.plannerWorkspaceHub} element={<EmployeePlannerWorkspaceHubPage />} />
       <Route path={EC.plannerWorkspace} element={<EmployeePlannerWorkspaceDayPage />} />
       <Route path={EC.plannerEarnings} element={<EmployeePlannerEarningsPage />} />
+      <Route path={EC.shiftPlanner} element={<EmployeeWeeklyShiftPlannerPage />} />
+      <Route path={EC.shiftPlannerSwaps} element={<EmployeeSwapRequestPage />} />
     </Route>
     <Route
       element={
@@ -150,6 +155,7 @@ export const employeeRouteTree = (
     <Route path={EC.vaultOtp} element={<EmployeeVaultOtpPage />} />
     <Route path={EC.vaultAccessLog} element={<EmployeeVaultAccessLogPage />} />
     <Route path={EC.employmentDetail} element={<EmployeeEmploymentDetailPage />} />
+    <Route path={EC.personalWorkDiary} element={<PersonalWorkDiaryPage />} />
     <Route path={EC.profile} element={<EmployeeProfilePage />} />
     <Route path={EC.notifications} element={<EmployeeNotificationsPage />} />
     <Route path={EC.settings} element={<EmployeeSettingsPage />} />
@@ -174,10 +180,7 @@ export const employeeRouteTree = (
         path={EC.shiftOpsReady}
         element={<Navigate to={ROUTE_PATHS.employeeShiftOpsHub} replace />}
       />
-      <Route
-        path={EC.shiftOpsGate}
-        element={<Navigate to={ROUTE_PATHS.employeeShiftOpsHub} replace />}
-      />
+      <Route path={EC.shiftOpsGate} element={<ShiftOpsDualVerifyPage />} />
     </Route>
   </>
 );

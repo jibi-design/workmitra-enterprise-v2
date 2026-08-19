@@ -9,6 +9,9 @@ type Props = {
   locationName: string;
   onLocationName: (v: string) => void;
   locationAutoFilled: boolean;
+  locationPincode: string;
+  onLocationPincode: (v: string) => void;
+  locationPincodeAutoFilled: boolean;
   locationAddress: string;
   onLocationAddress: (v: string) => void;
   mapsLink: string;
@@ -52,13 +55,30 @@ export function ShiftCreateLocationSection(props: Props) {
 
       <div className="wm-field">
         <div className="wm-label">
-          City / Area <span style={{ color: "var(--wm-error)" }}>*</span>
+          Work area code <span style={{ color: "var(--wm-error)" }}>*</span>
+        </div>
+        <input
+          className="wm-input"
+          value={props.locationPincode}
+          onChange={(e) => props.onLocationPincode(e.target.value)}
+          placeholder="Work area code"
+          inputMode="numeric"
+          maxLength={6}
+        />
+        {props.locationPincodeAutoFilled && (
+          <div style={HINT_STYLE}>From your company profile.</div>
+        )}
+      </div>
+
+      <div className="wm-field" style={{ marginTop: 12 }}>
+        <div className="wm-label">
+          Reporting area <span style={{ color: "var(--wm-error)" }}>*</span>
         </div>
         <input
           className="wm-input"
           value={props.locationName}
           onChange={(e) => props.onLocationName(e.target.value)}
-          placeholder="Enter city or area"
+          placeholder="Reporting area"
           maxLength={100}
         />
         {props.locationAutoFilled && <div style={HINT_STYLE}>From your company profile.</div>}

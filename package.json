@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:api": "tsx server/index.ts",
-    "dev:auth": "vite --mode auth",
+    "dev:auth": "vite --mode auth --host",
     "dev:db": "node scripts/with-auth-db-source.mjs server/index.ts",
     "db:migrate": "node scripts/with-auth-db-source.mjs server/db/migrate.ts",
     "db:seed": "node scripts/with-auth-db-source.mjs server/db/seed.ts",
@@ -48,6 +48,7 @@
     "export:context": "node scripts/export-context.js",
     "analyze": "vite-bundle-visualizer",
     "check:security": "npm audit --audit-level=high",
+    "check:brand": "node scripts/assert-brand-name-usage.mjs",
     "check:types": "tsc --noEmit",
     "check:lint": "eslint src --max-warnings 0",
     "check:circular": "madge --circular --extensions ts,tsx src",

@@ -270,6 +270,22 @@ export const workDiaryStorage = {
     return true;
   },
 
+  purgeForEmployments(employmentIds: readonly string[]): void {
+    const ids = new Set(employmentIds.filter((id) => id.trim().length > 0));
+    if (ids.size === 0) return;
+    write(read().filter((entry) => !ids.has(entry.employmentId)));
+    const settings = readSettings();
+    let changed = false;
+    const next = { ...settings };
+    for (const id of ids) {
+      if (id in next) {
+        delete next[id];
+        changed = true;
+      }
+    }
+    if (changed) writeSettings(next);
+  },
+
   toDateKey,
   calculateHours,
 

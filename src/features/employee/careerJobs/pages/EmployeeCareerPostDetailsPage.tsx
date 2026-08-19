@@ -5,6 +5,7 @@
 import { CareerApplicationStatusModals } from "../components/CareerApplicationStatusModals";
 import { CareerApplyForm } from "../components/CareerApplyForm";
 import { CareerApplyQuickQuestions } from "../components/CareerApplyQuickQuestions";
+import { CareerPostDetailHero } from "../components/CareerPostDetailHero";
 import { CareerPostDetailStickyBar } from "../components/CareerPostDetailStickyBar";
 import { CareerPostExpiredBanner } from "../components/CareerPostExpiredBanner";
 import {
@@ -15,7 +16,7 @@ import {
   RequirementsCard,
   ResponsibilitiesCard,
 } from "../components/CareerPostDetailSections";
-import { CareerPostDetailHero } from "../components/CareerPostDetailHero";
+import { ReportPostingControl } from "../../../moderation/ReportPostingControl";
 import { CareerPostUnavailableState } from "../components/CareerPostUnavailableState";
 import { PREMIUM_APPLY_STYLES } from "../helpers/careerPostApplyStyles";
 import { useEmployeeCareerPostDetailsPage } from "../hooks/useEmployeeCareerPostDetailsPage";
@@ -35,17 +36,27 @@ export function EmployeeCareerPostDetailsPage() {
         successOpen={page.showSuccess}
         errorMessage={page.showError}
         withdrawOpen={page.showWithdrawConfirm}
+        applyOpen={page.showApplyConfirm}
         jobTitle={page.post.jobTitle}
         companyName={page.post.companyName}
         onCloseError={() => page.setShowError(null)}
         onCloseWithdraw={() => page.setShowWithdrawConfirm(false)}
         onConfirmWithdraw={page.handleWithdraw}
+        onCloseApply={() => page.setShowApplyConfirm(false)}
+        onConfirmApply={page.handleApply}
       />
 
       <CareerPostDetailHero
         jobTitle={page.post.jobTitle}
         companyName={page.post.companyName}
         department={page.post.department}
+      />
+      <ReportPostingControl
+        domain="career"
+        postId={page.post.id}
+        title={page.post.jobTitle}
+        companyName={page.post.companyName}
+        employerId={page.post.employerId}
       />
 
       {page.isExpired && <CareerPostExpiredBanner />}
@@ -102,7 +113,7 @@ export function EmployeeCareerPostDetailsPage() {
         isSubmitting={page.isSubmitting}
         onBack={page.goSearch}
         onWithdraw={page.requestWithdraw}
-        onApply={page.handleApply}
+        onApply={page.requestApply}
       />
 
       <div style={{ height: 80 }} />

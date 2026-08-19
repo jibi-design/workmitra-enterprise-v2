@@ -133,7 +133,9 @@ export function useEmployeeUrgentPendingHubItems(navigate: NavigateFunction): Pe
     void pendingDismissedRevision;
 
     const employeeId = getCurrentEmployeeId();
-    const careerApps = readCareerAppsForEmployee().filter((app) => app.employeeId === employeeId);
+    const careerApps = readCareerAppsForEmployee().filter(
+      (app) => !app.employeeId || app.employeeId === employeeId,
+    );
     const careerPostMap = new Map(getCareerSearchSnapshot().map((post) => [post.id, post]));
 
     const interviewSources: InterviewRsvpHubSource[] = [];

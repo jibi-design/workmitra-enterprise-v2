@@ -38,7 +38,7 @@ export const COMPLIANCE_SHELVES: readonly {
 }[] = [
   {
     id: "business_verification",
-    title: "Business Verification & Companies House",
+    title: "Business Verification & Company Registration",
     description:
       "CRN pack, registration certificates, and verification evidence for your business.",
   },

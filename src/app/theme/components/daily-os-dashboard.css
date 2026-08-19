@@ -1,0 +1,103 @@
+/* Candidate Pro Daily OS — dense analytics chrome. Token-backed only. */
+
+.wm-dailyOs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wm-dailyOs .wm-dailyOsHead {
+  padding: 8px 12px 10px;
+}
+
+.wm-dailyOs .wm-dailyOsHead .wm-dashHero__back {
+  margin: 0 0 4px;
+}
+
+.wm-dailyOs .wm-dailyOsHead .wm-dashHero__title {
+  margin: 0;
+  font-size: 18px;
+}
+
+.wm-dailyOsHero {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+@media (max-width: 360px) {
+  .wm-dailyOsHero {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: thin;
+  }
+
+  .wm-dailyOsHero__cell {
+    flex: 0 0 140px;
+  }
+}
+
+.wm-dailyOsHero__cell {
+  min-width: 0;
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid var(--wm-glass-border, rgba(148, 163, 184, 0.28));
+  background: var(--wm-emp-glass-bg-strong, rgba(255, 255, 255, 0.92));
+}
+
+.wm-dailyOsHero__cell--shift {
+  background: color-mix(in srgb, var(--wm-shift-accent, #16a34a) 8%, #fff);
+  border-color: color-mix(in srgb, var(--wm-shift-accent, #16a34a) 22%, transparent);
+}
+
+.wm-dailyOsHero__cell--career {
+  background: color-mix(in srgb, var(--wm-career-accent, #2563eb) 8%, #fff);
+  border-color: color-mix(in srgb, var(--wm-career-accent, #2563eb) 22%, transparent);
+}
+
+.wm-dailyOsHero__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  color: var(--wm-shift-accent, #16a34a);
+  background: color-mix(in srgb, var(--wm-shift-accent, #16a34a) 14%, transparent);
+}
+
+.wm-dailyOsHero__icon--career {
+  color: var(--wm-career-accent, #2563eb);
+  background: color-mix(in srgb, var(--wm-career-accent, #2563eb) 14%, transparent);
+}
+
+.wm-dailyOsHero__label {
+  margin-top: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--wm-neutral-500, #64748b);
+}
+
+.wm-dailyOsHero__value {
+  margin-top: 2px;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--wm-neutral-900, #0f172a);
+}
+
+.wm-dailyOsHero__meta {
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--wm-neutral-500, #64748b);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

@@ -10,6 +10,7 @@ import {
   validateShiftForm,
   type ShiftPayBasisDraft,
 } from "../../helpers/shiftCreateHelpers";
+import { sanitizePincodeInput } from "../../../../shared/location/pincode";
 import { employerShiftStorage, type ExperienceLabel } from "../../storage/employerShift.storage";
 import {
   employerShiftDraftStorage,
@@ -55,6 +56,9 @@ export function useEmployerShiftCreateFormFields(requestedDraftId: string) {
   );
   const [locationName, setLocationName] = useState(
     initialDraftForm?.locationName ?? tpl?.locationName ?? autoFill.locationCity,
+  );
+  const [locationPincode, setLocationPincode] = useState(
+    initialDraftForm?.locationPincode ?? autoFill.locationPincode,
   );
   const [locationAddress, setLocationAddress] = useState(initialDraftForm?.locationAddress ?? "");
   const [mapsLink, setMapsLink] = useState(initialDraftForm?.mapsLink ?? "");
@@ -108,13 +112,24 @@ export function useEmployerShiftCreateFormFields(requestedDraftId: string) {
         companyName,
         jobName,
         locationName,
+        locationPincode,
         vacanciesStr,
         payPerDay,
         payBasis,
         startAt,
         endAt,
       }),
-    [companyName, jobName, locationName, vacanciesStr, payPerDay, payBasis, startAt, endAt],
+    [
+      companyName,
+      jobName,
+      locationName,
+      locationPincode,
+      vacanciesStr,
+      payPerDay,
+      payBasis,
+      startAt,
+      endAt,
+    ],
   );
 
   const isValid = errors.length === 0;
@@ -164,6 +179,8 @@ export function useEmployerShiftCreateFormFields(requestedDraftId: string) {
     setShiftTiming,
     locationName,
     setLocationName,
+    locationPincode,
+    setLocationPincode: (value: string) => setLocationPincode(sanitizePincodeInput(value)),
     locationAddress,
     setLocationAddress,
     mapsLink,

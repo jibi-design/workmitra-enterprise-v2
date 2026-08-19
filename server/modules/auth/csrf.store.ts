@@ -1,7 +1,12 @@
 /**
  * Job Mitra | csrf.store.ts
- * HIGH-1 — CSRF tokens in shared store (memory or Upstash via getRateLimitStore).
+ * HIGH-01 — CSRF tokens in shared store (memory or Upstash via getRateLimitStore).
  * Keys are hashed session fingerprints — raw session cookie never stored as Redis key.
+ * Store errors fail closed (validate → false; issue → throw).
+ *
+ * Grace after process restart (single-node memory): double-submit cookie match in
+ * middleware/csrf.ts still accepts wm_csrf === X-CSRF-Token when the session-bound
+ * store entry is gone.
  */
 
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
@@ -16,12 +21,27 @@ function csrfStoreKey(sessionToken: string): string {
 export async function issueCsrfToken(sessionToken: string): Promise<string> {
   const token = randomBytes(32).toString("hex");
   const ttlMs = Math.max(60_000, SESSION_ABSOLUTE_TTL_SEC * 1000);
-  await getRateLimitStore().setKv(csrfStoreKey(sessionToken), token, ttlMs);
+  try {
+    await getRateLimitStore().setKv(csrfStoreKey(sessionToken), token, ttlMs);
+  } catch (err) {
+    console.error(
+      "[Job Mitra API] CSRF store issue failed (fail-closed):",
+      err instanceof Error ? err.message : "unknown",
+    );
+    throw new Error("CSRF_STORE_UNAVAILABLE");
+  }
   return token;
 }
 
 export async function clearCsrfToken(sessionToken: string): Promise<void> {
-  await getRateLimitStore().delKv(csrfStoreKey(sessionToken));
+  try {
+    await getRateLimitStore().delKv(csrfStoreKey(sessionToken));
+  } catch (err) {
+    console.error(
+      "[Job Mitra API] CSRF store clear failed:",
+      err instanceof Error ? err.message : "unknown",
+    );
+  }
 }
 
 export async function validateCsrfToken(
@@ -29,7 +49,16 @@ export async function validateCsrfToken(
   headerToken: string | undefined,
 ): Promise<boolean> {
   if (!sessionToken || !headerToken) return false;
-  const expected = await getRateLimitStore().getKv(csrfStoreKey(sessionToken));
+  let expected: string | null;
+  try {
+    expected = await getRateLimitStore().getKv(csrfStoreKey(sessionToken));
+  } catch (err) {
+    console.error(
+      "[Job Mitra API] CSRF store validate failed (fail-closed):",
+      err instanceof Error ? err.message : "unknown",
+    );
+    return false;
+  }
   if (!expected) return false;
   try {
     const a = Buffer.from(expected, "utf8");

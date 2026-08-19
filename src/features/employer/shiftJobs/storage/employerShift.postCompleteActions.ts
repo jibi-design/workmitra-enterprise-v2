@@ -16,6 +16,7 @@ import { readEmployerPosts, syncToEmployeeSearch } from "./employerShift.postSto
 import { notifyEmployerShiftPostsChanged, safeWrite } from "./employerShift.utils";
 import { getWorkspacesSnapshot, saveWorkspaces } from "./shiftWorkspaceStorage";
 import { enqueueShiftRetry } from "../../../../shared/shift/shiftRetryQueue";
+import { syncCompletedShiftToServer } from "../../../shift/services/syncCompletedShiftToServer";
 
 export type CompletePostSagaResult =
   | { ok: true }
@@ -106,6 +107,8 @@ export function markShiftWorkspaceCompleted(
     });
     postCompleted = postResult.ok;
   }
+
+  void syncCompletedShiftToServer(completedWorkspace, postCompleted);
 
   return { ok: true, postCompleted };
 }

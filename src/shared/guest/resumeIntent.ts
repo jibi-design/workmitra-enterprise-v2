@@ -71,17 +71,24 @@ function fulfillIntentSideEffects(packet: IntentPacket): void {
   }
   if (
     packet.action === "create_draft" ||
+    packet.action === "create_shift" ||
+    packet.action === "create_career" ||
+    packet.action === "create_planner" ||
     packet.action === "apply_shift" ||
-    packet.action === "apply_career"
+    packet.action === "apply_career" ||
+    packet.action === "apply_planner"
   ) {
     try {
+      const kind =
+        packet.action === "apply_career"
+          ? "career_apply"
+          : packet.action === "apply_planner"
+            ? "shift_apply"
+            : packet.action === "apply_shift"
+              ? "shift_apply"
+              : "employer_post";
       guestStorage.upsertDraft({
-        kind:
-          packet.action === "apply_career"
-            ? "career_apply"
-            : packet.action === "create_draft"
-              ? "employer_post"
-              : "shift_apply",
+        kind,
         targetId: packet.targetId,
         payload: packet.payload ?? {},
       });

@@ -29,7 +29,7 @@ export function DemandPlannerStep1({ data, onChange, onNext, errors }: Props) {
           className="wm-input"
           value={data.name}
           onChange={(e) => set("name", e.target.value)}
-          placeholder="e.g. Mall Crew July"
+          placeholder="e.g. Crew plan July"
           maxLength={80}
         />
       </div>

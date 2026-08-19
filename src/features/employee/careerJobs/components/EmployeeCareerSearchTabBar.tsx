@@ -34,6 +34,7 @@ export function EmployeeCareerSearchTabBar({
         <button
           key={tab.id}
           type="button"
+          data-testid={`career-search-tab-${tab.id}`}
           onClick={() => onChange(tab.id)}
           style={{
             padding: "10px 14px",

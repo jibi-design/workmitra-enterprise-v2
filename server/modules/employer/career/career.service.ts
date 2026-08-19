@@ -1,4 +1,5 @@
 import { employerCareerRepository, isCareerUuid } from "./career.repository.js";
+import { resolveCareerPostLocation } from "./career.locationPincode.js";
 import type { AuthUser } from "../../auth/types.js";
 import type {
   CareerApplicationRow,
@@ -8,6 +9,7 @@ import type {
 } from "../../career/types.js";
 import { isLiveCareerStatus } from "../verification/employerMaturity.policy.js";
 import { employerVerificationService } from "../verification/employerVerification.service.js";
+import { emitCareerInboxNotification } from "../../notifications/careerNotifications.emit.js";
 
 export type IssueOfferResult =
   | { ok: true; offer: CareerOfferRow }
@@ -139,13 +141,17 @@ export const employerCareerService = {
     const denied = gateLivePublish(employer, normalized.status);
     if (denied) return denied;
 
+    const located = resolveCareerPostLocation(body, normalized.details);
+    if (!located.ok) return located;
+
     const post = await employerCareerRepository.createPost({
       employerUserId: employer.id,
       title: normalized.title,
       description: normalized.description,
       location: normalized.location,
+      locationPincode: located.locationPincode,
       status: normalized.status,
-      details: normalized.details,
+      details: located.details,
     });
 
     return { ok: true, post };
@@ -177,14 +183,26 @@ export const employerCareerService = {
     const denied = gateLivePublish(employer, normalized.status);
     if (denied) return denied;
 
+    const located = resolveCareerPostLocation(body, {
+      ...normalized.details,
+      locationPincode:
+        (typeof normalized.details.locationPincode === "string"
+          ? normalized.details.locationPincode
+          : null) ||
+        existing.location_pincode ||
+        "",
+    });
+    if (!located.ok) return located;
+
     const post = await employerCareerRepository.updatePost({
       postId,
       employerUserId: employer.id,
       title: normalized.title,
       description: normalized.description,
       location: normalized.location,
+      locationPincode: located.locationPincode,
       status: normalized.status,
-      details: normalized.details,
+      details: located.details,
     });
 
     if (!post) {
@@ -594,6 +612,16 @@ export const employerCareerService = {
     if (!updated) {
       return { ok: false, code: "NOT_FOUND", message: "Application not found", httpStatus: 404 };
     }
+    void emitCareerInboxNotification({
+      recipientUserId: application.applicant_user_id,
+      eventType: "CAREER_EMPLOYEE_SHORTLISTED",
+      title: "Career application shortlisted",
+      body: `You have been shortlisted for ${post.title}.`,
+      route: "/employee/career/applications",
+      postId: application.post_id,
+      appId: applicationId,
+      actorRole: "employer",
+    });
     return { ok: true, application: updated };
   },
 

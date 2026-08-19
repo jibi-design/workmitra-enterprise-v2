@@ -3,6 +3,8 @@
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\pages\ShiftPostDetailsApplyPage.tsx
 
 import { useParams } from "react-router-dom";
+import { useSoftAuth } from "../../../../shared/guest/useSoftAuth";
+import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { ConfirmModal } from "../../../../shared/components/ConfirmModal";
 import { ShiftDirectInviteAcceptCard } from "../components/ShiftDirectInviteAcceptCard";
 import { ShiftDirectInviteSafetyModals } from "../components/ShiftDirectInviteSafetyModals";
@@ -23,12 +25,18 @@ import {
 import { getDirectInviteDateLabelForPost } from "../helpers/shiftDirectInvite.helpers";
 import { useEmployeeDirectInvitePendingFlow } from "../hooks/useEmployeeDirectInvitePendingFlow";
 import { useShiftPostApplyState } from "../hooks/useShiftPostApplyState";
-import { PAGE_STYLE, ShiftPostDetailsApplyHero, getSafeEntityText } from "./shiftPostDetailsApply";
+import { ReportPostingControl } from "../../../moderation/ReportPostingControl";
 import { getEmployerShiftPosts } from "../../../shared/shift/shiftEmployerPublic";
 import { PlannerProjectContextBanner } from "../../planner/components/PlannerProjectContextBanner";
+import {
+  PAGE_STYLE,
+  ShiftPostDetailsApplyHero,
+  getSafeEntityText,
+} from "./shiftPostDetailsApply";
 
 export function ShiftPostDetailsApplyPage() {
   const { postId = "" } = useParams();
+  const { requireAuthForAction } = useSoftAuth();
   const directInviteFlow = useEmployeeDirectInvitePendingFlow();
 
   const {
@@ -71,6 +79,24 @@ export function ShiftPostDetailsApplyPage() {
     openSearch,
   } = useShiftPostApplyState(postId);
 
+  function gatedSubmit() {
+    if (
+      !requireAuthForAction({
+        action: "apply_shift",
+        targetId: postId,
+        returnPath: ROUTE_PATHS.employeeShiftPostDetails.replace(":postId", postId),
+        roleHint: "employee",
+      })
+    ) {
+      return;
+    }
+    submit();
+  }
+
+  function gatedSave() {
+    handleToggleSaved();
+  }
+
   const pendingInvite = directInviteFlow.getPendingInviteForPost(postId);
   const showDirectInviteCard = Boolean(pendingInvite) && !isConfirmed && !isClosedOrExpired;
 
@@ -93,6 +119,12 @@ export function ShiftPostDetailsApplyPage() {
       style={PAGE_STYLE}
     >
       <ShiftPostDetailsApplyHero employerName={employerName} locationName={locationName} />
+      <ReportPostingControl
+        domain="shift"
+        postId={post.id}
+        title={post.jobName}
+        companyName={post.companyName}
+      />
 
       {plannerPlanId ? (
         <PlannerProjectContextBanner
@@ -164,13 +196,14 @@ export function ShiftPostDetailsApplyPage() {
         show={!shouldBlockReapply}
         canSubmit={canSubmit}
         isSubmitting={isSubmitting}
+        isApplied={isApplied}
         isClosedOrExpired={isClosedOrExpired}
         allQuestionsAnswered={allQuestionsAnswered}
         quickQuestionCount={quickQuestions.length}
         submitBlockReason={submitBlockReason}
         isSaved={isSavedShift}
-        onToggleSaved={handleToggleSaved}
-        onSubmit={submit}
+        onToggleSaved={gatedSave}
+        onSubmit={gatedSubmit}
       />
 
       <ShiftToast message={toastMessage} />

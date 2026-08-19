@@ -110,7 +110,7 @@ export function seedCareerPulseQaData(seed: PulseQaCareerSeed): void {
       fullName: "Pulse QA Candidate",
       phone: "9999999999",
       email: "pulse.qa@example.com",
-      location: "Kochi",
+      location: "City A",
       experienceYears: 3,
       skills: ["Customer support", "Operations"],
     },

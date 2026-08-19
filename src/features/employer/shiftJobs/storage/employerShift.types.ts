@@ -44,6 +44,7 @@ export type ShiftPost = {
   payPerDay: number;
   payBasis?: ShiftPayBasis;
   locationName: string;
+  locationPincode?: string;
   locationAddress?: string;
   distanceKm: number;
   startAt: number;
@@ -99,6 +100,8 @@ export type EmployeeShiftApplication = {
   goodToHaveAnswers: Record<string, RequirementAnswer>;
   notes: Record<string, string>;
   withdrawnAt?: number;
+  /** Employee attendance intent (I'll be there) — local + details, not a clock-in. */
+  attendanceConfirmedAt?: number;
   replacedAt?: number;
   replacedReason?: "no_show" | "schedule_change" | "quality_issue" | "other";
   quickAnswers?: Record<string, "yes" | "no">;

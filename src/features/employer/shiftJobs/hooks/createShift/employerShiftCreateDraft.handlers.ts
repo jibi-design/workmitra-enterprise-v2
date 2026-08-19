@@ -6,6 +6,7 @@ import {
 import {
   buildDraftForm,
   hasDraftContent,
+  snapshotFromDraft,
   type ShiftCreateAutoFill,
   type ShiftCreateFormSnapshot,
 } from "./employerShiftCreateDraft.helpers";
@@ -17,6 +18,8 @@ export function createDraftHandlers(params: {
   applyDraftFields: (draft: EmployerShiftPostDraft) => void;
   setDraftId: (id: string | null) => void;
   setLastSavedAt: (ts: number | null) => void;
+  markDraftClean: (snapshot: ShiftCreateFormSnapshot) => void;
+  clearDraftCleanBaseline: () => void;
   setSearchParams: (next: Record<string, string>, opts?: { replace?: boolean }) => void;
   setNotice: (notice: NoticeData | null) => void;
   scrollToForm: () => void;
@@ -28,6 +31,8 @@ export function createDraftHandlers(params: {
     applyDraftFields,
     setDraftId,
     setLastSavedAt,
+    markDraftClean,
+    clearDraftCleanBaseline,
     setSearchParams,
     setNotice,
     scrollToForm,
@@ -36,6 +41,7 @@ export function createDraftHandlers(params: {
   function applyDraft(draft: EmployerShiftPostDraft) {
     applyDraftFields(draft);
     setSearchParams({ draftId: draft.id }, { replace: true });
+    markDraftClean(snapshotFromDraft(draft));
     setNotice({
       title: "Draft loaded",
       message: "Your saved draft is ready to continue.",
@@ -45,7 +51,8 @@ export function createDraftHandlers(params: {
   }
 
   function handleSaveDraft() {
-    const draftForm = buildDraftForm(formSnapshot());
+    const snapshot = formSnapshot();
+    const draftForm = buildDraftForm(snapshot);
 
     if (!hasDraftContent(draftForm, autoFill)) {
       setNotice({
@@ -70,6 +77,7 @@ export function createDraftHandlers(params: {
     setDraftId(result.draft.id);
     setLastSavedAt(result.draft.updatedAt);
     setSearchParams({ draftId: result.draft.id }, { replace: true });
+    markDraftClean(snapshot);
     setNotice({
       title: "Draft saved",
       message: "This shift is saved on this device. It is not visible to workers until published.",
@@ -93,6 +101,7 @@ export function createDraftHandlers(params: {
       setDraftId(null);
       setLastSavedAt(null);
       setSearchParams({}, { replace: true });
+      clearDraftCleanBaseline();
     }
 
     setNotice({

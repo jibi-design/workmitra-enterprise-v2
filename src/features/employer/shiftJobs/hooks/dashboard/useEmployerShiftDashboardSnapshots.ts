@@ -2,7 +2,7 @@
 // File name: useEmployerShiftDashboardSnapshots.ts
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\shiftJobs\hooks\dashboard\useEmployerShiftDashboardSnapshots.ts
 
-import { useMemo, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useSyncExternalStore } from "react";
 import {
   getActivitySnapshot,
   getAppsSnapshot,
@@ -10,6 +10,9 @@ import {
   getWorkspacesSnapshot,
   subscribeDashboard,
 } from "../../helpers/dashboardHelpers";
+import { hydrateEmployerPostApplicationsFromServer } from "../../../../shift/services/shiftDbTruth.service";
+import { isShiftApiSyncEnabled } from "../../../../shift/services/shiftGateApi.service";
+import { shiftPostIdsMatch } from "../../../../shift/utils/shiftIdBridge";
 
 export function useEmployerShiftDashboardSnapshots(postId: string) {
   const posts = useSyncExternalStore(subscribeDashboard, getPostsSnapshot, getPostsSnapshot);
@@ -25,10 +28,18 @@ export function useEmployerShiftDashboardSnapshots(postId: string) {
     getWorkspacesSnapshot,
   );
 
-  const post = useMemo(() => posts.find((item) => item.id === postId) ?? null, [posts, postId]);
+  useEffect(() => {
+    if (!postId || !isShiftApiSyncEnabled()) return;
+    void hydrateEmployerPostApplicationsFromServer(postId);
+  }, [postId]);
+
+  const post = useMemo(
+    () => posts.find((item) => shiftPostIdsMatch(item.id, postId)) ?? null,
+    [posts, postId],
+  );
 
   const apps = useMemo(
-    () => appsAll.filter((application) => application.postId === postId),
+    () => appsAll.filter((application) => shiftPostIdsMatch(application.postId, postId)),
     [appsAll, postId],
   );
 

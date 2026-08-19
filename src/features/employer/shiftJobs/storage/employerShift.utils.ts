@@ -15,6 +15,7 @@ import type {
   ShiftCategory,
   UnknownRecord,
 } from "./employerShift.types";
+import { scopeAppLocalId } from "../../../../shared/identity/constants/idConstants";
 
 export type JsonStorageWriteResult =
   { readonly ok: true } | { readonly ok: false; readonly reason: "storage_error" };
@@ -90,7 +91,8 @@ export function notifyEmployerShiftActivityChanged(): void {
 }
 
 export function createLocalId(prefix: string): string {
-  return `${prefix}_${Math.random().toString(16).slice(2)}_${Date.now().toString(16)}`;
+  const scoped = scopeAppLocalId(prefix);
+  return `${scoped}_${Math.random().toString(16).slice(2)}_${Date.now().toString(16)}`;
 }
 
 export function clampCategory(value: unknown): ShiftCategory {

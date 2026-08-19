@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import {
   E2E_BASE_URL,
   SHIFT_ACTIVE_GREEN_RGB,
@@ -6,9 +6,27 @@ import {
   bootstrapEmployerSession,
   gotoHash,
 } from "./helpers/e2e-bootstrap";
-import { E2E_IDS, seedEmployerShiftDemo } from "./helpers/storage-seed";
+import { seedVerifiedEmployerProfile } from "./helpers/e2e-employer-profile";
+import {
+  E2E_IDS,
+  injectPendingReviewWorkspace,
+  seedEmployeePendingShiftReview,
+  seedEmployerShiftDemo,
+} from "./helpers/storage-seed";
 
 const AVAIL_MY_KEY = "wm_employee_availability_broadcast_v1";
+
+/** Employee home uses the compact banner, not PendingActionsHub. */
+async function expectEmployeeShiftReviewBanner(page: Page) {
+  const banner = page.getByTestId("employee-pending-actions-banner");
+  await expect(banner).toBeVisible({ timeout: 20_000 });
+  const reviewBtn = banner.getByRole("button", { name: /Shift review pending/i });
+  if (!(await reviewBtn.isVisible())) {
+    await banner.getByRole("button", { name: /Maximize pending actions list/i }).click();
+  }
+  await expect(reviewBtn).toBeVisible();
+  return { banner, reviewBtn };
+}
 
 test.describe("Phase 1 — Availability Calendar & Privacy (live UI)", () => {
   test("Test 1 — Employee 7-day calendar: tap Thu + Sat, green active state + auto-save", async ({
@@ -17,10 +35,10 @@ test.describe("Phase 1 — Availability Calendar & Privacy (live UI)", () => {
     test.setTimeout(90_000);
 
     await bootstrapEmployeeSession(page);
-    await gotoHash(page, "/#/employee/shift");
+    await gotoHash(page, "/#/employee/shift-ops");
 
     await expect(page.getByText("My availability — next 7 days")).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByText("Shift Jobs").first()).toBeVisible();
+    await expect(page.getByTestId("shift-ops-control-center-page")).toBeVisible();
 
     const calendar = page.locator('[aria-label="7-day rolling availability calendar"]');
     await expect(calendar).toBeVisible();
@@ -88,6 +106,7 @@ test.describe("Phase 1 — Availability Calendar & Privacy (live UI)", () => {
     });
 
     await bootstrapEmployerSession(page);
+    await seedVerifiedEmployerProfile(page);
     await seedEmployerShiftDemo(page, {
       withAppliedApps: false,
       withPendingReview: false,
@@ -138,6 +157,7 @@ test.describe("Phase 1 — Availability Calendar & Privacy (live UI)", () => {
     const iso = tomorrow.toISOString().slice(0, 10);
 
     await bootstrapEmployerSession(page);
+    await seedVerifiedEmployerProfile(page);
     await seedEmployerShiftDemo(page, {
       withAppliedApps: false,
       availabilityBroadcasts: [
@@ -183,7 +203,7 @@ test.describe("Phase 1 — Availability Calendar & Privacy (live UI)", () => {
       availabilityBroadcasts: [
         {
           workerMlId: "ML-E2E2-CND-AAA2",
-          workerName: "Rahul Kumar",
+          workerName: "Worker A",
           selectedDates: [iso],
         },
       ],
@@ -197,41 +217,39 @@ test.describe("Phase 1 — Availability Calendar & Privacy (live UI)", () => {
     await expect(page.getByText(/Phone: •••• ••••/)).toBeVisible();
   });
 
-  test("Employee role home — pending actions hub visible", async ({ page }) => {
+  test("Employee role home — pending actions banner visible", async ({ page }) => {
     test.setTimeout(90_000);
 
     await bootstrapEmployeeSession(page);
     await gotoHash(page, "/#/employee");
+    await seedEmployeePendingShiftReview(page);
 
-    await expect(page.getByText("Shift Jobs").first()).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByTestId("pending-actions-hub")).toBeVisible();
-    await expect(page.getByText("Pending Actions")).toBeVisible();
+    const { banner } = await expectEmployeeShiftReviewBanner(page);
+    await expect(banner.getByText(/Shift review pending/i)).toBeVisible();
   });
 
   test("Employer role home — pending actions hub visible", async ({ page }) => {
     test.setTimeout(90_000);
 
     await bootstrapEmployerSession(page);
-    await seedEmployerShiftDemo(page, { withAppliedApps: false, withPendingReview: false });
+    await seedVerifiedEmployerProfile(page);
+    await seedEmployerShiftDemo(page, { withAppliedApps: false, withPendingReview: true });
 
     await gotoHash(page, "/#/employer");
-    await expect(page.getByText("Recruitment Hub")).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByTestId("pending-actions-hub")).toBeVisible();
-    await expect(page.getByText("Pending Actions")).toBeVisible();
+    await expect(page.getByTestId("employer-home-launcher")).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByTestId("employer-pending-actions-banner")).toBeVisible();
+    await expect(page.getByText(/Worker review pending/i)).toBeVisible();
   });
 
-  test("Employee shift home — reviews card navigates to review center", async ({ page }) => {
+  test("Employee role home — review banner navigates to review center", async ({ page }) => {
     test.setTimeout(90_000);
 
     await bootstrapEmployeeSession(page);
-    await gotoHash(page, "/#/employee/shift");
+    await gotoHash(page, "/#/employee");
+    await seedEmployeePendingShiftReview(page);
 
-    await expect(page.getByText("Shift Jobs").first()).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByTestId("pending-actions-hub")).toHaveCount(0);
-
-    const reviewsCard = page.getByTestId("shift-employee-reviews-card");
-    await expect(reviewsCard).toBeVisible();
-    await reviewsCard.click();
+    const { reviewBtn } = await expectEmployeeShiftReviewBanner(page);
+    await reviewBtn.click();
 
     await expect(page).toHaveURL(new RegExp(`${E2E_BASE_URL}/#/employee/review-center`));
     await expect(page.getByText(/Review Center/i).first()).toBeVisible();

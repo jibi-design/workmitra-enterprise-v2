@@ -4,6 +4,7 @@ import { hydrateShiftApplicationsFromServer } from "../../../shift/services/shif
 import { isShiftApiSyncEnabled } from "../../../shift/services/shiftGateApi.service";
 import { APPS_KEY, POSTS_KEY, safeArray } from "./shiftSearchHelpers.storage";
 import { upsertAppIntoEmployerScope } from "../../../shared/shift/shiftTenantProjection";
+import { expandShiftPostIdAliases, shiftPostIdsMatch } from "../../../shift/utils/shiftIdBridge";
 
 type ActiveApplicationStatus = "applied" | "shortlisted" | "waiting" | "confirmed";
 
@@ -62,7 +63,9 @@ export function getActiveApplicationPostIds(): Set<string> {
     const status = app["status"];
 
     if (typeof postId === "string" && isActiveApplicationStatus(status)) {
-      postIds.add(postId);
+      for (const alias of expandShiftPostIdAliases(postId)) {
+        postIds.add(alias);
+      }
     }
   }
 
@@ -70,7 +73,8 @@ export function getActiveApplicationPostIds(): Set<string> {
 }
 
 export function isInActiveApplicationFlow(postId: string): boolean {
-  return getActiveApplicationPostIds().has(postId);
+  const active = getActiveApplicationPostIds();
+  return expandShiftPostIdAliases(postId).some((id) => active.has(id));
 }
 
 export function isQuickApplyEnabled(): boolean {
@@ -91,7 +95,8 @@ export function quickApply(postId: string): boolean {
   const apps = safeArray(APPS_KEY);
   const alreadyApplied = apps.some(
     (a) =>
-      a["postId"] === postId &&
+      typeof a["postId"] === "string" &&
+      shiftPostIdsMatch(String(a["postId"]), postId) &&
       ACTIVE_APPLICATION_STATUSES.has(a["status"] as ActiveApplicationStatus),
   );
   if (alreadyApplied) return false;
@@ -131,7 +136,8 @@ export function isAlreadyApplied(postId: string): boolean {
   const apps = safeArray(APPS_KEY);
   return apps.some(
     (a) =>
-      a["postId"] === postId &&
+      typeof a["postId"] === "string" &&
+      shiftPostIdsMatch(String(a["postId"]), postId) &&
       ACTIVE_APPLICATION_STATUSES.has(a["status"] as ActiveApplicationStatus),
   );
 }

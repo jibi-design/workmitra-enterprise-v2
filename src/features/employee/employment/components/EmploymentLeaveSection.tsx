@@ -28,7 +28,7 @@ export function EmploymentLeaveSection({ hrCandidateId, onApplyLeave }: Props) {
         }}
       >
         <div
-          style={{ fontWeight: 900, fontSize: 14, color: "var(--wm-emp-text, var(--wm-er-text))" }}
+          style={{ fontWeight: "var(--wm-weight-bold, 700)", fontSize: 14, color: "var(--wm-emp-text, var(--wm-er-text))" }}
         >
           Leave
         </div>
@@ -48,7 +48,7 @@ export function EmploymentLeaveSection({ hrCandidateId, onApplyLeave }: Props) {
         <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(0,0,0,0.05)" }}>
           <div
             style={{
-              fontWeight: 900,
+              fontWeight: "var(--wm-weight-bold, 700)",
               fontSize: 13,
               color: "var(--wm-emp-text, var(--wm-er-text))",
               marginBottom: 8,
@@ -71,7 +71,7 @@ export function EmploymentLeaveSection({ hrCandidateId, onApplyLeave }: Props) {
                 border: "none",
                 cursor: "pointer",
                 fontSize: 12,
-                fontWeight: 800,
+                fontWeight: "var(--wm-weight-bold, 700)",
                 color: "#2563eb",
               }}
             >

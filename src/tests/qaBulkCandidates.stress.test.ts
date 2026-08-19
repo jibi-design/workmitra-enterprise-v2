@@ -99,6 +99,7 @@ describe("QA Stress — 50 bulk candidates", () => {
       postId: QA_BULK_POST_ID,
       startAt,
       endAt: startAt + 8 * 3_600_000,
+      locationPincode: "670001",
     });
     const ms = performance.now() - t0;
 

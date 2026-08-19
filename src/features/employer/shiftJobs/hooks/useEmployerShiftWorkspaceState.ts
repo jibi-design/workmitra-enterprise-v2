@@ -17,6 +17,7 @@ import {
   hasWorkspaceEmployerRating,
   type WorkspaceDraft,
 } from "./useEmployerShiftWorkspaceState.types";
+import { useShiftWorkspaceMessageSync } from "../../../shift/services/workspaceMessageSync.service";
 
 export type { WorkspaceDraft };
 
@@ -35,6 +36,8 @@ export function useEmployerShiftWorkspaceState() {
     () => all.find((item) => item.id === workspaceId) ?? null,
     [all, workspaceId],
   );
+
+  useShiftWorkspaceMessageSync("employer");
 
   const employerMlId = useMemo(() => {
     const profile = employerSettingsStorage.get();

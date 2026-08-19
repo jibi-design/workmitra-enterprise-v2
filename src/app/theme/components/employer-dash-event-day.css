@@ -1,0 +1,104 @@
+/* Employer dashboard — Event day coach + entry proof log. Token-backed. */
+
+.wm-erEventDayCoach {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wm-space-8, 8px);
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--wm-radius-16, 16px);
+  border: 1px solid color-mix(in srgb, var(--wm-dashboard-accent, #0f766e) 28%, transparent);
+  background: color-mix(in srgb, var(--wm-dashboard-accent, #0f766e) 8%, #fff);
+}
+
+.wm-erEventDayCoach__title {
+  margin: 0;
+  font-size: var(--wm-font-sm, 12px);
+  font-weight: 800;
+  color: var(--wm-dashboard-accent, #0f766e);
+}
+
+.wm-erEventDayCoach__body {
+  margin: 0;
+  font-size: var(--wm-font-sm, 12px);
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--wm-er-text, #0f172a);
+}
+
+.wm-erEventDayCoach__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--wm-space-8, 8px);
+}
+
+.wm-erDashAuditEmpty {
+  margin-top: var(--wm-space-16, 16px);
+}
+
+.wm-erDashSecurity {
+  margin-top: var(--wm-space-16, 16px);
+}
+
+.wm-erDashSecurity__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--wm-space-12, 12px);
+}
+
+.wm-erDashSecurity__block {
+  padding: 14px;
+  border: 1px solid var(--wm-er-border, #e2e8f0);
+  border-radius: var(--wm-radius-16, 16px);
+  background: #fff;
+}
+
+.wm-erDashSecurity__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--wm-er-text, #0f172a);
+}
+
+.wm-erDashSecurity__sub {
+  margin: 6px 0 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--wm-er-muted, #64748b);
+}
+
+.wm-erDashAuditList {
+  list-style: none;
+  margin: var(--wm-space-16, 16px) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wm-erDashAuditList__item {
+  padding: 10px 12px;
+  border: 1px solid var(--wm-er-border, #e2e8f0);
+  border-radius: 12px;
+  background: var(--wm-er-surface-muted, #f8fafc);
+  text-align: left;
+}
+
+.wm-erDashAuditList__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--wm-er-text, #0f172a);
+}
+
+.wm-erDashAuditList__meta {
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--wm-er-muted, #64748b);
+}
+
+@media (max-width: 900px) {
+  .wm-erDashSecurity__grid {
+    grid-template-columns: 1fr;
+  }
+}

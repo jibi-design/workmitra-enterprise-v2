@@ -1,9 +1,14 @@
-/** Job Mitra | CurrentEmploymentCard.tsx — Personal Work Diary (Locked / Active) */
+/** Job Mitra | CurrentEmploymentCard.tsx — Home Personal Work Diary entry
+ *
+ * Opens `/employee/personal-work-diary` (restored calendar content).
+ * Never opens Workplace Hub. Metrics from original work diary store when employed.
+ */
 
 import { useCallback, useMemo, useSyncExternalStore } from "react";
-import type { KeyboardEvent, MouseEvent } from "react";
+import type { KeyboardEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { HOME_LAYOUT_INSPECTION } from "../../../../shared/config/homeLayoutInspection";
 import { employmentLifecycleStorage } from "../../employment/storage/employmentLifecycle.storage";
 import { workDiaryStorage } from "../../employment/storage/workDiary.storage";
 import {
@@ -22,22 +27,11 @@ import {
 } from "./CurrentEmploymentCard.helpers";
 import {
   ActiveMetricPill,
-  CAREER_BLUE,
-  CAREER_BLUE_DEEP,
-  IconWrap,
   LockedMetricPill,
   NotebookIcon,
   ShiftCalendarChips,
-  SLATE_400,
-  SLATE_500,
 } from "./CurrentEmploymentCard.parts";
-import {
-  getCardStyle,
-  METRICS_ROW_STYLE,
-  OPEN_BUTTON_STYLE,
-  TAP_HINT_STYLE,
-  TITLE_STYLE,
-} from "./CurrentEmploymentCard.styles";
+import { DIARY_BLUE } from "../../employment/helpers/diaryTheme";
 
 export function CurrentEmploymentCard() {
   const nav = useNavigate();
@@ -65,8 +59,11 @@ export function CurrentEmploymentCard() {
     getPersonalCalendarShiftActiveSnapshot,
     getPersonalCalendarShiftActiveSnapshot,
   );
-  const isActive = employment !== null;
+
+  const hasRealEmployment = employment !== null;
+  const forceVisible = HOME_LAYOUT_INSPECTION;
   const hasShiftCalendar = shiftBlocks.length > 0;
+  const showActiveChrome = hasRealEmployment || forceVisible || hasShiftCalendar;
 
   const metrics = useMemo(
     () => (employment ? getPersonalDiaryDisplayMetrics(employment.id) : null),
@@ -79,118 +76,98 @@ export function CurrentEmploymentCard() {
   );
 
   const handleOpen = useCallback(() => {
-    if (!employment) return;
-    nav(ROUTE_PATHS.employeeEmploymentDetail.replace(":employmentId", employment.id));
-  }, [employment, nav]);
-
-  const handleBtn = useCallback(
-    (event: MouseEvent) => {
-      event.stopPropagation();
-      handleOpen();
-    },
-    [handleOpen],
-  );
+    nav(ROUTE_PATHS.employeePersonalWorkDiary);
+  }, [nav]);
 
   const handleKey = useCallback(
     (event: KeyboardEvent) => {
-      if (!isActive) return;
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         handleOpen();
       }
     },
-    [handleOpen, isActive],
+    [handleOpen],
   );
+
+  const statusLine = hasRealEmployment && employment
+    ? `${employment.companyName} · ${employment.jobTitle} · ${durationLabel}`
+    : forceVisible
+      ? "Demo Partner Co · Warehouse Supervisor · Preview"
+      : hasShiftCalendar
+        ? `${shiftBlocks.length} confirmed shift day${shiftBlocks.length !== 1 ? "s" : ""} synced.`
+        : "Accept a job offer to unlock your diary.";
+
+  const displayMetrics = hasRealEmployment
+    ? metrics
+    : forceVisible
+      ? { trackedHours: 0, tasks: 0, notes: 0 }
+      : null;
+
+  const bannerClass = [
+    "wm-homeDiaryBanner",
+    "wm-press-card",
+    "wm-homeCardEnter",
+    "wm-homeCardEnter--4",
+    showActiveChrome ? "wm-homeDiaryBanner--active" : "wm-homeDiaryBanner--locked",
+  ].join(" ");
 
   return (
     <section
+      className={bannerClass}
       data-testid="employee-current-employment-card"
-      data-employment-active={isActive ? "true" : "false"}
-      data-diary-state={isActive ? "active" : "locked"}
-      style={getCardStyle(isActive)}
-      role={isActive ? "button" : "region"}
-      tabIndex={isActive ? 0 : undefined}
-      onClick={isActive ? handleOpen : undefined}
-      onKeyDown={isActive ? handleKey : undefined}
-      aria-label={
-        isActive
-          ? "Open personal work diary"
-          : "Personal work diary — locked until you accept a job offer"
-      }
+      data-employment-active={hasRealEmployment ? "true" : "false"}
+      data-diary-state={showActiveChrome ? "active" : "locked"}
+      data-diary-module="personal-work-diary"
+      role="button"
+      tabIndex={0}
+      onClick={handleOpen}
+      onKeyDown={handleKey}
+      aria-label="Open Personal Work Diary"
     >
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
-        <IconWrap isActive={isActive}>
-          <NotebookIcon color={isActive ? CAREER_BLUE : SLATE_400} />
-        </IconWrap>
+      <div className="wm-homeDiaryBanner__top">
+        <div
+          className="wm-homeDiaryBanner__icon"
+          style={{
+            background: showActiveChrome
+              ? "color-mix(in srgb, var(--wm-diary-accent, #3b82f6) 14%, transparent)"
+              : "rgba(148, 163, 184, 0.12)",
+            color: showActiveChrome ? DIARY_BLUE : "#94a3b8",
+            border: showActiveChrome
+              ? "1px solid color-mix(in srgb, var(--wm-diary-accent, #3b82f6) 22%, transparent)"
+              : "1px solid rgba(226, 232, 240, 0.9)",
+          }}
+        >
+          <NotebookIcon color="currentColor" />
+        </div>
 
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={TITLE_STYLE}>Personal Work Diary</div>
+        <div className="wm-homeDiaryBanner__copy">
+          <h2 className="wm-homeDiaryBanner__title wm-typeCardTitle">Personal Work Diary</h2>
+          <p className="wm-homeDiaryBanner__status wm-typeHelper">{statusLine}</p>
+          <p className="wm-homeDiaryBanner__desc wm-typeHelper">
+            Private tracker for hours, earnings, and notes.
+          </p>
+        </div>
+      </div>
 
-          {isActive && employment && metrics ? (
+      <div className="wm-homeDiaryMetrics" aria-label="Personal diary metrics">
+        <div className="wm-homeDiaryMetrics__pills">
+          {displayMetrics ? (
             <>
-              <div
-                style={{
-                  marginTop: 5,
-                  fontSize: 12.5,
-                  fontWeight: 600,
-                  color: CAREER_BLUE_DEEP,
-                  lineHeight: 1.35,
-                }}
-              >
-                {employment.companyName} · {employment.jobTitle} · {durationLabel}
-              </div>
-              <div style={{ marginTop: 4, fontSize: 12, color: SLATE_500, lineHeight: 1.45 }}>
-                Track your hours, earnings, and personal notes — private to you.
-              </div>
+              <ActiveMetricPill label="Attendance" value={displayMetrics.trackedHours} />
+              <ActiveMetricPill label="Tasks" value={displayMetrics.tasks} />
+              <ActiveMetricPill label="Notices" value={displayMetrics.notes} />
             </>
           ) : (
             <>
-              <div style={{ marginTop: 4, fontSize: 12.5, color: SLATE_500, lineHeight: 1.45 }}>
-                Track your hours, earnings, and personal notes.
-              </div>
-              <div
-                style={{
-                  marginTop: 8,
-                  fontSize: 11.5,
-                  color: SLATE_400,
-                  fontWeight: 500,
-                  lineHeight: 1.4,
-                }}
-              >
-                {hasShiftCalendar
-                  ? `${shiftBlocks.length} confirmed shift day${shiftBlocks.length !== 1 ? "s" : ""} synced to your calendar.`
-                  : "Accept a job offer to unlock your diary."}
-              </div>
+              <LockedMetricPill label="Attendance" />
+              <LockedMetricPill label="Tasks" />
+              <LockedMetricPill label="Notices" />
             </>
           )}
         </div>
-
-        {isActive ? (
-          <button type="button" onClick={handleBtn} style={OPEN_BUTTON_STYLE}>
-            Open
-          </button>
-        ) : null}
-      </div>
-
-      <div style={METRICS_ROW_STYLE} aria-label="Personal diary metrics">
-        {isActive && metrics ? (
-          <>
-            <ActiveMetricPill label="Attendance" value={metrics.trackedHours} />
-            <ActiveMetricPill label="Tasks" value={metrics.tasks} />
-            <ActiveMetricPill label="Notices" value={metrics.notes} />
-          </>
-        ) : (
-          <>
-            <LockedMetricPill label="Attendance" />
-            <LockedMetricPill label="Tasks" />
-            <LockedMetricPill label="Notices" />
-          </>
-        )}
       </div>
 
       {hasShiftCalendar ? <ShiftCalendarChips blocks={shiftBlocks} /> : null}
-
-      {isActive ? <div style={TAP_HINT_STYLE}>Tap to open your private work diary</div> : null}
     </section>
   );
 }

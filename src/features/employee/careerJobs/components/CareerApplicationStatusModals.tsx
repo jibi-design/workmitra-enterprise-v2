@@ -8,11 +8,14 @@ type CareerApplicationStatusModalsProps = {
   successOpen: boolean;
   errorMessage: string | null;
   withdrawOpen: boolean;
+  applyOpen?: boolean;
   jobTitle: string;
   companyName: string;
   onCloseError: () => void;
   onCloseWithdraw: () => void;
   onConfirmWithdraw: () => void;
+  onCloseApply?: () => void;
+  onConfirmApply?: () => void;
 };
 
 const CAREER_MUTED = "#64748b";
@@ -21,11 +24,14 @@ export function CareerApplicationStatusModals({
   successOpen,
   errorMessage,
   withdrawOpen,
+  applyOpen = false,
   jobTitle,
   companyName,
   onCloseError,
   onCloseWithdraw,
   onConfirmWithdraw,
+  onCloseApply,
+  onConfirmApply,
 }: CareerApplicationStatusModalsProps) {
   return (
     <>
@@ -80,6 +86,26 @@ export function CareerApplicationStatusModals({
               style={{ background: "var(--wm-error)" }}
             >
               Withdraw
+            </button>
+          </div>
+        </div>
+      </CenterModal>
+      <CenterModal open={applyOpen} onBackdropClose={onCloseApply} ariaLabel="Submit application">
+        <div style={{ padding: 24 }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: "var(--wm-career-text, #0f172a)" }}>
+            Submit this application?
+          </div>
+          <div style={{ fontSize: 14, color: CAREER_MUTED, marginTop: 8, lineHeight: 1.6 }}>
+            You are about to apply for <b>{formatDisplayTitle(jobTitle)}</b> at <b>{companyName}</b>.
+            The employer will see your profile and answers. You can withdraw later if you are no
+            longer available.
+          </div>
+          <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 24 }}>
+            <button className="wm-outlineBtn" type="button" onClick={onCloseApply}>
+              Cancel
+            </button>
+            <button className="wm-primarybtn" type="button" onClick={onConfirmApply}>
+              Yes, submit
             </button>
           </div>
         </div>

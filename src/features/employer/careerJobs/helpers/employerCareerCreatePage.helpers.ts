@@ -30,6 +30,23 @@ export function formatNoticePeriodForConfirm(req: StepRequirementsData): string 
   return `${days} day${days === 1 ? "" : "s"}`;
 }
 
+export function isEmployerCareerCreateDirty(
+  basic: StepBasicData,
+  req: StepRequirementsData,
+  screeningCount: number,
+  defaults: Pick<StepBasicData, "companyName" | "location">,
+): boolean {
+  if (screeningCount > 0) return true;
+  if (basic.jobTitle.trim() || basic.department.trim() || basic.locationPincode.trim()) return true;
+  if (basic.vacancies.trim()) return true;
+  if (basic.companyName.trim() !== defaults.companyName.trim()) return true;
+  if (basic.location.trim() !== defaults.location.trim()) return true;
+  if (basic.jobType !== "full-time" || basic.workMode !== "on-site") return true;
+  if (req.description.trim() || req.salaryMin.trim() || req.skills.trim()) return true;
+  if (req.salaryMax.trim() || req.qualifications.trim() || req.responsibilities.trim()) return true;
+  return false;
+}
+
 export function normalizeStep(value: number): number {
   if (value < 1) return 1;
   if (value > 4) return 4;

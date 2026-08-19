@@ -1,0 +1,136 @@
+﻿{
+  "title": "Final Authenticated Load Benchmark Audit Report",
+  "status": "LOCKED",
+  "lockedAt": "2026-08-10T09:20:00.000Z",
+  "profile": "store-submission-live-1k-authenticated",
+  "loadStressPausedUntil": "named_cloudflare_tunnel_or_durable_api_gateway",
+  "generatedAt": "2026-08-10T09:16:02.013Z",
+  "gateway": {
+    "requestedByUser": "https://march-strings-showing-console.trycloudflare.com",
+    "activeUsed": "https://literature-andy-regular-myself.trycloudflare.com",
+    "kind": "cloudflare_quick_tunnel_ephemeral",
+    "note": "Stale quick-tunnel URL returned HTTP 530. Stress ran against the active cloudflared quick tunnel registered at run time.",
+    "health": {
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "dbOk": true,
+      "dbLatencyMs": 34
+    }
+  },
+  "localApi": {
+    "url": "http://localhost:3001",
+    "listening": true,
+    "dbVerified": true,
+    "rateLimitRelax": "WM_LOAD_TEST_RELAX_RATE_LIMIT=1",
+    "confirmedByHeader": "X-RateLimit-Remaining ~199998 on successful /auth/me (global class)",
+    "readiness": "PASS — API + Supabase DB path ready for durable-gateway retest"
+  },
+  "benchmark": {
+    "vusMax": 1000,
+    "sessionPool": 3,
+    "chaos": 0,
+    "totalRequests": 5253,
+    "wallMs": 26506,
+    "okRate": 0.7714,
+    "authOkRate": 0.3141,
+    "failCount": 1201,
+    "authFailCount": 1201,
+    "http5xx": 0,
+    "timeoutCount": 0,
+    "p95Ms": 3439,
+    "p99Ms": 3958,
+    "authP95Ms": 3937,
+    "authP99Ms": 4094,
+    "shiftP95Ms": 3340,
+    "shiftP99Ms": 3420,
+    "loginWarmP95Ms": 483,
+    "throughputRps": 198.2,
+    "verdict": "FAIL_INFRA_EDGE_THROTTLE",
+    "thresholds": {
+      "okRateMin": 0.95,
+      "authOkRateMin": 0.99,
+      "rate5xxMax": 0,
+      "p95MsMax": 3000,
+      "p99MsMax": 8000,
+      "authP95MsMax": 3000,
+      "timeoutMax": 0
+    },
+    "stages": [
+      { "wave": 1, "concurrency": 1, "authFail": 0, "elapsedMs": 537 },
+      { "wave": 2, "concurrency": 50, "authFail": 0, "elapsedMs": 2423 },
+      { "wave": 3, "concurrency": 200, "authFail": 0, "elapsedMs": 8046 },
+      { "wave": 4, "concurrency": 500, "authFail": 330, "elapsedMs": 7769 },
+      { "wave": 5, "concurrency": 1000, "authFail": 871, "elapsedMs": 7730 }
+    ]
+  },
+  "rootCauseAnalysis": {
+    "summary": "Application and DB path are robust through 200 concurrent authenticated VUs after rate-limit relax. Failures above 200 VU are Cloudflare free quick-tunnel edge throttling, not Job Mitra API 5xx or Layer-3 rateLimitChaos.",
+    "applicationLevel5xx": 0,
+    "clientTimeouts": 0,
+    "rateLimiterBypass": {
+      "result": "PASS",
+      "evidence": "Waves 1–3 (1→200 VU) authFail=0; successful /auth/me returned X-RateLimit-Class=global and X-RateLimit-Remaining≈199998 under WM_LOAD_TEST_RELAX_RATE_LIMIT=1"
+    },
+    "infrastructureBlocker": {
+      "id": "CF_QUICK_TUNNEL_EDGE_THROTTLE",
+      "thresholdVu": 200,
+      "symptom": "At 500 concurrent /auth/me: ~200 HTTP 200 + ~300 HTTP 429 with empty body and NO X-RateLimit-* headers",
+      "classification": "Cloudflare trycloudflare.com quick-tunnel / edge throttle (not application rateLimitChaos)",
+      "blocks": "True 500–1000 VU authenticated RLS certification through this gateway"
+    },
+    "slaBreaches": [
+      "okRate 77.14% < 95%",
+      "authOkRate 31.41% < 99%",
+      "p95 3439ms > 3000ms",
+      "authP95 3937ms > 3000ms"
+    ],
+    "positives": [
+      "0 HTTP 5xx across full 1k VU ramp",
+      "0 client timeouts",
+      "JSON API confirmed (not SPA HTML fallback)",
+      "Login warm p95 ~483ms",
+      "Authenticated cookie session + RLS reads healthy at ≤200 concurrent"
+    ]
+  },
+  "supabaseMetrics": {
+    "scrapedByHarness": false,
+    "observe": "Supabase Dashboard → Database → Connections (Supavisor + Postgres) and Query performance for window ~2026-08-10T09:14Z",
+    "interpretation": "Peak useful DB/RLS stress is the 200-VU wave (0 authFail). 500–1000 VU waves are partially blocked at tunnel edge before Postgres."
+  },
+  "resilienceSummary": {
+    "apiProcess": "Survived 1k-VU ramp with 0 application 5xx",
+    "authSessionValidation": "Healthy at ≤200 concurrent; edge-limited beyond on quick tunnel",
+    "rlsPath": "Exercised via /auth/me + /auth/sessions + shift reads under cookie session",
+    "pauseFurtherStress": true,
+    "resumeWhen": "Named Cloudflare Tunnel, durable API domain, or production edge gateway (mitraaccesshub.com /v1 proxy to durable upstream) is attached",
+    "recommendedNext": [
+      "Attach named Cloudflare Tunnel or durable hosted API origin",
+      "Deploy mitra-access-hub worker with API_UPSTREAM pointing at that durable origin",
+      "Verify https://mitraaccesshub.com/v1/jobmitra/health → application/json",
+      "Re-run: WM_API_BASE=<durable> K6_VUS_MAX=1000 K6_CHAOS=0 npm run test:load:store-stress:auth",
+      "Unset WM_LOAD_TEST_RELAX_RATE_LIMIT before promoting API as production origin"
+    ]
+  },
+  "harnessPrepForDurableGateway": {
+    "command": "npm run test:load:store-stress:auth",
+    "requiredEnv": {
+      "WM_API_BASE": "<durable https origin>",
+      "K6_VUS_MAX": "1000",
+      "K6_CHAOS": "0",
+      "WM_LOAD_TEST_EMAIL": "provisioned by harness (loadtest.store@workmitra.com)",
+      "WM_LOAD_TEST_PASSWORD": "ephemeral (in-process only)"
+    },
+    "doNotUse": "https://*.trycloudflare.com quick tunnels for 500–1000 VU certification"
+  },
+  "documentationRefs": [
+    "workmitra-master-docs/HOSTING_BACKEND_DATABASE_/17_AUTHENTICATED_LOAD_BENCHMARK_LOCK_2026-08-10.md",
+    "workmitra-master-docs/HOSTING_BACKEND_DATABASE_/00_DOCUMENT_INDEX_REVIEWED.md",
+    "workmitra-master-docs/HOSTING_BACKEND_DATABASE_/12_DECISION_LOCKS_REVIEWED.md",
+    "tests/load/README.md",
+    "tests/load/node-store-submission-stress-summary.json"
+  ],
+  "artifacts": [
+    "tests/load/node-store-submission-stress-summary.json",
+    "tests/load/authenticated-store-stress-FINAL-AUDIT-report.json"
+  ]
+}

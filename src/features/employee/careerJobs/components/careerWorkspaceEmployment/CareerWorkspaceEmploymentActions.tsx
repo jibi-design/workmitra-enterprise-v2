@@ -78,6 +78,7 @@ export function CareerWorkspaceEmploymentActions({
         {actions.canResign && (
           <button
             type="button"
+            data-testid="career-resign-job"
             onClick={onOpenResign}
             style={{
               minHeight: 40,

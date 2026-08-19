@@ -73,7 +73,10 @@ export function EmployerShiftCreatePage() {
         />
       ) : null}
 
-      <ShiftCreateNearbyAvailabilityCard startAt={schedule.startAt} />
+      <ShiftCreateNearbyAvailabilityCard
+        startAt={schedule.startAt}
+        locationPincode={location.locationPincode}
+      />
 
       {wizardStep === 1 ? (
         <>
@@ -121,6 +124,9 @@ export function EmployerShiftCreatePage() {
             locationName={location.locationName}
             onLocationName={location.onLocationName}
             locationAutoFilled={location.locationAutoFilled}
+            locationPincode={location.locationPincode}
+            onLocationPincode={location.onLocationPincode}
+            locationPincodeAutoFilled={location.locationPincodeAutoFilled}
             locationAddress={location.locationAddress}
             onLocationAddress={location.onLocationAddress}
             mapsLink={location.mapsLink}

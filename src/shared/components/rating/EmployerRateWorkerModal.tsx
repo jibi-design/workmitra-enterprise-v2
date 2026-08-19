@@ -20,6 +20,8 @@ type Props = {
   /** Required when domain === "planner". */
   plannerMeta?: RatingPlannerMeta;
   editMode?: boolean;
+  workspaceId?: string;
+  appId?: string;
   onSubmitted: () => void;
   onClose: () => void;
 };
@@ -34,6 +36,8 @@ export function EmployerRateWorkerModal({
   domain,
   plannerMeta,
   editMode,
+  workspaceId,
+  appId,
   onSubmitted,
   onClose,
 }: Props) {
@@ -143,11 +147,12 @@ export function EmployerRateWorkerModal({
       hireAgain,
       workerName,
       jobTitle,
+      workspaceId,
+      appId,
     });
 
-    setSubmitting(false);
-
     if (!sagaResult.ok) {
+      setSubmitting(false);
       if (sagaResult.reason === "already_rated") {
         setError("You already rated this worker for this shift.");
         return;
@@ -157,12 +162,10 @@ export function EmployerRateWorkerModal({
       return;
     }
 
-    if (!sagaResult.pointsApplied) {
-      setError("Rating saved, but worker points could not be updated. Please try again.");
-      return;
-    }
-
-    onSubmitted();
+    void sagaResult.persist.finally(() => {
+      setSubmitting(false);
+      onSubmitted();
+    });
   }, [
     stars,
     tags,
@@ -177,6 +180,8 @@ export function EmployerRateWorkerModal({
     workerName,
     editMode,
     onSubmitted,
+    workspaceId,
+    appId,
   ]);
 
   if (!isOpen) return null;

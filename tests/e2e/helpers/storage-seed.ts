@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 
 /** Storage keys aligned with employerShift.keys.ts / shiftWorkspaceStorage.ts */
 export const STORAGE_KEYS = {
@@ -28,6 +28,8 @@ type SeedOptions = {
     workerMlId: string;
     workerName: string;
     selectedDates: string[];
+    basePincode?: string;
+    commuteRadius?: number;
   }>;
   /** Override seeded post startAt to local midnight of this ISO date (YYYY-MM-DD) */
   postStartIso?: string;
@@ -56,7 +58,8 @@ export async function seedEmployerShiftDemo(
           experience: "helper",
           payPerDay: 800,
           payBasis: "per_day",
-          locationName: "Kochi, Kerala",
+          locationName: "City A",
+          locationPincode: "670001",
           locationAddress: "",
           distanceKm: 5,
           startAt: opts.postStartIso
@@ -92,8 +95,8 @@ export async function seedEmployerShiftDemo(
               notes: {},
               profileSnapshot: {
                 uniqueId: "ML-E2E2-CND-AAA2",
-                fullName: "Rahul Kumar",
-                city: "Kochi",
+                fullName: "Worker A",
+                city: "City A",
                 experience: "fresher_ok",
                 skills: ["loading"],
               },
@@ -108,7 +111,7 @@ export async function seedEmployerShiftDemo(
               notes: {},
               profileSnapshot: {
                 uniqueId: "ML-E2E2-CND-AAA4",
-                fullName: "Arjun Nair",
+                fullName: "Worker B",
                 city: "Ernakulam",
                 experience: "helper",
                 skills: ["forklift"],
@@ -125,7 +128,7 @@ export async function seedEmployerShiftDemo(
               profileSnapshot: {
                 uniqueId: "ML-E2E2-CND-AAA3",
                 fullName: "Sanjay Pillai",
-                city: "Kochi",
+                city: "City A",
                 experience: "experienced",
                 skills: ["warehouse"],
               },
@@ -143,6 +146,8 @@ export async function seedEmployerShiftDemo(
           selectedDates: entry.selectedDates,
           broadcastAt: seedNow,
           expiresAt: seedNow + 172_800_000,
+          basePincode: entry.basePincode ?? "670001",
+          commuteRadius: entry.commuteRadius ?? 15,
         }));
         localStorage.setItem("wm_all_availability_broadcasts_v1", JSON.stringify(pool));
       }
@@ -158,7 +163,7 @@ export async function seedEmployerShiftDemo(
             companyName: "E2E Demo Corp",
             jobName: "Warehouse Helper",
             category: "other",
-            locationName: "Kochi, Kerala",
+            locationName: "City A",
             startAt: seedNow - 172_800_000,
             endAt: seedNow - 86_400_000,
             status: "completed",
@@ -168,6 +173,15 @@ export async function seedEmployerShiftDemo(
           },
         ];
         localStorage.setItem(keys.workspaces, JSON.stringify(workspaces));
+        try {
+          const scopedKey = `wm_employer_${(JSON.parse(localStorage.getItem("wm_employer_profile_v1") || "{}").uniqueId || "unknown_employer").replace(/[^a-zA-Z0-9_-]/g, "_")}_shift_workspaces_v1`;
+          localStorage.setItem(scopedKey, JSON.stringify(workspaces));
+        } catch {
+          localStorage.setItem(
+            "wm_employer_unknown_employer_shift_workspaces_v1",
+            JSON.stringify(workspaces),
+          );
+        }
       } else {
         localStorage.removeItem(keys.workspaces);
       }
@@ -191,7 +205,15 @@ export async function injectPendingReviewWorkspace(page: Page): Promise<void> {
   const now = Date.now();
 
   await page.evaluate(
-    ({ keys, ids, eventName, seedNow }) => {
+    async ({ ids, seedNow, profile }) => {
+      if (!localStorage.getItem("wm_employer_profile_v1")) {
+        localStorage.setItem("wm_employer_profile_v1", JSON.stringify(profile));
+        localStorage.setItem("wm:employer-profile", JSON.stringify(profile));
+      }
+
+      const { saveWorkspaces } =
+        await import("/src/features/employer/shiftJobs/storage/shiftWorkspaceStorage.ts");
+
       const workspaces = [
         {
           id: ids.workspaceId,
@@ -202,7 +224,7 @@ export async function injectPendingReviewWorkspace(page: Page): Promise<void> {
           companyName: "E2E Demo Corp",
           jobName: "Warehouse Helper",
           category: "other",
-          locationName: "Kochi, Kerala",
+          locationName: "City A",
           startAt: seedNow - 172_800_000,
           endAt: seedNow - 86_400_000,
           status: "completed",
@@ -212,15 +234,78 @@ export async function injectPendingReviewWorkspace(page: Page): Promise<void> {
         },
       ];
 
-      localStorage.setItem(keys.workspaces, JSON.stringify(workspaces));
-      window.dispatchEvent(new Event(eventName));
+      saveWorkspaces(workspaces);
+      window.dispatchEvent(new Event("wm:pending-actions-changed"));
     },
     {
-      keys: STORAGE_KEYS,
       ids: E2E_IDS,
-      eventName: WORKSPACES_CHANGED,
       seedNow: now,
+      profile: {
+        companyName: "E2E Demo Corp",
+        locationCity: "City A",
+        locationState: "Kerala",
+        locationPincode: "670001",
+        contactVerified: true,
+        uniqueId: "ML-E2E-EMP-AAA1",
+        phone: "+919876543210",
+        email: "employer@e2e.local",
+      },
     },
+  );
+}
+
+/** Expand compact employer pending banner and open the shift worker review row. */
+export async function openEmployerShiftReviewFromHub(page: Page): Promise<void> {
+  const banner = page.getByTestId("employer-pending-actions-banner");
+  await expect(banner).toBeVisible({ timeout: 15_000 });
+  await banner.getByRole("button", { name: /Worker review pending/i }).click();
+}
+
+/** Role home — compact PendingActionsHub only renders when review count > 0. */
+export async function seedEmployeePendingShiftReview(page: Page): Promise<void> {
+  const now = Date.now();
+  const workerMlId = "ML-E2E2-EMP-REVW";
+
+  await page.evaluate(
+    async ({ seedNow, worker }) => {
+      localStorage.setItem(
+        "wm_employee_profile_v1",
+        JSON.stringify({
+          uniqueId: worker.mlId,
+          fullName: worker.name,
+          city: "City A",
+          skills: ["loading"],
+          experience: "helper",
+          preferShiftJobs: true,
+          preferCareerJobs: false,
+        }),
+      );
+
+      const { writeShiftWorkspaces } =
+        await import("/src/features/employee/shiftJobs/storage/shiftWorkspace.persistence.ts");
+
+      writeShiftWorkspaces([
+        {
+          id: "e2e-emp-review-ws",
+          postId: "e2e-post-001",
+          appId: "e2e-app-applied-001",
+          workerMlId: worker.mlId,
+          workerName: worker.name,
+          companyName: "E2E Demo Corp",
+          jobName: "Warehouse Helper",
+          category: "other",
+          locationName: "City A",
+          startAt: seedNow - 172_800_000,
+          endAt: seedNow - 86_400_000,
+          status: "completed",
+          lastActivityAt: seedNow - 86_400_000,
+          unreadCount: 0,
+          updates: [],
+        },
+      ]);
+      window.dispatchEvent(new Event("wm:pending-actions-changed"));
+    },
+    { seedNow: now, worker: { mlId: workerMlId, name: "Review Worker" } },
   );
 }
 

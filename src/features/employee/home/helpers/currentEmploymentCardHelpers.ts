@@ -70,7 +70,7 @@ function getNotesCountForCurrentCycle(employmentId: string): number {
   return entries.filter((entry) => (entry.notes?.trim().length ?? 0) > 0).length;
 }
 
-/** Display metrics for Personal Work Diary home card (private employee tracking). */
+/** Personal Work Diary metrics from original diary store (employment-scoped punches). */
 export function getPersonalDiaryDisplayMetrics(employmentId: string): PersonalDiaryDisplayMetrics {
   const cycle = workDiaryStorage.getCurrentCycleSummary(employmentId);
   const summary = getEmploymentKpiSummary(employmentId);

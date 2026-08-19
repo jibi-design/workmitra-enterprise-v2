@@ -148,7 +148,7 @@ export function RosterAssignModal({ open, date, onClose, onSuccess }: Props) {
         <div style={{ marginBottom: 14 }}>
           <label style={LABEL}>Site / Location *</label>
           <input type="text" value={site} onChange={(e) => setSite(e.target.value)}
-            placeholder="e.g. Main Office, Site A, Warehouse B" list="roster-sites" style={INPUT} />
+            placeholder="Work location name" list="roster-sites" style={INPUT} />
           {existingSites.length > 0 && (
             <datalist id="roster-sites">
               {existingSites.map((s) => <option key={s} value={s} />)}

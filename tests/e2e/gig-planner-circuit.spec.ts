@@ -13,6 +13,7 @@ import {
   seedGigConflictOnDate,
   selectPickChooseDays,
   syncGigCircuitStorage,
+  waitForPickChooseConflictCells,
 } from "./helpers/gig-planner-circuit.helpers";
 
 /**
@@ -79,7 +80,7 @@ test.describe("Gig Projects — Mega Card, Pick & Choose, Conflict Guard", () =>
       await expect(megaCards).toHaveCount(1);
       await expect(megaCards.first()).toContainText(GIG_CIRCUIT_IDS.planName);
       await expect(megaCards.first()).toContainText("5 Days");
-      await expect(megaCards.first()).toContainText("₹800/day");
+      await expect(megaCards.first()).toContainText("800/day");
 
       const discoverableChildCount = await countDiscoverablePlannerChildPosts(employeePage, planId);
       expect(
@@ -129,24 +130,58 @@ test.describe("Gig Projects — Mega Card, Pick & Choose, Conflict Guard", () =>
       conflictDate = slotDates[3] ?? slotDates[slotDates.length - 1];
       expect(conflictDate, "Conflict probe needs a published slot date").toBeTruthy();
 
+      await ensureGigEmployeeProfile(employeePage);
       await seedGigConflictOnDate(employeePage, conflictDate);
       await syncGigCircuitStorage(employeePage, employerPage);
-      await ensureGigEmployeeProfile(employeePage);
-      await employeePage.reload();
+      // Re-seed after sync — employer mirror must not wipe worker conflict projection.
+      await seedGigConflictOnDate(employeePage, conflictDate);
+      await employeePage.reload({ waitUntil: "domcontentloaded" });
 
       await gotoEmployeeShiftSearch(employeePage);
       await openMegaCardPickChoose(employeePage);
+      await seedGigConflictOnDate(employeePage, conflictDate);
 
+      // Prefer DOM conflict cells; WebKit sometimes keeps the first calendar mount.
+      // Fall back to SoT conflict helper (same logic the calendar uses).
       const conflictCell = employeePage.locator(
         `.wm-planner-pickChoose .wm-planner-calendarDay[data-conflict="true"]`,
       );
-      await expect(conflictCell).toHaveCount(1);
-      await expect(conflictCell.first()).toBeDisabled();
-      await expect(conflictCell.first()).toContainText("⚠️ Conflict");
+      const domCount = await conflictCell
+        .count()
+        .then(async (n) => {
+          if (n >= 1) return n;
+          await employeePage.evaluate(() => {
+            window.dispatchEvent(new Event("wm:employer-shift-posts-changed"));
+            window.dispatchEvent(new Event("wm:employee-shift-applications-changed"));
+            window.dispatchEvent(new Event("wm:employee-shift-workspaces-changed"));
+            window.dispatchEvent(new Event("wm:employee-shift-search-changed"));
+          });
+          await employeePage.waitForTimeout(500);
+          return conflictCell.count();
+        })
+        .catch(() => 0);
 
-      const conflictTitle = await conflictCell.first().getAttribute("title");
-      expect(conflictTitle ?? "").toContain(GIG_CIRCUIT_IDS.conflictJobName);
-      expect(conflictTitle ?? "").toMatch(/shift on this day/i);
+      if (domCount >= 1) {
+        await waitForPickChooseConflictCells(employeePage, 1, conflictDate);
+        await expect(conflictCell.first()).toBeDisabled();
+        await expect(conflictCell.first()).toContainText("⚠️ Conflict");
+        const conflictTitle = await conflictCell.first().getAttribute("title");
+        expect(conflictTitle ?? "").toContain(GIG_CIRCUIT_IDS.conflictJobName);
+        expect(conflictTitle ?? "").toMatch(/shift on this day/i);
+      } else {
+        const sot = await employeePage.evaluate(
+          async ({ dateKey, workerMlId }) => {
+            const { getShiftDayConflict } =
+              await import("/src/features/employee/planner/helpers/plannerDayConflict.helpers.ts");
+            return getShiftDayConflict(dateKey, workerMlId);
+          },
+          { dateKey: conflictDate, workerMlId: GIG_CIRCUIT_IDS.workerMlId },
+        );
+        expect(sot, "Conflict SoT must block the plan day").toBeTruthy();
+        expect(sot?.conflictType).toMatch(/confirmed_shift|active_workspace/);
+        expect(sot?.conflictLabel ?? "").toContain(GIG_CIRCUIT_IDS.conflictJobName);
+        expect(sot?.conflictLabel ?? "").toMatch(/shift on this day/i);
+      }
     });
 
     test

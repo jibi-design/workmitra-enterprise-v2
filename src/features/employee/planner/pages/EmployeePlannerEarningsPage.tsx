@@ -90,7 +90,7 @@ export function EmployeePlannerEarningsPage() {
             </div>
             <div className="wm-planner-kpiTile">
               <div className="wm-planner-kpiLabel">Est. total</div>
-              <div className="wm-planner-kpiValue">₹{totalPay.toLocaleString("en-IN")}</div>
+              <div className="wm-planner-kpiValue">{totalPay.toLocaleString("en-GB")}</div>
             </div>
           </div>
 
@@ -103,8 +103,8 @@ export function EmployeePlannerEarningsPage() {
             >
               <div style={{ fontWeight: 900 }}>{a.planName}</div>
               <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>
-                {a.days.length} days · ₹
-                {a.days.reduce((s, d) => s + d.payPerDay, 0).toLocaleString("en-IN")}
+                {a.days.length} days ·{" "}
+                {a.days.reduce((s, d) => s + d.payPerDay, 0).toLocaleString("en-GB")}
               </div>
             </article>
           ))}

@@ -193,7 +193,15 @@ export function getRateLimitStore(): RateLimitBucketStore {
   }
 
   activeStore = new MemoryRateLimitStore();
-  console.log("[Job Mitra API] Rate limit store: memory (single-node).");
+  if (process.env.NODE_ENV === "production") {
+    console.warn(
+      "[Job Mitra API] Rate limit / CSRF store: memory in production — " +
+        "tokens and buckets reset on process restart. Set UPSTASH_REDIS_REST_URL + " +
+        "UPSTASH_REDIS_REST_TOKEN for multi-node / restart-safe CSRF + rate limits.",
+    );
+  } else {
+    console.log("[Job Mitra API] Rate limit store: memory (single-node).");
+  }
   return activeStore;
 }
 

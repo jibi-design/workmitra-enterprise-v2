@@ -28,6 +28,7 @@ export interface ShiftPostRow {
   start_at: Date;
   end_at: Date;
   details: Record<string, unknown>;
+  location_pincode: string | null;
   created_at: Date;
   updated_at: Date;
 }

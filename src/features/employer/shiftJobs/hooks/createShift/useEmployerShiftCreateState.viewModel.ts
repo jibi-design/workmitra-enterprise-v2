@@ -131,6 +131,9 @@ export function buildEmployerShiftCreateViewModel(input: {
       onLocationName: (value: string) =>
         form.setLocationName(normalizeTextInput(form.locationName, value)),
       locationAutoFilled: autoFill.locationCity.length > 0,
+      locationPincode: form.locationPincode,
+      onLocationPincode: form.setLocationPincode,
+      locationPincodeAutoFilled: autoFill.locationPincode.length > 0,
       locationAddress: form.locationAddress,
       onLocationAddress: (value: string) =>
         form.setLocationAddress(normalizeTextInput(form.locationAddress, value)),

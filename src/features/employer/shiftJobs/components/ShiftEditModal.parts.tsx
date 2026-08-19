@@ -1,3 +1,4 @@
+import { sanitizePincodeInput } from "../../../shared/location/pincode";
 import type { ShiftPost } from "../../shiftJobs/storage/employerShift.storage";
 import {
   formatShiftPayDisplay,
@@ -61,6 +62,22 @@ export function ShiftEditFormBody({
           value={fields.locationName}
           onChange={(event) => onFieldChange("locationName", event.target.value)}
           maxLength={150}
+        />
+      </div>
+
+      <div>
+        <div className="wm-label">
+          Work area code <span style={{ color: "var(--wm-error)" }}>*</span>
+        </div>
+        <input
+          className="wm-input"
+          value={fields.locationPincode}
+          onChange={(event) =>
+            onFieldChange("locationPincode", sanitizePincodeInput(event.target.value))
+          }
+          inputMode="numeric"
+          maxLength={6}
+          placeholder="Work area code"
         />
       </div>
 

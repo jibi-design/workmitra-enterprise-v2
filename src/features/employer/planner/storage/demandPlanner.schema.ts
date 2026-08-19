@@ -48,6 +48,8 @@ export type DemandPlan = {
   name: string;
   companyName: string;
   locationName: string;
+  /** Work area code for commute matching. Empty = no nearby matches. */
+  locationPincode?: string;
   category: string;
   experience: ExperienceLabel;
   startDate: string;

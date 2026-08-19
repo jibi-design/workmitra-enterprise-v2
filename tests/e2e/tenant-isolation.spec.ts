@@ -362,7 +362,7 @@ test.describe("Phase 18 — Tenant isolation", () => {
         title: `P1 tenant career ${Date.now().toString(36)}`,
         description: "Cross-tenant isolation probe",
         status: "published",
-        location: "Kochi",
+        location: "City A",
       },
     });
     expect(createRes.ok(), `career create ${createRes.status()}`).toBeTruthy();

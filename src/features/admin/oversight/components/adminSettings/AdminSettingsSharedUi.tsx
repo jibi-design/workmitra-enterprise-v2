@@ -2,6 +2,7 @@
 // File: AdminSettingsSharedUi.tsx
 // Path: C:\projects\WorkMitra_Enterprise_v2\src\features\admin\oversight\components\adminSettings\AdminSettingsSharedUi.tsx
 
+import type { ReactNode } from "react";
 type ClearRowProps = {
   label: string;
   description: string;
@@ -67,7 +68,13 @@ export function AdminSettingsClearRow({
   );
 }
 
-export function AdminSettingsAboutRow({ label, value }: { label: string; value: string }) {
+export function AdminSettingsAboutRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: ReactNode;
+}) {
   return (
     <div
       style={{

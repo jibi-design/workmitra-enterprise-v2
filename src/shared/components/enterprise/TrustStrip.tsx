@@ -7,8 +7,8 @@ import { StatusBadge } from "./StatusBadge";
 export type TrustStripProps = {
   kind: EnterpriseTrustKind;
   tone?: EnterpriseTone;
-  title: string;
-  message?: string;
+  title: ReactNode;
+  message?: ReactNode;
   badgeLabel?: string;
   actions?: ReactNode;
   testId?: string;
@@ -49,7 +49,7 @@ export function TrustStrip({
       data-kind={kind}
       role="status"
     >
-      <StatusBadge label={badgeLabel ?? title} tone={resolved} />
+      <StatusBadge label={badgeLabel ?? (typeof title === "string" ? title : "Trust")} tone={resolved} />
       <div className="wm-ent-trust__message">
         <strong>{title}</strong>
         {message ? <> — {message}</> : null}

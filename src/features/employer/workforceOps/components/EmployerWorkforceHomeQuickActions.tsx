@@ -35,7 +35,7 @@ export function EmployerWorkforceHomeQuickActions({
         <div style={actionIconWrapStyle}>
           <IconStaff />
         </div>
-        <span>My Staff</span>
+        <span>Workforce staff</span>
         {activeStaffCount > 0 && (
           <span style={{ fontSize: 11, color: "var(--wm-er-muted)" }}>
             {activeStaffCount} active

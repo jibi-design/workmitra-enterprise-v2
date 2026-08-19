@@ -42,6 +42,7 @@ export function ResignFormFields({
 
         <select
           id="wm-resign-reason"
+          data-testid="career-resign-reason"
           value={reason}
           onChange={(event) => onReasonChange(event.target.value as EmployeeResignReason)}
           style={{

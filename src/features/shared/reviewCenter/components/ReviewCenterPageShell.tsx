@@ -42,7 +42,7 @@ export function ReviewCenterPageShell({
         <div className="wm-reviewHero__meta">
           {openCount > 0
             ? `${openCount} open review request${openCount === 1 ? "" : "s"}`
-            : "No open review requests"}
+            : "All caught up"}
         </div>
         <div className="wm-reviewHero__title">{getReviewCenterTitle(role)}</div>
         <div className="wm-reviewHero__sub">
@@ -52,21 +52,25 @@ export function ReviewCenterPageShell({
 
       {children}
 
-      <section style={{ marginTop: 12, display: "grid", gap: 12 }}>
-        {requests.length === 0 && !hasExtraContent ? (
+      {openCount > 0 ? (
+        <section style={{ marginTop: 12, display: "grid", gap: 12 }}>
+          {requests.map((request) => (
+            <ReviewRequestCard key={request.id} request={request} />
+          ))}
+        </section>
+      ) : hasExtraContent ? null : (
+        <section style={{ marginTop: 12 }}>
           <div className="wm-reviewEmpty">
             <div className="wm-reviewEmpty__icon" aria-hidden="true">
               ★
             </div>
-            <div className="wm-reviewEmpty__title">No reviews yet</div>
+            <div className="wm-reviewEmpty__title">No reviews waiting</div>
             <div className="wm-reviewEmpty__sub">
               Completed shift or career work reviews will appear here when action is needed.
             </div>
           </div>
-        ) : (
-          requests.map((request) => <ReviewRequestCard key={request.id} request={request} />)
-        )}
-      </section>
+        </section>
+      )}
     </div>
   );
 }

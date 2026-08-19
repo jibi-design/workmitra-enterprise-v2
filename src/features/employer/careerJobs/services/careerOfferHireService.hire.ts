@@ -4,6 +4,7 @@ import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import {
   careerGateApi,
   isCareerApiSyncEnabled,
+  mustRollbackCareerLocalWrite,
   resolveCareerGateApplicationId,
 } from "../../../career/services/careerGateApi.service";
 import { hydrateCareerApplicationsFromServer } from "../../../career/services/careerDbTruth.service";
@@ -114,32 +115,34 @@ export async function hireCandidate(
 
   if (isCareerApiSyncEnabled()) {
     const serverAppId = resolveCareerGateApplicationId(appId);
-    if (!serverAppId) {
+    if (mustRollbackCareerLocalWrite(serverAppId)) {
       writeCareerPosts(priorPosts);
       rollbackCareerHireActivationSnapshots(activationSnapshots);
       writeCareerApps(priorApps);
       return { ok: false, reason: "api_error" };
     }
 
-    try {
-      const localEmployment = employmentStorage.getByPostId(postId);
-      const details = localEmployment
-        ? employmentRecordToServerDetails(localEmployment)
-        : {
-            careerPostId: postId,
-            jobTitle: post.jobTitle,
-            companyName: post.companyName,
-            clientStatus: "selected",
-          };
+    if (serverAppId) {
+      try {
+        const localEmployment = employmentStorage.getByPostId(postId);
+        const details = localEmployment
+          ? employmentRecordToServerDetails(localEmployment)
+          : {
+              careerPostId: postId,
+              jobTitle: post.jobTitle,
+              companyName: post.companyName,
+              clientStatus: "selected",
+            };
 
-      const confirmed = await careerGateApi.confirmHire(serverAppId, { details });
-      upsertLocalEmploymentFromServer(confirmed.employment);
-      await hydrateCareerApplicationsFromServer();
-    } catch {
-      writeCareerPosts(priorPosts);
-      rollbackCareerHireActivationSnapshots(activationSnapshots);
-      writeCareerApps(priorApps);
-      return { ok: false, reason: "api_error" };
+        const confirmed = await careerGateApi.confirmHire(serverAppId, { details });
+        upsertLocalEmploymentFromServer(confirmed.employment);
+        await hydrateCareerApplicationsFromServer();
+      } catch {
+        writeCareerPosts(priorPosts);
+        rollbackCareerHireActivationSnapshots(activationSnapshots);
+        writeCareerApps(priorApps);
+        return { ok: false, reason: "api_error" };
+      }
     }
   }
 

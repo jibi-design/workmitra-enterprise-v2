@@ -4,7 +4,7 @@
 
 import type { CareerJobPost } from "../types/careerTypes";
 import { CAREER_APPS_CHANGED } from "./careerStorageUtils";
-import { resolveCareerEmployerScopedKey } from "../../../shared/career/careerEmployerScope";
+import { tryResolveCareerEmployerScopedKey } from "../../../shared/career/careerEmployerScope";
 import { readCareerApps, readCareerPosts } from "./careerNormalizers";
 import { getCareerEmployerAppsStorageKey } from "./careerPersistence";
 import { recomputePostAnalytics } from "./careerValidation";
@@ -26,7 +26,8 @@ function recomputeHomePosts(): CareerJobPost[] {
 }
 
 export function getCareerHomePostsSnapshot(): CareerJobPost[] {
-  const postsRaw = localStorage.getItem(resolveCareerEmployerScopedKey("career_posts_v1"));
+  const postsKey = tryResolveCareerEmployerScopedKey("career_posts_v1");
+  const postsRaw = postsKey ? localStorage.getItem(postsKey) : null;
   const appsRaw = localStorage.getItem(getCareerEmployerAppsStorageKey());
 
   if (postsRaw !== cachedPostsRaw || appsRaw !== cachedAppsRaw) {

@@ -1,4 +1,5 @@
 // src/app/router/NotFoundPage.tsx
+import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "./routePaths";
 import type { AppRole } from "../storage/roleStorage";
@@ -11,10 +12,31 @@ function getHomeForRole(role: AppRole): string {
   return ROUTE_PATHS.adminHome;
 }
 
+function decodeOverEncodedPath(pathname: string): string | null {
+  if (!/%2[fF]/.test(pathname)) return null;
+  try {
+    let decoded = pathname;
+    for (let i = 0; i < 3; i += 1) {
+      const next = decodeURIComponent(decoded);
+      if (next === decoded) break;
+      decoded = next;
+    }
+    if (!decoded.startsWith("/") || decoded === pathname) return null;
+    return decoded;
+  } catch {
+    return null;
+  }
+}
+
 export function NotFoundPage() {
   const loc = useLocation();
   const nav = useNavigate();
   const role = useAppRole();
+
+  useEffect(() => {
+    const fixed = decodeOverEncodedPath(loc.pathname);
+    if (fixed) nav(fixed, { replace: true });
+  }, [loc.pathname, nav]);
 
   const workspaceTarget = AUTH_BACKEND_ENABLED ? ROUTE_PATHS.login : ROUTE_PATHS.landing;
   const homeTarget = role ? getHomeForRole(role) : workspaceTarget;

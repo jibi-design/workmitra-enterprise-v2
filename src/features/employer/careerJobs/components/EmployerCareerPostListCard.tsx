@@ -2,11 +2,11 @@
 // File name: EmployerCareerPostListCard.tsx
 
 import type { CSSProperties } from "react";
+import { ActionPill } from "../../../../shared/components/layout/designDna";
 
 type Props = {
   summary: { total: number; active: number; past: number };
   onOpenPosts: () => void;
-  onCreate: () => void;
 };
 
 const CAREER_BLUE = "var(--wm-er-accent-career, #2563eb)";
@@ -14,11 +14,14 @@ const CAREER_BLUE_DEEP = "#1e40af";
 const CAREER_TEXT = "var(--wm-er-text, #0f172a)";
 const CAREER_MUTED = "var(--wm-er-muted, #475569)";
 
-export function EmployerCareerPostListCard({ summary, onOpenPosts, onCreate }: Props) {
+export function EmployerCareerPostListCard({ summary, onOpenPosts }: Props) {
   const hasPosts = summary.total > 0;
 
   return (
-    <section className="wm-er-card wm-career-card wm-career-card--employer" style={CARD_STYLE}>
+    <section
+      className="wm-er-card wm-career-card wm-career-card--employer wm-press-card wm-homeGlassCard--domainCareer"
+      style={CARD_STYLE}
+    >
       <div
         style={{
           position: "absolute",
@@ -59,12 +62,9 @@ export function EmployerCareerPostListCard({ summary, onOpenPosts, onCreate }: P
       </div>
 
       <div style={{ position: "relative", zIndex: 1, ...ACTION_ROW_STYLE }}>
-        <button type="button" className="wm-primarybtn" onClick={onOpenPosts}>
+        <ActionPill domain="career" onClick={onOpenPosts}>
           Open Post List
-        </button>
-        <button type="button" className="wm-outlineBtn" onClick={onCreate}>
-          Create Job
-        </button>
+        </ActionPill>
       </div>
 
       {!hasPosts && (
@@ -161,7 +161,7 @@ const SUMMARY_LABEL_STYLE: CSSProperties = { fontSize: 11.5, fontWeight: 700, co
 const SUMMARY_VALUE_STYLE: CSSProperties = { marginTop: 4, fontSize: 19, fontWeight: 800 };
 const ACTION_ROW_STYLE: CSSProperties = {
   display: "grid",
-  gridTemplateColumns: "1fr 1fr",
+  gridTemplateColumns: "1fr",
   gap: "var(--wm-space-10)",
   marginTop: 2,
 };

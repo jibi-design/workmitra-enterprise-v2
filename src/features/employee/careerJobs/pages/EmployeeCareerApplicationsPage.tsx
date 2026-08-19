@@ -48,7 +48,7 @@ export function EmployeeCareerApplicationsPage() {
         <KpiTiles kpi={page.kpi} />
         <FilterTabs tab={page.visibleTab} counts={page.counts} onChange={page.setTab} />
 
-        {page.isHydrating ? (
+        {page.isHydrating && page.filtered.length === 0 ? (
           <CareerSkeletonCard count={3} />
         ) : (
           <>

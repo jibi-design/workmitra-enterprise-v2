@@ -9,6 +9,7 @@ import {
 import { AUTH_BACKEND_ENABLED } from "../../../../../shared/config/authConfig";
 import { queuePulseEventForAffectedUser } from "../../../../pulse/pulseEventBridge";
 import { employeeProfileStorage } from "../../../profile/storage/employeeProfile.storage";
+import { shiftApplicationsStorage } from "../../storage/shiftApplications.storage";
 import {
   safeWriteAllShiftApplications,
   type ShiftApplicationWriteResult,
@@ -24,12 +25,25 @@ import {
   isShiftApiSyncEnabled,
   shiftGateApi,
 } from "../../../../shift/services/shiftGateApi.service";
-import { shiftPostIdBridge } from "../../../../shift/utils/shiftIdBridge";
+import { shiftPostIdBridge, shiftPostIdsMatch } from "../../../../shift/utils/shiftIdBridge";
 import { mergeServerApplicationIntoLsCache } from "../../../../shift/services/shiftDbTruth.service";
-import { isApiConflictError } from "../../../../../shared/services/apiService";
+import { ApiRequestError, isApiConflictError } from "../../../../../shared/services/apiService";
+import type { ConfirmData } from "../../../../../shared/components/ConfirmModal";
 
 export const SHIFT_APPLY_CONFLICT_MESSAGE =
   "You have already applied or have a shift scheduled at this time.";
+
+export function buildShiftApplyConfirm(jobName: string): ConfirmData {
+  const name = jobName.trim() || "this shift";
+  return {
+    title: "Submit this application?",
+    message: `You are about to apply for ${name}. The employer will see your profile and answers.`,
+    warning: "You can withdraw later if you are no longer available.",
+    tone: "warn",
+    confirmLabel: "Yes, submit",
+    cancelLabel: "Cancel",
+  };
+}
 
 export function hasActiveShiftApplicationForPost({
   applications,
@@ -40,7 +54,7 @@ export function hasActiveShiftApplicationForPost({
 }): boolean {
   return applications.some(
     (application) =>
-      application.postId === postId &&
+      shiftPostIdsMatch(application.postId, postId) &&
       (application.status === "applied" ||
         application.status === "shortlisted" ||
         application.status === "waiting" ||
@@ -130,40 +144,58 @@ export async function saveShiftApplicationSubmission({
       }
     }
 
-    if (!serverPostId || !workerKey) {
+    if (import.meta.env.PROD && (!serverPostId || !workerKey)) {
       safeWriteAllShiftApplications(prior);
       return { ok: false, reason: "storage_error" };
     }
 
-    try {
-      const dto = await shiftGateApi.applyToPost(serverPostId, {
-        // Hint only — server ignores conflicting MUID and binds employee.id
-        worker_wm_id: workerKey,
-        details: {
-          profileSnapshot: application.profileSnapshot,
-          mustHaveAnswers: application.mustHaveAnswers,
-          goodToHaveAnswers: application.goodToHaveAnswers,
-          notes: application.notes,
-          quickAnswers: application.quickAnswers,
-        },
-      });
-      mergeServerApplicationIntoLsCache(dto, application.id);
-    } catch (error) {
-      safeWriteAllShiftApplications(prior);
-      if (isApiConflictError(error)) {
-        return { ok: false, reason: "conflict" };
+    if (serverPostId && workerKey) {
+      try {
+        let dto: Awaited<ReturnType<typeof shiftGateApi.applyToPost>> | null = null;
+        for (let attempt = 0; attempt < 3 && !dto; attempt += 1) {
+          try {
+            dto = await shiftGateApi.applyToPost(serverPostId, {
+              worker_wm_id: workerKey,
+              details: {
+                profileSnapshot: application.profileSnapshot,
+                mustHaveAnswers: application.mustHaveAnswers,
+                goodToHaveAnswers: application.goodToHaveAnswers,
+                notes: application.notes,
+                quickAnswers: application.quickAnswers,
+              },
+            });
+          } catch (error) {
+            const retry =
+              error instanceof ApiRequestError && (error.status === 429 || error.status >= 500);
+            if (!retry || attempt === 2) throw error;
+            await new Promise((resolve) => window.setTimeout(resolve, 1_500 * (attempt + 1)));
+          }
+        }
+        if (dto) mergeServerApplicationIntoLsCache(dto, application.id);
+      } catch (error) {
+        if (import.meta.env.PROD) {
+          safeWriteAllShiftApplications(prior);
+          if (isApiConflictError(error)) {
+            return { ok: false, reason: "conflict" };
+          }
+          return { ok: false, reason: "storage_error" };
+        }
       }
-      return { ok: false, reason: "storage_error" };
     }
   }
 
+  const jobName = shiftApplicationsStorage
+    .getPosts()
+    .find((post) => post.id === application.postId)
+    ?.jobName.trim();
   queuePulseEventForAffectedUser({
     type: "SHIFT_APPLICATION_SUBMITTED",
     domain: "shift",
     affectedUserRole: "employer",
     targetId: application.postId,
     postId: application.postId,
-    severity: "urgent",
+    severity: "info",
+    body: jobName ? `A worker applied to ${jobName}.` : undefined,
   });
 
   return { ok: true };

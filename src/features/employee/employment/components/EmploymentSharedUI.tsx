@@ -1,8 +1,8 @@
-// src/features/employee/employment/components/EmploymentSharedUI.tsx
-//
 // Shared JSX components for Employment Detail page sub-components.
 
-export function FieldRow({ label, value }: { label: string; value: string }) {
+import type { ReactNode } from "react";
+
+export function FieldRow({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div
       style={{

@@ -1,23 +1,31 @@
-// Job Mitra | PlannerBlindDemandCard.tsx | Blind worker count — no names/avatars
+/** Job Mitra | Blind worker count — job-site work area + date. No names. */
 
 import { useSyncExternalStore } from "react";
+import { AUTH_BACKEND_ENABLED } from "../../../../shared/config/authConfig";
 import { availabilityStorage } from "../../../shared/planner/ports/plannerLegacyShiftBridge";
+import { usePlannerWorkersRadarCount } from "../hooks/usePlannerWorkersRadarCount";
 
 type Props = {
   dateKey: string;
+  locationPincode: string;
 };
 
-function readCount(dateKey: string): number {
+function readLocalCount(dateKey: string, locationPincode: string): number {
   if (!dateKey) return 0;
-  return availabilityStorage.countWorkersFreeOnIsoDate(dateKey);
+  return availabilityStorage.countWorkersFreeOnIsoDateNear(dateKey, locationPincode);
 }
 
-export function PlannerBlindDemandCard({ dateKey }: Props) {
-  const count = useSyncExternalStore(
+export function PlannerBlindDemandCard({ dateKey, locationPincode }: Props) {
+  const localCount = useSyncExternalStore(
     availabilityStorage.subscribe,
-    () => readCount(dateKey),
+    () => readLocalCount(dateKey, locationPincode),
     () => 0,
   );
+  const serverCount = usePlannerWorkersRadarCount({
+    locationPincode,
+    isoDate: dateKey,
+  });
+  const count = AUTH_BACKEND_ENABLED ? serverCount : localCount;
 
   if (!dateKey) return null;
 
@@ -31,11 +39,11 @@ export function PlannerBlindDemandCard({ dateKey }: Props) {
     >
       {count > 0 ? (
         <p className="wm-planner-blindDemandCopy">
-          🔥 <strong>{count}</strong> {workerLabel} found nearby. Publish your shift to reach them!
+          <strong>{count}</strong> {workerLabel} in range for this date.
         </p>
       ) : (
         <p className="wm-planner-blindDemandCopy wm-planner-blindDemandCopy--muted">
-          Publish this plan to notify matching workers in your area.
+          Matching workers show as a number only. No names.
         </p>
       )}
     </div>

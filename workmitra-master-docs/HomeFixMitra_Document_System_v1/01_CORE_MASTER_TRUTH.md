@@ -119,9 +119,18 @@ App installation must not be framed as mandatory pressure for complaint acceptan
 
 HomeFix Mitra must use one permanent person/account identity with multiple role-specific profiles.
 
-`hfmId` is the permanent person/account identity.
+The permanent public person identity is the **Mitra Labs ID** (UniCard), format:
 
-Role-specific profiles may exist under the same `hfmId`:
+```txt
+ML-XXXX-ABC-XXXX
+```
+
+There is **no** separate permanent “HFM ID” / “HomeFix Mitra ID” value.  
+Legacy field name `hfmId` means the **same** Mitra Labs ID (alias only).
+
+Canonical identity and display lock: `19_UNIQUE_ID_STANDARD_AND_DISPLAY.md`.
+
+Role-specific profiles may exist under the same Mitra Labs ID:
 
 - `customerProfileId`
 - `independentTechnicianProfileId`
@@ -131,7 +140,8 @@ Role-specific profiles may exist under the same `hfmId`:
 Rules:
 
 - do not create duplicate public permanent identity systems for each role
-- one person may use multiple role contexts under the same `hfmId`
+- do not mint a second person ID (`HFM-…` or dual cards)
+- one person may use multiple role contexts under the same Mitra Labs ID
 - the app must not guess the active role automatically
 - user must explicitly enter or switch the active role/workspace where multiple profiles exist
 - customer data must stay in customer context
@@ -140,14 +150,16 @@ Rules:
 - Shop Technician data must stay shop-linked and assignment-only
 - every important record must preserve role/source context
 - phone number is not identity proof
-- `hfmId` must remain stable even if phone number changes
+- Mitra Labs ID must remain stable even if phone number changes
 
-Public UI may show `hfmId` as:
+Public UI must show the person ID as:
 
-- HomeFix Mitra ID
-- Your HomeFix Mitra ID
+- Mitra Labs ID
+- Your Mitra Labs ID
 
-Detailed identity, role-profile, active-context and record-context rules belong in `11_CROSS_DOMAIN_SYSTEM_RULES.md`.
+Document/record references (receipts, complaints, services) use `HFX-<TYPE>-<OPAQUE>` and must never be labeled as Mitra Labs ID.
+
+Detailed identity, role-profile, active-context and record-context rules belong in `11_CROSS_DOMAIN_SYSTEM_RULES.md` and `19_UNIQUE_ID_STANDARD_AND_DISPLAY.md`.
 
 ## 10. Phase-0 Demo-Safe Master Rule
 

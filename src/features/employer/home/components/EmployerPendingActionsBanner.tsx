@@ -5,7 +5,6 @@ import type { PendingActionItem } from "../../../../shared/pendingActions/pendin
 import { pendingBannerAccentCssVar } from "../../../employee/home/helpers/buildEmployeePendingBannerQueue";
 import type { PendingBannerQueueItem } from "../../../employee/home/helpers/pendingBannerQueue.types";
 import { PendingBannerDomainIcon } from "../../../employee/home/components/PendingBannerDomainIcon";
-import { PulseNode } from "../../../pulse/PulseNode";
 import { compactPendingBannerLine } from "../../../../shared/pendingActions/helpers/compactPendingBannerLine";
 import { useEmployerPendingBannerQueue } from "../hooks/useEmployerPendingBannerQueue";
 
@@ -57,23 +56,17 @@ function PendingBannerRow({ item, onDismiss }: RowProps) {
       data-pending-id={item.id}
       data-testid={`pending-action-row-${item.id}`}
     >
-      <PulseNode
-        variant="button"
-        pulseId={item.pulseId}
-        style={{ "--wm-pulse-node-radius": "var(--wm-radius-chip, 14px)" }}
+      <button
+        type="button"
+        className="wm-pendingActionsBanner__main"
+        onClick={item.onOpen}
+        aria-label={line}
       >
-        <button
-          type="button"
-          className="wm-pendingActionsBanner__main"
-          onClick={item.onOpen}
-          aria-label={line}
-        >
-          <span className="wm-pendingActionsBanner__icon" aria-hidden="true">
-            <PendingBannerDomainIcon accent={item.accent} />
-          </span>
-          <span className="wm-pendingActionsBanner__line">{line}</span>
-        </button>
-      </PulseNode>
+        <span className="wm-pendingActionsBanner__icon" aria-hidden="true">
+          <PendingBannerDomainIcon accent={item.accent} />
+        </span>
+        <span className="wm-pendingActionsBanner__line">{line}</span>
+      </button>
       <button
         type="button"
         className="wm-pendingActionsBanner__dismiss"
@@ -139,24 +132,18 @@ export function EmployerPendingActionsBanner({ pendingActions }: Props) {
             <span className="wm-pendingActionsBanner__line">{headerLine}</span>
           </div>
         ) : (
-          <PulseNode
-            variant="button"
-            pulseId={current.pulseId}
-            style={{ "--wm-pulse-node-radius": "var(--wm-radius-chip, 14px)" }}
+          <button
+            type="button"
+            className="wm-pendingActionsBanner__main"
+            onClick={current.onOpen}
+            aria-label={line}
+            data-testid={`pending-action-row-${current.id}`}
           >
-            <button
-              type="button"
-              className="wm-pendingActionsBanner__main"
-              onClick={current.onOpen}
-              aria-label={line}
-              data-testid={`pending-action-row-${current.id}`}
-            >
-              <span className="wm-pendingActionsBanner__icon" aria-hidden="true">
-                <PendingBannerDomainIcon accent={current.accent} />
-              </span>
-              <span className="wm-pendingActionsBanner__line">{line}</span>
-            </button>
-          </PulseNode>
+            <span className="wm-pendingActionsBanner__icon" aria-hidden="true">
+              <PendingBannerDomainIcon accent={current.accent} />
+            </span>
+            <span className="wm-pendingActionsBanner__line">{line}</span>
+          </button>
         )}
 
         <button

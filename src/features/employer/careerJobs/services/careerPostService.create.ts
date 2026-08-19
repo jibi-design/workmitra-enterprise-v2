@@ -14,6 +14,7 @@ import { uid } from "../helpers/careerStorageUtils";
 import { readCareerPosts, writeCareerPosts } from "../helpers/careerNormalizers";
 import { pushCareerActivity } from "../helpers/careerNotifications";
 import { syncToEmployeeCareerSearch } from "../helpers/careerValidation";
+import { isValidPincode } from "../../../shared/location/pincode";
 import { getCareerPost } from "./careerPostService.read";
 
 export type CareerPostCreateInput = Omit<
@@ -48,6 +49,7 @@ function isValidCareerPostCreateInput(input: CareerPostCreateInput, now: number)
   if (!hasMinText(input.jobTitle, 2)) return false;
 
   if (input.workMode !== "remote" && !hasMinText(input.location, 2)) return false;
+  if (!isValidPincode(input.locationPincode)) return false;
 
   if (
     !Number.isInteger(input.vacancies) ||
@@ -184,6 +186,7 @@ export async function cloneCareerPost(
     jobType: merged.jobType,
     workMode: merged.workMode,
     location: merged.location,
+    locationPincode: merged.locationPincode,
     vacancies: merged.vacancies,
     probationPeriod: merged.probationPeriod,
     salaryMin: merged.salaryMin,

@@ -8,6 +8,13 @@ export const EmployerHomePage = lazyPage(() =>
     default: m.EmployerHomePage,
   })),
 );
+export const EmployerDashboardPage = lazyPage(() =>
+  ensureThemeBundle("mitra-labs").then(() =>
+    import("../../../features/employer/home/pages/EmployerDashboard").then((m) => ({
+      default: m.EmployerDashboard,
+    })),
+  ),
+);
 export const EmployerShiftHomePage = lazyPage(() =>
   import("../../../features/employer/shiftJobs/pages/EmployerShiftHomePage").then((m) => ({
     default: m.EmployerShiftHomePage,
@@ -101,6 +108,20 @@ export const EmployerPlannerRosterDetailPage = lazyPage(() =>
   import("../../../features/employer/planner/pages/EmployerPlannerRosterDetailPage").then((m) => ({
     default: m.EmployerPlannerRosterDetailPage,
   })),
+);
+export const EmployerWeeklyShiftPlannerPage = lazyPage(() =>
+  ensureThemeBundle("shift-planner").then(() =>
+    import("../../../features/shiftPlanner/pages/WeeklyShiftPlanner").then((m) => ({
+      default: m.EmployerWeeklyShiftPlannerPage,
+    })),
+  ),
+);
+export const EmployerSwapApprovalPage = lazyPage(() =>
+  ensureThemeBundle("shift-planner").then(() =>
+    import("../../../features/shiftPlanner/pages/EmployerSwapApproval").then((m) => ({
+      default: m.EmployerSwapApproval,
+    })),
+  ),
 );
 export const EmployerCareerHomePage = lazyPage(() =>
   import("../../../features/employer/careerJobs/pages/EmployerCareerHomePage").then((m) => ({
@@ -277,6 +298,55 @@ export const EmployerAnalyticsPage = lazyPage(async () => {
   const m = await import("../../../features/employer/home/pages/EmployerAnalyticsPage");
   return { default: m.EmployerAnalyticsPage };
 });
+export const MitraLabsHubPage = lazyPage(() =>
+  ensureThemeBundle("mitra-labs").then(() =>
+    import("../../../features/mitraLabs/pages/MitraLabsHub").then((m) => ({
+      default: m.MitraLabsHub,
+    })),
+  ),
+);
+export const DigitalInviteBuilderPage = lazyPage(() =>
+  ensureThemeBundle("mitra-labs").then(() =>
+    import("../../../features/mitraLabs/pages/DigitalInviteBuilder").then((m) => ({
+      default: m.DigitalInviteBuilder,
+    })),
+  ),
+);
+export const ArtisticQrStudioPage = lazyPage(() =>
+  ensureThemeBundle("mitra-labs").then(() =>
+    import("../../../features/mitraLabs/pages/ArtisticQrStudio").then((m) => ({
+      default: m.ArtisticQrStudio,
+    })),
+  ),
+);
+export const EventDayReportPage = lazyPage(() =>
+  ensureThemeBundle("mitra-labs").then(() =>
+    import("../../../features/mitraLabs/pages/EventDayReportPage").then((m) => ({
+      default: m.EventDayReportPage,
+    })),
+  ),
+);
+export const EventDayReportFolderPage = lazyPage(() =>
+  ensureThemeBundle("mitra-labs").then(() =>
+    import("../../../features/mitraLabs/pages/EventDayReportFolderPage").then((m) => ({
+      default: m.EventDayReportFolderPage,
+    })),
+  ),
+);
+export const AiPhotoDeliveryBetaPage = lazyPage(() =>
+  ensureThemeBundle("mitra-labs").then(() =>
+    import("../../../features/mitraLabs/pages/AiPhotoDeliveryBetaPage").then((m) => ({
+      default: m.AiPhotoDeliveryBetaPage,
+    })),
+  ),
+);
+export const PublicPassVerifyPage = lazyPage(() =>
+  ensureThemeBundle("mitra-labs").then(() =>
+    import("../../../features/mitraLabs/pages/PublicPassVerify").then((m) => ({
+      default: m.PublicPassVerify,
+    })),
+  ),
+);
 
 export const ShiftOpsManagerApprovalsPage = lazyPage(() =>
   import("../../../features/shiftOps/pages/ShiftOpsManagerApprovalsPage").then((m) => ({

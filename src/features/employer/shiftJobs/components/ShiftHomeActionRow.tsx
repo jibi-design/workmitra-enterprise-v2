@@ -5,7 +5,9 @@
 import type { ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { PulseNode } from "../../../pulse/PulseNode";
 import { IconFavorites, IconGroup, IconPost } from "./ShiftHomeIcons";
+import { ActionPill } from "../../../../shared/components/layout/designDna";
 
 type ShiftHomeActionRowProps = {
   postsCount: number;
@@ -40,15 +42,21 @@ export function ShiftHomeActionRow({
       aria-label="Workspace quick actions"
       data-testid="shift-home-action-row"
     >
-      <QuickAction
-        label="My Posts / Active Shifts"
-        icon={<IconPost />}
-        badge={postsCount > 0 ? String(postsCount) : undefined}
-        meta={activeShiftsCount > 0 ? `${activeShiftsCount} active` : undefined}
-        active={postsActive}
-        onClick={onPosts}
-        testId="shift-home-quick-posts"
-      />
+      <PulseNode
+        id="shift-dashboard-applications"
+        variant="button"
+        style={{ "--wm-pulse-node-radius": "999px", width: "100%" }}
+      >
+        <QuickAction
+          label="My Posts / Active Shifts"
+          icon={<IconPost />}
+          badge={postsCount > 0 ? String(postsCount) : undefined}
+          meta={activeShiftsCount > 0 ? `${activeShiftsCount} active` : undefined}
+          active={postsActive}
+          onClick={onPosts}
+          testId="shift-home-quick-posts"
+        />
+      </PulseNode>
       <QuickAction
         label="Work Groups"
         icon={<IconGroup />}
@@ -87,8 +95,10 @@ function QuickAction({
   testId?: string;
 }) {
   return (
-    <button
-      type="button"
+    <ActionPill
+      bare
+      domain="shift"
+      active={active}
       className={["wm-shiftHomeQuickPill", active ? "isActive" : ""].filter(Boolean).join(" ")}
       onClick={onClick}
       data-testid={testId}
@@ -100,6 +110,6 @@ function QuickAction({
       <span className="wm-shiftHomeQuickPillLabel">{label}</span>
       {badge ? <span className="wm-shiftHomeQuickPillBadge">{badge}</span> : null}
       {meta ? <span className="wm-shiftHomeQuickPillMeta">{meta}</span> : null}
-    </button>
+    </ActionPill>
   );
 }

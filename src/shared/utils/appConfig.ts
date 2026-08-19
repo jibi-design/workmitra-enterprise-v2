@@ -19,7 +19,15 @@ export const APP_CONFIG = {
   },
   branding: {
     appName: "Job Mitra",
-    supportEmail: "support@mitralabs.app",
+    /** Play / package public name — keep identical to Capacitor appName + Android strings */
+    packageId: "com.mitralabs.jobmitra",
+    supportEmail: "support@mitraaccesshub.com",
+    /** Keep in sync with package.json + android versionName */
     version: "2.0.0",
+    /** Android versionCode — bump on every Play upload */
+    versionCode: 20000,
+  },
+  privacy: {
+    policyUrl: "https://jibi-design.github.io/workmitra-privacy/",
   },
 };

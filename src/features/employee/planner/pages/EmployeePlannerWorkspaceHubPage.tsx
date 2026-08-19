@@ -72,7 +72,7 @@ export function EmployeePlannerWorkspaceHubPage() {
         audience="employee"
         eyebrow="Roster workspace"
         title="Candidate Roster Workspace"
-        subtitle="Active schedules, daily check-ins, and 30-day epoch progress — all under /planner."
+        subtitle="Active schedules, daily check-ins, and 30-day progress — all under /planner."
         trailing={
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             <Link
@@ -192,7 +192,7 @@ export function EmployeePlannerWorkspaceHubPage() {
                   {assignment.companyName} · {assignment.days.length} confirmed days
                 </div>
                 <div style={{ marginTop: 8, fontSize: 12 }}>
-                  This epoch: {progress.daysCompleted}/{progress.daysScheduled} days checked in
+                  This window: {progress.daysCompleted}/{progress.daysScheduled} days checked in
                 </div>
                 <div style={{ display: "grid", gap: 6, marginTop: 10 }}>
                   {assignment.days.slice(0, 8).map((day) => (

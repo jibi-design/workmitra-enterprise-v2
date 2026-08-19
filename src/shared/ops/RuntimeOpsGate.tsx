@@ -2,6 +2,7 @@
 
 import { useEffect, type ReactNode } from "react";
 import { Navigate, Outlet } from "react-router-dom";
+import { JobMitraBrandName } from "../components/brand/BrandName";
 import { startRuntimeOpsFlagsPoll } from "./runtimeOpsFlags";
 import { useRuntimeOpsFlags } from "./useRuntimeOpsFlags";
 
@@ -16,15 +17,27 @@ export function RuntimeOpsBootstrap(): null {
 /**
  * Full-screen calm gate when maintenance or lockdown is ON.
  * Lockdown also blocks (same UX — apps must not operate).
+ * Break-glass: in-app /admin Super-Admin plane stays reachable.
  */
 export function RuntimeOpsMaintenanceGate({ children }: { children: ReactNode }): ReactNode {
   const flags = useRuntimeOpsFlags();
+  const path =
+    typeof window !== "undefined" ? window.location.pathname || "" : "";
+  const adminBreakGlass = path === "/admin" || path.startsWith("/admin/");
+
+  if (adminBreakGlass) return children;
   if (!flags.maintenanceMode && !flags.lockdown) return children;
 
   const title = flags.lockdown ? "Platform temporarily locked" : "Maintenance in progress";
-  const body = flags.lockdown
-    ? "Job Mitra is in lockdown for safety. Please try again later."
-    : "Job Mitra is under planned maintenance. Please try again shortly.";
+  const body = flags.lockdown ? (
+    <>
+      <JobMitraBrandName size="sm" /> is in lockdown for safety. Please try again later.
+    </>
+  ) : (
+    <>
+      <JobMitraBrandName size="sm" /> is under planned maintenance. Please try again shortly.
+    </>
+  );
 
   return (
     <div
@@ -40,10 +53,13 @@ export function RuntimeOpsMaintenanceGate({ children }: { children: ReactNode })
         color: "#e8eef7",
         textAlign: "center",
         fontFamily: "system-ui, sans-serif",
-      }}
+        "--wm-brand-mitra-current": "var(--wm-brand-mitra-on-dark, #ffffff)",
+      } as React.CSSProperties}
     >
       <div style={{ maxWidth: 420 }}>
-        <p style={{ letterSpacing: "0.12em", fontSize: 12, opacity: 0.7 }}>JOB MITRA</p>
+        <p style={{ letterSpacing: "0.04em", fontSize: 14, marginBottom: 8 }}>
+          <JobMitraBrandName size="md" />
+        </p>
         <h1 style={{ fontSize: "1.6rem", margin: "0.75rem 0" }}>{title}</h1>
         <p style={{ opacity: 0.85, lineHeight: 1.5 }}>{body}</p>
       </div>

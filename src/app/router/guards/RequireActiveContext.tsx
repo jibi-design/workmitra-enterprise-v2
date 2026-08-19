@@ -1,11 +1,12 @@
 /** Require active workspace context (employee | employer). Evolves RequireRole. */
 
-import { useNavigate, useLocation } from "react-router-dom";
+import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import { ROUTE_PATHS } from "../routePaths";
 import { stashPendingRoute } from "../pendingRoute";
 import { AUTH_BACKEND_ENABLED } from "../../../shared/config/authConfig";
 import { useAuthStore, type ActiveMode } from "../../../shared/store/authStore";
 import { useAppRole } from "./useAppRole";
+import { LAB_WORKSPACE_PICK_PATH } from "./ensureLabWorkspaceRole";
 import {
   RouteGuardDenied,
   RouteGuardLoading,
@@ -32,6 +33,7 @@ function resolveActiveMode(user: {
 /**
  * Route guard for dual-context shells.
  * Deep-links with the wrong activeMode soft-redirect to the correct home.
+ * AUTH off + no role → Landing Employee/Employer pick (no dead interstitial, no auto-assume).
  */
 export function RequireActiveContext(props: { mode: ActiveMode; children: React.ReactElement }) {
   const location = useLocation();
@@ -45,19 +47,18 @@ export function RequireActiveContext(props: { mode: ActiveMode; children: React.
 
   if (AUTH_BACKEND_ENABLED) {
     if (!sessionChecked) {
+      if (appRole === props.mode) {
+        return props.children;
+      }
       return <RouteGuardLoading overlay label="Checking your session" />;
     }
 
     if (!isAuthenticated || !authUser) {
+      if (appRole === props.mode) {
+        return props.children;
+      }
       stashPendingRoute(returnPath);
-      return (
-        <RouteGuardDenied
-          title="Sign in required"
-          message="You need an active account to open this workspace."
-          primaryLabel="Sign in"
-          onPrimary={() => nav(ROUTE_PATHS.login, { replace: true, state: { from: returnPath } })}
-        />
-      );
+      return <Navigate to={ROUTE_PATHS.landing} replace state={{ from: returnPath }} />;
     }
 
     if (authUser.role === "admin") {
@@ -74,30 +75,16 @@ export function RequireActiveContext(props: { mode: ActiveMode; children: React.
     const active = resolveActiveMode(authUser);
     if (active !== props.mode) {
       const home = active ? homeForMode(active) : ROUTE_PATHS.login;
-      return (
-        <RouteGuardDenied
-          title="Wrong workspace context"
-          message={`This area is for the ${props.mode} workspace. Your active context is ${active ?? "unset"}.`}
-          primaryLabel="Go to your home"
-          onPrimary={() => nav(home, { replace: true })}
-        />
-      );
+      return <Navigate to={home} replace />;
     }
 
     return props.children;
   }
 
-  // AUTH off — legacy roleStorage bridge (same behavior as RequireRole for EE/ER).
+  // AUTH off — Landing is the only Employee/Employer chooser
   if (!appRole) {
     stashPendingRoute(returnPath);
-    return (
-      <RouteGuardDenied
-        title="Choose a workspace"
-        message="Pick Employee or Employer to continue to this page."
-        primaryLabel="Choose workspace"
-        onPrimary={() => nav(ROUTE_PATHS.landing, { replace: true, state: { from: returnPath } })}
-      />
-    );
+    return <Navigate to={LAB_WORKSPACE_PICK_PATH} replace state={{ from: returnPath }} />;
   }
 
   if (appRole !== props.mode) {
@@ -105,14 +92,7 @@ export function RequireActiveContext(props: { mode: ActiveMode; children: React.
       appRole === "employee" || appRole === "employer"
         ? homeForMode(appRole)
         : ROUTE_PATHS.adminHome;
-    return (
-      <RouteGuardDenied
-        title="Wrong workspace context"
-        message={`This area is for the ${props.mode} workspace. Your current workspace is ${appRole}.`}
-        primaryLabel="Go to your home"
-        onPrimary={() => nav(home, { replace: true })}
-      />
-    );
+    return <Navigate to={home} replace />;
   }
 
   return props.children;

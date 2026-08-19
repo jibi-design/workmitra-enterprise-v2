@@ -42,7 +42,7 @@ export function ShiftSearchPage() {
 
   return (
     <div
-      className="wm-ee-vShift wm-stackGrid"
+      className="wm-ee-vShift wm-stackGrid pb-safe-nav"
       data-testid="shift-search-page"
       style={{ gap: "var(--wm-stack-gap)" }}
     >

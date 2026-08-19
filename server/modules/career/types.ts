@@ -24,6 +24,7 @@ export interface CareerPostRow {
   title: string;
   description: string;
   location: string | null;
+  location_pincode: string | null;
   status: string;
   details: Record<string, unknown>;
   created_at: Date;

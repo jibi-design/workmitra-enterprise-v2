@@ -21,7 +21,7 @@ export function AdminHomeSystemStatus({ data, formatBytes, relativeTime }: Props
 
         <div>
           <div className="wm-ad-healthTitle">All Systems Operational</div>
-          <div className="wm-ad-healthSub">Phase-0 localStorage mode. No backend dependency.</div>
+          <div className="wm-ad-healthSub">Monitoring local workspace health.</div>
 
           <div className="wm-ad-healthStats">
             <span className="wm-ad-healthStat">

@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { incidentReportStorage } from "../../../shared/hr/hrPublic";
 import type { IncidentReport } from "../../../shared/hr/hrPublic";
 
-const CONSOLE_BLUE = "var(--wm-er-accent-console, #0369a1)";
+const CONSOLE_BLUE = "var(--wm-diary-accent, #3b82f6)";
 const TEXT = "var(--wm-emp-text, var(--wm-er-text, #1e293b))";
 const MUTED = "var(--wm-emp-muted, var(--wm-er-muted, #64748b))";
 
@@ -35,7 +35,7 @@ export function EmployeeIncidentReportSection({ employmentId }: Props) {
   }, [employmentId]);
 
   return (
-    <div className="wm-ee-card" style={{ border: "1px solid rgba(3,105,161,0.12)" }}>
+    <div className="wm-ee-card" style={{ border: "1px solid rgba(59,130,246,0.12)" }}>
       <div
         style={{
           display: "flex",
@@ -46,7 +46,7 @@ export function EmployeeIncidentReportSection({ employmentId }: Props) {
         }}
       >
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontWeight: 950, fontSize: 14, color: TEXT }}>Report Issue</div>
+          <div style={{ fontWeight: "var(--wm-weight-bold, 700)", fontSize: 14, color: TEXT }}>Report Issue</div>
           <div style={{ fontSize: 11.5, color: MUTED, marginTop: 3, lineHeight: 1.45 }}>
             Workplace issue reporting will be available after employer reporting tools are enabled.
           </div>
@@ -61,11 +61,11 @@ export function EmployeeIncidentReportSection({ employmentId }: Props) {
             height: 34,
             padding: "0 14px",
             borderRadius: 999,
-            border: "1px solid rgba(3,105,161,0.14)",
-            background: "rgba(3,105,161,0.08)",
+            border: "1px solid rgba(59,130,246,0.14)",
+            background: "rgba(59,130,246,0.08)",
             color: CONSOLE_BLUE,
             fontSize: 12,
-            fontWeight: 950,
+            fontWeight: "var(--wm-weight-bold, 700)",
             cursor: "not-allowed",
             opacity: 0.72,
           }}
@@ -115,7 +115,7 @@ export function EmployeeIncidentReportSection({ employmentId }: Props) {
                       padding: "3px 8px",
                       borderRadius: 999,
                       fontSize: 10,
-                      fontWeight: 900,
+                      fontWeight: "var(--wm-weight-bold, 700)",
                       background: `${sCfg.color}15`,
                       color: sCfg.color,
                       whiteSpace: "nowrap",
@@ -136,8 +136,8 @@ export function EmployeeIncidentReportSection({ employmentId }: Props) {
                       marginTop: 7,
                       padding: "7px 9px",
                       borderRadius: 10,
-                      background: "rgba(3,105,161,0.07)",
-                      border: "1px solid rgba(3,105,161,0.13)",
+                      background: "rgba(59,130,246,0.07)",
+                      border: "1px solid rgba(59,130,246,0.13)",
                       fontSize: 12,
                       color: CONSOLE_BLUE,
                       lineHeight: 1.45,

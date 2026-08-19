@@ -65,18 +65,26 @@ export function useEmployerShiftWorkspacesState() {
   );
 
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<EmployerWorkspaceFilter>("all");
+  const [filter, setFilter] = useState<EmployerWorkspaceFilter | "pending">("pending");
 
   const counts = useMemo(() => createWorkspaceCounts(allWorkspaces), [allWorkspaces]);
+  const resolvedFilter: EmployerWorkspaceFilter =
+    filter === "pending"
+      ? counts.active > 0
+        ? "active"
+        : counts.upcoming > 0
+          ? "upcoming"
+          : "all"
+      : filter;
 
   const filteredWorkspaces = useMemo(
     () =>
       filterEmployerWorkspaces({
         workspaces: allWorkspaces,
-        filter,
+        filter: resolvedFilter,
         query,
       }),
-    [allWorkspaces, filter, query],
+    [allWorkspaces, resolvedFilter, query],
   );
 
   function openHome() {
@@ -95,8 +103,8 @@ export function useEmployerShiftWorkspacesState() {
     mode,
     query,
     setQuery,
-    filter,
-    setFilter,
+    filter: resolvedFilter,
+    setFilter: (next: EmployerWorkspaceFilter) => setFilter(next),
     counts,
     allCount: allWorkspaces.length,
     filteredWorkspaces,

@@ -1,2 +1,3 @@
 /* Admin shell theme — loaded when AdminShell mounts */
 @import "./../admin.css";
+@import "./../stable-inline-layout.css";

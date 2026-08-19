@@ -5,9 +5,9 @@
 
 import {
   hydrateShiftApplicationsFromServer,
-  hydrateShiftPostsFromServer,
 } from "../../../shift/services/shiftDbTruth.service";
 import { isShiftApiSyncEnabled } from "../../../shift/services/shiftGateApi.service";
+import { hydrateNearbyShiftPostsFromServer } from "./nearbyJobs.hydrate";
 
 export type ShiftSearchFeedStatus = "loading" | "ready" | "error";
 
@@ -19,7 +19,7 @@ export async function refreshShiftSearchFeed(): Promise<
   }
 
   const [postsOk, appsOk] = await Promise.all([
-    hydrateShiftPostsFromServer(),
+    hydrateNearbyShiftPostsFromServer(),
     hydrateShiftApplicationsFromServer(),
   ]);
 

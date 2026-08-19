@@ -84,7 +84,7 @@ export function WorkforceStaffCard({
           {/* ID + City */}
           <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginTop: 2 }}>
             ID: {staff.employeeUniqueId}
-            {staff.employeeCity && ` Â· ${staff.employeeCity}`}
+            {staff.employeeCity && ` · ${staff.employeeCity}`}
           </div>
 
           {/* Category chips */}

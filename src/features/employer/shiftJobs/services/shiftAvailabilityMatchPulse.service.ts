@@ -1,5 +1,5 @@
 // App name: Job Mitra
-// Platform Lock — enqueue date-match pulses for free workers when a shift is published.
+// Platform Lock — enqueue date+pincode match pulses when a shift is published.
 
 import { shiftAvailabilityPulseQueueStorage } from "../../../shared/shift/shiftEmployeeBridge";
 import { availabilityStorage } from "../../../shared/shift/availability.reader";
@@ -13,19 +13,27 @@ export function enqueueAvailabilityMatchPulsesForShift(params: {
   postId: string;
   startAt: number;
   endAt: number;
+  locationPincode?: string | null;
 }): number {
   const startIso = toDateStr(params.startAt);
   const endIso = toDateStr(params.endAt < params.startAt ? params.startAt : params.endAt);
+  const jobPincode = params.locationPincode;
 
   const matchedIds = new Set<string>();
 
-  for (const workerMlId of availabilityStorage.getWorkerIdsFreeOnIsoDate(startIso)) {
+  for (const workerMlId of availabilityStorage.getWorkerIdsFreeOnIsoDateNear(
+    startIso,
+    jobPincode,
+  )) {
     matchedIds.add(workerMlId);
     if (matchedIds.size >= MAX_NOTIFY_WORKERS) break;
   }
 
   if (endIso !== startIso && matchedIds.size < MAX_NOTIFY_WORKERS) {
-    for (const workerMlId of availabilityStorage.getWorkerIdsFreeOnIsoDate(endIso)) {
+    for (const workerMlId of availabilityStorage.getWorkerIdsFreeOnIsoDateNear(
+      endIso,
+      jobPincode,
+    )) {
       matchedIds.add(workerMlId);
       if (matchedIds.size >= MAX_NOTIFY_WORKERS) break;
     }

@@ -123,7 +123,7 @@ function slimPost(emp: number, now: number) {
     category: "other",
     experience: "fresher_ok",
     payPerDay: 900 + (emp % 20) * 10,
-    locationName: "Kochi",
+    locationName: "City A",
     distanceKm: 3,
     startAt,
     endAt: startAt + 8 * 3_600_000,

@@ -1,11 +1,9 @@
-// src/features/employer/company/components/SettingsActionSections.tsx
-// Preferences, Security, and Danger Zone sections for Employer Settings.
-// Fix: Log Out removed (available in top bar). Danger Zone = Delete Account only.
+// Preferences, Security (legacy Coming Soon), Danger Zone re-export from shared.
 
 import type { EmployerProfile } from "../storage/employerSettings.storage";
 import { LANGUAGE_OPTIONS } from "../storage/employerSettings.storage";
 import { SettingsSelectField } from "./SettingsFormFields";
-import { IconPreferences, IconSecurity, IconDanger, IconDelete } from "../helpers/settingsIcons";
+import { IconPreferences, IconSecurity } from "../helpers/settingsIcons";
 import {
   sectionHeadStyle,
   sectionIconStyle,
@@ -13,18 +11,14 @@ import {
   comingSoonBadgeStyle,
 } from "../helpers/settingsStyles";
 
-/* ------------------------------------------------ */
-/* Shared prop types                                */
-/* ------------------------------------------------ */
+export { DangerZoneSection } from "../../../../shared/settings/DangerZoneSection";
+
 interface PreferencesSectionProps {
   data: EmployerProfile;
   editMode: boolean;
   onFieldChange: (field: keyof EmployerProfile, value: string | boolean) => void;
 }
 
-/* ------------------------------------------------ */
-/* Preferences Section                              */
-/* ------------------------------------------------ */
 export function PreferencesSection({ data, editMode, onFieldChange }: PreferencesSectionProps) {
   return (
     <div className="wm-settingsGroup">
@@ -36,7 +30,6 @@ export function PreferencesSection({ data, editMode, onFieldChange }: Preference
         <h2 style={sectionTitleStyle}>Language</h2>
       </div>
 
-      {/* Language */}
       <SettingsSelectField
         label="Language"
         value={data.language}
@@ -49,9 +42,6 @@ export function PreferencesSection({ data, editMode, onFieldChange }: Preference
   );
 }
 
-/* ------------------------------------------------ */
-/* Security Section                                 */
-/* ------------------------------------------------ */
 export function SecuritySection() {
   return (
     <div className="wm-er-card" style={{ marginTop: 12 }}>
@@ -81,56 +71,6 @@ export function SecuritySection() {
   );
 }
 
-/* ------------------------------------------------ */
-/* Danger Zone Section                              */
-/* ------------------------------------------------ */
-interface DangerZoneSectionProps {
-  onDeleteAccount: () => void;
-}
-
-export function DangerZoneSection({ onDeleteAccount }: DangerZoneSectionProps) {
-  return (
-    <>
-      <div className="wm-settingsGroup wm-settingsGroup--danger">
-        <div className="wm-settingsGroup__title">Danger zone</div>
-        <div style={sectionHeadStyle}>
-          <div
-            style={{
-              ...sectionIconStyle,
-              border: "1px solid rgba(220, 38, 38, 0.18)",
-              color: "var(--wm-error)",
-            }}
-          >
-            <IconDanger />
-          </div>
-          <h2 style={{ ...sectionTitleStyle, color: "var(--wm-error)" }}>Account deletion</h2>
-        </div>
-
-        <button
-          type="button"
-          className="wm-settingsRow wm-settingsRow--danger"
-          onClick={onDeleteAccount}
-        >
-          <span className="wm-settingsRow__icon" style={{ color: "#b91c1c" }}>
-            <IconDelete />
-          </span>
-          <span className="wm-settingsRow__label">Delete Account</span>
-          <span className="wm-settingsRow__chevron">→</span>
-        </button>
-
-        <div style={dangerHintStyle}>
-          Delete Account will permanently remove all your data including company profile, employee
-          records, and settings. This action cannot be undone.
-        </div>
-      </div>
-      <div className="wm-settingsVersion">WorkMitra v1.0 · Beta</div>
-    </>
-  );
-}
-
-/* ------------------------------------------------ */
-/* Local layout styles                              */
-/* ------------------------------------------------ */
 const toggleLabelStyle: React.CSSProperties = {
   fontSize: 14,
   fontWeight: 700,
@@ -156,12 +96,4 @@ const securityRowDividerStyle: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-};
-
-const dangerHintStyle: React.CSSProperties = {
-  marginTop: 10,
-  fontSize: 11,
-  color: "var(--wm-er-muted)",
-  fontWeight: 500,
-  lineHeight: 1.5,
 };

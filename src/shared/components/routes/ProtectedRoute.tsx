@@ -1,12 +1,13 @@
 /** Job Mitra | ProtectedRoute.tsx — aligned with RequireRole / useAppRole (RBAC Wave 2+3). */
 
 import type { ReactNode } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore, type UserRole } from "../../store/authStore";
 import { ROUTE_PATHS } from "../../../app/router/routePaths";
 import { AUTH_BACKEND_ENABLED } from "../../config/authConfig";
 import { stashPendingRoute } from "../../../app/router/pendingRoute";
 import { useAppRole } from "../../../app/router/guards/useAppRole";
+import { LAB_WORKSPACE_PICK_PATH } from "../../../app/router/guards/ensureLabWorkspaceRole";
 import { RouteGuardDenied, RouteGuardLoading } from "./RouteGuardStatus";
 
 interface ProtectedRouteProps {
@@ -36,14 +37,7 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
 
     if (!isAuthenticated || !authUser) {
       stashPendingRoute(returnPath);
-      return (
-        <RouteGuardDenied
-          title="Sign in required"
-          message="You need an active account to open this page."
-          primaryLabel="Sign in"
-          onPrimary={() => nav(ROUTE_PATHS.login, { replace: true, state: { from: returnPath } })}
-        />
-      );
+      return <Navigate to={ROUTE_PATHS.login} replace state={{ from: returnPath }} />;
     }
 
     if (requiredRole && authUser.role !== requiredRole) {
@@ -62,14 +56,7 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
 
   if (!appRole) {
     stashPendingRoute(returnPath);
-    return (
-      <RouteGuardDenied
-        title="Choose a workspace"
-        message="Pick Employee or Employer to continue."
-        primaryLabel="Choose workspace"
-        onPrimary={() => nav(ROUTE_PATHS.landing, { replace: true, state: { from: returnPath } })}
-      />
-    );
+    return <Navigate to={LAB_WORKSPACE_PICK_PATH} replace state={{ from: returnPath }} />;
   }
 
   if (requiredRole && appRole !== requiredRole) {

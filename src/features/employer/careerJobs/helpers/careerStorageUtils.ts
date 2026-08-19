@@ -2,6 +2,8 @@
 // File name: careerStorageUtils.ts
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employer\careerJobs\helpers\careerStorageUtils.ts
 
+import { scopeAppLocalId } from "../../../../shared/identity/constants/idConstants";
+
 // Shared localStorage utilities for Career Jobs domain.
 // All service files import from here — single source of truth for keys & events.
 
@@ -147,5 +149,6 @@ export function notifyEmployeeCareerSearchChanged(): void {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function uid(prefix: string): string {
-  return `${prefix}_${Math.random().toString(16).slice(2)}_${Date.now().toString(16)}`;
+  const scoped = scopeAppLocalId(prefix);
+  return `${scoped}_${Math.random().toString(16).slice(2)}_${Date.now().toString(16)}`;
 }

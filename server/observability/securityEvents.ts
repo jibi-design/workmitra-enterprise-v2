@@ -6,7 +6,15 @@
 import { captureMessage } from "./monitor.js";
 import { sanitizeForLog } from "./sanitize.js";
 
-export type SecurityEventType = "RATE_LIMIT_HIT" | "CORS_DENIED" | "MUID_MISMATCH_ATTEMPT";
+export type SecurityEventType =
+  | "RATE_LIMIT_HIT"
+  | "RATE_LIMIT_STORE_ERROR"
+  | "CORS_DENIED"
+  | "MUID_MISMATCH_ATTEMPT"
+  | "RBAC_DENIED"
+  | "ANOMALY_RAISED"
+  | "MAINTENANCE_GATE_503"
+  | "STEP_UP_DENIED";
 
 export type SecurityEventPayload = {
   event: SecurityEventType;

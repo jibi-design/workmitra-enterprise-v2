@@ -20,12 +20,14 @@ export { SlideOver, type SlideOverProps } from "./SlideOver";
 export { CommandPalette, type CommandPaletteProps } from "./CommandPalette";
 export {
   EMPLOYER_COMMAND_PALETTE_ITEMS,
+  EMPLOYEE_COMMAND_PALETTE_ITEMS,
   filterCommandPaletteItems,
   commandPaletteDomainCounts,
   type CommandPaletteItem,
   type CommandPaletteDomain,
 } from "./commandPalette.registry";
 export { useCommandPaletteHotkey } from "./useCommandPaletteHotkey";
+export { useCommandPaletteHub, type CommandPaletteHub } from "./useCommandPaletteHub";
 export {
   showEnterpriseToast,
   dismissEnterpriseToast,

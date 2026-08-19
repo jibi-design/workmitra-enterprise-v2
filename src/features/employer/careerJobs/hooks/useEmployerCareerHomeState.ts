@@ -72,7 +72,10 @@ function isPastPost(post: CareerJobPost): boolean {
 export function useEmployerCareerHomeState() {
   const nav = useNavigate();
   const [isHydrating, setIsHydrating] = useState(
-    () => isCareerApiSyncEnabled() && hasValidCareerEmployerScope(),
+    () =>
+      isCareerApiSyncEnabled() &&
+      hasValidCareerEmployerScope() &&
+      getCareerHomePostsSnapshot().length === 0,
   );
   const [loadError, setLoadError] = useState<string | null>(null);
   const [retryToken, setRetryToken] = useState(0);
@@ -90,7 +93,9 @@ export function useEmployerCareerHomeState() {
     let cancelled = false;
 
     void (async () => {
-      setIsHydrating(true);
+      if (getCareerHomePostsSnapshot().length === 0) {
+        setIsHydrating(true);
+      }
       setLoadError(null);
       try {
         await Promise.all([hydrateCareerPostsFromServer(), hydrateEmploymentsFromDb("employer")]);
@@ -176,7 +181,7 @@ export function useEmployerCareerHomeState() {
   );
 
   const viewState = useMemo(() => {
-    if (isHydrating) return "loading" as const;
+    if (isHydrating && posts.length === 0) return "loading" as const;
     if (loadError && posts.length === 0) return "error" as const;
     if (posts.length === 0) return "empty" as const;
     return "active" as const;

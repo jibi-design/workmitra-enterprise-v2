@@ -26,31 +26,7 @@ export const QA_MULTI_EMPLOYER_COUNT = 105;
 export const QA_MULTI_EMPLOYER_PREFIX = "ML_QA_EMP_";
 export const QA_MULTI_EMPLOYER_REGISTRY_KEY = "wm_qa_multi_employer_registry_v1";
 
-const FIRST = [
-  "Asha",
-  "Biju",
-  "Chitra",
-  "Deepak",
-  "Esha",
-  "Faisal",
-  "Gita",
-  "Hari",
-  "Indu",
-  "Jithin",
-] as const;
-const LAST = [
-  "Nair",
-  "Menon",
-  "Pillai",
-  "Kumar",
-  "Joseph",
-  "Thomas",
-  "Rahman",
-  "Das",
-  "Iyer",
-  "Varghese",
-] as const;
-const CITIES = ["Kochi", "Thrissur", "Kozhikode", "Kannur", "Alappuzha"] as const;
+const CITIES = ["City A", "City B", "City C", "City D", "City E"] as const;
 
 export type QaMultiEmployerSeedResult = {
   employerCount: number;
@@ -63,7 +39,7 @@ export function qaMultiEmployerId(index1Based: number): string {
 }
 
 function workerName(i: number): string {
-  return `${FIRST[(i - 1) % FIRST.length]} ${LAST[(i - 1) % LAST.length]} #${i}`;
+  return `Worker ${i}`;
 }
 
 function buildFavoriteSlice(empN: number, now: number): FavoriteWorker[] {
@@ -117,7 +93,7 @@ function buildPost(empN: number, now: number): ShiftPost {
     category: cat,
     experience: empN % 3 === 0 ? "experienced" : "fresher_ok",
     payPerDay: 800 + (empN % 20) * 25,
-    locationName: CITIES[empN % CITIES.length] ?? "Kochi",
+    locationName: CITIES[empN % CITIES.length] ?? "City A",
     distanceKm: 2 + (empN % 8),
     startAt,
     endAt: startAt + 8 * 3_600_000,
@@ -202,8 +178,8 @@ function buildProfile(empN: number): EmployerProfile {
     registrationNo: `QA-REG-${empN}`,
     industryType: "Logistics & Transport",
     companySize: "11-50",
-    locationCity: CITIES[empN % CITIES.length] ?? "Kochi",
-    locationState: "Kerala",
+    locationCity: CITIES[empN % CITIES.length] ?? "City A",
+    locationState: "Region",
     companyDescription: `Multi-tenant QA employer ${orgId}`,
     fullName: `QA Owner ${empN}`,
     email: `qa.emp${empN}@example.test`,

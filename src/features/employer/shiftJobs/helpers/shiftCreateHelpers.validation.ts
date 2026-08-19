@@ -1,5 +1,6 @@
 import type { ExperienceLabel } from "../../shiftJobs/storage/employerShift.storage";
 import type { ShiftPayBasisDraft } from "./shiftCreateHelpers.pay";
+import { isValidPincode } from "../../../shared/location/pincode";
 
 export function expLabel(e: ExperienceLabel): string {
   if (e === "helper") return "Helper (minimum experience)";
@@ -37,6 +38,7 @@ export function validateShiftForm(p: {
   companyName: string;
   jobName: string;
   locationName: string;
+  locationPincode: string;
   vacanciesStr: string;
   payPerDay: number;
   payBasis: ShiftPayBasisDraft;
@@ -48,6 +50,7 @@ export function validateShiftForm(p: {
   if (p.companyName.trim().length < 2) e.push("Company name is required (min 2 characters).");
   if (p.jobName.trim().length < 2) e.push("Job title is required (min 2 characters).");
   if (p.locationName.trim().length < 2) e.push("Work location is required.");
+  if (!isValidPincode(p.locationPincode)) e.push("Work area code is required.");
   if ((Number(p.vacanciesStr) || 0) < 1) e.push("At least 1 worker is needed.");
   if (!p.payBasis) e.push("Pay basis is required.");
   if (p.payBasis && p.payBasis !== "not_listed" && p.payPerDay <= 0) {
@@ -74,6 +77,7 @@ export function validateWizardStep1(p: {
 
 export function validateWizardStep2(p: {
   locationName: string;
+  locationPincode: string;
   payPerDay: number;
   payBasis: ShiftPayBasisDraft;
   startAt: number;
@@ -81,7 +85,8 @@ export function validateWizardStep2(p: {
 }): string[] {
   const e: string[] = [];
 
-  if (p.locationName.trim().length < 2) e.push("City / area is required.");
+  if (p.locationName.trim().length < 2) e.push("Reporting area is required.");
+  if (!isValidPincode(p.locationPincode)) e.push("Work area code is required.");
   if (!p.payBasis) e.push("Pay basis is required.");
   if (p.payBasis && p.payBasis !== "not_listed" && p.payPerDay <= 0) {
     e.push("Pay amount must be greater than 0.");

@@ -161,13 +161,12 @@ export function EmployerPlannerRosterDetailPage() {
       data-plan-id={planId}
     >
       <section className="wm-planner-card" data-testid="planner-employer-roster-detail-hero">
-        <div className="wm-planner-sectionLabel">Hybrid A2 · Roster console</div>
+        <div className="wm-planner-sectionLabel">Roster console</div>
         <h1 className="wm-pageTitle" style={{ margin: "6px 0 0" }}>
           {plan.name}
         </h1>
         <p className="wm-pageSub" style={{ marginTop: 6 }}>
-          {plan.companyName || "Employer"} · epoch {plan.epochDays ?? 30} days · cursor{" "}
-          {plan.milestoneCursor ?? 0}
+          {plan.companyName || "Employer"} · {plan.epochDays ?? 30}-day window
         </p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14 }}>
           <Link
@@ -367,7 +366,7 @@ export function EmployerPlannerRosterDetailPage() {
                       }}
                     >
                       {day.date} · {day.status}
-                      {day.payPerDay ? ` · ₹${day.payPerDay}` : ""}
+                      {day.payPerDay ? ` · ${day.payPerDay}` : ""}
                     </div>
                   ))}
                 </div>
@@ -400,7 +399,7 @@ export function EmployerPlannerRosterDetailPage() {
             style={{ marginTop: 8 }}
             data-testid="planner-roster-milestones-empty"
           >
-            No epoch summaries committed yet. They appear when a 30-day window completes.
+            No period summaries committed yet. They appear when a 30-day window completes.
           </p>
         ) : (
           <div style={{ display: "grid", gap: 8, marginTop: 8 }}>
@@ -411,7 +410,7 @@ export function EmployerPlannerRosterDetailPage() {
                 data-testid="planner-roster-milestone-row"
                 style={{ marginBottom: 0, fontSize: 12 }}
               >
-                {m.employeeName} · epoch {m.epochIndex + 1} · {m.daysCompleted}/{m.daysScheduled}{" "}
+                {m.employeeName} · period {m.epochIndex + 1} · {m.daysCompleted}/{m.daysScheduled}{" "}
                 days · {m.attendanceRate}% attendance
               </div>
             ))}

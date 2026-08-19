@@ -31,7 +31,7 @@ export function UnifiedWorkplaceHubCard({ onOpen }: Props) {
         <div className="wm-homeHubEntry__copy">
           <div className="wm-homeHubEntry__kicker">Workplace</div>
           <div className="wm-homeHubEntry__title">Workplace Hub</div>
-          <div className="wm-homeHubEntry__sub">Company Work Log and Work Vault</div>
+          <div className="wm-homeHubEntry__sub">Work Vault</div>
         </div>
       </div>
     </button>

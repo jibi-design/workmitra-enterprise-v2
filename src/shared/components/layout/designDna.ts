@@ -7,7 +7,8 @@ export { HomeGlassCardShell, type HomeGlassCardShellProps } from "./HomeGlassCar
 export { GlassContainer, type GlassContainerProps } from "./GlassContainer";
 export { DomainCard, type DomainCardDomain, type DomainCardProps } from "./DomainCard";
 export { ActionPill, type ActionPillDomain, type ActionPillProps } from "./ActionPill";
-export { HeaderNavbarBrand, JobMitraBrandMark, MitraLabsBrandMark } from "./HeaderNavbar";
+export { HeaderNavbarBrand } from "./HeaderNavbar";
+export { JobMitraBrandMark, MitraLabsBrandMark } from "../brand/BrandMark";
 export { DomainHero, type DomainHeroProps, type DomainHeroVariant } from "./DomainHero";
 export { HomeSectionPanel } from "./HomeSectionPanel";
 export { StatusBadge, type StatusBadgeProps } from "../enterprise/StatusBadge";

@@ -3,6 +3,12 @@ import type { ShiftPostRow, ShiftWorkspaceRow } from "../../shift/types.js";
 import { employerShiftRepository, isShiftUuid } from "./shift.repository.js";
 import { isLiveShiftStatus } from "../verification/employerMaturity.policy.js";
 import { employerVerificationService } from "../verification/employerVerification.service.js";
+import {
+  missingLocationPincodeError,
+  readLocationPincode,
+  withLocationPincode,
+} from "./shift.locationPincode.js";
+import { parsePincode } from "../../location/pincode.js";
 
 export type ShiftPostMutationResult =
   | { ok: true; post: ShiftPostRow }
@@ -122,7 +128,10 @@ export const employerShiftService = {
     const denied = gateLivePublish(employer, statusRaw);
     if (denied) return denied;
 
-    const details = isRecord(body.details) ? body.details : {};
+    const detailsRaw = isRecord(body.details) ? body.details : {};
+    const locationPincode = readLocationPincode(detailsRaw);
+    if (!locationPincode) return missingLocationPincodeError();
+    const details = withLocationPincode(detailsRaw, locationPincode);
 
     const post = await employerShiftRepository.createPost({
       employerId: employer.id,
@@ -133,6 +142,7 @@ export const employerShiftService = {
       startAt,
       endAt,
       details,
+      locationPincode,
     });
 
     return { ok: true, post };
@@ -211,9 +221,14 @@ export const employerShiftService = {
     const denied = gateLivePublish(employer, statusRaw);
     if (denied) return denied;
 
-    const details = isRecord(body.details)
+    const detailsMerged = isRecord(body.details)
       ? { ...(isRecord(existing.details) ? existing.details : {}), ...body.details }
       : existing.details;
+    const detailsRecord = isRecord(detailsMerged) ? detailsMerged : {};
+    const locationPincode =
+      readLocationPincode(detailsRecord) ?? parsePincode(existing.location_pincode);
+    if (!locationPincode) return missingLocationPincodeError();
+    const details = withLocationPincode(detailsRecord, locationPincode);
 
     const post = await employerShiftRepository.updatePost({
       postId,
@@ -224,7 +239,8 @@ export const employerShiftService = {
       vacancies,
       startAt,
       endAt,
-      details: isRecord(details) ? details : {},
+      details,
+      locationPincode,
     });
 
     if (!post) {

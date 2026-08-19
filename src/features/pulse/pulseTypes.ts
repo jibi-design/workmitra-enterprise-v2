@@ -90,6 +90,10 @@ export type PulseTargetLookupInput = ResolvePulseTrailTargetInput & {
 
 export interface PulseState {
   readonly chain: PulseNodeId[];
+  /**
+   * Home/root cards that stay lit until destination confirm — survives hop advances.
+   */
+  readonly pendingGuidanceRoots: PulseNodeId[];
   readonly resolvingNodeId: PulseNodeId | null;
   readonly severityByNodeId: Record<PulseNodeId, PulseChainSeverity>;
 
@@ -97,7 +101,8 @@ export interface PulseState {
   readonly activeTrails: ActivePulseTrails;
 
   readonly setChain: (pathArray: readonly PulseNodeId[], options?: SetPulseChainOptions) => void;
-  readonly advanceChain: () => void;
+  readonly advanceChain: (options?: { readonly skipArrival?: boolean }) => void;
+  readonly confirmPulseDestination: (nodeId: PulseNodeId) => void;
   readonly clearAll: () => void;
   readonly clearAllPulses: () => void;
 
@@ -133,5 +138,10 @@ export interface PulseState {
 
 export type HydratedPulseState = Pick<
   PulseState,
-  "chain" | "resolvingNodeId" | "severityByNodeId" | "activePulses" | "activeTrails"
+  | "chain"
+  | "pendingGuidanceRoots"
+  | "resolvingNodeId"
+  | "severityByNodeId"
+  | "activePulses"
+  | "activeTrails"
 >;

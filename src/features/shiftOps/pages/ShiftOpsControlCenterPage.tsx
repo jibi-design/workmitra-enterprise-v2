@@ -26,6 +26,8 @@ export function ShiftOpsControlCenterPage() {
       workerMlId: profile.uniqueId || `anon_${Date.now()}`,
       workerName: profile.fullName.trim() || "Worker",
       city: profile.city.trim() || undefined,
+      basePincode: profile.basePincode,
+      commuteRadius: profile.commuteRadius,
     });
   }
 

@@ -1,6 +1,7 @@
 // Mitra Labs — PRODUCTION LOCK cinematic intro splash (5.0s master sync)
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { MitraLabsBrandName } from "../brand/BrandName";
 import { triggerSplashCinematicHaptics } from "../../platform/haptics";
 import { MitraLabsMarkIcon } from "./MitraLabsMarkIcon";
 import {
@@ -106,10 +107,7 @@ function SplashScreenAnimator({ onComplete }: SplashAnimatorProps) {
               </div>
 
               <div className="wm-splash-screen__brand-copy">
-                <h1 className="wm-splash-screen__title">
-                  <span className="wm-splash-screen__title-mitra">MITRA</span>
-                  <span className="wm-splash-screen__title-labs"> LABS</span>
-                </h1>
+                <MitraLabsBrandName as="h1" size="lg" className="wm-splash-screen__title" />
                 <div className="wm-splash-screen__accent-line" aria-hidden="true" />
               </div>
             </div>

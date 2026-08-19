@@ -1,6 +1,7 @@
 /** Job Mitra | ErrorBoundary.tsx | C:\projects\WorkMitra_Enterprise_v2\src\shared\components\ErrorBoundary.tsx */
 
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { useLocation } from "react-router-dom";
 
 const CHUNK_RELOAD_KEY = "wm:chunk-reload-attempted";
 
@@ -45,16 +46,18 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   private handleGoHome = (): void => {
-    const path = this.props.homePath ?? "/";
-
-    if (isDynamicImportError(this.state.error)) {
-      sessionStorage.removeItem(CHUNK_RELOAD_KEY);
-      window.location.replace(`${window.location.origin}${window.location.pathname}#${path}`);
-      return;
-    }
-
-    this.setState({ hasError: false, error: null });
-    window.location.hash = `#${path}`;
+    sessionStorage.removeItem(CHUNK_RELOAD_KEY);
+    const msg = (this.state.error?.message ?? "").toLowerCase();
+    // Escape hatch: role-shell crashes (shift/storage install) → landing.
+    // Otherwise prefer the shell homePath so Go Home stays in-context.
+    const useLanding =
+      msg.includes("shift") ||
+      msg.includes("storage") ||
+      msg.includes("install") ||
+      msg.includes("cannot access");
+    const path = useLanding ? "/" : (this.props.homePath ?? "/");
+    const hash = path.startsWith("/") ? path : `/${path}`;
+    window.location.replace(`${window.location.origin}${window.location.pathname}#${hash}`);
   };
 
   private handleRetry = (): void => {
@@ -64,7 +67,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       return;
     }
 
-    this.setState({ hasError: false, error: null });
+    // Soft remount often rethrows the same error — hard reload for a clean tree.
+    window.location.reload();
   };
 
   render(): ReactNode {
@@ -88,9 +92,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             </svg>
           </div>
 
-          <div className="wm-errorFallback__title">Something went wrong</div>
+          <div className="wm-errorFallback__title">This screen didn’t load</div>
           <div className="wm-errorFallback__body">
-            An unexpected error occurred. You can try again or return to the home screen.
+            Refresh the page, or go home and open it again.
           </div>
 
           <div className="wm-errorFallback__actions">
@@ -105,11 +109,26 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
           {this.state.error && import.meta.env.DEV ? (
             <details className="wm-errorFallback__details">
               <summary>Error details</summary>
-              <pre className="wm-errorFallback__pre">{this.state.error.message}</pre>
+              <pre className="wm-errorFallback__pre" data-testid="error-boundary-message">
+                {this.state.error.message}
+              </pre>
             </details>
           ) : null}
         </div>
       </div>
     );
   }
+}
+
+/** Remounts on route change so one screen crash cannot poison the shell. */
+export function RouteErrorBoundary(props: {
+  readonly homePath: string;
+  readonly children: ReactNode;
+}) {
+  const loc = useLocation();
+  return (
+    <ErrorBoundary key={`${loc.pathname}${loc.search}`} homePath={props.homePath}>
+      {props.children}
+    </ErrorBoundary>
+  );
 }

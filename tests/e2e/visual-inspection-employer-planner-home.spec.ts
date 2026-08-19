@@ -48,8 +48,8 @@ test.describe("Employer Planner Visual Inspection Robot", () => {
     );
 
     const bust = Date.now();
-    await page.goto(`/?pw_er_final=${bust}#${PLANNER_HOME}`, { waitUntil: "networkidle" });
-    await page.reload({ waitUntil: "networkidle" });
+    await page.goto(`/?pw_er_final=${bust}#${PLANNER_HOME}`, { waitUntil: "domcontentloaded" });
+    await page.reload({ waitUntil: "domcontentloaded" });
     await expect(page).toHaveURL(/\/employer\/planner\/home/);
     await expect(page.locator("body")).not.toContainText("Something went wrong");
 

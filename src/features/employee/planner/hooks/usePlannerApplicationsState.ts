@@ -20,7 +20,7 @@ import { employeePlanApplicationSummaryPath } from "../helpers/plannerEmployeeRo
 
 export function usePlannerApplicationsState() {
   const nav = useNavigate();
-  const [tab, setTab] = useState<PlannerApplicationTab>("all");
+  const [tab, setTab] = useState<PlannerApplicationTab | "pending">("pending");
 
   const posts = useSyncExternalStore(
     shiftApplicationsStorage.subscribe,
@@ -43,6 +43,16 @@ export function usePlannerApplicationsState() {
   const plannerApps = useMemo(() => apps.filter(isPlannerApplication), [apps]);
   const kpi = useMemo(() => computePlannerKpi(plannerApps), [plannerApps]);
   const counts = useMemo(() => computePlannerTabCounts(plannerApps), [plannerApps]);
+  const resolvedTab: PlannerApplicationTab =
+    tab === "pending"
+      ? plannerApps.length === 0
+        ? "all"
+        : kpi.shortlisted > 0 || kpi.applied > 0
+          ? "active"
+          : kpi.confirmed > 0
+            ? "confirmed"
+            : "all"
+      : tab;
 
   const postMap = useMemo(() => {
     const map = new Map<string, ShiftPostData>();
@@ -67,8 +77,8 @@ export function usePlannerApplicationsState() {
   }, [workspaces]);
 
   const filteredApplications = useMemo(
-    () => plannerApps.filter((application) => plannerTabMatch(application.status, tab)),
-    [plannerApps, tab],
+    () => plannerApps.filter((application) => plannerTabMatch(application.status, resolvedTab)),
+    [plannerApps, resolvedTab],
   );
 
   const openDiscover = useCallback(() => {
@@ -91,8 +101,8 @@ export function usePlannerApplicationsState() {
   );
 
   return {
-    tab,
-    setTab,
+    tab: resolvedTab,
+    setTab: (next: PlannerApplicationTab) => setTab(next),
     kpi,
     counts,
     postMap,

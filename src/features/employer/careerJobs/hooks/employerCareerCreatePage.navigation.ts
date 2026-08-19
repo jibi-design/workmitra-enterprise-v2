@@ -1,6 +1,3 @@
-import type { NavigateFunction } from "react-router-dom";
-import { ROUTE_PATHS } from "../../../../app/router/routePaths";
-import type { ConfirmData } from "../../../../shared/components/ConfirmModal";
 import type { NoticeData } from "../../../../shared/components/NoticeModal";
 import { canPublishJobPosts } from "../../company/helpers/employerVerificationPolicy.helpers";
 import { employerSettingsStorage } from "../../company/storage/employerSettings.storage";
@@ -34,34 +31,6 @@ export function goEmployerCareerCreateBack(params: {
     params.setStep(params.step - 1);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
-}
-
-export function handleEmployerCareerCreateCancel(params: {
-  isDirty: () => boolean;
-  nav: NavigateFunction;
-  discardDraft: () => void;
-  setConfirmData: (value: ConfirmData | null) => void;
-  setConfirmAction: (value: (() => void) | null) => void;
-}): void {
-  if (params.isDirty()) {
-    params.setConfirmData({
-      title: "Leave without saving?",
-      message:
-        "Unsaved Career Job changes and the temporary draft will be cleared. Use Save Draft on the form if you want to keep them.",
-      warning: "Discarding removes the create draft for this employer tenant.",
-      tone: "warn",
-      confirmLabel: "Discard & Leave",
-      cancelLabel: "Keep Editing",
-    });
-    params.setConfirmAction(() => () => {
-      params.discardDraft();
-      params.nav(ROUTE_PATHS.employerCareerHome);
-    });
-    return;
-  }
-
-  params.discardDraft();
-  params.nav(ROUTE_PATHS.employerCareerHome);
 }
 
 export function handleEmployerCareerCreatePublishIntent(params: {

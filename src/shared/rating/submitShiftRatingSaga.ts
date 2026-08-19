@@ -4,15 +4,19 @@
 import { ratingStorage } from "./ratingStorage";
 import type { WorkerToEmployerRating } from "./ratingTypes";
 import { workerPointsStorage, WorkerPointsStorageWriteError } from "./workerPointsStorage";
+import { persistShiftReviewToServer } from "../../features/shift/services/persistShiftReviewToServer";
 import { enqueueShiftRetry } from "../shift/shiftRetryQueue";
 
 export type SubmitShiftRatingSagaInput = Omit<
   WorkerToEmployerRating,
   "id" | "createdAt" | "editedAt" | "editCount"
->;
+> & {
+  workspaceId?: string;
+  appId?: string;
+};
 
 export type SubmitShiftRatingSagaResult =
-  | { ok: true; rating: WorkerToEmployerRating; pointsApplied: boolean }
+  | { ok: true; rating: WorkerToEmployerRating; pointsApplied: boolean; persist: Promise<void> }
   | { ok: false; reason: "already_rated" | "rating_write_error" };
 
 function ratingWasPersisted(input: SubmitShiftRatingSagaInput): boolean {
@@ -48,10 +52,19 @@ export function submitShiftRatingSaga(
     return { ok: false, reason: "rating_write_error" };
   }
 
+  const persist = persistShiftReviewToServer({
+    role: "employee",
+    workspaceId: input.workspaceId,
+    postId: input.jobId,
+    appId: input.appId,
+    rating: input.stars,
+    body: input.comment,
+  });
+
   // Step 2 — IMPORTANT: shift completion points (no rollback on failure).
   try {
     workerPointsStorage.applyEvent(input.workerMlId, "shift_complete", input.jobId);
-    return { ok: true, rating, pointsApplied: true };
+    return { ok: true, rating, pointsApplied: true, persist };
   } catch (error) {
     if (error instanceof WorkerPointsStorageWriteError) {
       console.warn("[submitShiftRatingSaga] Rating saved but points could not be applied", {
@@ -63,7 +76,7 @@ export function submitShiftRatingSaga(
         workerMlId: input.workerMlId,
         jobId: input.jobId,
       });
-      return { ok: true, rating, pointsApplied: false };
+      return { ok: true, rating, pointsApplied: false, persist };
     }
 
     throw error;

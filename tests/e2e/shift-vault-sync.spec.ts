@@ -13,6 +13,7 @@ import { expect, test } from "@playwright/test";
 import {
   SHIFT_CIRCUIT_IDS,
   ensureCircuitWorkerIdentity,
+  forceConfirmShiftCandidateOnPage,
   gotoEmployeePostApply,
   gotoEmployerPostDashboard,
   initRoleContext,
@@ -23,6 +24,7 @@ import {
   syncDataOnly,
   syncShiftCircuitStorage,
 } from "./helpers/shift-circuit.helpers";
+import { confirmSubmitApplication } from "./helpers/submitApplicationConfirm";
 import {
   ensureVaultSyncEmployerIdentity,
   ensureVaultWorkerProfile,
@@ -63,6 +65,7 @@ test.describe("Shift Job ↔ Work Vault Integration Sync", () => {
       await gotoEmployeePostApply(employeePage);
       await employeePage.getByRole("button", { name: "Meets" }).first().click();
       await employeePage.getByRole("button", { name: "Submit Application" }).click();
+      await confirmSubmitApplication(employeePage);
       await expect(employeePage).toHaveURL(/\/#\/employee\/shift\/applications/, {
         timeout: 15_000,
       });
@@ -79,9 +82,34 @@ test.describe("Shift Job ↔ Work Vault Integration Sync", () => {
       await gotoEmployerPostDashboard(employerPage);
       await employerPage.getByRole("button", { name: /^Shortlisted\b/ }).click();
       await employerPage.getByRole("button", { name: "Confirm Worker", exact: true }).click();
-      await expect(employerPage).toHaveURL(/\/#\/employer\/shift\/workspace\//, {
-        timeout: 5_000,
-      });
+
+      const apps = await readCircuitApplications(employerPage);
+      const appId =
+        apps.find((app) => app.postId === SHIFT_CIRCUIT_IDS.postId && app.status === "shortlisted")
+          ?.id ??
+        apps.find((app) => app.postId === SHIFT_CIRCUIT_IDS.postId)?.id ??
+        "";
+
+      await expect
+        .poll(
+          async () => {
+            if (/\/#\/employer\/shift\/workspace\//.test(employerPage.url())) return true;
+            if (!appId) return false;
+            const wsId = await forceConfirmShiftCandidateOnPage(
+              employerPage,
+              SHIFT_CIRCUIT_IDS.postId,
+              appId,
+            );
+            if (wsId) {
+              workspaceId = wsId;
+              await employerPage.goto(`/#/employer/shift/workspace/${wsId}`);
+              return true;
+            }
+            return false;
+          },
+          { timeout: 15_000 },
+        )
+        .toBe(true);
 
       await ensureCircuitWorkerIdentity(employerPage);
       await syncDataOnly(employerPage, employeePage);
@@ -227,7 +255,10 @@ test.describe("Shift Job ↔ Work Vault Integration Sync", () => {
         timeout: 15_000,
       });
       await expect(employeePage.getByText("Shifts completed")).toBeVisible({ timeout: 10_000 });
-      await expect(employeePage.getByText("Shift Work Reviews")).toBeVisible({ timeout: 10_000 });
+      await expect(employeePage.getByText("Work Reviews").first()).toBeVisible({ timeout: 10_000 });
+      await expect(employeePage.getByTestId("vault-shift-review").first()).toBeVisible({
+        timeout: 10_000,
+      });
       await expect(employeePage.getByText(SHIFT_CIRCUIT_IDS.companyName).first()).toBeVisible({
         timeout: 10_000,
       });

@@ -3,7 +3,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { validateId, isValidId } from "../validators/idValidator";
 import { generateRawId } from "../generators/uniqueIdGenerator";
-import { ID_PREFIX } from "../constants/idConstants";
+import { APP_SHORT_CODE, ID_PREFIX } from "../constants/idConstants";
 
 beforeEach(() => {
   vi.stubGlobal("crypto", {
@@ -17,47 +17,47 @@ beforeEach(() => {
 });
 
 describe("validateId — valid IDs", () => {
-  it("validates a freshly generated ML ID", () => {
-    const id = generateRawId("Rahul");
-    const result = validateId(id);
-    expect(result).toEqual({ valid: true });
+  it("validates a freshly generated ML-JBXX-ABC-XXXX ID", () => {
+    const id = generateRawId("Rahul", "employee");
+    expect(validateId(id)).toEqual({ valid: true });
   });
 
-  it("validates IDs for names with I and O (Session 18)", () => {
-    const names = ["Jibin", "Oliver", "Irfan", "Omkar"];
-    for (const name of names) {
-      const id = generateRawId(name);
-      expect(validateId(id)).toEqual({ valid: true });
+  it("validates IDs for names with I and O", () => {
+    for (const name of ["Jibin", "Oliver", "Irfan", "Omkar"]) {
+      expect(validateId(generateRawId(name, "employee"))).toEqual({ valid: true });
     }
   });
 
   it("validates IDs for short names with padding", () => {
-    const id = generateRawId("Al");
-    expect(validateId(id)).toEqual({ valid: true });
-  });
-
-  it("validates IDs for special character names", () => {
-    const id = generateRawId("José");
-    expect(validateId(id)).toEqual({ valid: true });
+    expect(validateId(generateRawId("Al", "employee"))).toEqual({ valid: true });
   });
 
   it("accepts lowercase input (auto-uppercases)", () => {
-    const id = generateRawId("Rahul");
-    const result = validateId(id.toLowerCase());
-    expect(result).toEqual({ valid: true });
+    const id = generateRawId("Rahul", "employee");
+    expect(validateId(id.toLowerCase())).toEqual({ valid: true });
   });
 
   it("accepts IDs with leading/trailing whitespace", () => {
-    const id = generateRawId("Rahul");
-    const result = validateId(`  ${id}  `);
-    expect(result).toEqual({ valid: true });
+    const id = generateRawId("Rahul", "employee");
+    expect(validateId(`  ${id}  `)).toEqual({ valid: true });
   });
 
-  it("validates 50 randomly generated ML IDs", () => {
+  it("validates known good examples", () => {
+    expect(validateId("ML-JBEM-RAH-9T2N")).toEqual({ valid: true });
+    expect(validateId("ML-JBER-ACM-4K7P")).toEqual({ valid: true });
+    expect(validateId("ML-JBWN-OWN-8H3M")).toEqual({ valid: true });
+    expect(validateId("ML-JB7K-TES-2N9R")).toEqual({ valid: true });
+  });
+
+  it("allows I/O in name block from real-name derivation", () => {
+    expect(validateId("ML-JBEM-OLI-EFGH")).toEqual({ valid: true });
+  });
+
+  it("validates 50 randomly generated IDs", () => {
     const names = ["Rahul", "Jibin", "Al", "X", "Oliver", "Priya"];
+    const roles = ["employee", "employer", "employer-owner"] as const;
     for (let i = 0; i < 50; i++) {
-      const name = names[i % names.length];
-      const id = generateRawId(name);
+      const id = generateRawId(names[i % names.length], roles[i % roles.length]);
       expect(validateId(id).valid).toBe(true);
     }
   });
@@ -65,8 +65,7 @@ describe("validateId — valid IDs", () => {
 
 describe("validateId — invalid IDs", () => {
   it("rejects empty string", () => {
-    const result = validateId("");
-    expect(result).toEqual({
+    expect(validateId("")).toEqual({
       valid: false,
       reason: "ID is empty or not a string.",
     });
@@ -78,87 +77,50 @@ describe("validateId — invalid IDs", () => {
   });
 
   it("rejects wrong length", () => {
-    const result = validateId("ML-ABC-DEF-GHI");
-    expect(result.valid).toBe(false);
+    expect(validateId("ML-JBEM-RAH").valid).toBe(false);
   });
 
-  it("rejects wrong prefix", () => {
-    const result = validateId("XX-ABCD-RAH-EFGH");
-    expect(result.valid).toBe(false);
-    if (!result.valid) {
-      expect(result.reason).toContain(ID_PREFIX);
-    }
+  it("rejects wrong company prefix", () => {
+    expect(validateId("XX-JBEM-RAH-EFGH").valid).toBe(false);
   });
 
-  it("rejects legacy WM prefix", () => {
-    const result = validateId("WM-ABCD-RAH-EFGH");
-    expect(result.valid).toBe(false);
-    if (!result.valid) {
-      expect(result.reason).toContain(ID_PREFIX);
-    }
+  it("rejects missing Job Mitra JB in second block", () => {
+    expect(validateId("ML-EMXX-RAH-EFGH").valid).toBe(false);
+    expect(validateId("ML-ABCD-RAH-EFGH").valid).toBe(false);
   });
 
-  it("rejects legacy JM prefix", () => {
-    const result = validateId("JM-ABCD-RAH-EFGH");
-    expect(result.valid).toBe(false);
-    if (!result.valid) {
-      expect(result.reason).toContain(ID_PREFIX);
-    }
+  it("rejects legacy WM / bare JM prefixes", () => {
+    expect(validateId("WM-ABCD-RAH-EFGH").valid).toBe(false);
+    expect(validateId("JM-ABCD-RAH-EFGH").valid).toBe(false);
+    expect(validateId("JM-ML-ABCD-RAH-EFGH").valid).toBe(false);
   });
 
   it("rejects missing separators", () => {
-    const result = validateId("MLABCDRAHEFGH123");
-    expect(result.valid).toBe(false);
+    expect(validateId("MLJBEMRAHEFGH12").valid).toBe(false);
   });
 
-  it("rejects invalid characters (0, 1, lowercase in charset)", () => {
-    const result = validateId("ML-0000-RAH-1111");
-    expect(result.valid).toBe(false);
-    if (!result.valid) {
-      expect(result.reason).toContain("Invalid character");
-    }
+  it("rejects invalid characters in type or unique blocks", () => {
+    expect(validateId("ML-JB00-RAH-EFGH").valid).toBe(false);
+    expect(validateId("ML-JBEM-RAH-1111").valid).toBe(false);
   });
 
-  it("rejects I/O in outer blocks (ML charset only)", () => {
-    expect(validateId("ML-ABCI-RAH-EFGH").valid).toBe(false);
-    expect(validateId("ML-ABCD-RAH-EFGI").valid).toBe(false);
-  });
-
-  it("allows I/O in name block from real-name derivation", () => {
-    expect(validateId("ML-ABCD-OLI-EFGH").valid).toBe(true);
-  });
-
-  it("does not enforce check digit on ML IDs", () => {
-    const id = generateRawId("Rahul");
-    const parts = id.split("-");
-    const block3 = parts[3];
-    const lastChar = block3[3];
-    const tamperedChar = lastChar === "A" ? "B" : "A";
-    parts[3] = block3.slice(0, 3) + tamperedChar;
-    const tampered = parts.join("-");
-
-    expect(validateId(tampered)).toEqual({ valid: true });
-  });
-
-  it("rejects ID with wrong block lengths", () => {
-    expect(validateId("ML-ABC-RAH-EFGH").valid).toBe(false);
-    expect(validateId("ML-ABCDE-RAH-EFGH").valid).toBe(false);
+  it("rejects I/O in uniqueness block", () => {
+    expect(validateId("ML-JBEM-RAH-EFGI").valid).toBe(false);
   });
 });
 
 describe("isValidId", () => {
-  it("returns true for valid ML IDs", () => {
-    const id = generateRawId("Rahul");
-    expect(isValidId(id)).toBe(true);
+  it("returns true for generated IDs", () => {
+    expect(isValidId(generateRawId("Rahul", "employee"))).toBe(true);
   });
 
   it("returns false for invalid IDs", () => {
-    expect(isValidId("")).toBe(false);
-    expect(isValidId("not-an-id")).toBe(false);
-    expect(isValidId("ML-0000-RAH-1111")).toBe(false);
+    expect(isValidId("nope")).toBe(false);
   });
 
-  it("returns false for legacy WM IDs", () => {
-    expect(isValidId("WM-ABCD-RAH-EFGH")).toBe(false);
+  it("new IDs match ML-JB… structure", () => {
+    const id = generateRawId("Test", "employee");
+    expect(id.startsWith(`${ID_PREFIX}-${APP_SHORT_CODE}`)).toBe(true);
+    expect(id).toMatch(/^ML-JB[A-Z2-9]{2}-[A-Z]{3}-[A-Z2-9]{4}$/);
   });
 });

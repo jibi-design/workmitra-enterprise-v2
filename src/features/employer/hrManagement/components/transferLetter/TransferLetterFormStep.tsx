@@ -49,14 +49,14 @@ export function TransferLetterFormStep({
         label="Transfer To — Location *"
         value={form.toLocation}
         onChange={(value) => onFieldChange("toLocation", value)}
-        placeholder="e.g. Branch Office — North Region"
+        placeholder="Destination location name"
       />
 
       <TransferLetterField
         label="New Department (leave blank if same)"
         value={form.toDepartment}
         onChange={(value) => onFieldChange("toDepartment", value)}
-        placeholder={record.department || "e.g. Logistics"}
+        placeholder={record.department || "Department name"}
       />
 
       <TransferLetterField
@@ -70,7 +70,7 @@ export function TransferLetterFormStep({
         label="Reason for Transfer *"
         value={form.reason}
         onChange={(value) => onFieldChange("reason", value)}
-        placeholder="e.g. Operational requirement"
+        placeholder="Reason for transfer"
         multiline
       />
 
@@ -78,7 +78,7 @@ export function TransferLetterFormStep({
         label="Reporting Manager at New Location (optional)"
         value={form.reportingManager}
         onChange={(value) => onFieldChange("reportingManager", value)}
-        placeholder="e.g. Sarah Johnson"
+        placeholder="Manager full name"
       />
 
       <TransferLetterField

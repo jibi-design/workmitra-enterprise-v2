@@ -4,12 +4,14 @@ import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { logoutApp, postLogoutRoute } from "../../shared/auth/logoutApp";
 import { ROUTE_PATHS } from "../router/routePaths";
-import { employerNotificationsStorage } from "../../features/employer/notifications/storage/employerNotifications.storage";
+import { filterLaunchVisibleEmployerNotifications } from "../../shared/components/notifications/notificationLaunchFilters";
 import { initEmployerNotificationService } from "../../features/employer/notifications/helpers/employerNotificationService";
+import { employerNotificationsStorage } from "../../features/employer/notifications/storage/employerNotifications.storage";
 import { employerSettingsStorage } from "../../features/employer/company/storage/employerSettings.storage";
 import { AccountMenuSheet } from "../../shared/components/AccountMenuSheet";
 import { ConfirmModal, type ConfirmData } from "../../shared/components/ConfirmModal";
 import { usePulseEventBridgeConsumer } from "../../features/pulse/pulseEventBridge";
+import { useServerInboxPoll } from "../../features/notifications/services/useServerInboxPoll";
 import { showPhase2Features } from "../../shared/config/featureFlags";
 import BottomNav from "../../components/layout/BottomNav/BottomNav";
 import { useThemeBundle } from "./useThemeBundle";
@@ -23,7 +25,7 @@ import { EmployerTopbar } from "./EmployerShell.parts";
 import {
   CommandPalette,
   EnterpriseToastHost,
-  useCommandPaletteHotkey,
+  useCommandPaletteHub,
 } from "../../shared/components/enterprise";
 import { AUTH_BACKEND_ENABLED } from "../../shared/config/authConfig";
 import { RouteGuardLoading } from "../../shared/components/routes/RouteGuardStatus";
@@ -31,11 +33,12 @@ import { useActiveContextSwitch } from "../../shared/auth/useActiveContextSwitch
 import { useAuthStore } from "../../shared/store/authStore";
 
 function useEmployerUnread(): number {
-  return useSyncExternalStore(
+  const all = useSyncExternalStore(
     employerNotificationsStorage.subscribe,
-    () => employerNotificationsStorage.getUnreadCount(),
-    () => employerNotificationsStorage.getUnreadCount(),
+    () => employerNotificationsStorage.getAll(),
+    () => employerNotificationsStorage.getAll(),
   );
+  return filterLaunchVisibleEmployerNotifications(all).filter((row) => !row.isRead).length;
 }
 
 export function EmployerShell() {
@@ -47,18 +50,12 @@ export function EmployerShell() {
   const [showSheet, setShowSheet] = useState(false);
   const [logoutConfirm, setLogoutConfirm] = useState<ConfirmData | null>(null);
   const [topbarScrolled, setTopbarScrolled] = useState(false);
-  const [commandOpen, setCommandOpen] = useState(false);
+  const { open: commandOpen, close: closeCommandPalette } = useCommandPaletteHub();
   const activeOrgId = useAuthStore((s) => s.user?.activeOrgId ?? null);
   const { requestSwitch, switchConfirm, confirmSwitch, cancelSwitch } =
     useActiveContextSwitch("employer");
 
   useThemeBundle("employer-shell");
-
-  const toggleCommandPalette = useCallback(() => {
-    setCommandOpen((open) => !open);
-  }, []);
-
-  useCommandPaletteHotkey(commandOpen, toggleCommandPalette);
 
   useEffect(() => {
     if (role === "employer") return initEmployerNotificationService();
@@ -74,6 +71,7 @@ export function EmployerShell() {
   }, []);
 
   usePulseEventBridgeConsumer(role === "employer" ? "employer" : null);
+  useServerInboxPoll(role === "employer" ? "employer" : null);
 
   const handleOpenSettings = useCallback(() => {
     setShowSheet(false);
@@ -119,7 +117,13 @@ export function EmployerShell() {
   const isPlannerSubdomain = loc.pathname.startsWith("/employer/planner");
   const shouldShowBack = !isHome;
   const explicitBackTarget = getEmployerBackTarget(loc.state);
-  const profile = employerSettingsStorage.get();
+  const profile = (() => {
+    try {
+      return employerSettingsStorage.get();
+    } catch {
+      return employerSettingsStorage.EMPTY_PROFILE;
+    }
+  })();
   const displayName = profile.companyName || profile.fullName || "Employer";
   const initials = getInitials(displayName);
 
@@ -199,7 +203,7 @@ export function EmployerShell() {
 
       <CommandPalette
         open={commandOpen}
-        onClose={() => setCommandOpen(false)}
+        onClose={closeCommandPalette}
         onNavigate={(path) => nav(path)}
       />
 

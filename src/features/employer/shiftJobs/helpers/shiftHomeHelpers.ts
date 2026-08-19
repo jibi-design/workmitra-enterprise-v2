@@ -64,7 +64,8 @@ export type ConfirmWaitingPost = {
   readonly remaining: number;
 };
 
-export function findConfirmWaitingPost(posts: readonly ShiftPost[]): ConfirmWaitingPost | null {
+export function listConfirmWaitingPosts(posts: readonly ShiftPost[]): ConfirmWaitingPost[] {
+  const rows: ConfirmWaitingPost[] = [];
   for (const post of posts) {
     if (post.status === "completed" || post.status === "cancelled") continue;
     const remaining = Math.max(0, post.vacancies - post.confirmedIds.length);
@@ -73,10 +74,14 @@ export function findConfirmWaitingPost(posts: readonly ShiftPost[]): ConfirmWait
       post.shortlistIds.length,
     );
     if (remaining > 0 && shortlisted > 0) {
-      return { postId: post.id, jobName: post.jobName, shortlisted, remaining };
+      rows.push({ postId: post.id, jobName: post.jobName, shortlisted, remaining });
     }
   }
-  return null;
+  return rows;
+}
+
+export function findConfirmWaitingPost(posts: readonly ShiftPost[]): ConfirmWaitingPost | null {
+  return listConfirmWaitingPosts(posts)[0] ?? null;
 }
 
 export function shiftPostDashboardPath(

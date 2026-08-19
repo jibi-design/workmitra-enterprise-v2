@@ -24,6 +24,7 @@ import { ROUTE_PATHS } from "../app/router/routePaths";
 
 export type NavDomain =
   | "career"
+  | "diary"
   | "shift"
   | "employeePlanner"
   | "employerShift"
@@ -39,8 +40,6 @@ export interface NavItem {
   path: string;
   icon: ElementType;
   domain: NavDomain;
-  /** Pulse node IDs from pulseFlowBuilders — tab glows when any are in the active chain */
-  pulseNodeIds?: readonly string[];
 }
 
 export interface DomainConfig {
@@ -140,14 +139,12 @@ export const NAVIGATION_CONFIG: Record<NavDomain, DomainConfig> = {
         path: ROUTE_PATHS.employerShiftHome,
         icon: Home,
         domain: "employerShift",
-        pulseNodeIds: ["home-shift-card"],
       },
       {
         label: "My Posts",
         path: ROUTE_PATHS.employerShiftPosts,
         icon: FileText,
         domain: "employerShift",
-        pulseNodeIds: ["shift-dashboard-applications"],
       },
       {
         label: "Workspaces",
@@ -204,7 +201,6 @@ export const NAVIGATION_CONFIG: Record<NavDomain, DomainConfig> = {
         path: ROUTE_PATHS.employerCareerHome,
         icon: Home,
         domain: "employerCareer",
-        pulseNodeIds: ["career-dashboard-applications"],
       },
       {
         label: "Posts",
@@ -222,9 +218,9 @@ export const NAVIGATION_CONFIG: Record<NavDomain, DomainConfig> = {
     ],
   },
   employerDefault: {
-    color: "#7c3aed",
-    bgTint: "rgba(250, 245, 255, 0.92)",
-    borderTint: "rgba(124, 58, 237, 0.22)",
+    color: "#475569",
+    bgTint: "rgba(248, 250, 252, 0.95)",
+    borderTint: "rgba(148, 163, 184, 0.35)",
     items: [
       { label: "Home", path: ROUTE_PATHS.employerHome, icon: Home, domain: "employerDefault" },
       {
@@ -297,6 +293,33 @@ export const NAVIGATION_CONFIG: Record<NavDomain, DomainConfig> = {
         path: ROUTE_PATHS.employeeProfile,
         icon: User,
         domain: "employeeDefault",
+      },
+    ],
+  },
+  /** Personal Work Diary — same tabs as employeeDefault, light Career-blue accent */
+  diary: {
+    color: "#3b82f6",
+    bgTint: "rgba(239, 246, 255, 0.94)",
+    borderTint: "rgba(59, 130, 246, 0.22)",
+    items: [
+      { label: "Home", path: ROUTE_PATHS.employeeHome, icon: Home, domain: "diary" },
+      {
+        label: "Shift",
+        path: ROUTE_PATHS.employeeShiftCenter,
+        icon: Clock,
+        domain: "diary",
+      },
+      {
+        label: "Career",
+        path: ROUTE_PATHS.employeeCareerHome,
+        icon: Briefcase,
+        domain: "diary",
+      },
+      {
+        label: "Profile",
+        path: ROUTE_PATHS.employeeProfile,
+        icon: User,
+        domain: "diary",
       },
     ],
   },

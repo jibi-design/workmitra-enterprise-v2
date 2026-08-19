@@ -2,6 +2,10 @@
  * Job Mitra | contactVerification.storage.ts
  * Profile-level phone/email verification flags (one-time; hide OTP when true).
  * Lives in shared — no feature-layer imports.
+ *
+ * getContactVerificationState() MUST return a referentially stable snapshot when
+ * content is unchanged — useSyncExternalStore (ProfileContactSection) compares
+ * with Object.is and will infinite-loop on a fresh object every read.
  */
 
 import { piiSecureStorage } from "../security/piiSecureStorage";
@@ -22,7 +26,18 @@ const DEFAULT: ContactVerificationState = {
   emailVerified: false,
 };
 
-function read(): ContactVerificationState {
+let cachedSnapshot: ContactVerificationState = { ...DEFAULT };
+
+function sameState(a: ContactVerificationState, b: ContactVerificationState): boolean {
+  return (
+    a.phoneVerified === b.phoneVerified &&
+    a.emailVerified === b.emailVerified &&
+    a.phoneMasked === b.phoneMasked &&
+    a.emailMasked === b.emailMasked
+  );
+}
+
+function readFresh(): ContactVerificationState {
   const raw = piiSecureStorage.getItem(KEY);
   if (!raw) return { ...DEFAULT };
   try {
@@ -40,15 +55,22 @@ function read(): ContactVerificationState {
 
 function write(next: ContactVerificationState): void {
   piiSecureStorage.setJson(KEY, next);
+  if (!sameState(cachedSnapshot, next)) {
+    cachedSnapshot = next;
+  }
   window.dispatchEvent(new Event(CHANGED));
 }
 
 export function getContactVerificationState(): ContactVerificationState {
-  return read();
+  const next = readFresh();
+  if (!sameState(cachedSnapshot, next)) {
+    cachedSnapshot = next;
+  }
+  return cachedSnapshot;
 }
 
 export function markPhoneVerified(e164OrHint?: string): void {
-  const cur = read();
+  const cur = getContactVerificationState();
   write({
     ...cur,
     phoneVerified: true,
@@ -57,7 +79,7 @@ export function markPhoneVerified(e164OrHint?: string): void {
 }
 
 export function markEmailVerified(emailHint?: string): void {
-  const cur = read();
+  const cur = getContactVerificationState();
   const email = (emailHint ?? "").trim();
   const emailMasked = email.includes("@")
     ? `${email.slice(0, 1)}•••@${email.split("@")[1] ?? "••••"}`

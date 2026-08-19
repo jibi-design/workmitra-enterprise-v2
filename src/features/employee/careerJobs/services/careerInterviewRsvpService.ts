@@ -11,8 +11,56 @@ import {
   readCareerAppsForEmployee,
   writeCareerAppsForEmployee,
 } from "../../../career/helpers/careerStoragePublic";
-import type { CareerApplication, RoundResult } from "../../../career/types/careerDomainTypes";
+import type { CareerApplication, CareerJobPost, RoundResult } from "../../../career/types/careerDomainTypes";
 import { getCurrentCareerEmployeeScopeId } from "../../../shared/career/careerEmployeeScope";
+
+import { getCareerSearchSnapshot } from "../helpers/careerSearchHelpers";
+
+/** Employee RSVP — employer posts bucket may be absent; fall back to merged search index. */
+function resolveCareerPostForRsvp(jobId: string): CareerJobPost | null {
+  const fromEmployer = getCareerPost(jobId);
+  if (fromEmployer) return fromEmployer;
+
+  const searchHit = getCareerSearchSnapshot().find((item) => item.id === jobId);
+  if (!searchHit) return null;
+
+  return {
+    id: searchHit.id,
+    employerId: searchHit.employerId ?? "employer_demo",
+    companyName: searchHit.companyName,
+    jobTitle: searchHit.jobTitle,
+    department: searchHit.department,
+    jobType: searchHit.jobType,
+    workMode: searchHit.workMode,
+    location: searchHit.location,
+    vacancies: 1,
+    probationPeriod: "none",
+    salaryMin: searchHit.salaryMin,
+    salaryMax: searchHit.salaryMax,
+    salaryPeriod: searchHit.salaryPeriod,
+    noticePeriodDays: searchHit.noticePeriodDays ?? 0,
+    experienceMin: searchHit.experienceMin,
+    experienceMax: searchHit.experienceMax,
+    qualifications: searchHit.qualifications,
+    skills: searchHit.skills,
+    description: searchHit.description,
+    responsibilities: searchHit.responsibilities,
+    interviewRounds: searchHit.interviewRounds,
+    roundConfigs: [{ round: 1, label: "Screening", mode: "phone" }],
+    status: "active",
+    createdAt: searchHit.createdAt,
+    updatedAt: searchHit.createdAt,
+    closingDate: searchHit.closingDate,
+    screeningQuestions: searchHit.screeningQuestions ?? [],
+    isTemplate: false,
+    totalApplications: 0,
+    shortlisted: 0,
+    inInterview: 0,
+    offered: 0,
+    hired: 0,
+    rejected: 0,
+  };
+}
 
 /** Resolve worker scope for RSVP — never throws; null when identity/storage unsafe. */
 function resolveRsvpWorkerScopeId(): string | null {
@@ -114,7 +162,7 @@ function commitInterviewRsvp(jobId: string, accepted: boolean): boolean {
 
   let post;
   try {
-    post = getCareerPost(jobId);
+    post = resolveCareerPostForRsvp(jobId);
   } catch {
     return false;
   }
@@ -132,8 +180,8 @@ function commitInterviewRsvp(jobId: string, accepted: boolean): boolean {
     ? withRsvp
     : {
         ...withRsvp,
-        // Keep interview stage so employer can reschedule; RSVP declined is on the round.
-        stage: "interview",
+        stage: "withdrawn",
+        withdrawnAt: now,
         updatedAt: now,
       };
 

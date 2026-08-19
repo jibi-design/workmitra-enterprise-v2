@@ -7,10 +7,9 @@
  * Mounted in main.tsx as a sibling to <App />.
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { roleStorage } from "../app/storage/roleStorage";
 import { usePulseStore } from "../features/pulse/pulseStore";
-import { PulseEvent } from "../features/pulse/pulseEvents";
 import { requestSplashReplay } from "../shared/components/SplashScreen";
 import {
   applyQaBulkCandidateSeed,
@@ -23,26 +22,85 @@ import {
 } from "../features/shared/shift/qaMultiEmployer.seed";
 import { applyUltraHeavySuiteSeed } from "../features/shared/shift/qaUltraHeavySuite.seed";
 import { applyVisualStressSeed } from "../features/shared/shift/qaVisualStress.seed";
+import { AVAILABILITY_DEBUG_FLAG } from "../features/shared/shift/availabilitySyncDebug";
+import { applyReadyLocalPostApplySeed } from "./readyLocalPostApply.seed";
 
 /* ------------------------------------------------ */
 /* Public shell — hard production guard             */
 /* ------------------------------------------------ */
 export function GodModePanel() {
   if (!import.meta.env.DEV) return null;
+  try {
+    if (window.localStorage.getItem("wm_god_mode") !== "1") return null;
+  } catch {
+    return null;
+  }
   return <GodModePanelInner />;
 }
 
 /* ------------------------------------------------ */
 /* Inner panel — only reaches here in DEV           */
 /* ------------------------------------------------ */
+function isLandingRolePickRoute(): boolean {
+  const raw = window.location.hash.replace(/^#/, "") || "/";
+  const path = (raw.split("?")[0] || "/").replace(/\/+$/, "") || "/";
+  return path === "/" || path === "/role-pick";
+}
+
 function GodModePanelInner() {
   const [open, setOpen] = useState(false);
   const [log, setLog] = useState<string | null>(null);
   const [assumeEmpIndex, setAssumeEmpIndex] = useState("50");
+  const [routeTick, setRouteTick] = useState(0);
+
+  useEffect(() => {
+    // Keep live UI clean — QA overlays are opt-in via localStorage only.
+    try {
+      window.localStorage.removeItem(AVAILABILITY_DEBUG_FLAG);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    const api = { apply: applyReadyLocalPostApplySeed };
+    (window as Window & { wmReadyLocalPostApply?: typeof api }).wmReadyLocalPostApply = api;
+    return () => {
+      delete (window as Window & { wmReadyLocalPostApply?: typeof api }).wmReadyLocalPostApply;
+    };
+  }, []);
+
+  useEffect(() => {
+    const bump = () => setRouteTick((n) => n + 1);
+    bump();
+    window.addEventListener("hashchange", bump);
+    window.addEventListener("popstate", bump);
+    return () => {
+      window.removeEventListener("hashchange", bump);
+      window.removeEventListener("popstate", bump);
+    };
+  }, []);
+
+  const hideOnLanding = isLandingRolePickRoute();
+  // Close panel if we land back on role-pick (defer setState — avoid sync effect render).
+  useEffect(() => {
+    if (!hideOnLanding) return;
+    const t = window.setTimeout(() => setOpen(false), 0);
+    return () => window.clearTimeout(t);
+  }, [hideOnLanding, routeTick]);
 
   function flash(msg: string) {
     setLog(msg);
     window.setTimeout(() => setLog(null), 2800);
+  }
+
+  function handleReadyLocalPostApply() {
+    const result = applyReadyLocalPostApplySeed();
+    flash(
+      result.publishAllowed
+        ? `✅ Publish unlocked — ${result.employerCompany} / worker ${result.employeeName}`
+        : `⚠️ Seeded but publish blocked: ${result.publishReason ?? "unknown"}`,
+    );
   }
 
   function handleWipe() {
@@ -52,14 +110,22 @@ function GodModePanelInner() {
   }
 
   function handleMockPulse() {
-    const { hasActiveChain, clearAll, triggerPulseFlow } = usePulseStore.getState();
+    const { hasActiveChain, clearAll } = usePulseStore.getState();
     if (hasActiveChain()) {
       clearAll();
       flash("🔴 Active pulse cleared.");
-    } else {
-      triggerPulseFlow(PulseEvent.SHIFT_SHORTLISTED, "dev-mock-001");
-      flash("⚡ Mock pulse fired [SHIFT_SHORTLISTED]. Check nav tabs for the breathing light.");
+      return;
     }
+
+    // Prefer full event bridge (chain + trail) so home LED survives until destination confirm.
+    const triggered = window.wmPulseDev?.trigger("SHIFT_APPLICATION_SUBMITTED") ?? [];
+    if (triggered.length > 0) {
+      flash("⚡ Mock pulse fired [SHIFT_APPLICATION_SUBMITTED]. Home → My Posts hops live.");
+      return;
+    }
+
+    usePulseStore.getState().triggerPulseFlow("new_shift_application", "dev-mock-001");
+    flash("⚡ Mock pulse fired [new_shift_application]. Check Shift card breathing light.");
   }
 
   function handleToggleRole() {
@@ -148,6 +214,8 @@ function GodModePanelInner() {
     }, 400);
   }
 
+  if (hideOnLanding) return null;
+
   return (
     <div className="wm-dev-audit-sandbox" data-audit-sandbox="dev" data-wm-audit-ignore="true">
       <button
@@ -156,27 +224,31 @@ function GodModePanelInner() {
         aria-label="God Mode Dev Panel"
         title="God Mode Dev Panel"
         className="wm-dev-audit-sandbox__fab"
+        data-wm-god-mode-fab="true"
         style={{
           position: "fixed",
-          bottom: 90,
-          right: 14,
-          left: "auto",
-          zIndex: 999999,
-          width: 40,
-          height: 40,
+          /* Dock bottom-left above floating bottom nav — never covers top headers/actions */
+          top: "auto",
+          bottom: "calc(6.25rem + env(safe-area-inset-bottom, 0px))",
+          left: 12,
+          right: "auto",
+          zIndex: 40,
+          width: 36,
+          height: 36,
           borderRadius: "50%",
-          background: open ? "#1e293b" : "rgba(30,41,59,0.85)",
-          border: "1.5px solid rgba(148,163,184,0.35)",
+          background: open ? "#1e293b" : "rgba(30,41,59,0.55)",
+          border: "1.5px solid rgba(148,163,184,0.28)",
           color: "#94a3b8",
-          fontSize: 18,
+          fontSize: 16,
+          opacity: open ? 1 : 0.72,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           cursor: "pointer",
-          boxShadow: "0 4px 16px rgba(0,0,0,0.40)",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.28)",
           backdropFilter: "blur(8px)",
           WebkitBackdropFilter: "blur(8px)",
-          transition: "background 0.15s ease, transform 0.15s ease",
+          transition: "background 0.15s ease, transform 0.15s ease, opacity 0.15s ease",
           transform: open ? "rotate(45deg)" : "rotate(0deg)",
         }}
       >
@@ -187,10 +259,11 @@ function GodModePanelInner() {
         <div
           style={{
             position: "fixed",
-            bottom: 140,
-            right: 14,
-            left: "auto",
-            zIndex: 999998,
+            top: "auto",
+            bottom: "calc(8.75rem + env(safe-area-inset-bottom, 0px))",
+            left: 12,
+            right: "auto",
+            zIndex: 41,
             width: 260,
             borderRadius: 16,
             background: "rgba(15,23,42,0.95)",
@@ -200,7 +273,7 @@ function GodModePanelInner() {
             WebkitBackdropFilter: "blur(16px)",
             padding: "14px 0 10px",
             overflow: "hidden",
-            maxHeight: "70vh",
+            maxHeight: "55vh",
             overflowY: "auto",
           }}
           role="dialog"
@@ -230,6 +303,12 @@ function GodModePanelInner() {
           </div>
 
           <div style={{ padding: "0 10px", display: "flex", flexDirection: "column", gap: 4 }}>
+            <PanelButton
+              label="Ready: Post + Apply test"
+              icon="✅"
+              color="#059669"
+              onClick={handleReadyLocalPostApply}
+            />
             <PanelButton
               label="Wipe Storage & Reload"
               icon="🗑"

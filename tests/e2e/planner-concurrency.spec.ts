@@ -20,7 +20,7 @@ async function seedDraft(page: Page): Promise<void> {
             id: planId,
             name: "Concurrency Plan",
             companyName: "Lock Co",
-            locationName: "Kochi",
+            locationName: "City A",
             category: "Security",
             experience: "experienced",
             startDate: "2026-12-01",

@@ -16,9 +16,8 @@ import {
   CAREER_WORKSPACES_CHANGED,
 } from "./careerStorageUtils";
 
-import { resolveCareerEmployerScopedKey } from "../../../shared/career/careerEmployerScope";
+import { tryResolveCareerEmployerScopedKey } from "../../../shared/career/careerEmployerScope";
 import { readCareerPosts, readCareerApps, readCareerActivityAll } from "./careerNormalizers";
-import { getCareerEmployerAppsStorageKey } from "./careerPersistence";
 
 import { recomputePostAnalytics } from "./careerValidation";
 
@@ -26,16 +25,16 @@ import { recomputePostAnalytics } from "./careerValidation";
 // localStorage Keys (read-only references for cache comparison)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function appsLsKey(): string {
-  return getCareerEmployerAppsStorageKey();
+function appsLsKey(): string | null {
+  return tryResolveCareerEmployerScopedKey("career_applications_v1");
 }
 
-function postsLsKey(): string {
-  return resolveCareerEmployerScopedKey("career_posts_v1");
+function postsLsKey(): string | null {
+  return tryResolveCareerEmployerScopedKey("career_posts_v1");
 }
 
-function activityLsKey(): string {
-  return resolveCareerEmployerScopedKey("career_activity_log_v1");
+function activityLsKey(): string | null {
+  return tryResolveCareerEmployerScopedKey("career_activity_log_v1");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -47,43 +46,79 @@ let postsAppsCacheRaw: string | null = null;
 let postsCacheList: CareerJobPost[] = [];
 
 export function getCareerPostsSnapshot(): CareerJobPost[] {
-  const raw = localStorage.getItem(postsLsKey());
-  const appsRaw = localStorage.getItem(appsLsKey());
-
-  if (raw === postsCacheRaw && appsRaw === postsAppsCacheRaw) {
+  const postKey = postsLsKey();
+  const appKey = appsLsKey();
+  if (!postKey || !appKey) {
+    postsCacheRaw = null;
+    postsAppsCacheRaw = null;
+    postsCacheList = [];
     return postsCacheList;
   }
 
-  postsCacheRaw = raw;
-  postsAppsCacheRaw = appsRaw;
+  try {
+    const raw = localStorage.getItem(postKey);
+    const appsRaw = localStorage.getItem(appKey);
 
-  const posts = readCareerPosts();
-  const apps = readCareerApps();
+    if (raw === postsCacheRaw && appsRaw === postsAppsCacheRaw) {
+      return postsCacheList;
+    }
 
-  postsCacheList = posts.map((p) => recomputePostAnalytics(p, apps));
-  return postsCacheList;
+    postsCacheRaw = raw;
+    postsAppsCacheRaw = appsRaw;
+
+    const posts = readCareerPosts();
+    const apps = readCareerApps();
+
+    postsCacheList = posts.map((p) => recomputePostAnalytics(p, apps));
+    return postsCacheList;
+  } catch {
+    postsCacheList = [];
+    return postsCacheList;
+  }
 }
 
 let appsCacheRaw: string | null = null;
 let appsCacheList: CareerApplication[] = [];
 
 export function getCareerAppsSnapshot(): CareerApplication[] {
-  const raw = localStorage.getItem(appsLsKey());
-  if (raw === appsCacheRaw) return appsCacheList;
-  appsCacheRaw = raw;
-  appsCacheList = readCareerApps();
-  return appsCacheList;
+  const key = appsLsKey();
+  if (!key) {
+    appsCacheRaw = null;
+    appsCacheList = [];
+    return appsCacheList;
+  }
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw === appsCacheRaw) return appsCacheList;
+    appsCacheRaw = raw;
+    appsCacheList = readCareerApps();
+    return appsCacheList;
+  } catch {
+    appsCacheList = [];
+    return appsCacheList;
+  }
 }
 
 let actCacheRaw: string | null = null;
 let actCacheList: EmployerCareerActivityEntry[] = [];
 
 export function getCareerActivitySnapshot(): EmployerCareerActivityEntry[] {
-  const raw = localStorage.getItem(activityLsKey());
-  if (raw === actCacheRaw) return actCacheList;
-  actCacheRaw = raw;
-  actCacheList = readCareerActivityAll();
-  return actCacheList;
+  const key = activityLsKey();
+  if (!key) {
+    actCacheRaw = null;
+    actCacheList = [];
+    return actCacheList;
+  }
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw === actCacheRaw) return actCacheList;
+    actCacheRaw = raw;
+    actCacheList = readCareerActivityAll();
+    return actCacheList;
+  } catch {
+    actCacheList = [];
+    return actCacheList;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

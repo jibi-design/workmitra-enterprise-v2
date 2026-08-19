@@ -1,9 +1,9 @@
-/** Job Mitra | commandPalette.registry.ts | Static employer nav commands (ROUTE_PATHS only) */
+/** Job Mitra | commandPalette.registry.ts | Static nav commands (ROUTE_PATHS only) */
 
 import { ROUTE_PATHS } from "../../../app/router/routePaths";
 import type { EnterpriseDomainAccent } from "./enterprise.types";
 
-export type CommandPaletteDomain = EnterpriseDomainAccent | "general";
+export type CommandPaletteDomain = EnterpriseDomainAccent | "general" | "vault";
 
 export type CommandPaletteItem = {
   id: string;
@@ -14,7 +14,7 @@ export type CommandPaletteItem = {
   group: string;
 };
 
-/** Static registry — navigation only; no domain storage reads. */
+/** Employer static registry — navigation only; no domain storage reads. */
 export const EMPLOYER_COMMAND_PALETTE_ITEMS: readonly CommandPaletteItem[] = [
   {
     id: "home",
@@ -162,6 +162,154 @@ export const EMPLOYER_COMMAND_PALETTE_ITEMS: readonly CommandPaletteItem[] = [
   },
 ] as const;
 
+/** Employee static registry — Day-1 destinations only (no route params). */
+export const EMPLOYEE_COMMAND_PALETTE_ITEMS: readonly CommandPaletteItem[] = [
+  {
+    id: "ee-home",
+    label: "Employee Home",
+    keywords: ["dashboard", "home", "start"],
+    path: ROUTE_PATHS.employeeHome,
+    domain: "general",
+    group: "General",
+  },
+  {
+    id: "ee-notifications",
+    label: "Notifications",
+    keywords: ["bell", "alerts", "inbox"],
+    path: ROUTE_PATHS.employeeNotifications,
+    domain: "general",
+    group: "General",
+  },
+  {
+    id: "ee-settings",
+    label: "Settings",
+    keywords: ["preferences", "account"],
+    path: ROUTE_PATHS.employeeSettings,
+    domain: "general",
+    group: "General",
+  },
+  {
+    id: "ee-profile",
+    label: "Profile",
+    keywords: ["me", "identity", "photo"],
+    path: ROUTE_PATHS.employeeProfile,
+    domain: "general",
+    group: "General",
+  },
+  {
+    id: "ee-shift-center",
+    label: "Shift Center",
+    keywords: ["temporary", "shifts", "gig"],
+    path: ROUTE_PATHS.employeeShiftCenter,
+    domain: "shift",
+    group: "Shift",
+  },
+  {
+    id: "ee-shift-search",
+    label: "Find Shifts",
+    keywords: ["search", "browse", "apply"],
+    path: ROUTE_PATHS.employeeShiftSearch,
+    domain: "shift",
+    group: "Shift",
+  },
+  {
+    id: "ee-shift-applications",
+    label: "Shift Applications",
+    keywords: ["applied", "pending", "status"],
+    path: ROUTE_PATHS.employeeShiftApplications,
+    domain: "shift",
+    group: "Shift",
+  },
+  {
+    id: "ee-shift-workspaces",
+    label: "Shift Workspaces",
+    keywords: ["groups", "chat", "live work"],
+    path: ROUTE_PATHS.employeeShiftWorkspaces,
+    domain: "shift",
+    group: "Shift",
+  },
+  {
+    id: "ee-shift-earnings",
+    label: "Shift Earnings",
+    keywords: ["pay", "wallet", "money"],
+    path: ROUTE_PATHS.employeeShiftEarnings,
+    domain: "shift",
+    group: "Shift",
+  },
+  {
+    id: "ee-career-home",
+    label: "Career Home",
+    keywords: ["jobs", "long-term", "hiring"],
+    path: ROUTE_PATHS.employeeCareerHome,
+    domain: "career",
+    group: "Career",
+  },
+  {
+    id: "ee-career-search",
+    label: "Search Career Jobs",
+    keywords: ["browse", "find job", "apply"],
+    path: ROUTE_PATHS.employeeCareerSearch,
+    domain: "career",
+    group: "Career",
+  },
+  {
+    id: "ee-career-applications",
+    label: "Career Applications",
+    keywords: ["pipeline", "applied", "offers"],
+    path: ROUTE_PATHS.employeeCareerApplications,
+    domain: "career",
+    group: "Career",
+  },
+  {
+    id: "ee-career-workspaces",
+    label: "Career Workspaces",
+    keywords: ["hired", "employment", "workspace"],
+    path: ROUTE_PATHS.employeeCareerWorkspaces,
+    domain: "career",
+    group: "Career",
+  },
+  {
+    id: "ee-planner-home",
+    label: "Planner Home",
+    keywords: ["demand", "gig projects", "planner"],
+    path: ROUTE_PATHS.employeePlannerHome,
+    domain: "planner",
+    group: "Planner",
+  },
+  {
+    id: "ee-planner-browse",
+    label: "Browse Plans",
+    keywords: ["discover", "projects", "apply"],
+    path: ROUTE_PATHS.employeePlannerBrowse,
+    domain: "planner",
+    group: "Planner",
+  },
+  {
+    id: "ee-planner-applications",
+    label: "Planner Applications",
+    keywords: ["applied plans", "status"],
+    path: ROUTE_PATHS.employeePlannerApplications,
+    domain: "planner",
+    group: "Planner",
+  },
+  {
+    id: "ee-vault",
+    label: "Work Vault",
+    keywords: ["documents", "otp", "records", "identity"],
+    path: ROUTE_PATHS.employeeVaultHome,
+    domain: "vault",
+    group: "Vault",
+  },
+  {
+    id: "ee-vault-otp",
+    label: "Vault Access Code",
+    keywords: ["otp", "share", "employer access"],
+    path: ROUTE_PATHS.employeeVaultOtp,
+    domain: "vault",
+    group: "Vault",
+  },
+] as const;
+
 export function filterCommandPaletteItems(
   query: string,
   items: readonly CommandPaletteItem[] = EMPLOYER_COMMAND_PALETTE_ITEMS,
@@ -185,6 +333,7 @@ export function commandPaletteDomainCounts(
     shift: 0,
     career: 0,
     general: 0,
+    vault: 0,
   };
   for (const item of items) {
     counts[item.domain] += 1;

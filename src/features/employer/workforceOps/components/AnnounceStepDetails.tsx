@@ -1,6 +1,6 @@
 ﻿// src/features/employer/workforceOps/components/AnnounceStepDetails.tsx
 //
-// Step 4: Announcement details â€” title, work date, time, location, description, auto-replace.
+// Step 4: Announcement details — title, work date, time, location, description, auto-replace.
 
 import { useState } from "react";
 import { validateAnnouncementStep3 } from "../../../../shared/domains/workforce/validation/workforceValidation";
@@ -118,7 +118,7 @@ export function AnnounceStepDetails({
             <input
               type="text"
               className="wm-input"
-              placeholder="e.g. Weekend Staff Required, Site Work - Block A"
+              placeholder="Announcement title"
               value={title}
               onChange={(e) => {
                 onChange({ title: e.target.value });
@@ -164,7 +164,7 @@ export function AnnounceStepDetails({
             <input
               type="text"
               className="wm-input"
-              placeholder="e.g. Main Office, Site B, Warehouse 3"
+              placeholder="Work location name"
               value={location}
               onChange={(e) => onChange({ location: e.target.value })}
               style={{ width: "100%", fontSize: 13 }}
@@ -239,7 +239,7 @@ export function AnnounceStepDetails({
           padding: "12px",
         }}
       >
-        Next â€” Preview & Send
+        Next — Preview & Send
       </button>
     </div>
   );

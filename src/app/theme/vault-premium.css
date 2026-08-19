@@ -1,7 +1,7 @@
 /* Vault domain premium polish — L-V1 slate elevation (restrained vault accent) */
 
 .wm-vault-page-hero {
-  padding: 20px 18px 16px;
+  padding: var(--wm-dna-card-padding, 14px);
   margin: -4px 0 14px;
   border-radius: 22px;
   background: linear-gradient(180deg, rgba(248, 250, 252, 1), rgba(255, 255, 255, 0.94));
@@ -47,6 +47,7 @@
 /* L-V1 pill tab shell */
 .wm-vault-tabs {
   display: flex;
+  flex-wrap: nowrap;
   gap: 4px;
   margin-top: var(--wm-stack-gap, 12px);
   padding: 6px;
@@ -54,10 +55,18 @@
   border: 1px solid rgba(226, 232, 240, 0.95);
   background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(248, 250, 252, 0.97));
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.wm-vault-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .wm-vault-tab {
-  flex: 1;
+  flex: 0 0 auto;
   min-height: 44px;
   padding: 8px 6px;
   border: 1px solid transparent;
@@ -77,10 +86,6 @@
     transform var(--wm-motion-fast) var(--wm-motion-spring),
     font-weight var(--wm-motion-fast) var(--wm-motion-spring),
     box-shadow var(--wm-motion-fast) var(--wm-motion-spring);
-}
-
-.wm-vault-tab:active {
-  transform: scale(0.98);
 }
 
 .wm-vault-tab--active {
@@ -112,7 +117,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 18px 16px;
+  padding: var(--wm-dna-card-padding, 14px);
   border-radius: 22px;
   background: linear-gradient(180deg, rgba(248, 250, 252, 1), rgba(255, 255, 255, 0.94));
   border: 1px solid rgba(148, 163, 184, 0.18);
@@ -220,7 +225,7 @@
 
 /* Shared glass section cards */
 .wm-vault-section-card {
-  padding: 16px;
+  padding: var(--wm-dna-card-padding, var(--wm-card-padding, 14px));
   border-radius: 20px;
   border: 1px solid rgba(148, 163, 184, 0.16);
   background: rgba(255, 255, 255, 0.96);
@@ -250,10 +255,6 @@
     transform var(--wm-motion-fast) var(--wm-motion-spring),
     border-color var(--wm-motion-base) var(--wm-motion-spring),
     box-shadow var(--wm-motion-base) var(--wm-motion-spring);
-}
-
-.wm-vault-edit-cta:active {
-  transform: scale(0.99);
 }
 
 .wm-vault-edit-cta:focus-visible {
@@ -296,10 +297,6 @@
     border-color var(--wm-motion-base) var(--wm-motion-spring);
 }
 
-.wm-vault-stat-box:active {
-  transform: scale(0.98);
-}
-
 .wm-vault-stat-box__label {
   font-size: 10px;
   font-weight: 700;
@@ -314,7 +311,7 @@
 }
 
 .wm-vault-performance-card {
-  padding: 16px;
+  padding: var(--wm-dna-card-padding, var(--wm-card-padding, 14px));
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.96);
   border: 1px solid rgba(148, 163, 184, 0.16);
@@ -467,10 +464,6 @@
     border-color: rgba(15, 23, 42, 0.14);
     box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
   }
-}
-
-.wm-vault-card:active {
-  transform: scale(0.98);
 }
 
 .wm-vault-folder-icon {
@@ -657,10 +650,6 @@
   outline-offset: 2px;
 }
 
-.wm-vault-otp-back:active {
-  transform: scale(0.96);
-}
-
 .wm-vault-otp-card {
   position: relative;
   overflow: hidden;
@@ -841,9 +830,6 @@
   outline-offset: 2px;
 }
 
-.wm-vault-otp-btn:active:not(:disabled) {
-  transform: scale(0.98);
-}
 
 .wm-vault-otp-btn:disabled {
   opacity: 0.4;
@@ -975,9 +961,6 @@
   transition: transform var(--wm-motion-fast) var(--wm-motion-spring);
 }
 
-.wm-vault-otp-folder-toggle:active {
-  transform: scale(0.97);
-}
 
 .wm-vault-otp-folder-toggle--on {
   border: 1px solid rgba(22, 163, 74, 0.25);
@@ -1207,9 +1190,6 @@
     background var(--wm-motion-fast) var(--wm-motion-spring);
 }
 
-.wm-vault-docs-chip-btn:active {
-  transform: scale(0.97);
-}
 
 .wm-vault-docs-chip-btn--show {
   border: 1px solid rgba(22, 163, 74, 0.25);
@@ -1250,9 +1230,6 @@
   outline-offset: 2px;
 }
 
-.wm-vault-docs-cta:active {
-  transform: scale(0.98);
-}
 
 .wm-vault-docs-cta--primary {
   border: none;
@@ -1290,9 +1267,6 @@
   color: var(--wm-text-muted);
 }
 
-.wm-vault-access-history-link:active {
-  transform: scale(0.99);
-}
 
 .wm-vault-docs-folder-block {
   margin-top: 6px;
@@ -1372,9 +1346,6 @@
   outline-offset: 2px;
 }
 
-.wm-vault-session-banner__revoke:active {
-  transform: scale(0.97);
-}
 
 /* ---------- L-V3 Verify Employer (slate elevation) ---------- */
 .wm-vault-verify {
@@ -1451,9 +1422,6 @@
   outline-offset: 2px;
 }
 
-.wm-vault-verify-search-btn:active:not(:disabled) {
-  transform: scale(0.97);
-}
 
 .wm-vault-verify-search-btn:disabled {
   opacity: 0.7;
@@ -1531,9 +1499,6 @@
   outline-offset: 2px;
 }
 
-.wm-vault-verify-clear-btn:active {
-  transform: scale(0.98);
-}
 
 .wm-vault-verify-card {
   padding: 14px 16px;
@@ -1690,7 +1655,8 @@
   .wm-vault-access-history-link,
   .wm-vault-session-banner__revoke,
   .wm-vault-verify-search-btn,
-  .wm-vault-verify-clear-btn {
+  .wm-vault-verify-clear-btn,
+  .wm-vault-session-card__revoke {
     transition: none;
   }
 
@@ -1706,7 +1672,8 @@
   .wm-vault-access-history-link:active,
   .wm-vault-session-banner__revoke:active,
   .wm-vault-verify-search-btn:active:not(:disabled),
-  .wm-vault-verify-clear-btn:active {
+  .wm-vault-verify-clear-btn:active,
+  .wm-vault-session-card__revoke:active {
     transform: none;
   }
 
@@ -1845,9 +1812,6 @@
   outline: none;
 }
 
-.wm-vault-doc-card:active {
-  transform: scale(0.99);
-}
 
 .wm-vault-doc-card__main {
   display: flex;
@@ -1881,8 +1845,6 @@
     transform var(--wm-motion-base) var(--wm-motion-spring);
 }
 
-.wm-vault-doc-card:hover .wm-vault-doc-card__thumb-img,
-.wm-vault-doc-card:focus-visible .wm-vault-doc-card__thumb-img,
 .wm-vault-doc-card--revealed .wm-vault-doc-card__thumb-img {
   filter: blur(0);
   transform: scale(1);
@@ -2163,13 +2125,10 @@
   transition: transform var(--wm-motion-fast) var(--wm-motion-spring);
 }
 
-.wm-vault-session-card__revoke:active {
-  transform: scale(0.98);
-}
 
 .wm-vault-otp-verify {
   text-align: center;
-  padding: 18px 16px;
+  padding: var(--wm-dna-card-padding, 14px);
   border-radius: 20px;
   border: 1px solid var(--wm-glass-border, rgba(148, 163, 184, 0.28));
   background: color-mix(in srgb, var(--wm-surface, #fff) 86%, transparent);
@@ -2504,5 +2463,54 @@ html[data-theme="dark"] .wm-vault-timeline-item__title,
 
   .wm-vault-timeline-item__dot {
     left: 6px;
+  }
+}
+
+/* STEP 6 — WCAG 2.1 §2.3.3: active press scales only when motion is preferred */
+@media (prefers-reduced-motion: no-preference) {
+  .wm-vault-tab:active {
+    transform: scale(0.98);
+  }
+  .wm-vault-edit-cta:active {
+    transform: scale(0.99);
+  }
+  .wm-vault-stat-box:active {
+    transform: scale(0.98);
+  }
+  .wm-vault-card:active {
+    transform: scale(0.98);
+  }
+  .wm-vault-otp-back:active {
+    transform: scale(0.96);
+  }
+  .wm-vault-otp-btn:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  .wm-vault-otp-folder-toggle:active {
+    transform: scale(0.97);
+  }
+  .wm-vault-docs-chip-btn:active {
+    transform: scale(0.97);
+  }
+  .wm-vault-docs-cta:active {
+    transform: scale(0.98);
+  }
+  .wm-vault-access-history-link:active {
+    transform: scale(0.99);
+  }
+  .wm-vault-session-banner__revoke:active {
+    transform: scale(0.97);
+  }
+  .wm-vault-verify-search-btn:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+  .wm-vault-verify-clear-btn:active {
+    transform: scale(0.98);
+  }
+  .wm-vault-doc-card:active {
+    transform: scale(0.99);
+  }
+  .wm-vault-session-card__revoke:active {
+    transform: scale(0.98);
   }
 }

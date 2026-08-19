@@ -186,7 +186,7 @@ export function AttendanceDayDetailModal({ open, dateKey, hrCandidateId, onClose
             type="text"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            placeholder="e.g. Main Office, Site B"
+            placeholder="Work location name"
             style={inputStyle}
           />
         </div>

@@ -1,0 +1,115 @@
+/* Employer dashboard — Event Day action tiles. Shared dashWidget DNA. */
+
+.wm-erDashActionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: var(--wm-space-12, 12px);
+}
+
+@media (max-width: 359px) {
+  .wm-erDashActionGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 900px) {
+  .wm-erDashActionGrid--wide {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1100px) {
+  .wm-erDashActionGrid--wide {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.wm-erDashActionTile.wm-dashWidget {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--wm-space-12, 12px);
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  min-height: var(--wm-dna-card-min-height, 140px);
+  margin: 0;
+  padding: var(--wm-dna-card-padding, 14px);
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border-radius: var(--wm-dna-card-radius-employer, var(--wm-radius-employer-card, 24px));
+}
+
+.wm-erDashActionTile__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  margin-top: 1px;
+  border-radius: 12px;
+  color: var(--wm-dashboard-accent, #0f766e);
+  background: color-mix(in srgb, var(--wm-dashboard-accent, #0f766e) 16%, transparent);
+}
+
+.wm-erDashActionTile__copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 2px;
+}
+
+.wm-erDashActionTile__title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  min-height: calc(1.25em * 2);
+  font-size: var(--wm-dna-card-title-size, var(--wm-font-xl, 16px));
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--wm-er-text, #0f172a);
+}
+
+.wm-erDashActionTile__sub {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  min-height: calc(1.4em * 2);
+  font-size: var(--wm-dna-card-helper-size, var(--wm-font-sm, 12px));
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--wm-er-muted, #64748b);
+}
+
+.wm-erDashActionTile__chevron {
+  flex-shrink: 0;
+  margin-top: 8px;
+  color: var(--wm-er-muted, #64748b);
+}
+
+.wm-erDashActionTile:hover {
+  transform: translateY(-2px);
+}
+
+.wm-erDashActionTile:active {
+  transform: scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wm-erDashActionTile,
+  .wm-erDashActionTile:hover,
+  .wm-erDashActionTile:active {
+    transform: none;
+  }
+}

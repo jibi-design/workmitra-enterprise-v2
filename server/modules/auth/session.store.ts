@@ -85,6 +85,49 @@ const memoryStore = {
       if (record.userId === userId) memorySessions.delete(tokenHash);
     }
   },
+  listForUser(
+    userId: string,
+    currentRawToken: string,
+  ): Array<{
+    id: string;
+    current: boolean;
+    createdAt: string;
+    lastSeenAt: string;
+    userAgent: string | null;
+  }> {
+    const currentHash = hashSessionToken(currentRawToken);
+    const out: Array<{
+      id: string;
+      current: boolean;
+      createdAt: string;
+      lastSeenAt: string;
+      userAgent: string | null;
+    }> = [];
+    const now = Date.now();
+    for (const [tokenHash, record] of memorySessions) {
+      if (record.userId !== userId) continue;
+      if (record.expiresAt < now) continue;
+      out.push({
+        id: tokenHash.slice(0, 16),
+        current: tokenHash === currentHash,
+        createdAt: new Date(record.createdAt).toISOString(),
+        lastSeenAt: new Date(record.createdAt).toISOString(),
+        userAgent: null,
+      });
+    }
+    return out.sort((a, b) => (a.current === b.current ? 0 : a.current ? -1 : 1));
+  },
+  revokeOthers(userId: string, currentRawToken: string): number {
+    const currentHash = hashSessionToken(currentRawToken);
+    let revoked = 0;
+    for (const [tokenHash, record] of memorySessions) {
+      if (record.userId !== userId) continue;
+      if (tokenHash === currentHash) continue;
+      memorySessions.delete(tokenHash);
+      revoked += 1;
+    }
+    return revoked;
+  },
 };
 
 const dbStore = {
@@ -180,6 +223,34 @@ const dbStore = {
   async deleteAllForUserDb(userId: string): Promise<void> {
     await authRepository.revokeAllSessionsForUser(userId);
   },
+
+  async listForUserDb(
+    userId: string,
+    currentRawToken: string,
+  ): Promise<
+    Array<{
+      id: string;
+      current: boolean;
+      createdAt: string;
+      lastSeenAt: string;
+      userAgent: string | null;
+    }>
+  > {
+    const currentHash = hashSessionToken(currentRawToken);
+    const rows = await authRepository.listActiveSessionsForUser(userId);
+    return rows.map((row) => ({
+      id: row.id,
+      current: row.session_token_hash === currentHash,
+      createdAt: row.created_at.toISOString(),
+      lastSeenAt: row.last_seen_at.toISOString(),
+      userAgent: row.user_agent,
+    }));
+  },
+
+  async revokeOthersDb(userId: string, currentRawToken: string): Promise<number> {
+    const currentHash = hashSessionToken(currentRawToken);
+    return authRepository.revokeOtherSessionsForUser(userId, currentHash);
+  },
 };
 
 export const sessionStore = {
@@ -226,5 +297,30 @@ export const sessionStore = {
     } else {
       memoryStore.deleteAllForUser(userId);
     }
+  },
+
+  listForUser(
+    userId: string,
+    currentRawToken: string,
+  ): Promise<
+    Array<{
+      id: string;
+      current: boolean;
+      createdAt: string;
+      lastSeenAt: string;
+      userAgent: string | null;
+    }>
+  > {
+    if (isDbAuthEnabled()) {
+      return dbStore.listForUserDb(userId, currentRawToken);
+    }
+    return Promise.resolve(memoryStore.listForUser(userId, currentRawToken));
+  },
+
+  revokeOthers(userId: string, currentRawToken: string): Promise<number> {
+    if (isDbAuthEnabled()) {
+      return dbStore.revokeOthersDb(userId, currentRawToken);
+    }
+    return Promise.resolve(memoryStore.revokeOthers(userId, currentRawToken));
   },
 };

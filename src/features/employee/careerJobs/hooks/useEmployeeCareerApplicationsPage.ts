@@ -47,7 +47,9 @@ export function useEmployeeCareerApplicationsPage() {
   const [declineJobId, setDeclineJobId] = useState<string | null>(null);
   const [declineJobTitle, setDeclineJobTitle] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
-  const [isHydrating, setIsHydrating] = useState(() => isCareerApiSyncEnabled());
+  const [isHydrating, setIsHydrating] = useState(
+    () => isCareerApiSyncEnabled() && getAppsSnapshot().length === 0,
+  );
 
   useEffect(() => {
     if (!isCareerApiSyncEnabled()) {

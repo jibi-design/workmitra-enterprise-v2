@@ -1,0 +1,144 @@
+/* Job Mitra | stable-inline-layout.css
+   Chrome zoom changes CSS viewport width. auto-fill grids and wrap rows
+   then switch between a line and a stacked grid. Compact strips stay one
+   swipeable row across employee, employer, and admin shells. */
+
+.wm-stable-row {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch;
+  gap: var(--wm-space-8, 8px);
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  grid-template-columns: none !important;
+}
+
+.wm-stable-row::-webkit-scrollbar {
+  display: none;
+}
+
+.wm-stable-row > * {
+  flex: 1 0 var(--wm-stable-row-min, 7.25rem);
+  min-width: min(100%, var(--wm-stable-row-min, 7.25rem));
+}
+
+[role="tablist"] {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+[role="tablist"]::-webkit-scrollbar {
+  display: none;
+}
+
+[role="tablist"] > * {
+  flex-shrink: 0;
+}
+
+.wm-ent-grid,
+.wm-ent-grid.wm-ent-grid--collapseMobile,
+.wm-ent-grid.wm-ent-grid--collapseTablet {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: var(--wm-ent-grid-gap, 12px);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  grid-template-columns: none;
+}
+
+.wm-ent-grid::-webkit-scrollbar {
+  display: none;
+}
+
+.wm-ent-grid > * {
+  flex: 1 0 var(--wm-ent-grid-min, 148px);
+  min-width: min(100%, var(--wm-ent-grid-min, 148px));
+}
+
+.wm-shift-kpi-grid,
+.wm-shift-kpi-grid.wm-shift-kpi-grid--cols2,
+.wm-er-tiles,
+.wm-er-dashTiles {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: var(--wm-kpi-grid-gap, var(--wm-stack-gap, 8px));
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  grid-template-columns: none;
+}
+
+.wm-shift-kpi-grid::-webkit-scrollbar,
+.wm-er-tiles::-webkit-scrollbar {
+  display: none;
+}
+
+.wm-shift-kpi-grid > *,
+.wm-er-tiles > * {
+  flex: 1 0 7.25rem;
+  min-width: 7.25rem;
+}
+
+.wm-chipRow[role="tablist"] > .wm-chipBtn,
+.wm-shift-seg-tab-row > .wm-shift-seg-tab {
+  flex: 0 0 auto;
+}
+
+.wm-erDashHero,
+.wm-dailyOsHero,
+.wm-shiftHomeKpiGrid,
+.wm-ee-tiles,
+.wm-shiftOpsManagerStatsGrid,
+.wm-erDashMetrics,
+.wm-shiftHomeActionGrid {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  grid-template-columns: none !important;
+}
+
+.wm-erDashHero::-webkit-scrollbar,
+.wm-dailyOsHero::-webkit-scrollbar,
+.wm-shiftHomeKpiGrid::-webkit-scrollbar,
+.wm-ee-tiles::-webkit-scrollbar {
+  display: none;
+}
+
+.wm-erDashHero > *,
+.wm-dailyOsHero > *,
+.wm-shiftHomeKpiGrid > *,
+.wm-ee-tiles > *,
+.wm-shiftOpsManagerStatsGrid > *,
+.wm-erDashMetrics > *,
+.wm-shiftHomeActionGrid > * {
+  flex: 1 0 7.25rem;
+  min-width: 7.25rem;
+}
+
+@media (max-width: 960px) {
+  .wm-erDashHero,
+  .wm-dailyOsHero,
+  .wm-shiftHomeKpiGrid,
+  .wm-ee-tiles,
+  .wm-shiftOpsManagerStatsGrid {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    grid-template-columns: none !important;
+  }
+}

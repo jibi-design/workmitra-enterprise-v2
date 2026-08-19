@@ -20,7 +20,7 @@ function getEmployeeVisibleDomains(): Set<string> {
 }
 
 function getEmployerVisibleDomains(): Set<string> {
-  const domains = ["shift", "career"];
+  const domains = ["shift", "career", "employment"];
 
   if (LAUNCH_VISIBILITY.workforceOps) {
     domains.push("workforce");

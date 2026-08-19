@@ -6,6 +6,7 @@ import { apiService } from "../../../../shared/services/apiService";
 import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
 
 const EMPLOYEE_NOTIF = "/v1/jobmitra/employee/notifications";
+const EMPLOYER_NOTIF = "/v1/jobmitra/employer/notifications";
 
 interface ApiEnvelope<T> {
   data: T;
@@ -22,6 +23,7 @@ export type ServerNotificationDto = {
   isRead: boolean;
   createdAt: number;
   readAt: number | null;
+  meta: Record<string, unknown>;
 };
 
 export function isNotificationsApiSyncEnabled(): boolean {
@@ -56,6 +58,7 @@ function asNotification(value: unknown): ServerNotificationDto | null {
     isRead: value.isRead === true,
     createdAt: asMs(value.createdAt),
     readAt: value.readAt == null ? null : asMs(value.readAt),
+    meta: isRecord(value.meta) ? value.meta : {},
   };
 }
 
@@ -68,16 +71,23 @@ function currentEmployeeMlId(): string | undefined {
   return legacy || undefined;
 }
 
+async function listInbox(prefix: string, mlId?: string): Promise<ServerNotificationDto[]> {
+  const res = await apiService.get<ApiEnvelope<{ notifications: unknown }>>(
+    prefix,
+    mlId ? { ml_id: mlId } : undefined,
+  );
+  const raw = res.data.notifications;
+  if (!Array.isArray(raw)) return [];
+  return raw.map(asNotification).filter((n): n is ServerNotificationDto => n !== null);
+}
+
 export const notificationsGateApi = {
   async listMine(): Promise<ServerNotificationDto[]> {
-    const mlId = currentEmployeeMlId();
-    const res = await apiService.get<ApiEnvelope<{ notifications: unknown }>>(
-      EMPLOYEE_NOTIF,
-      mlId ? { ml_id: mlId } : undefined,
-    );
-    const raw = res.data.notifications;
-    if (!Array.isArray(raw)) return [];
-    return raw.map(asNotification).filter((n): n is ServerNotificationDto => n !== null);
+    return listInbox(EMPLOYEE_NOTIF, currentEmployeeMlId());
+  },
+
+  async listEmployerInbox(): Promise<ServerNotificationDto[]> {
+    return listInbox(EMPLOYER_NOTIF);
   },
 
   async markRead(notificationId: string): Promise<ServerNotificationDto> {
@@ -93,6 +103,24 @@ export const notificationsGateApi = {
   async markAllRead(): Promise<number> {
     const res = await apiService.post<ApiEnvelope<{ updated: number }>>(
       `${EMPLOYEE_NOTIF}/read-all`,
+      {},
+    );
+    return typeof res.data.updated === "number" ? res.data.updated : 0;
+  },
+
+  async markEmployerRead(notificationId: string): Promise<ServerNotificationDto> {
+    const res = await apiService.patch<ApiEnvelope<{ notification: unknown }>>(
+      `${EMPLOYER_NOTIF}/${encodeURIComponent(notificationId)}/read`,
+      {},
+    );
+    const mapped = asNotification(res.data.notification);
+    if (!mapped) throw new Error("Invalid mark-read response");
+    return mapped;
+  },
+
+  async markEmployerAllRead(): Promise<number> {
+    const res = await apiService.post<ApiEnvelope<{ updated: number }>>(
+      `${EMPLOYER_NOTIF}/read-all`,
       {},
     );
     return typeof res.data.updated === "number" ? res.data.updated : 0;

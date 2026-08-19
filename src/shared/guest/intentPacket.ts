@@ -1,7 +1,15 @@
 /** Phase 4 — IntentPacket for soft-auth resume (session-scoped). */
 
 export type IntentAction =
-  "apply_shift" | "apply_career" | "save_shift" | "save_career" | "create_draft";
+  | "apply_shift"
+  | "apply_career"
+  | "apply_planner"
+  | "save_shift"
+  | "save_career"
+  | "create_draft"
+  | "create_shift"
+  | "create_career"
+  | "create_planner";
 
 export type IntentPacket = {
   readonly action: IntentAction;

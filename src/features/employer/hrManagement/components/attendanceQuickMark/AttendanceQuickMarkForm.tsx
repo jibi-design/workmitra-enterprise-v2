@@ -126,7 +126,7 @@ export function AttendanceQuickMarkForm({
           type="text"
           value={location}
           onChange={(event) => onLocationChange(event.target.value)}
-          placeholder="e.g. Main Office, Site B"
+          placeholder="Work location name"
           style={inputStyle}
         />
       </div>

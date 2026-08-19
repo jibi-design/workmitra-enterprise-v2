@@ -14,7 +14,6 @@ export function EmployerHomeDashboardLinks() {
         <DomainCard
           domain="dashboard"
           audience="employer"
-          stack
           className="wm-erExecCard"
           title="Employer Dashboard"
           subtitle="Hiring, operations, and utilities"
@@ -28,7 +27,7 @@ export function EmployerHomeDashboardLinks() {
         >
           <span className="wm-erDomainBadge" aria-hidden="true">
             <span className="wm-erDomainBadge__dot" />
-            Command center
+            Active
           </span>
         </DomainCard>
       </div>

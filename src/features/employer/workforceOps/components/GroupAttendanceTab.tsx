@@ -31,7 +31,7 @@ function formatTime(ts: number): string {
 }
 
 function formatHours(hours: number | null): string {
-  if (hours === null) return "â€”";
+  if (hours === null) return "—";
   return `${hours.toFixed(1)}h`;
 }
 
@@ -139,13 +139,13 @@ export function GroupAttendanceTab({ group, members }: Props) {
                 </div>
                 {shift.hasBreak ? (
                   <div style={{ fontSize: 10, color: "var(--wm-er-muted)", lineHeight: 1.5 }}>
-                    Duty 1: {shift.startTime} â€“ {shift.breakStartTime} Â· Break:{" "}
-                    {shift.breakStartTime} â€“ {shift.breakEndTime} Â· Duty 2: {shift.breakEndTime}{" "}
-                    â€“ {shift.endTime}
+                    Duty 1: {shift.startTime} – {shift.breakStartTime} · Break:{" "}
+                    {shift.breakStartTime} – {shift.breakEndTime} · Duty 2: {shift.breakEndTime}{" "}
+                    – {shift.endTime}
                   </div>
                 ) : (
                   <div style={{ fontSize: 11, color: "var(--wm-er-muted)" }}>
-                    {shift.startTime} â€” {shift.endTime}
+                    {shift.startTime} — {shift.endTime}
                   </div>
                 )}
               </div>
@@ -236,8 +236,8 @@ export function GroupAttendanceTab({ group, members }: Props) {
                             >
                               {shift.hasBreak ? "D1 " : ""}In: {formatTime(rec.signInAt)}
                               {rec.signOutAt &&
-                                ` Â· ${shift.hasBreak ? "D1 " : ""}Out: ${formatTime(rec.signOutAt)}`}
-                              {rec.hoursWorked !== null && ` Â· ${formatHours(rec.hoursWorked)}`}
+                                ` · ${shift.hasBreak ? "D1 " : ""}Out: ${formatTime(rec.signOutAt)}`}
+                              {rec.hoursWorked !== null && ` · ${formatHours(rec.hoursWorked)}`}
                             </div>
                           )}
                         </div>

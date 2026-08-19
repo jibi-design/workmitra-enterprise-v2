@@ -1,6 +1,5 @@
 /** Job Mitra | shiftDbTruth.service.ts — Phase 13 Shift DB→LS merge (auth on) */
 
-import { employeeProfileStorage } from "../../employee/profile/storage/employeeProfile.storage";
 import { isShiftApiSyncEnabled, shiftGateApi } from "./shiftGateApi.service";
 import { buildShiftPostCreateBody } from "./shiftDbTruth.mappers.helpers";
 import {
@@ -9,6 +8,7 @@ import {
   mergeServerPostIntoLsCache,
   mergeServerPostsBatchIntoLsCache,
 } from "./shiftDbTruth.merge.helpers";
+import { isShiftServerUuid, shiftPostIdBridge } from "../utils/shiftIdBridge";
 
 export {
   buildShiftPostCreateBody,
@@ -24,14 +24,14 @@ let lastPostsHydrate = 0;
 let lastAppsHydrate = 0;
 const COOLDOWN = 5_000;
 
-export async function hydrateShiftPostsFromServer(): Promise<boolean> {
+export async function hydrateShiftPostsFromServer(force = false): Promise<boolean> {
   if (!isShiftApiSyncEnabled()) return true;
   const now = Date.now();
   if (postsHydrateInFlight) {
     await postsHydrateInFlight;
-    return true;
+    if (!force) return true;
   }
-  if (now - lastPostsHydrate < COOLDOWN) return true;
+  if (!force && now - lastPostsHydrate < COOLDOWN) return true;
 
   let ok = true;
   postsHydrateInFlight = (async () => {
@@ -49,20 +49,19 @@ export async function hydrateShiftPostsFromServer(): Promise<boolean> {
   return ok;
 }
 
-export async function hydrateShiftApplicationsFromServer(): Promise<boolean> {
+export async function hydrateShiftApplicationsFromServer(force = false): Promise<boolean> {
   if (!isShiftApiSyncEnabled()) return true;
   const now = Date.now();
   if (appsHydrateInFlight) {
     await appsHydrateInFlight;
-    return true;
+    if (!force) return true;
   }
-  if (now - lastAppsHydrate < COOLDOWN) return true;
+  if (!force && now - lastAppsHydrate < COOLDOWN) return true;
 
   let ok = true;
   appsHydrateInFlight = (async () => {
     try {
-      const wmId = employeeProfileStorage.get().uniqueId?.trim();
-      const apps = await shiftGateApi.listMyApplications(wmId);
+      const apps = await shiftGateApi.listMyApplications();
       mergeServerApplicationsBatchIntoLsCache(apps);
       lastAppsHydrate = Date.now();
     } catch {
@@ -72,5 +71,42 @@ export async function hydrateShiftApplicationsFromServer(): Promise<boolean> {
     }
   })();
   await appsHydrateInFlight;
+  return ok;
+}
+
+const employerAppsHydrateInFlight = new Map<string, Promise<void>>();
+const lastEmployerAppsHydrate = new Map<string, number>();
+
+export async function hydrateEmployerPostApplicationsFromServer(
+  postId: string,
+): Promise<boolean> {
+  if (!isShiftApiSyncEnabled()) return true;
+  const serverId = isShiftServerUuid(postId)
+    ? postId.trim()
+    : (shiftPostIdBridge.resolveServerId(postId) ?? "");
+  if (!serverId) return true;
+
+  const inflight = employerAppsHydrateInFlight.get(serverId);
+  if (inflight) {
+    await inflight;
+    return true;
+  }
+  const now = Date.now();
+  if (now - (lastEmployerAppsHydrate.get(serverId) ?? 0) < COOLDOWN) return true;
+
+  let ok = true;
+  const run = (async () => {
+    try {
+      const apps = await shiftGateApi.listPostApplications(serverId);
+      mergeServerApplicationsBatchIntoLsCache(apps, serverId);
+      lastEmployerAppsHydrate.set(serverId, Date.now());
+    } catch {
+      ok = false;
+    } finally {
+      employerAppsHydrateInFlight.delete(serverId);
+    }
+  })();
+  employerAppsHydrateInFlight.set(serverId, run);
+  await run;
   return ok;
 }

@@ -122,6 +122,8 @@
   position: static;
   display: inline-flex;
   align-items: center;
+  align-self: flex-start;
+  width: max-content;
   gap: 4px;
   max-width: 100%;
   padding: 3px 8px;
@@ -210,52 +212,22 @@
 /* Employer Home console polish (light)             */
 /* ------------------------------------------------ */
 
-/* Slim executive greeting bar — compact height, high-visibility title */
 .wm-shellEmployer .wm-homeCompactHeader--employer {
-  min-height: 44px;
-  padding: 8px 14px;
-  align-items: center;
-  gap: 10px;
-}
-
-.wm-shellEmployer .wm-homeCompactHeader--employer .wm-homeCompactHeader__copy {
-  gap: 3px;
-}
-
-.wm-shellEmployer .wm-homeCompactHeader--employer .wm-homeCompactHeader__greeting {
-  font-size: 15px;
-  font-weight: 750;
-  letter-spacing: -0.02em;
-  color: #0f172a;
-}
-
-.wm-shellEmployer .wm-homeCompactHeader--employer .wm-homeCompactHeader__name {
-  font-weight: 800;
-  color: #0f172a;
-}
-
-.wm-shellEmployer .wm-homeCompactHeader--employer .wm-homeCompactHeader__pill {
-  color: #047857;
-  background: rgba(16, 185, 129, 0.12);
-  border-color: rgba(167, 243, 208, 0.85);
-  padding: 1px 7px;
-  font-size: 10px;
-}
-
-.wm-shellEmployer .wm-homeCompactHeader--employer .wm-homeCompactHeader__avatar {
-  width: 32px;
-  height: 32px;
-  font-size: 12px;
-  background: linear-gradient(145deg, #334155, #0f172a);
-  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.18);
+  min-height: 0;
+  height: auto;
+  padding: 0;
 }
 
 /* Dashboard card — match Core Services compact padding */
 .wm-shellEmployer .wm-homePage--console .wm-homeStack .wm-homeGlassCard--domainDashboard,
 .wm-shellEmployer .wm-homePage--console .wm-homeStack .wm-erExecCard {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
   padding: var(--wm-dna-card-padding, 14px) !important;
   gap: 8px;
   min-height: 0;
+  height: auto;
 }
 
 .wm-shellEmployer
@@ -315,11 +287,25 @@
   gap: 8px;
   width: 100%;
   height: 100%;
-  min-height: var(--wm-dna-card-min-height, 140px);
+  min-height: 0;
   padding: var(--wm-dna-card-padding, 14px);
   box-sizing: border-box;
   text-align: left;
   overflow: hidden;
+}
+
+.wm-shellEmployer
+  .wm-homePage--console
+  .wm-homeCoreGrid
+  .wm-homeGlassCard--stack
+  .wm-homeGlassCard__head,
+.wm-shellEmployer .wm-homePage--console .wm-homeCoreGrid .wm-erExecCard .wm-homeGlassCard__head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
 }
 
 .wm-shellEmployer
@@ -340,7 +326,9 @@
   .wm-homeGlassCard--stack
   .wm-homeGlassCard__title,
 .wm-shellEmployer .wm-homePage--console .wm-homeCoreGrid .wm-erExecCard .wm-homeGlassCard__title {
-  width: 100%;
+  width: auto;
+  flex: 1;
+  min-width: 0;
   max-width: 100%;
   font-size: 13px;
   font-weight: 750;

@@ -34,6 +34,7 @@ export type CareerJobPost = {
   jobType: CareerJobType;
   workMode: CareerWorkMode;
   location: string;
+  locationPincode?: string;
 
   // ── NEW FIELDS ──
   vacancies: number;

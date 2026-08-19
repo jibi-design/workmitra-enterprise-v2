@@ -92,7 +92,7 @@ export function BulkTaskForm({
         <div>
           <label style={LABEL}>Location / Site</label>
           <input type="text" value={location} onChange={(e) => onLocationChange(e.target.value)}
-            placeholder="e.g. Site B" style={INPUT} />
+            placeholder="Work location name" style={INPUT} />
         </div>
       </div>
 

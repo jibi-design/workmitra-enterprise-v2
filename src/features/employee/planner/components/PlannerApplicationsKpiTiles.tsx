@@ -18,10 +18,9 @@ export function PlannerApplicationsKpiTiles({ kpi }: Props) {
 
   return (
     <div
+      className="wm-stable-row"
       data-testid="planner-applications-kpi"
       style={{
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr 1fr",
         gap: 10,
         marginBottom: 14,
       }}

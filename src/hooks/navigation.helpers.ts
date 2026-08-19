@@ -24,7 +24,7 @@ const EXTRA_ACTIVE_PREFIXES: Record<string, readonly string[]> = {
   ],
   [ROUTE_PATHS.employeeCareerApplications]: [
     "/employee/career/workspace/",
-    "/employee/career/workspaces",
+    ROUTE_PATHS.employeeCareerWorkspaces,
     "/employee/career/completed-records",
   ],
   [ROUTE_PATHS.employeeCareerSearch]: ["/employee/career/post/"],
@@ -67,6 +67,7 @@ export function resolveNavDomain(pathname: string): NavDomain {
 
   if (pathname.startsWith("/employee/planner")) return "employeePlanner";
   if (pathname.startsWith("/employee/career")) return "career";
+  if (pathname.startsWith("/employee/employment")) return "diary";
   if (pathname.startsWith("/employee/shift")) return "shift";
   if (pathname.startsWith("/employee/vault")) return "vault";
 

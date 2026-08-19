@@ -1,5 +1,6 @@
 import { getPool } from "../../../db/pool.js";
 import { withResilientTransaction } from "../../../db/resilient.js";
+import { CAREER_POST_SELECT } from "../../career/postSelect.js";
 import type {
   CareerApplicationRow,
   CareerEmploymentRow,
@@ -16,8 +17,7 @@ export function isCareerUuid(value: string): boolean {
 export const employeeCareerRepository = {
   async findPublishedPostById(postId: string): Promise<CareerPostRow | null> {
     const result = await getPool().query<CareerPostRow>(
-      `SELECT id, employer_user_id, title, description, location, status,
-              COALESCE(details, '{}'::jsonb) AS details, created_at, updated_at
+      `SELECT ${CAREER_POST_SELECT}
        FROM career_posts
        WHERE id = $1 AND status = 'published'`,
       [postId],
@@ -27,10 +27,10 @@ export const employeeCareerRepository = {
 
   async listPublishedPosts(): Promise<CareerPostRow[]> {
     const result = await getPool().query<CareerPostRow>(
-      `SELECT id, employer_user_id, title, description, location, status,
-              COALESCE(details, '{}'::jsonb) AS details, created_at, updated_at
+      `SELECT ${CAREER_POST_SELECT}
        FROM career_posts
        WHERE status = 'published'
+         AND COALESCE(details->>'isHiddenFromSearch', 'false') <> 'true'
        ORDER BY updated_at DESC
        LIMIT 200`,
     );

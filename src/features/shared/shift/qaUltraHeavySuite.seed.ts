@@ -37,31 +37,7 @@ const GLOBAL_WS_KEY = "wm_employee_shift_workspaces_v1";
 const EMP_NOTIF_LEGACY = "wm_employer_notifications_v1";
 
 function workerName(i: number): string {
-  const FIRST = [
-    "Asha",
-    "Biju",
-    "Chitra",
-    "Deepak",
-    "Esha",
-    "Faisal",
-    "Gita",
-    "Hari",
-    "Indu",
-    "Jithin",
-  ];
-  const LAST = [
-    "Nair",
-    "Menon",
-    "Pillai",
-    "Kumar",
-    "Joseph",
-    "Thomas",
-    "Rahman",
-    "Das",
-    "Iyer",
-    "Varghese",
-  ];
-  return `${FIRST[(i - 1) % 10]} ${LAST[(i - 1) % 10]} #${i}`;
+  return `Worker ${i}`;
 }
 
 /**
@@ -165,7 +141,7 @@ export function applyUltraHeavySuiteSeed(): UltraHeavySuiteResult {
         category: "other",
         experience: "fresher_ok",
         payPerDay: pay,
-        locationName: "Kochi",
+        locationName: "City A",
         startAt,
         endAt,
         vacancies: 3,

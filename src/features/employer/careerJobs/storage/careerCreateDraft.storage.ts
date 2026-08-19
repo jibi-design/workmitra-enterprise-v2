@@ -8,6 +8,7 @@ import type { StepBasicData } from "../components/CareerCreateStepBasic";
 import type { StepInterviewData } from "../components/CareerCreateStepInterview";
 import type { StepRequirementsData } from "../components/CareerCreateStepRequirements";
 import { sanitizeUserText } from "../../../../shared/security/sanitizeUserText";
+import { sanitizePincodeInput } from "../../../shared/location/pincode";
 import { tryResolveCareerEmployerScopedKey } from "../../../shared/career/careerEmployerScope";
 
 export type CareerCreateDraft = {
@@ -51,6 +52,7 @@ function sanitizeBasic(basic: StepBasicData): StepBasicData {
     jobTitle: sanitizeUserText(basic.jobTitle, 200),
     department: sanitizeUserText(basic.department, 120),
     location: sanitizeUserText(basic.location, 200),
+    locationPincode: sanitizePincodeInput(basic.locationPincode ?? ""),
     vacancies: sanitizeUserText(basic.vacancies, 16),
     probationPeriod: sanitizeUserText(basic.probationPeriod, 80),
   };

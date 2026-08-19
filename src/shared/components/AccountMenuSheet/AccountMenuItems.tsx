@@ -1,5 +1,7 @@
 /** Job Mitra | AccountMenuItems.tsx — Premium menu rows with distinct Switch Role + Log Out */
 
+import type { ReactNode } from "react";
+import { JobMitraBrandName } from "../brand/BrandName";
 import type { AccountMenuRole } from "./AccountMenuSheet.types";
 import { IconLogout, IconProfile, IconSettings, IconSwitchRole } from "./AccountMenuSheetIcons";
 
@@ -17,17 +19,25 @@ type AccountMenuItemsProps = {
 
 const SWITCH_META: Record<
   AccountMenuRole,
-  { title: string; sub: string; iconClass: string; titleClass: string }
+  { title: string; sub: ReactNode; iconClass: string; titleClass: string }
 > = {
   employee: {
     title: "Switch to Employer",
-    sub: "Use Job Mitra as an employer",
+    sub: (
+      <>
+        Use <JobMitraBrandName size="sm" /> as an employer
+      </>
+    ),
     iconClass: "wm-accountSheet__iconBox--switchToEmployer",
     titleClass: "wm-accountSheet__title--switchToEmployer",
   },
   employer: {
     title: "Switch to Employee",
-    sub: "Use Job Mitra as an employee",
+    sub: (
+      <>
+        Use <JobMitraBrandName size="sm" /> as an employee
+      </>
+    ),
     iconClass: "wm-accountSheet__iconBox--switchToEmployee",
     titleClass: "wm-accountSheet__title--switchToEmployee",
   },

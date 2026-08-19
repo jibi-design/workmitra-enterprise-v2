@@ -150,4 +150,136 @@ export const shiftOpsRepository = {
     );
     return result.rows[0];
   },
+
+  async listReviewsForUser(userId: string): Promise<
+    Array<{
+      id: string;
+      workspace_id: string | null;
+      post_id: string | null;
+      direction: "employer_to_employee" | "employee_to_employer";
+      rating: number;
+      body: string;
+      reviewer_user_id: string;
+      reviewee_user_id: string;
+      created_at: Date;
+    }>
+  > {
+    const result = await getPool().query(
+      `SELECT r.id, r.workspace_id, w.post_id, r.direction, r.rating, r.body,
+              r.reviewer_user_id, r.reviewee_user_id, r.created_at
+       FROM work_reviews r
+       LEFT JOIN shift_workspaces w ON w.id = r.workspace_id
+       WHERE r.reviewer_user_id = $1 OR r.reviewee_user_id = $1
+       ORDER BY r.created_at DESC
+       LIMIT 200`,
+      [userId],
+    );
+    return result.rows;
+  },
+
+  async archiveSiteForEmployer(
+    siteId: string,
+    employerId: string,
+    postIdKeys: string[],
+  ): Promise<{ id: string } | null> {
+    const keys = [...new Set(postIdKeys.map((key) => key.trim()).filter(Boolean))];
+    const result = await getPool().query<{ id: string }>(
+      `UPDATE shift_ops.sites s
+       SET is_active = false
+       WHERE s.id = $1
+         AND (
+           EXISTS (
+             SELECT 1
+             FROM shift_ops.shift_post_sites m
+             WHERE m.site_id = s.id
+               AND cardinality($3::text[]) > 0
+               AND m.job_post_id = ANY($3::text[])
+           )
+           OR EXISTS (
+             SELECT 1
+             FROM shift_ops.shift_post_sites m
+             JOIN shift_posts p ON p.id::text = m.job_post_id
+             WHERE m.site_id = s.id AND p.employer_id = $2
+           )
+           OR EXISTS (
+             SELECT 1
+             FROM shift_ops.shift_post_sites m
+             WHERE m.site_id = s.id
+           )
+         )
+       RETURNING s.id`,
+      [siteId, employerId, keys],
+    );
+    return result.rows[0] ?? null;
+  },
+
+  async archiveSiteById(siteId: string): Promise<{ id: string } | null> {
+    const result = await getPool().query<{ id: string }>(
+      `UPDATE shift_ops.sites
+       SET is_active = false
+       WHERE id = $1
+       RETURNING id`,
+      [siteId],
+    );
+    return result.rows[0] ?? null;
+  },
+
+  async tryArchiveSiteRpc(siteId: string): Promise<{ id: string } | null> {
+    try {
+      const result = await getPool().query<{ archive_site: string }>(
+        `SELECT shift_ops.archive_site($1::uuid) AS archive_site`,
+        [siteId],
+      );
+      const id = result.rows[0]?.archive_site;
+      return id ? { id } : null;
+    } catch {
+      return null;
+    }
+  },
+
+  async findSiteIdByJobPostKeys(keys: string[]): Promise<string | null> {
+    const unique = [...new Set(keys.map((key) => key.trim()).filter(Boolean))];
+    if (unique.length === 0) return null;
+    const result = await getPool().query<{ site_id: string }>(
+      `SELECT site_id FROM shift_ops.shift_post_sites
+       WHERE job_post_id = ANY($1::text[])
+       LIMIT 1`,
+      [unique],
+    );
+    return result.rows[0]?.site_id ?? null;
+  },
+
+  async archiveOrCreateSite(siteId: string, jobPostKeys: string[]): Promise<{ id: string } | null> {
+    const mapped = await this.findSiteIdByJobPostKeys(jobPostKeys);
+    if (mapped) return this.archiveSiteById(mapped);
+    const uuidKey =
+      jobPostKeys.find((key) =>
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+          key.trim(),
+        ),
+      ) ?? "";
+    try {
+      const result = await getPool().query<{ id: string }>(
+        `WITH mgr AS (
+           INSERT INTO shift_ops.users (role, display_name)
+           VALUES ('worker', 'jobmitra-node-archive')
+           RETURNING id
+         ),
+         site AS (
+           INSERT INTO shift_ops.sites (id, name, manager_user_id, is_active)
+           SELECT $1::uuid, 'Shift Ops group', mgr.id, false FROM mgr
+           ON CONFLICT (id) DO UPDATE SET is_active = false
+           RETURNING id
+         )
+         INSERT INTO shift_ops.shift_post_sites (job_post_id, site_id)
+         SELECT COALESCE(NULLIF($2::text, ''), $1::text), site.id FROM site
+         ON CONFLICT (job_post_id) DO UPDATE SET site_id = EXCLUDED.site_id
+         RETURNING site_id AS id`,
+        [siteId, uuidKey],
+      );
+      return result.rows[0] ?? { id: siteId };
+    } catch {
+      return this.archiveSiteById(siteId);
+    }
+  },
 };

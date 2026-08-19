@@ -367,8 +367,22 @@
   margin-top: var(--wm-stack-gap);
 }
 
+.wm-chipRow[role="tablist"] {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.wm-chipRow[role="tablist"]::-webkit-scrollbar {
+  display: none;
+}
+
 .wm-chipBtn {
-  min-height: 32px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  min-height: 40px;
   border-radius: 999px;
   padding: 0 12px;
   border: 1px solid rgba(17, 24, 39, 0.1);

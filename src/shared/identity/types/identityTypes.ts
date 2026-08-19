@@ -4,7 +4,7 @@ import type { IdOwnerRole } from "../constants/idConstants";
 
 /** A single entry in the central ID registry. */
 export type IdRegistryEntry = {
-  /** The generated unique ID (e.g., "ML-7K4R-RAH-9T2N"). */
+  /** The generated unique ID (e.g., "ML-JBEM-RAH-9T2N"). */
   id: string;
 
   /** Role that owns this ID. */

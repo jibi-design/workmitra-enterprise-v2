@@ -1,6 +1,7 @@
 // App name: Job Mitra | EmployerFavoritesHeader.tsx — DomainHero (Wave 3)
 
 import { DomainHero } from "../../../../shared/components/layout/DomainHero";
+import { MitraLabsBrandName } from "../../../../shared/components/brand/BrandName";
 
 type EmployerFavoritesHeaderProps = {
   totalFavorites: number;
@@ -14,7 +15,12 @@ export function EmployerFavoritesHeader({ totalFavorites }: EmployerFavoritesHea
       icon={<FavoritesHeroIcon />}
       title="My Favorites"
       subtitle="Workers you want to hire again"
-      description="Hire-again ratings land here automatically. You can also add workers by Mitra Labs ID."
+      description={
+        <>
+          Hire-again ratings land here automatically. You can also add workers by{" "}
+          <MitraLabsBrandName size="sm" /> ID.
+        </>
+      }
       trailing={<span className="wm-domainHeroBadge">{totalFavorites} saved</span>}
     />
   );

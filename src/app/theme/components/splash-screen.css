@@ -38,6 +38,7 @@
   background: #020617;
   transform: scale(1) translateZ(0);
   opacity: 1;
+  --wm-brand-mitra-current: var(--wm-brand-mitra-on-dark, #ffffff);
   will-change: transform, opacity;
   contain: layout style paint;
   pointer-events: auto;
@@ -212,7 +213,7 @@
   animation: wm-splash-brand-reveal 1200ms var(--wm-splash-liquid-ease) 1400ms forwards;
 }
 
-.wm-splash-screen__title {
+.wm-splash-screen__title.wm-brandMark {
   margin: 0;
   font-size: clamp(22px, 6vw, 34px);
   font-weight: 800;
@@ -222,14 +223,10 @@
   white-space: nowrap;
 }
 
-.wm-splash-screen__title-mitra {
-  color: #ffffff;
-  text-shadow: 0 0 10px rgba(8, 145, 178, 0.3);
-}
-
-.wm-splash-screen__title-labs {
-  color: var(--wm-splash-teal);
-  text-shadow: 0 0 10px rgba(8, 145, 178, 0.3);
+.wm-splash-screen__title.wm-brandMark .wm-brandMark__mitra,
+.wm-splash-screen__title.wm-brandMark .wm-brandMark__labs {
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 .wm-splash-screen__accent-line {

@@ -18,7 +18,7 @@ function EmpRevBlock({ label, value, color }: { label: string; value: string; co
       <div
         style={{
           fontSize: 10,
-          fontWeight: 800,
+          fontWeight: "var(--wm-weight-bold, 700)",
           color: "var(--wm-emp-muted, var(--wm-er-muted))",
           textTransform: "uppercase",
           letterSpacing: 0.5,
@@ -80,7 +80,7 @@ export function EmployeePerformanceReviewSection({ hrCandidateId }: Props) {
         }}
       >
         <div
-          style={{ fontWeight: 900, fontSize: 14, color: "var(--wm-emp-text, var(--wm-er-text))" }}
+          style={{ fontWeight: "var(--wm-weight-bold, 700)", fontSize: 14, color: "var(--wm-emp-text, var(--wm-er-text))" }}
         >
           Performance Reviews
         </div>
@@ -88,7 +88,7 @@ export function EmployeePerformanceReviewSection({ hrCandidateId }: Props) {
           <span
             style={{
               fontSize: 11,
-              fontWeight: 800,
+              fontWeight: "var(--wm-weight-bold, 700)",
               color: "var(--wm-emp-muted, var(--wm-er-muted))",
             }}
           >
@@ -132,7 +132,7 @@ export function EmployeePerformanceReviewSection({ hrCandidateId }: Props) {
                     <div
                       style={{
                         fontSize: 12,
-                        fontWeight: 800,
+                        fontWeight: "var(--wm-weight-bold, 700)",
                         color: "var(--wm-emp-text, var(--wm-er-text))",
                       }}
                     >
@@ -162,7 +162,7 @@ export function EmployeePerformanceReviewSection({ hrCandidateId }: Props) {
                     <span
                       style={{
                         fontSize: 9,
-                        fontWeight: 800,
+                        fontWeight: "var(--wm-weight-bold, 700)",
                         padding: "3px 8px",
                         borderRadius: 6,
                         background: statusBadge.bg,
@@ -222,7 +222,7 @@ export function EmployeePerformanceReviewSection({ hrCandidateId }: Props) {
                           border: "none",
                           background: "#16a34a",
                           color: "#fff",
-                          fontWeight: 800,
+                          fontWeight: "var(--wm-weight-bold, 700)",
                           fontSize: 12,
                           cursor: "pointer",
                         }}
@@ -239,7 +239,7 @@ export function EmployeePerformanceReviewSection({ hrCandidateId }: Props) {
                           border: "1.5px solid #dc2626",
                           background: "rgba(220,38,38,0.06)",
                           color: "#dc2626",
-                          fontWeight: 800,
+                          fontWeight: "var(--wm-weight-bold, 700)",
                           fontSize: 12,
                           cursor: "pointer",
                         }}
@@ -284,7 +284,7 @@ export function EmployeePerformanceReviewSection({ hrCandidateId }: Props) {
                             border: "1px solid var(--wm-er-border, #e5e7eb)",
                             background: "#fff",
                             color: "var(--wm-emp-text, var(--wm-er-text))",
-                            fontWeight: 800,
+                            fontWeight: "var(--wm-weight-bold, 700)",
                             fontSize: 12,
                             cursor: "pointer",
                           }}
@@ -302,7 +302,7 @@ export function EmployeePerformanceReviewSection({ hrCandidateId }: Props) {
                             border: "none",
                             background: disputeReason.trim() ? "#dc2626" : "#e5e7eb",
                             color: disputeReason.trim() ? "#fff" : "#9ca3af",
-                            fontWeight: 800,
+                            fontWeight: "var(--wm-weight-bold, 700)",
                             fontSize: 12,
                             cursor: disputeReason.trim() ? "pointer" : "not-allowed",
                           }}

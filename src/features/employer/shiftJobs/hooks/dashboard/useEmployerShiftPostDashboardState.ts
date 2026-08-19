@@ -43,6 +43,7 @@ export function useEmployerShiftPostDashboardState() {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
+      busyInFlightRef.current = false;
       if (busyTimerRef.current != null) {
         clearTimeout(busyTimerRef.current);
         busyTimerRef.current = null;

@@ -9,6 +9,7 @@ import { AdminHomeKpiSection } from "../components/AdminHomeKpiSection";
 import { AdminHomeQuickActions } from "../components/AdminHomeQuickActions";
 import { AdminHomeResetModal } from "../components/AdminHomeResetModal";
 import { AdminHomeSystemStatus } from "../components/AdminHomeSystemStatus";
+import { AdminAnomalyBadgeStrip } from "../components/AdminAnomalyBadgeStrip";
 import { useAdminHomePage } from "../hooks/useAdminHomePage";
 
 export function AdminHomePage() {
@@ -24,12 +25,15 @@ export function AdminHomePage() {
 
       <AdminHomeHeader />
 
+      <AdminAnomalyBadgeStrip />
+
       <AdminHomeKpiSection data={page.data} />
 
       <AdminHomeDomainSections data={page.data} />
 
       <AdminHomeQuickActions
         onOpenAuditLog={page.openAuditLog}
+        onOpenModeration={page.openModeration}
         onExportData={page.exportAllData}
         onResetAll={page.openResetConfirm}
       />

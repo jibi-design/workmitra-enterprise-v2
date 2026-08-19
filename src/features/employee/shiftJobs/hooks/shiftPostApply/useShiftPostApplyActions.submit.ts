@@ -6,6 +6,7 @@ import { APPS_KEY, newId } from "../../helpers/shiftApplyHelpers";
 import { hasConfirmedOverlap } from "../../helpers/shiftPostDetailHelpers";
 import { safeParseAllShiftApplications } from "../../storage/shiftPostApply.storage";
 import type { ShiftApplicationRecord } from "../../types/shiftPostApply.types";
+import { applyPersistFailureCopy } from "../../../../../shared/shift/shiftNetworkUi";
 import {
   createShiftApplicationRecord,
   hasActiveShiftApplicationForPost,
@@ -94,11 +95,7 @@ export function createShiftPostApplySubmitActions(input: {
       });
 
       if (!writeResult.ok) {
-        showToast(
-          writeResult.reason === "conflict"
-            ? SHIFT_APPLY_CONFLICT_MESSAGE
-            : "Unable to save application on this device. Please free storage and try again.",
-        );
+        showToast(applyPersistFailureCopy(writeResult.reason));
         return;
       }
 

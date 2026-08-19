@@ -10,6 +10,7 @@ export type CareerSearchPost = {
   jobType: "full-time" | "part-time" | "contract";
   workMode: "on-site" | "remote" | "hybrid";
   location: string;
+  locationPincode?: string;
   salaryMin: number;
   salaryMax: number;
   salaryPeriod: "monthly" | "yearly";

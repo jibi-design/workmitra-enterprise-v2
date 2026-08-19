@@ -19,6 +19,7 @@ export function createFreshBasicState(employerDefaults: EmployerDefaults): StepB
     jobType: "full-time",
     workMode: "on-site",
     location: employerDefaults.location,
+    locationPincode: "",
     vacancies: "",
     probationPeriod: "none",
   };

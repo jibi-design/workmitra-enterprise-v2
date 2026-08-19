@@ -20,9 +20,14 @@ import {
 } from "./availabilityStorage.helpers";
 import type { AvailabilityBroadcast } from "./availabilityStorage.types";
 import {
+  countWorkersFreeOnIsoDateNear,
+  getWorkerIdsFreeOnIsoDateNear,
+} from "./availabilityLocationMatch";
+import {
   ensureAvailabilitySyncDebugListener,
   noteAvailabilitySyncEvent,
 } from "../../../shared/shift/availabilitySyncDebug";
+import { syncAvailabilityBroadcastToServer } from "../services/availabilityServerSync";
 
 export type { AvailabilityBroadcast, RollingDay } from "./availabilityStorage.types";
 export { getRolling7Days, toIsoDate } from "./availabilityStorage.helpers";
@@ -85,6 +90,8 @@ export const availabilityStorage = {
     selectedDates: string[];
     city?: string;
     category?: string;
+    basePincode?: string;
+    commuteRadius?: number;
   }): void {
     const selectedDates = sanitizeSelectedDates(params.selectedDates);
 
@@ -102,6 +109,8 @@ export const availabilityStorage = {
       expiresAt: computeExpiresAt(selectedDates),
       city: params.city,
       category: params.category,
+      basePincode: params.basePincode,
+      commuteRadius: params.commuteRadius,
     };
 
     try {
@@ -115,6 +124,12 @@ export const availabilityStorage = {
         selectedDates: b.selectedDates,
       });
       window.dispatchEvent(new Event(CHANGED));
+      syncAvailabilityBroadcastToServer({
+        selectedDates: b.selectedDates,
+        city: b.city,
+        basePincode: b.basePincode,
+        commuteRadius: b.commuteRadius,
+      });
     } catch {
       /* safe */
     }
@@ -126,6 +141,8 @@ export const availabilityStorage = {
       workerMlId: string;
       workerName: string;
       city?: string;
+      basePincode?: string;
+      commuteRadius?: number;
     },
   ): void {
     const current = this.getMySelectedDates();
@@ -136,6 +153,8 @@ export const availabilityStorage = {
       workerName: profile.workerName,
       selectedDates: next,
       city: profile.city,
+      basePincode: profile.basePincode,
+      commuteRadius: profile.commuteRadius,
     });
   },
 
@@ -157,6 +176,7 @@ export const availabilityStorage = {
         workerMlId: b?.workerMlId ?? null,
       });
       window.dispatchEvent(new Event(CHANGED));
+      syncAvailabilityBroadcastToServer({ selectedDates: [] });
     } catch {
       /* safe */
     }
@@ -232,6 +252,14 @@ export const availabilityStorage = {
     }
 
     return output;
+  },
+
+  countWorkersFreeOnIsoDateNear(iso: string, jobPincode: string | null | undefined): number {
+    return countWorkersFreeOnIsoDateNear(iso, jobPincode);
+  },
+
+  getWorkerIdsFreeOnIsoDateNear(iso: string, jobPincode: string | null | undefined): string[] {
+    return getWorkerIdsFreeOnIsoDateNear(iso, jobPincode);
   },
 
   /** Favorite worker card — selected free days label (Way 2 trusted path). */

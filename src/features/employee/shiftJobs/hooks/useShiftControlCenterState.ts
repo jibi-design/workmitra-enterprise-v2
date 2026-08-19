@@ -2,7 +2,7 @@
 // File name: useShiftControlCenterState.ts
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\hooks\useShiftControlCenterState.ts
 
-import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 import { getPendingShiftReviewCount } from "../../../shared/reviewCenter/adapters/employeeShiftReviewCenter.adapter";
@@ -10,6 +10,8 @@ import { reviewCenterStorage } from "../../../shared/reviewCenter/storage/review
 import { shiftWorkspacesStorage } from "../../shiftJobs/storage/shiftWorkspaces.storage";
 import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
 import { availabilityStorage } from "../storage/availabilityStorage";
+import { refreshShiftSearchFeed } from "../services/shiftSearchFeed.service";
+import { invalidateNearbyShiftHydrateCooldown } from "../services/nearbyJobs.hydrate";
 import {
   computeControlCenterCounts,
   getBroadcastSnapshot,
@@ -19,6 +21,19 @@ import {
 
 export function useShiftControlCenterState() {
   const nav = useNavigate();
+  const locationKey = useSyncExternalStore(
+    employeeProfileStorage.subscribe,
+    () => {
+      const profile = employeeProfileStorage.get();
+      return `${profile.basePincode}|${profile.commuteRadius}`;
+    },
+    () => "",
+  );
+
+  useEffect(() => {
+    invalidateNearbyShiftHydrateCooldown();
+    void refreshShiftSearchFeed();
+  }, [locationKey]);
 
   const data = useSyncExternalStore(
     subscribeControlCenter,
@@ -114,6 +129,8 @@ export function useShiftControlCenterState() {
       workerMlId: profile.uniqueId || `anon_${Date.now()}`,
       workerName: profile.fullName.trim() || "Worker",
       city: profile.city.trim() || undefined,
+      basePincode: profile.basePincode,
+      commuteRadius: profile.commuteRadius,
     });
   }, []);
 

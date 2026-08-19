@@ -7,7 +7,7 @@
 > **Cloudflare note (separate):** `CLOUDFLARE_LIVE_STATE_NOTE.md`  
 > **Rule:** `.cursor/rules/infra-live-state-notes.mdc`
 
-**Last verified:** 2026-07-25 (operator: full dashboard 5-checks complete)  
+**Last verified:** 2026-08-18 (`ensure_site_for_shift_post` APPLIED on hosted Shift Ops DB; Event Day `021` spent_at still not applied)  
 **Overall status:** **CLOSED for homepage/static hosting** — Supabase = backend auth DB only; no homepage resources found  
 **Project:** `jobmitra-enterprise-v2-dev` (org: Mitra Labs, FREE)  
 **Production deployment:** NOT APPROVED
@@ -42,8 +42,10 @@
 | Edge Functions for homepage                   | None deployed                                                                                | VERIFIED ABSENT                                 |
 | Auth Site URL / Redirect URLs                 | Site URL = `http://localhost:3000`; Redirect URLs = none                                     | RECORDED — do not change now                    |
 | Custom domains on Supabase for website        | Pro add-on only; not configured on Free                                                      | VERIFIED ABSENT                                 |
-| SQL migrations / DB mods this track           | Operator may apply Shift Ops only when explicitly approved                                   | See Shift Ops note                              |
-| `shift_ops` migrations apply                  | **APPLIED** Phase 0+1; schema exposed; pepper ready=true                                     | See Shift Ops note                              |
+| SQL migrations / DB mods this track           | Further SQL still needs explicit approve                                                     | 016 + 017 applied 2026-08-13; **020 Event Day 1.1a APPLIED** on `jobmitra-enterprise-v2-dev`. **021 `spent_at` drafted** at `server/modules/employer/eventDay/sql/021_event_day_pass_spent.sql` — **NOT APPLIED**. Unique `check_in` index remains the live consume lock. Production still NOT APPROVED. |
+| Location matching (`016_shift_location_matching.sql`) | **APPLIED** — `shift_posts.location_pincode`, `employee_location_profiles`, `shift_availability_broadcasts`; tracker row in `schema_migrations` | VERIFIED 2026-08-13 |
+| Career location matching (`017_career_location_matching.sql`) | **APPLIED** — `career_posts.location_pincode`, `employee_location_profiles.career_commute_radius_km` (10/25/50/-1); Shift radius/dates unchanged | VERIFIED 2026-08-13 |
+| `shift_ops` migrations apply                  | **APPLIED** Phase 0+1; schema exposed; pepper ready=true; **`ensure_site_for_shift_post` APPLIED 2026-08-18** | See Shift Ops note                              |
 | Shift Ops OTP Edge (`shift-ops-otp-dispatch`) | Stub **in repo only** (T2-2); **not deployed**                                               | See `SHIFT_OPS_LIVE_STATE_NOTE.md`              |
 
 ---
@@ -88,6 +90,14 @@
 | 2026-07-26 | Operator + Cursor | T2-4 Phase 0+1 applied via SQL Editor (Run and enable RLS). Expose `shift_ops` + pepper still open                               | YES — updated             |
 | 2026-07-26 | Operator + Cursor | Created `SUPABASE_OPERATOR_UI_NAV_NOTE.md` from dashboard screenshots (Data API → Settings → Exposed schemas path)               | YES — linked              |
 | 2026-07-26 | Operator + Cursor | T2-5 SQL smoke PASS; shift_ops vault privileges locked as designed                                                               | YES — via Shift Ops notes |
+| 2026-08-13 | Operator + Cursor | Applied `016_shift_location_matching.sql` on hosted `jobmitra-enterprise-v2-dev` (pooler). Local `VITE_AUTH_BACKEND_ENABLED=true` for live server matching. Production still NOT APPROVED. | YES — updated |
+| 2026-08-13 | Operator + Cursor | Applied `017_career_location_matching.sql` on hosted `jobmitra-enterprise-v2-dev` (operator said apply 017). Columns verified. Hung local API restarted. Career live e2e PASS: location-profile, create 201, radar count=1, nearby hit, no code leak, no dates. Production still NOT APPROVED. | YES — updated |
+| 2026-08-17 | Operator + Cursor | Event Day Phase-1.1a SQL **drafted** as `server/db/migrations/020_event_day_phase1_1a.sql` (passes + hashed PIN + check-ins; PostgREST revoke). **Not applied.** API routes not added. | YES — updated |
+| 2026-08-17 | Operator + Cursor | 020 SQL moved to `server/modules/employer/eventDay/sql/` so API boot will not auto-apply. Employer Event Day API drafted under `/v1/jobmitra/employer/event-day`. Still **not applied**. | YES — updated |
+| 2026-08-17 | Operator + Cursor | Public Event Day API drafted: GET `/v1/jobmitra/public/event-day/passes/:token` + POST `/check-in`. 020 SQL still parked / **not applied**. | YES — updated |
+| 2026-08-17 | Operator + Cursor | Operator said apply 020. Copied `020_event_day_phase1_1a.sql` into `server/db/migrations/` and applied on hosted `jobmitra-enterprise-v2-dev`. Public verify UI wired to cloud GET/check-in. Production still NOT APPROVED. | YES — updated |
+| 2026-08-17 | Operator + Cursor | Event Day staff scanner Phase 1 in repo: shift unlock, server lookup, unique check_in consume. SQL `021` spent_at drafted under module sql folder — **not applied** (manual). | YES — updated |
+| 2026-08-18 | Founder + Cursor | Founder said apply. `202608180001_ensure_site_for_shift_post.sql` applied on hosted Shift Ops DB. Verify: `shift_post_sites` table true, RPC `ensure_site_for_shift_post` true. Production still NOT APPROVED. | YES — updated |
 
 ---
 

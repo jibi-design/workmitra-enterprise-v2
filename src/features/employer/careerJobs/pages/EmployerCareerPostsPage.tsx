@@ -44,11 +44,9 @@ export function EmployerCareerPostsPage() {
       <EmployerCareerPostsHeader onCreate={page.openCreate} />
 
       <section
-        className="wm-career-surface-glass"
+        className="wm-career-surface-glass wm-stable-row"
         style={{
           ...POSTS_FILTER_CARD_STYLE,
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
           gap: 12,
         }}
         data-testid="career-posts-filter-grid"

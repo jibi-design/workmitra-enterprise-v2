@@ -56,6 +56,15 @@ export function EmployerShiftWorkspacePage() {
 
       <EmployerShiftWorkspaceHeader workspace={state.workspace} />
 
+      {state.workspace.status === "upcoming" || state.workspace.status === "active" ? (
+        <div className="wm-er-card" data-testid="employer-workspace-next-step" style={{ padding: "11px 12px" }}>
+          <div style={{ fontSize: 13, fontWeight: 950 }}>Next: attendance and group updates</div>
+          <div style={{ marginTop: 4, fontSize: 12, fontWeight: 700, color: "var(--wm-er-muted)" }}>
+            The worker is confirmed. Send a group update, then wait for attendance intent — this is not an empty wait.
+          </div>
+        </div>
+      ) : null}
+
       {state.actionError ? (
         <div
           className="wm-shift-surface-glass wm-shift-surface-glass--inset"
@@ -114,6 +123,8 @@ export function EmployerShiftWorkspacePage() {
           workerMlId={state.workerMlId}
           workerName={state.workerName}
           domain="shift"
+          workspaceId={state.workspace.id}
+          appId={state.workspace.appId}
           onSubmitted={state.handleRatingSubmitted}
           onClose={() => state.setRatingOpen(false)}
         />

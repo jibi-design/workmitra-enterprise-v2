@@ -1,11 +1,12 @@
-/** Job Mitra | PulseTargetIndicator.tsx | Destination LED (single 10px dot — never strip) */
+/** Job Mitra | PulseTargetIndicator.tsx | Row-host 6px bead in the leading column */
 
 import type { CSSProperties } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { PULSE_REGISTRY, type NotificationId, type PulseSectionId } from "./pulseRegistry";
 import { usePulseStore } from "./pulseStore";
-import { ARRIVAL_SUCCESS_TONE, getEdgeTone, getLedModeClassName } from "./pulseEdgeTones";
+import { ARRIVAL_SUCCESS_TONE, getEdgeTone } from "./pulseEdgeTones";
+import { PulseEdgeLight } from "./pulseEdgeVisuals";
 import type { PulseChainSeverity } from "./pulseTypes";
 
 type PulseTargetSeverity = PulseChainSeverity;
@@ -28,20 +29,19 @@ const doesRequestedTargetMatch = (
 };
 
 /**
- * Target-specific left-edge pulse LED (single circular light).
- * Never full-card blink. Never full-height strip (board LED rule).
+ * Row-host bead in the first metadata column — never a gutter LED or strip.
  */
 export function PulseTargetIndicator({
   notificationId,
   postId,
   appId,
   sectionId,
-  severity = "info",
+  severity,
   style,
 }: PulseTargetIndicatorProps) {
+  void style;
   const config = PULSE_REGISTRY[notificationId];
 
-  // useShallow: selector must not return a fresh object each call (infinite re-render).
   const trailState = usePulseStore(
     useShallow((state) => {
       for (const trail of Object.values(state.activeTrails)) {
@@ -68,32 +68,17 @@ export function PulseTargetIndicator({
 
   const toneSeverity = mode === "arrival" ? "success" : (severity ?? trailState.severity);
   const tone =
-    mode === "arrival" ? ARRIVAL_SUCCESS_TONE : getEdgeTone(String(notificationId), toneSeverity);
+    mode === "arrival"
+      ? ARRIVAL_SUCCESS_TONE
+      : getEdgeTone({ eventId: notificationId, severity: toneSeverity });
 
   return (
-    <span
-      aria-hidden="true"
-      className={getLedModeClassName(toneSeverity, mode)}
-      data-pulse-visual-mode={mode}
-      data-testid="pulse-target-led"
-      style={{
-        position: "absolute",
-        left: 12,
-        top: "50%",
-        transform: "translateY(-50%) translateZ(0)",
-        width: 10,
-        height: 10,
-        borderRadius: "50%",
-        background: tone.background ?? tone.solid,
-        boxShadow: tone.shadow,
-        zIndex: 9999,
-        pointerEvents: "none",
-        willChange: "opacity, transform",
-        flexShrink: 0,
-        ...style,
-      }}
-    >
-      <span className="wm-led__core" style={{ background: tone.solid, boxShadow: tone.shadow }} />
-    </span>
+    <PulseEdgeLight
+      tone={tone}
+      edgeMode="full"
+      severity={toneSeverity}
+      mode={mode}
+      paintHost="row"
+    />
   );
 }

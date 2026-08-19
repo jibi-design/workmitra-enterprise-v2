@@ -1,9 +1,12 @@
 /**
  * Doc Access session HMAC (sync) — binds sessions to (employerScopeId, workerMlId)
  * and an OTP challenge hash so forged localStorage sessions fail verification (B-P0-2).
+ *
+ * Production: VITE_DOC_ACCESS_SESSION_PEPPER is required (assert-production-build-env).
+ * Dev-only fallback exists so local demos still work without .env.
  */
 
-const DEFAULT_PEPPER = "wm_doc_access_session_v1_pepper_enterprise";
+const DEV_FALLBACK_PEPPER = "wm_doc_access_session_v1_pepper_dev_only";
 
 function sessionPepper(): string {
   try {
@@ -12,7 +15,12 @@ function sessionPepper(): string {
   } catch {
     /* ignore */
   }
-  return DEFAULT_PEPPER;
+  if (import.meta.env.PROD) {
+    throw new Error(
+      "VITE_DOC_ACCESS_SESSION_PEPPER is required in production builds (store compliance).",
+    );
+  }
+  return DEV_FALLBACK_PEPPER;
 }
 
 function toHex(bytes: Uint8Array): string {

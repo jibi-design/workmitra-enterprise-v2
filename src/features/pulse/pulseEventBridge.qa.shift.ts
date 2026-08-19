@@ -72,7 +72,7 @@ export function seedShiftPulseQaData(seed: PulseQaShiftSeed): void {
     jobName: "Pulse QA Shift",
     experience: "fresher_ok",
     payPerDay: 850,
-    locationName: "Kochi",
+    locationName: "City A",
     locationAddress: "Pulse QA demo location",
     mapsLink: "",
     startAt,

@@ -8,10 +8,12 @@ import { useAuthStore } from "../../../shared/store/authStore";
 import type { UserRole } from "../../../shared/store/authStore";
 import { peekIntentPacket } from "../../../shared/guest/intentPacket";
 import { resumeIntentAfterAuth } from "../../../shared/guest/resumeIntent";
+import { AuthPasswordField } from "../../../shared/components/AuthPasswordField";
 import { JobMitraLandingLogo } from "../components/JobMitraLandingLogo";
 import { LandingFooterLinks } from "../components/LandingFooterLinks";
+import { JobMitraBrandName } from "../../../shared/components/brand/BrandName";
 
-const SUPPORT_EMAIL = "support@mitralabs.app";
+const SUPPORT_EMAIL = "support@mitraaccesshub.com";
 const PRIVACY_POLICY_URL = "https://jibi-design.github.io/workmitra-privacy/";
 
 function homeForRole(role: UserRole): string {
@@ -64,7 +66,7 @@ export function LoginPage() {
           </div>
           <h1 className="wm-auth-hero__title wm-auth-hero__title--center">Sign in</h1>
           <p className="wm-auth-hero__sub wm-auth-hero__sub--center">
-            Email and password — verified by server session.
+            Sign in with your <JobMitraBrandName size="sm" /> email and password.
           </p>
         </div>
 
@@ -74,24 +76,22 @@ export function LoginPage() {
             <input
               className="wm-auth-input"
               type="email"
-              autoComplete="email"
+              name="email"
+              autoComplete="username"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </label>
 
-          <label className="wm-auth-label">
-            Password
-            <input
-              className="wm-auth-input"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </label>
+          <AuthPasswordField
+            label="Password"
+            name="password"
+            autoComplete="current-password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
           {error ? (
             <p className="wm-auth-error" role="alert">
@@ -120,13 +120,6 @@ export function LoginPage() {
           <Link to={ROUTE_PATHS.forgotPassword}>Forgot password?</Link>
           <Link to={ROUTE_PATHS.register}>Create account</Link>
         </div>
-
-        {import.meta.env.DEV ? (
-          <p className="wm-auth-dev-hint">
-            Dev demo: employee@demo.jobmitra.app / employer@demo.jobmitra.app — password{" "}
-            <code>demo1234</code>
-          </p>
-        ) : null}
       </div>
 
       <div className="wm-auth-footer">

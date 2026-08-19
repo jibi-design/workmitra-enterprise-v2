@@ -1,4 +1,4 @@
-/* Unified dashboard status strips — Upcoming compact is the master template */
+/* Unified dashboard status strips — locked 40px collapsed micro strip */
 
 .wm-homeWelcomeStack {
   display: flex;
@@ -13,18 +13,23 @@
   --wm-home-status-strip-h: 40px;
   box-sizing: border-box;
   width: 100%;
-  min-height: var(--wm-home-status-strip-h);
-  height: var(--wm-home-status-strip-h);
   display: flex;
-  align-items: center;
-  gap: var(--wm-space-4, 4px);
+  flex-direction: column;
+  align-items: stretch;
   margin: 0;
-  padding: 0 var(--wm-space-4, 4px) 0 var(--wm-space-12, 12px);
+  padding: 0;
   border-radius: var(--wm-radius-chip, 14px);
   border: 1px solid
     color-mix(in srgb, var(--wm-status-strip-accent) 28%, var(--wm-neutral-200, #e2e8f0));
   background: var(--wm-status-strip-fill);
   color: var(--wm-neutral-900, #0f172a);
+}
+
+.wm-homeStatusStrip[data-expanded="false"] {
+  height: var(--wm-home-status-strip-h);
+  min-height: var(--wm-home-status-strip-h);
+  max-height: var(--wm-home-status-strip-h);
+  overflow: hidden;
 }
 
 .wm-homeStatusStrip[data-strip-domain="career"] {
@@ -37,9 +42,42 @@
   --wm-status-strip-fill: var(--wm-cyan-50);
 }
 
-.wm-homeStatusStrip[data-strip-domain="vault"] {
+.wm-homeStatusStrip[data-strip-domain="employment"] {
   --wm-status-strip-accent: var(--wm-vault-accent);
   --wm-status-strip-fill: var(--wm-purple-50);
+}
+
+.wm-homeStatusStrip[data-strip-domain="system"] {
+  --wm-status-strip-accent: var(--wm-neutral-700);
+  --wm-status-strip-fill: var(--wm-neutral-50);
+}
+
+.wm-homeStatusStrip[data-strip-status="pending"] {
+  --wm-status-strip-accent: var(--wm-warning);
+  --wm-status-strip-fill: var(--wm-amber-50);
+}
+
+.wm-homeStatusStrip[data-strip-status="clear"] {
+  --wm-status-strip-accent: var(--wm-green-500);
+  --wm-status-strip-fill: var(--wm-green-50);
+}
+
+.wm-homeStatusStrip[data-strip-layout="ticker"] {
+  --wm-home-status-strip-h: 64px;
+}
+
+.wm-homeStatusStrip__head {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--wm-space-6, 6px);
+  min-height: 0;
+  height: var(--wm-home-status-strip-h);
+  padding: 0 var(--wm-space-8, 8px) 0 var(--wm-space-12, 12px);
+}
+
+.wm-homeStatusStrip[data-expanded="false"] .wm-homeStatusStrip__head {
+  height: 100%;
 }
 
 .wm-homeStatusStrip__main {
@@ -48,7 +86,7 @@
   height: 100%;
   display: flex;
   align-items: center;
-  gap: var(--wm-space-8, 8px);
+  gap: var(--wm-space-6, 6px);
   margin: 0;
   padding: 0;
   border: none;
@@ -71,65 +109,196 @@
   color: var(--wm-status-strip-accent);
 }
 
+.wm-homeStatusStrip__copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+
 .wm-homeStatusStrip__line {
   flex: 1;
   min-width: 0;
+  padding-right: 4px;
   font-size: var(--wm-font-sm, 12px);
   font-weight: 500;
-  line-height: 1;
+  line-height: 1.2;
   color: var(--wm-neutral-900, #0f172a);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.wm-homeStatusStrip__chevron {
-  flex-shrink: 0;
-  width: 12px;
-  height: 12px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--wm-neutral-400, #94a3b8);
+.wm-homeStatusStrip__sub {
+  min-width: 0;
+  padding-right: 4px;
+  font-size: var(--wm-font-xs, 11px);
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--wm-neutral-700, #334155);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
+.wm-homeStatusStrip__actions {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  position: relative;
+  z-index: 2;
+}
+
+.wm-homeStatusStrip__chevron,
 .wm-homeStatusStrip__dismiss {
   flex-shrink: 0;
-  width: 22px;
-  height: 22px;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
   margin: 0;
   padding: 0;
   border: none;
   border-radius: 999px;
   background: transparent;
   color: var(--wm-neutral-500, #64748b);
-  font-size: 16px;
-  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   touch-action: manipulation;
+  position: relative;
+  z-index: 2;
 }
 
-.wm-homeStatusStrip__dismiss:hover {
-  background: color-mix(in srgb, var(--wm-neutral-900, #0f172a) 6%, transparent);
+.wm-homeStatusStrip__dismiss {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.wm-homeStatusStrip__body {
+  list-style: none;
+  margin: 0;
+  padding: 0 var(--wm-space-8, 8px) var(--wm-space-8, 8px) var(--wm-space-12, 12px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--wm-space-6, 6px);
+}
+
+.wm-homeStatusStrip__item {
+  display: flex;
+  align-items: center;
+  gap: var(--wm-space-8, 8px);
+  min-height: 0;
+}
+
+.wm-homeStatusStrip__itemText {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  font-size: var(--wm-font-sm, 12px);
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--wm-neutral-900, #0f172a);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wm-homeStatusStrip__itemText:has(.wm-homeTickerLayout),
+.wm-homeStatusStrip__sub:has(.wm-homeTickerLayout) {
+  display: flex;
+  text-overflow: unset;
+}
+
+.wm-homeTickerLayout {
+  display: flex;
+  align-items: center;
+  gap: var(--wm-space-6, 6px);
+  min-width: 0;
+  width: 100%;
+}
+
+.wm-homeTickerLayout__badge {
+  flex-shrink: 0;
+  padding: 2px 6px;
+  border-radius: var(--wm-radius-pill);
+  background: color-mix(in srgb, var(--wm-status-strip-accent) 16%, transparent);
+  color: var(--wm-status-strip-accent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.wm-homeTickerLayout__headline {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--wm-font-xs, 11px);
+  font-weight: 700;
+  color: var(--wm-neutral-900, #0f172a);
+}
+
+.wm-homeTickerLayout__sep {
+  flex-shrink: 0;
+  color: var(--wm-neutral-400, #94a3b8);
+  font-size: var(--wm-font-xs, 11px);
+}
+
+.wm-homeTickerLayout__context {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--wm-font-xs, 11px);
+  font-weight: 500;
+  color: var(--wm-neutral-600, #475569);
+}
+
+.wm-homeStatusStrip__itemView,
+.wm-homeStatusStrip__itemDismiss {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: var(--wm-font-xs, 11px);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--wm-status-strip-accent);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.wm-homeStatusStrip__itemDismiss {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--wm-neutral-500, #64748b);
 }
 
 .wm-homeStatusStrip:hover {
   background: color-mix(in srgb, var(--wm-status-strip-accent) 10%, var(--wm-status-strip-fill));
 }
 
-.wm-homeStatusStrip:active:not(:has(.wm-homeStatusStrip__dismiss:active)) {
-  transform: scale(0.985);
-}
-
 .wm-homeStatusStrip__main:focus-visible,
-.wm-homeStatusStrip__dismiss:focus-visible {
+.wm-homeStatusStrip__chevron:focus-visible,
+.wm-homeStatusStrip__dismiss:focus-visible,
+.wm-homeStatusStrip__itemDismiss:focus-visible,
+.wm-homeStatusStrip__itemView:focus-visible {
   outline: 2px solid var(--wm-status-strip-accent);
-  outline-offset: 2px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .wm-homeStatusStrip,
-  .wm-homeStatusStrip:active {
-    transform: none;
-  }
+  outline-offset: 1px;
 }

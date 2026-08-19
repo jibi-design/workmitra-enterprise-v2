@@ -1,14 +1,21 @@
 /** Job Mitra | EmployeeProfilePage.tsx | Employee profile view + edit shell */
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  getContactVerificationState,
+  subscribeContactVerification,
+} from "../../../../shared/phone";
 import { employeeProfileStorage, type EmployeeProfile } from "../storage/employeeProfile.storage";
 import { NoticeModal, type NoticeData } from "../../../../shared/components/NoticeModal";
+import { MitraLabsIdLabel } from "../../../../shared/components/brand/MitraLabsIdLabel";
 import { isSameProfile, computeChecklist } from "../helpers/profileHelpers";
 import type { ChecklistId } from "../types/profileTypes";
 import { ProfileCompletionCard } from "../components/ProfileCompletionCard";
 import { ProfileBasicSection } from "../components/ProfileBasicSection";
+import { ProfileLocationSection } from "../components/ProfileLocationSection";
 import { ProfileContactSection } from "../components/ProfileContactSection";
+import { persistEmployeeLocationAfterProfileSave } from "../helpers/persistEmployeeLocationAfterProfileSave";
 import { ProfileWorkSection } from "../components/ProfileWorkSection";
 import { ProfileDocumentsSection } from "../components/ProfileDocumentsSection";
 import { CurrentlyEmployedBadge } from "../components/CurrentlyEmployedBadge";
@@ -28,9 +35,20 @@ export function EmployeeProfilePage() {
   const [saveButtonDone, setSaveButtonDone] = useState(false);
 
   const refBasic = useRef<HTMLElement | null>(null);
+  const refLocation = useRef<HTMLElement | null>(null);
+  const refContact = useRef<HTMLElement | null>(null);
   const refWork = useRef<HTMLElement | null>(null);
 
-  const checklist = useMemo(() => computeChecklist(draft), [draft]);
+  // Contact verify lives outside draft — subscribe so checklist rows stay live.
+  const contactSnap = useSyncExternalStore(
+    subscribeContactVerification,
+    getContactVerificationState,
+    getContactVerificationState,
+  );
+  const checklist = useMemo(() => {
+    void contactSnap;
+    return computeChecklist(draft);
+  }, [draft, contactSnap]);
   const isDirty = useMemo(() => !isSameProfile(draft, savedProfile), [draft, savedProfile]);
 
   function updateDraft<K extends keyof EmployeeProfile>(key: K, value: EmployeeProfile[K]) {
@@ -44,6 +62,7 @@ export function EmployeeProfilePage() {
 
   function saveNow(): void {
     const updated = employeeProfileStorage.set(draft);
+    persistEmployeeLocationAfterProfileSave(updated);
 
     setSavedProfile(updated);
     setDraft(updated);
@@ -78,7 +97,11 @@ export function EmployeeProfilePage() {
     void navigator.clipboard.writeText(savedProfile.uniqueId);
     setNotice({
       title: "Copied!",
-      message: "Your Mitra Labs ID has been copied to clipboard.",
+      message: (
+        <>
+          Your <MitraLabsIdLabel /> has been copied to clipboard.
+        </>
+      ),
       tone: "success",
     });
   }, [savedProfile.uniqueId]);
@@ -87,11 +110,14 @@ export function EmployeeProfilePage() {
     const map: Record<ChecklistId, HTMLElement | null> = {
       fullName: refBasic.current,
       city: refBasic.current,
+      basePincode: refLocation.current,
       skills: refWork.current,
       experience: refWork.current,
       languages: refWork.current,
       jobTypes: refWork.current,
       availability: refWork.current,
+      phoneVerified: refContact.current,
+      emailVerified: refContact.current,
     };
 
     const target = map[id];
@@ -103,7 +129,7 @@ export function EmployeeProfilePage() {
   }
 
   return (
-    <div>
+    <div className="pb-safe-nav">
       <div className="wm-profileHero">
         <div className="wm-profileHero__avatar" aria-hidden="true">
           {(draft.fullName || savedProfile.fullName || "E")
@@ -215,6 +241,20 @@ export function EmployeeProfilePage() {
           </div>
         )}
 
+        {checklist.doneCount < checklist.totalCount ? (
+          <div
+            className="wm-er-card"
+            data-testid="profile-incomplete-banner"
+            style={{ marginTop: 12, padding: "11px 12px" }}
+          >
+            <div style={{ fontSize: 13, fontWeight: 950 }}>Resume still incomplete</div>
+            <div style={{ marginTop: 4, fontSize: 12, fontWeight: 700, color: "var(--wm-er-muted)" }}>
+              {checklist.totalCount - checklist.doneCount} profile items left. Complete them so
+              employers can review you faster.
+            </div>
+          </div>
+        ) : null}
+
         <ProfileCompletionCard
           doneCount={checklist.doneCount}
           totalCount={checklist.totalCount}
@@ -230,7 +270,14 @@ export function EmployeeProfilePage() {
           onNotice={setNotice}
         />
 
-        <ProfileContactSection draft={draft} />
+        <ProfileLocationSection
+          draft={draft}
+          disabled={!isEditing}
+          onUpdate={updateDraft}
+          sectionRef={refLocation}
+        />
+
+        <ProfileContactSection draft={draft} sectionRef={refContact} />
 
         <ProfileWorkSection
           draft={draft}
@@ -239,7 +286,7 @@ export function EmployeeProfilePage() {
           sectionRef={refWork}
         />
 
-        <ProfileDocumentsSection disabled={!isEditing} />
+        <ProfileDocumentsSection />
 
         {isEditing ? (
           <div className="wm-profileSaveBar">

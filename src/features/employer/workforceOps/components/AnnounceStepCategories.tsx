@@ -136,7 +136,7 @@ export function AnnounceStepCategories({ selected, onChange, onLoadTemplate, onN
                     {t.name}
                   </div>
                   <div style={{ fontSize: 11, color: "var(--wm-er-muted)", marginTop: 2 }}>
-                    {t.targetCategories.length} categories Â· {t.shifts.length} shifts Â·{" "}
+                    {t.targetCategories.length} categories · {t.shifts.length} shifts ·{" "}
                     {t.location || "No location"}
                   </div>
                 </button>
@@ -223,7 +223,7 @@ export function AnnounceStepCategories({ selected, onChange, onLoadTemplate, onN
 
         {selected.length > 0 && (
           <div style={{ marginTop: 10, fontSize: 12, color: "var(--wm-er-muted)" }}>
-            {selected.length} selected Â·{" "}
+            {selected.length} selected ·{" "}
             {selected.reduce((sum, id) => sum + (staffCounts.get(id) ?? 0), 0)} staff will see this
             announcement
           </div>
@@ -260,7 +260,7 @@ export function AnnounceStepCategories({ selected, onChange, onLoadTemplate, onN
           padding: "12px",
         }}
       >
-        Next â€” Define Shifts
+        Next — Define Shifts
       </button>
     </div>
   );

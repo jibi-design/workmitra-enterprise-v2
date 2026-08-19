@@ -210,3 +210,27 @@ export function fmtTimestamp(ts: number): string {
 export function formatPay(payPerDay: number): string {
   return payPerDay > 0 ? `${payPerDay}/day` : "";
 }
+
+export function getWithdrawConfirmTitle(application: ShiftApplicationData): string {
+  if (application.status === "shortlisted") {
+    return "Withdraw from shortlist?";
+  }
+
+  if (application.status === "waiting") {
+    return "Leave backup list?";
+  }
+
+  return "Withdraw this application?";
+}
+
+export function getWithdrawConfirmMessage(application: ShiftApplicationData): string {
+  if (application.status === "shortlisted") {
+    return "You are currently shortlisted. Withdraw only if you are no longer available for this shift.";
+  }
+
+  if (application.status === "waiting") {
+    return "You are currently on the backup list. Withdraw only if you do not want to stay available for this shift.";
+  }
+
+  return "Employer will no longer review this application after withdrawal.";
+}

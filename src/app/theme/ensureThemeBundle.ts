@@ -6,7 +6,8 @@ export type ThemeBundleId =
   | "admin-shell"
   | "shift-create-wizard"
   | "shift-planner"
-  | "analytics-dashboard";
+  | "analytics-dashboard"
+  | "mitra-labs";
 
 const loaded = new Set<ThemeBundleId>();
 const inflight = new Map<ThemeBundleId, Promise<void>>();
@@ -18,6 +19,7 @@ const LOADERS: Record<ThemeBundleId, () => Promise<unknown>> = {
   "shift-create-wizard": () => import("./shift-create-wizard.css"),
   "shift-planner": () => import("./shift-planner.css"),
   "analytics-dashboard": () => import("./analytics-dashboard.css"),
+  "mitra-labs": () => import("./mitra-labs.css"),
 };
 
 /** Idempotent CSS bundle loader — resolves only after the stylesheet import settles. */

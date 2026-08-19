@@ -19,7 +19,11 @@ import {
   safeParseShiftWorkspaces,
 } from "../../storage/shiftPostApply.storage";
 import { getShiftApplyCardStatus, getShiftPostSubmitBlockReason } from "./shiftPostApply.selectors";
-import { hasActiveShiftApplicationForPost } from "./shiftPostApply.submit";
+import {
+  buildShiftApplyConfirm,
+  hasActiveShiftApplicationForPost,
+} from "./shiftPostApply.submit";
+import { shiftPostIdsMatch } from "../../../../shift/utils/shiftIdBridge";
 import {
   getAppsRawSnapshot,
   getPostsRawSnapshot,
@@ -39,6 +43,7 @@ export function useShiftPostApplyState(postId: string) {
 
   const [withdrawConfirm, setWithdrawConfirm] = useState<ConfirmData | null>(null);
   const [doubleBookingPending, setDoubleBookingPending] = useState(false);
+  const [applyConfirmPending, setApplyConfirmPending] = useState(false);
   const [attendanceConfirmPending, setAttendanceConfirmPending] = useState(false);
   const [toast, setToast] = useState("");
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(() => new Set(getFavoriteShiftIds()));
@@ -85,8 +90,8 @@ export function useShiftPostApplyState(postId: string) {
 
   const postApplications = useMemo(() => {
     if (!post) return [];
-    return safeParseAllShiftApplications(appsRaw).filter(
-      (application) => application.postId === post.id,
+    return safeParseAllShiftApplications(appsRaw).filter((application) =>
+      shiftPostIdsMatch(application.postId, post.id),
     );
   }, [appsRaw, post]);
 
@@ -187,7 +192,7 @@ export function useShiftPostApplyState(postId: string) {
     showToast(nextSet.has(post.id) ? "Shift saved." : "Shift removed from saved.");
   }
 
-  async function submit() {
+  function submit() {
     if (!post) return;
     if (isSubmittingRef.current) return;
 
@@ -225,14 +230,8 @@ export function useShiftPostApplyState(postId: string) {
       return;
     }
 
-    isSubmittingRef.current = true;
-    setIsSubmitting(true);
-    try {
-      await lifecycle.submitApplicationWithList(all);
-    } finally {
-      isSubmittingRef.current = false;
-      setIsSubmitting(false);
-    }
+    setWithdrawConfirm(buildShiftApplyConfirm(post.jobName));
+    setApplyConfirmPending(true);
   }
 
   return {
@@ -269,8 +268,26 @@ export function useShiftPostApplyState(postId: string) {
     handleToggleSaved,
     requestWithdraw: lifecycle.requestWithdraw,
     requestConfirmAttendance: lifecycle.requestConfirmAttendance,
-    handleCancelConfirm: lifecycle.handleCancelConfirm,
-    handleConfirm: () => lifecycle.handleConfirm(attendanceConfirmPending, doubleBookingPending),
+    handleCancelConfirm: () => {
+      setApplyConfirmPending(false);
+      lifecycle.handleCancelConfirm();
+    },
+    handleConfirm: () => {
+      const shouldApply = applyConfirmPending;
+      if (shouldApply) {
+        setApplyConfirmPending(false);
+        setWithdrawConfirm(null);
+        const all = safeParseAllShiftApplications(appsRaw);
+        isSubmittingRef.current = true;
+        setIsSubmitting(true);
+        void lifecycle.submitApplicationWithList(all).finally(() => {
+          isSubmittingRef.current = false;
+          setIsSubmitting(false);
+        });
+        return;
+      }
+      lifecycle.handleConfirm(attendanceConfirmPending, doubleBookingPending);
+    },
     openWorkspace: lifecycle.openWorkspace,
     openSearch: lifecycle.openSearch,
   };

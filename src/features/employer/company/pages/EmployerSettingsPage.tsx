@@ -1,29 +1,30 @@
-/** Job Mitra | EmployerSettingsPage.tsx — App settings dashboard */
+/** Job Mitra | EmployerSettingsPage.tsx — Pro single-employer settings (Module B) */
 
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { roleStorage } from "../../../../app/storage/roleStorage";
 import { ROUTE_PATHS } from "../../../../app/router/routePaths";
-import { logoutApp, postLogoutRoute } from "../../../../shared/auth/logoutApp";
 import { DomainHero } from "../../../../shared/components/layout/DomainHero";
-import { employerSettingsStorage, type EmployerProfile } from "../storage/employerSettings.storage";
+import { DeleteAccountModal } from "../../../../shared/components/DeleteAccountModal";
 import { NoticeModal, type NoticeData } from "../../../../shared/components/NoticeModal";
-import { DeleteAccountModal } from "../components/DeleteAccountModal";
-import { ExportImportSection } from "../../../../shared/components/ExportImportSection";
+import { AccountSecurityPanel } from "../../../../shared/settings/AccountSecurityPanel";
+import { DangerZoneSection } from "../../../../shared/settings/DangerZoneSection";
+import { useAuthStore } from "../../../../shared/store/authStore";
+import { employerSettingsStorage, type EmployerProfile } from "../storage/employerSettings.storage";
 import { IconEdit, IconCompany } from "../helpers/settingsIcons";
-import { PreferencesSection, DangerZoneSection } from "../components/SettingsActionSections";
-import { EmployerSettingsAccountSection } from "../components/EmployerSettingsAccountSection";
+import { EmployerSettingsIdentityCard } from "../components/EmployerSettingsIdentityCard";
+import { EmployerSettingsShiftEscrowSection } from "../components/EmployerSettingsShiftEscrowSection";
 import { EmployerSettingsNotificationsSection } from "../components/EmployerSettingsNotificationsSection";
-import { EmployerSettingsHapticsSection } from "../components/EmployerSettingsHapticsSection";
-import { EmployerSettingsHelpLegalSection } from "../components/EmployerSettingsHelpLegalSection";
 
 export function EmployerSettingsPage() {
   const nav = useNavigate();
+  const deleteAccountSession = useAuthStore((s) => s.deleteAccountSession);
   const [profile, setProfile] = useState<EmployerProfile>(() => employerSettingsStorage.get());
   const [editMode, setEditMode] = useState(false);
   const [draft, setDraft] = useState<EmployerProfile>(() => ({ ...profile }));
   const [notice, setNotice] = useState<NoticeData | null>(null);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const d = editMode ? draft : profile;
 
   const updateDraft = useCallback((field: keyof EmployerProfile, value: string | boolean) => {
@@ -41,38 +42,42 @@ export function EmployerSettingsPage() {
   }
 
   function handleSave(): void {
-    const result = employerSettingsStorage.validate(draft);
-    if (!result.valid) {
-      setNotice({ title: "Validation Failed", message: result.errors.join("\n"), tone: "warn" });
-      return;
-    }
-    const trimmed: EmployerProfile = {
-      ...draft,
-      companyName: draft.companyName.trim(),
-      fullName: draft.fullName.trim(),
-      email: draft.email.trim(),
-      phone: draft.phone.trim(),
-      locationCity: draft.locationCity.trim(),
-      locationState: draft.locationState.trim(),
-      companyDescription: draft.companyDescription.trim(),
-    };
-    employerSettingsStorage.save(trimmed);
+    employerSettingsStorage.savePartial({
+      shiftFavoritesFirstDefault: Boolean(draft.shiftFavoritesFirstDefault),
+      escrowHoldDefaultEnabled: draft.escrowHoldDefaultEnabled !== false,
+      notificationsEnabled: draft.notificationsEnabled,
+      quietHoursEnabled: draft.quietHoursEnabled,
+      quietFrom: draft.quietFrom,
+      quietTo: draft.quietTo,
+      globalMute: draft.globalMute,
+    });
     const saved = employerSettingsStorage.get();
     setProfile(saved);
     setDraft(saved);
     setEditMode(false);
     setNotice({
       title: "Settings Saved",
-      message: "Your settings have been saved.",
+      message: "Shift, escrow, and notification preferences updated.",
       tone: "success",
     });
   }
 
-  function executeDeleteAccount(): void {
-    setDeleteModalOpen(false);
-    localStorage.clear();
-    roleStorage.clear();
-    nav(ROUTE_PATHS.landing, { replace: true });
+  async function handleDeleteConfirm(password: string) {
+    setDeleteBusy(true);
+    setDeleteError(null);
+    try {
+      await deleteAccountSession(password);
+      setDeleteOpen(false);
+      nav(ROUTE_PATHS.landing, { replace: true });
+    } catch (err) {
+      const message =
+        err instanceof Error && err.message.trim()
+          ? err.message
+          : "Could not delete account. Check your password and try again.";
+      setDeleteError(message);
+    } finally {
+      setDeleteBusy(false);
+    }
   }
 
   return (
@@ -81,9 +86,9 @@ export function EmployerSettingsPage() {
         variant="settings"
         audience="employer"
         icon={<SettingsGearIcon />}
-        title="App Settings"
-        subtitle="Notifications, preferences, and account control"
-        description="Manage employer app behaviour. Company profile is linked below."
+        title="Employer Settings"
+        subtitle="Identity, security, shift defaults, notifications"
+        description="Single-employer Pro controls. Company KYC edits live on Company Profile."
         trailing={
           !editMode ? (
             <button
@@ -99,7 +104,7 @@ export function EmployerSettingsPage() {
               }}
             >
               <IconEdit />
-              Edit
+              Edit prefs
             </button>
           ) : (
             <div style={{ display: "flex", gap: 8 }}>
@@ -114,22 +119,7 @@ export function EmployerSettingsPage() {
         }
       />
 
-      <button
-        type="button"
-        className="wm-settingsLinkCard"
-        onClick={() => nav(ROUTE_PATHS.employerProfile)}
-      >
-        <div className="wm-settingsLinkCard__icon">
-          <IconCompany />
-        </div>
-        <div className="wm-settingsLinkCard__copy">
-          <div className="wm-settingsLinkCard__title">Company Profile</div>
-          <div className="wm-settingsLinkCard__sub">Identity, branding, logo, location</div>
-        </div>
-        <span className="wm-settingsLinkCard__chevron" aria-hidden="true">
-          ›
-        </span>
-      </button>
+      <EmployerSettingsIdentityCard profile={profile} />
 
       <button
         type="button"
@@ -151,29 +141,41 @@ export function EmployerSettingsPage() {
         </span>
       </button>
 
-      <EmployerSettingsAccountSection
-        onLogoutAllDevices={() => {
-          void logoutApp().then(() => {
-            nav(postLogoutRoute(), { replace: true });
-          });
-        }}
+      <EmployerSettingsShiftEscrowSection
+        data={d}
+        editMode={editMode}
+        onFieldChange={updateDraft}
       />
+
+      <AccountSecurityPanel
+        variant="employer"
+        onNotice={(title, message, tone) =>
+          setNotice({ title, message, tone: tone === "warn" ? "warn" : tone === "success" ? "success" : "info" })
+        }
+      />
+
+      <DangerZoneSection onDeleteAccount={() => setDeleteOpen(true)} />
+
       <EmployerSettingsNotificationsSection
         data={d}
         editMode={editMode}
         onFieldChange={updateDraft}
       />
-      <EmployerSettingsHapticsSection data={d} editMode={editMode} onFieldChange={updateDraft} />
-      <PreferencesSection data={d} editMode={editMode} onFieldChange={updateDraft} />
-      <ExportImportSection />
-      <EmployerSettingsHelpLegalSection />
-      <DangerZoneSection onDeleteAccount={() => setDeleteModalOpen(true)} />
-      <NoticeModal notice={notice} onClose={() => setNotice(null)} />
+
       <DeleteAccountModal
-        open={deleteModalOpen}
-        onCancel={() => setDeleteModalOpen(false)}
-        onConfirm={executeDeleteAccount}
+        open={deleteOpen}
+        onCancel={() => {
+          if (deleteBusy) return;
+          setDeleteOpen(false);
+          setDeleteError(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        busy={deleteBusy}
+        errorMessage={deleteError}
+        deletionMessage="This will permanently remove your employer data including company profile links, job posts, and settings on this account."
       />
+
+      <NoticeModal notice={notice} onClose={() => setNotice(null)} />
     </div>
   );
 }

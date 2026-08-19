@@ -1,6 +1,7 @@
 /** Job Mitra | AddStaffStep1.tsx | C:\projects\WorkMitra_Enterprise_v2\src\features\employer\myStaff\components\AddStaffStep1.tsx */
 
 import type { IdRegistryEntry } from "../helpers/addStaffHelpers";
+import { MitraLabsBrandName } from "../../../../shared/components/brand/BrandName";
 import {
   INPUT_STYLE,
   LABEL_STYLE,
@@ -41,8 +42,8 @@ export function AddStaffStep1({
           border: "1px solid rgba(3,105,161,0.12)",
         }}
       >
-        Enter the employee&apos;s Mitra Labs Unique ID. You can find it on their Work Vault profile
-        or ask them directly.
+        Enter the employee&apos;s <MitraLabsBrandName size="sm" /> Unique ID. You can find it on
+        their Work Vault profile or ask them directly.
       </div>
 
       <label style={LABEL_STYLE}>Employee Unique ID</label>

@@ -76,7 +76,7 @@ function TimelineStepRow({
           padding: "10px 12px",
         }}
       >
-        <div style={{ fontSize: 13, fontWeight: 950, color: visual.color }}>{step.label}</div>
+        <div style={{ fontSize: 13, fontWeight: 800, color: visual.color }}>{step.label}</div>
 
         <div
           style={{

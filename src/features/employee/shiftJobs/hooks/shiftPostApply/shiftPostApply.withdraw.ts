@@ -85,11 +85,24 @@ export function saveWithdrawShiftApplication({
   readonly applicationId: string;
   readonly withdrawnAt: number;
 }): ShiftApplicationWriteResult {
-  return safeWriteAllShiftApplications(
+  const result = safeWriteAllShiftApplications(
     withdrawShiftApplicationFromList({
       applications,
       applicationId,
       withdrawnAt,
     }),
   );
+  if (result.ok) {
+    void import("../../../../shift/services/shiftGateApi.service").then(
+      ({ isShiftApiSyncEnabled, shiftGateApi }) => {
+        if (!isShiftApiSyncEnabled()) return;
+        return import("../../../../shift/utils/shiftIdBridge").then(({ shiftAppIdBridge }) => {
+          const serverId = shiftAppIdBridge.resolveServerId(applicationId);
+          if (!serverId) return;
+          return shiftGateApi.withdrawApplication(serverId).catch(() => undefined);
+        });
+      },
+    );
+  }
+  return result;
 }

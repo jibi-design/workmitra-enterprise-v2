@@ -163,7 +163,7 @@ export function ShiftOpsManageAssignmentModal({ open, onClose, worker, sites, on
               className="wm-input"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="e.g. Cover Zone B lunch rush"
+              placeholder="Assignment note"
               maxLength={200}
               data-testid="shift-ops-reassign-note"
             />

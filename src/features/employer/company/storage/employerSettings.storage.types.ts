@@ -50,6 +50,8 @@ export interface EmployerProfile {
   companySize: string;
   locationCity: string;
   locationState: string;
+  /** Work area code for Local Workers Radar. Empty = no location matches. */
+  locationPincode: string;
   companyDescription: string;
 
   /** Account info */
@@ -66,6 +68,10 @@ export interface EmployerProfile {
   quietHoursEnabled: boolean;
   quietFrom: string;
   quietTo: string;
+  /** Shift create defaults — Pro settings. */
+  shiftFavoritesFirstDefault?: boolean;
+  /** Escrow hold default when posting paid shifts. */
+  escrowHoldDefaultEnabled?: boolean;
 }
 
 export interface ValidationResult {

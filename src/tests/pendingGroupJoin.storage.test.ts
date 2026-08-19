@@ -33,6 +33,22 @@ describe("pendingGroupJoin.storage", () => {
     expect(buildPendingGroupJoinPath(peekPendingGroupJoin()!)).toContain("legacy=1");
   });
 
+  it("parses and preserves companyName on stash round-trip", () => {
+    const path =
+      "/employee/shift-ops/invite?token=abc123&group=site-1&company=Acme%20Logistics";
+    expect(parseGroupJoinFromPath(path)?.companyName).toBe("Acme Logistics");
+    expect(stashPendingGroupJoinFromPath(path)).toBe(true);
+    expect(peekPendingGroupJoin()?.companyName).toBe("Acme Logistics");
+
+    stashPendingGroupJoin({
+      token: "abc123",
+      groupId: "site-1",
+      useDailyOtpGate: true,
+      savedAt: Date.now(),
+    });
+    expect(peekPendingGroupJoin()?.companyName).toBe("Acme Logistics");
+  });
+
   it("clears pending join when savedAt is older than 7 days", () => {
     stashPendingGroupJoin({
       token: "stale-tok",

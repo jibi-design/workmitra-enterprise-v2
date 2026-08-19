@@ -55,7 +55,7 @@ export const smartEarningsPredictorService = {
 
     const label =
       selectedDayCount > 0
-        ? `${selectedDayCount} Day${selectedDayCount !== 1 ? "s" : ""} Selected · Estimated earnings: ${estimatedTotal.toLocaleString("en-IN")}`
+        ? `${selectedDayCount} Day${selectedDayCount !== 1 ? "s" : ""} Selected · Estimated earnings: ${estimatedTotal.toLocaleString("en-GB")}`
         : "Select days to see estimated earnings";
 
     return {
@@ -66,7 +66,7 @@ export const smartEarningsPredictorService = {
       meter: {
         selectedDayCount,
         estimatedTotal,
-        currency: "INR",
+        currency: "NONE",
         fillRatio: selectedDayCount / selectableCount,
         label,
         sublabel: selectedDayCount > 0 ? "If all selected days confirm" : undefined,

@@ -3,6 +3,7 @@
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\helpers\shiftApplyHelpers.ts
 
 import { upsertAppIntoEmployerScope } from "../../../shared/shift/shiftTenantProjection";
+import { scopeAppLocalId } from "../../../../shared/identity/constants/idConstants";
 
 export type ExperienceLabel = "helper" | "fresher_ok" | "experienced";
 
@@ -160,5 +161,6 @@ export function ensureRequirements(post: ShiftPostDemo): {
 }
 
 export function newId(prefix: string): string {
-  return `${prefix}_${Math.random().toString(16).slice(2)}_${Date.now().toString(16)}`;
+  const scoped = scopeAppLocalId(prefix);
+  return `${scoped}_${Math.random().toString(16).slice(2)}_${Date.now().toString(16)}`;
 }

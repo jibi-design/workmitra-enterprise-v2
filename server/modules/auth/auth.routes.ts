@@ -18,12 +18,19 @@ import {
 } from "./supabaseBridge.service.js";
 import { resolveClientIp } from "../../middleware/clientIp.js";
 import { logSecurityEvent } from "../../observability/securityEvents.js";
+import { writeAuditLog } from "../../observability/auditLogger.js";
+import { recordAuthFailureSignal } from "../../observability/anomalyDetector.js";
+import { issueStepUpToken } from "./stepUp.service.js";
+import { auditService } from "./audit.service.js";
 import { parseWithSchema } from "../../validation/zodParse.js";
+import { validateRequest } from "../../middleware/validateRequest.js";
 import {
   loginBodySchema,
   registerBodySchema,
   forgotPasswordBodySchema,
   resetPasswordBodySchema,
+  changePasswordBodySchema,
+  deleteAccountBodySchema,
   switchContextBodySchema,
   supabaseBridgeBodySchema,
 } from "../../validation/schemas/auth.schemas.js";
@@ -240,20 +247,17 @@ export async function handleAuthRoutes(
       return true;
     }
 
-    const parsed = parseWithSchema(loginBodySchema, body);
-    if (!parsed.ok) {
-      const err = errorEnvelope(
-        "VALIDATION_ERROR",
-        "Email and password are required",
-        requestId,
-        400,
-      );
-      sendJson(res, err.status, err.body);
+    const validated = validateRequest(
+      { bodySchema: loginBodySchema, body },
+      res,
+      requestId,
+    );
+    if (!validated.ok) {
       return true;
     }
 
-    const email = parsed.data.email;
-    const password = parsed.data.password;
+    const email = validated.body.email;
+    const password = validated.body.password;
 
     const ip = getClientIp(req);
     const rateLimit = isRateLimited(ip);
@@ -281,6 +285,7 @@ export async function handleAuthRoutes(
     const loginResult = await authService.login(email, password, meta);
     if (!loginResult.ok) {
       recordFailedLogin(ip);
+      recordAuthFailureSignal(ip, pathname);
       const status =
         loginResult.httpStatus ?? (loginResult.code === "DEMO_AUTH_DISABLED" ? 403 : 401);
       const err = errorEnvelope(loginResult.code, loginResult.message, requestId, status);
@@ -418,6 +423,11 @@ export async function handleAuthRoutes(
     }
 
     const user = applySessionContext(session.user, patch);
+    await auditService.log("context_switched", meta, {
+      userId: session.user.id,
+      sessionId: session.sessionId,
+      metadata: { activeMode: nextMode, hasOrgId: Boolean(nextOrgId) },
+    });
     sendJson(res, 200, envelope({ user }, requestId));
     return true;
   }
@@ -546,6 +556,237 @@ export async function handleAuthRoutes(
       return true;
     }
     sendJson(res, 200, envelope({ ok: true, user: result.user }, requestId));
+    return true;
+  }
+
+  // WAVE-5.1 bound — authenticated password update (keeps current session).
+  if (method === "POST" && subpath === "/change-password") {
+    const session = await readSessionUser(req);
+    if (!session) {
+      const err = errorEnvelope("UNAUTHENTICATED", "Not authenticated", requestId, 401);
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+    const body = await readJsonBody(req);
+    if (body === null) {
+      const err = errorEnvelope("PAYLOAD_TOO_LARGE", "Request body too large", requestId, 413);
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+    const validated = validateRequest(
+      { bodySchema: changePasswordBodySchema, body },
+      res,
+      requestId,
+    );
+    if (!validated.ok) {
+      return true;
+    }
+    const result = await authService.changePassword(
+      session.user.id,
+      validated.body.currentPassword,
+      validated.body.newPassword,
+      meta,
+    );
+    if (!result.ok) {
+      const err = errorEnvelope(result.code, result.message, requestId, result.httpStatus ?? 400);
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+    const revoked = await sessionStore.revokeOthers(session.user.id, session.rawToken);
+    writeAuditLog({
+      action: "session_revoked_others",
+      requestId,
+      userId: session.user.id,
+      path: pathname,
+      method,
+      httpStatus: 200,
+      metadata: { revoked },
+    });
+    sendJson(res, 200, envelope({ ok: true, revokedOtherSessions: revoked }, requestId));
+    return true;
+  }
+
+  // Store compliance — authenticated account deletion (soft-delete + revoke all sessions).
+  if (method === "POST" && subpath === "/delete-account") {
+    const session = await readSessionUser(req);
+    if (!session) {
+      const err = errorEnvelope("UNAUTHENTICATED", "Not authenticated", requestId, 401);
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+    const body = await readJsonBody(req);
+    if (body === null) {
+      const err = errorEnvelope("PAYLOAD_TOO_LARGE", "Request body too large", requestId, 413);
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+    const validated = validateRequest(
+      { bodySchema: deleteAccountBodySchema, body },
+      res,
+      requestId,
+    );
+    if (!validated.ok) {
+      return true;
+    }
+    const result = await authService.deleteAccount(
+      session.user.id,
+      validated.body.password,
+      meta,
+    );
+    if (!result.ok) {
+      const err = errorEnvelope(result.code, result.message, requestId, result.httpStatus ?? 400);
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+
+    await revokeSupabaseSessionForUser(session.user).catch((err) => {
+      console.warn(
+        "[Job Mitra Auth] Supabase session revoke on account delete failed:",
+        err instanceof Error ? err.message : "unknown",
+      );
+    });
+
+    if (isDbAuthEnabled()) {
+      // Sessions already revoked in db deleteAccount; clear cookie + CSRF for this request.
+    } else {
+      sessionStore.deleteAllForUser(session.user.id);
+    }
+
+    const cookies = parseCookies(req.headers.cookie);
+    const rawToken = cookies[SESSION_COOKIE];
+    await revokeCsrfForSession(res, rawToken, req);
+    clearSessionCookie(res, req);
+
+    writeAuditLog({
+      action: "account_deleted",
+      requestId,
+      userId: session.user.id,
+      path: pathname,
+      method,
+      httpStatus: 200,
+    });
+    sendJson(res, 200, envelope({ ok: true }, requestId));
+    return true;
+  }
+
+  if (method === "GET" && subpath === "/sessions") {
+    const session = await readSessionUser(req);
+    if (!session) {
+      const err = errorEnvelope("UNAUTHENTICATED", "Not authenticated", requestId, 401);
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+    const sessions = await sessionStore.listForUser(session.user.id, session.rawToken);
+    sendJson(res, 200, envelope({ sessions }, requestId));
+    return true;
+  }
+
+  if (method === "POST" && subpath === "/sessions/revoke-others") {
+    const session = await readSessionUser(req);
+    if (!session) {
+      const err = errorEnvelope("UNAUTHENTICATED", "Not authenticated", requestId, 401);
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+    const revoked = await sessionStore.revokeOthers(session.user.id, session.rawToken);
+    writeAuditLog({
+      action: "session_revoked_others",
+      requestId,
+      userId: session.user.id,
+      path: pathname,
+      method,
+      httpStatus: 200,
+      metadata: { revoked },
+    });
+    sendJson(res, 200, envelope({ ok: true, revoked }, requestId));
+    return true;
+  }
+
+  /**
+   * Step-up challenge — re-enter password, receive one-time X-WM-Step-Up token.
+   * Required before high-risk actions (bulk delete, backup/export, privilege updates).
+   */
+  if (method === "POST" && subpath === "/step-up") {
+    const session = await readSessionUser(req);
+    if (!session) {
+      const err = errorEnvelope("UNAUTHENTICATED", "Not authenticated", requestId, 401);
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+    const body = await readJsonBody(req);
+    if (body === null) {
+      const err = errorEnvelope("PAYLOAD_TOO_LARGE", "Request body too large", requestId, 413);
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+    const password = String((body as { password?: string }).password || "");
+    if (password.length < 8) {
+      const err = errorEnvelope(
+        "VALIDATION_ERROR",
+        "Password is required for step-up verification",
+        requestId,
+        400,
+      );
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+    const purposeRaw = String((body as { purpose?: string }).purpose || "privileged_admin_action");
+    const purpose =
+      purposeRaw === "bulk_user_delete" ||
+      purposeRaw === "database_backup_export" ||
+      purposeRaw === "admin_privilege_update" ||
+      purposeRaw === "ops_flags_emergency"
+        ? purposeRaw
+        : "privileged_admin_action";
+
+    const verify = await authService.login(session.user.email, password, meta);
+    if (!verify.ok) {
+      recordAuthFailureSignal(getClientIp(req), pathname);
+      logSecurityEvent({
+        event: "STEP_UP_DENIED",
+        path: pathname,
+        method,
+        httpStatus: 403,
+        clientKey: getClientIp(req),
+        meta: { purpose },
+      });
+      const err = errorEnvelope(
+        "STEP_UP_DENIED",
+        "Step-up verification failed",
+        requestId,
+        403,
+      );
+      sendJson(res, err.status, err.body);
+      return true;
+    }
+
+    const issued = issueStepUpToken({
+      subject: session.user.id,
+      purpose,
+    });
+    writeAuditLog({
+      action: "step_up_issued",
+      requestId,
+      userId: session.user.id,
+      path: pathname,
+      method,
+      httpStatus: 200,
+      metadata: { purpose, expiresAtIso: issued.expiresAtIso },
+    });
+    sendJson(
+      res,
+      200,
+      envelope(
+        {
+          ok: true,
+          stepUpToken: issued.token,
+          expiresAtIso: issued.expiresAtIso,
+          purpose: issued.purpose,
+          header: "X-WM-Step-Up",
+        },
+        requestId,
+      ),
+    );
     return true;
   }
 

@@ -33,6 +33,21 @@ export function readWorkerApplicationProjection(): EmployeeShiftApplication[] {
     .sort((a, b) => b.createdAt - a.createdAt);
 }
 
+/** Employee-session hydrate: write worker projection only — never employer SoT. */
+export function writeWorkerApplicationProjection(
+  apps: EmployeeShiftApplication[],
+): ApplicationWriteResult {
+  const result = safeWrite(EMPLOYEE_APPS_KEY, apps);
+  if (!result.ok) return { ok: false, reason: "storage_error" };
+  try {
+    window.dispatchEvent(new Event(EMPLOYEE_APPS_CHANGED_EVENT));
+  } catch {
+    /* advisory */
+  }
+  notifyEmployeeAppsChanged();
+  return { ok: true };
+}
+
 export type ApplicationWriteResult = { ok: true } | { ok: false; reason: "storage_error" };
 
 /**
@@ -78,6 +93,8 @@ function normalizeEmployeeApplication(raw: unknown): EmployeeShiftApplication | 
     goodToHaveAnswers: normalizeRequirementAnswers(raw["goodToHaveAnswers"]),
     notes: normalizeStringRecord(raw["notes"]),
     withdrawnAt: getNumber(raw, "withdrawnAt"),
+    attendanceConfirmedAt: getNumber(raw, "attendanceConfirmedAt"),
+    statusChangedAt: getNumber(raw, "statusChangedAt"),
     replacedAt: getNumber(raw, "replacedAt"),
     replacedReason: normalizeReplacedReason(raw["replacedReason"]),
     quickAnswers: isRecord(raw["quickAnswers"])

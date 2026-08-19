@@ -48,12 +48,6 @@ export function GuestShiftDetailPage() {
 
   function onSave() {
     guestStorage.toggleShortlistShift(postId);
-    requireAuthForAction({
-      action: "save_shift",
-      targetId: postId,
-      returnPath,
-      roleHint: "employee",
-    });
   }
 
   if (!post) {
@@ -76,7 +70,7 @@ export function GuestShiftDetailPage() {
       </div>
       <EmployerTrustBadge variant="full" showEmptyHint />
       <div style={{ marginTop: 12, fontSize: 18, fontWeight: 900, color: "#16a34a" }}>
-        £{post.payPerDay} / day
+        {post.payPerDay} / day
       </div>
       <p style={{ marginTop: 12, fontSize: 14, lineHeight: 1.5, color: "#334155" }}>
         Review pay, location, and employer verification before you apply. Signing in keeps your

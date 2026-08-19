@@ -16,7 +16,7 @@ export function isShiftUuid(value: string): boolean {
 
 const POST_SELECT = `id, employer_id, job_name, category, status, vacancies,
               start_at, end_at, COALESCE(details, '{}'::jsonb) AS details,
-              created_at, updated_at`;
+              location_pincode, created_at, updated_at`;
 
 const APP_SELECT = `id, post_id, worker_wm_id, status,
               COALESCE(details, '{}'::jsonb) AS details, created_at, updated_at`;
@@ -52,11 +52,12 @@ export const employerShiftRepository = {
     startAt: Date;
     endAt: Date;
     details: Record<string, unknown>;
+    locationPincode: string;
   }): Promise<ShiftPostRow> {
     const result = await getPool().query<ShiftPostRow>(
       `INSERT INTO shift_posts
-         (employer_id, job_name, category, status, vacancies, start_at, end_at, details)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb)
+         (employer_id, job_name, category, status, vacancies, start_at, end_at, details, location_pincode)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9)
        RETURNING ${POST_SELECT}`,
       [
         params.employerId,
@@ -67,9 +68,21 @@ export const employerShiftRepository = {
         params.startAt,
         params.endAt,
         JSON.stringify(params.details),
+        params.locationPincode,
       ],
     );
     return result.rows[0];
+  },
+
+  async listApplicationsByPostId(postId: string): Promise<ShiftApplicationRow[]> {
+    const result = await getPool().query<ShiftApplicationRow>(
+      `SELECT ${APP_SELECT}
+       FROM shift_applications
+       WHERE post_id = $1
+       ORDER BY updated_at DESC`,
+      [postId],
+    );
+    return result.rows;
   },
 
   async findApplicationById(appId: string): Promise<ShiftApplicationRow | null> {
@@ -308,6 +321,31 @@ export const employerShiftRepository = {
     return result.rows[0] ?? null;
   },
 
+  async listWorkspacesByPost(postId: string): Promise<ShiftWorkspaceRow[]> {
+    const result = await getPool().query<ShiftWorkspaceRow>(
+      `SELECT id, post_id, app_id, worker_wm_id, status, created_at, updated_at
+       FROM shift_workspaces
+       WHERE post_id = $1`,
+      [postId],
+    );
+    return result.rows;
+  },
+
+  async completeWorkspaceForEmployer(
+    workspaceId: string,
+    employerId: string,
+  ): Promise<ShiftWorkspaceRow | null> {
+    const result = await getPool().query<ShiftWorkspaceRow>(
+      `UPDATE shift_workspaces w
+       SET status = 'completed', updated_at = NOW()
+       FROM shift_posts p
+       WHERE w.id = $1 AND w.post_id = p.id AND p.employer_id = $2
+       RETURNING w.id, w.post_id, w.app_id, w.worker_wm_id, w.status, w.created_at, w.updated_at`,
+      [workspaceId, employerId],
+    );
+    return result.rows[0] ?? null;
+  },
+
   async updatePost(params: {
     postId: string;
     employerId: string;
@@ -318,6 +356,7 @@ export const employerShiftRepository = {
     startAt: Date;
     endAt: Date;
     details: Record<string, unknown>;
+    locationPincode: string;
   }): Promise<ShiftPostRow | null> {
     const result = await getPool().query<ShiftPostRow>(
       `UPDATE shift_posts
@@ -328,6 +367,7 @@ export const employerShiftRepository = {
            start_at = $7,
            end_at = $8,
            details = $9::jsonb,
+           location_pincode = $10,
            updated_at = NOW()
        WHERE id = $1 AND employer_id = $2
        RETURNING ${POST_SELECT}`,
@@ -341,6 +381,7 @@ export const employerShiftRepository = {
         params.startAt,
         params.endAt,
         JSON.stringify(params.details),
+        params.locationPincode,
       ],
     );
     return result.rows[0] ?? null;

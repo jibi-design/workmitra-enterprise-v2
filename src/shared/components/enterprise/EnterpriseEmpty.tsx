@@ -5,7 +5,7 @@ import type { EnterpriseDomainAccent } from "./enterprise.types";
 
 export type EnterpriseEmptyProps = {
   title: string;
-  subtitle: string;
+  subtitle: ReactNode;
   domain?: EnterpriseDomainAccent;
   primaryLabel?: string;
   onPrimary?: () => void;

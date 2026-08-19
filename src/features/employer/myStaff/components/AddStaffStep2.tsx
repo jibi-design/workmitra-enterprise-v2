@@ -79,7 +79,7 @@ export function AddStaffStep2({
         type="text"
         value={jobTitle}
         onChange={(e) => onJobTitleChange(e.target.value)}
-        placeholder="e.g. Warehouse Supervisor, Driver, Cleaner"
+        placeholder="Role or job title"
         maxLength={100}
         style={{ ...INPUT_STYLE, marginBottom: 12 }}
       />

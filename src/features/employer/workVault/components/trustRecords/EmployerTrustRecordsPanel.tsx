@@ -49,7 +49,7 @@ export function EmployerTrustRecordsPanel({
   const reviewSummary = buildEmployerWorkerReviewSummary(reviewRecords);
 
   return (
-    <section style={{ marginTop: 14, display: "grid", gap: 14 }}>
+    <section data-testid="employer-trust-records" style={{ marginTop: 14, display: "grid", gap: 14 }}>
       <div
         style={{
           padding: "20px 17px",
@@ -131,8 +131,7 @@ export function EmployerTrustRecordsPanel({
           <div>Reviews are linked to completed work records.</div>
           <div style={{ marginTop: 3 }}>One worker review per completed work record.</div>
           <div style={{ marginTop: 3 }}>
-            Phase-0 local record only. No official verification, ID validation, or background
-            checking.
+            Reviews stay private to this workplace until official verification is available.
           </div>
         </div>
       </div>

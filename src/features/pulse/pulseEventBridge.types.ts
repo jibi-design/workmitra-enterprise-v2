@@ -66,6 +66,13 @@ export type PulseDevConsoleApi = {
     nodeId: PulseNodeId,
     severity?: PulseChainSeverity,
   ) => readonly PulseNodeId[];
+  readonly setChain: (
+    chain: readonly PulseNodeId[],
+    options?: {
+      readonly severity?: PulseChainSeverity;
+      readonly severityByNodeId?: Readonly<Record<string, PulseChainSeverity>>;
+    },
+  ) => readonly PulseNodeId[];
   readonly clear: () => void;
   readonly clearDemoData: () => void;
   readonly status: () => PulseDevStatus;

@@ -193,6 +193,66 @@ export const memoryAuthService = {
     return { ok: true, user: toPublicUser(user) };
   },
 
+  changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): LoginResult {
+    const user = users.find((u) => u.id === userId);
+    if (!user) {
+      return {
+        ok: false,
+        code: "UNAUTHENTICATED",
+        message: "Not authenticated",
+        httpStatus: 401,
+      };
+    }
+    if (!verifyPasswordDev(currentPassword, user.passwordHash)) {
+      return {
+        ok: false,
+        code: "INVALID_CREDENTIALS",
+        message: "Current password is incorrect",
+        httpStatus: 401,
+      };
+    }
+    if (currentPassword === newPassword) {
+      return {
+        ok: false,
+        code: "VALIDATION_ERROR",
+        message: "New password must be different from the current password",
+        httpStatus: 400,
+      };
+    }
+    user.passwordHash = hashPasswordDev(newPassword);
+    return { ok: true, user: toPublicUser(user) };
+  },
+
+  deleteAccount(
+    userId: string,
+    password: string,
+  ): { ok: true } | { ok: false; code: string; message: string; httpStatus?: number } {
+    const index = users.findIndex((u) => u.id === userId);
+    if (index < 0) {
+      return {
+        ok: false,
+        code: "UNAUTHENTICATED",
+        message: "Not authenticated",
+        httpStatus: 401,
+      };
+    }
+    const user = users[index];
+    if (!verifyPasswordDev(password, user.passwordHash)) {
+      return {
+        ok: false,
+        code: "INVALID_CREDENTIALS",
+        message: "Password is incorrect",
+        httpStatus: 401,
+      };
+    }
+    users.splice(index, 1);
+    return { ok: true };
+  },
+
   getUserById(userId: string): AuthUser | null {
     const user = users.find((u) => u.id === userId);
     return user ? toPublicUser(user) : null;

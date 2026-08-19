@@ -38,7 +38,7 @@ test.describe("Employer Planner Finance Visual Inspection", () => {
               id: planId,
               name: "Finance Visual Plan",
               companyName: "Vis Co",
-              locationName: "Kochi",
+              locationName: "City A",
               category: "Security",
               experience: "experienced",
               startDate: "2026-11-01",
@@ -64,8 +64,8 @@ test.describe("Employer Planner Finance Visual Inspection", () => {
     );
 
     const bust = Date.now();
-    await page.goto(`/?pw_fin_vis=${bust}#${FINANCE_PATH}`, { waitUntil: "networkidle" });
-    await page.reload({ waitUntil: "networkidle" });
+    await page.goto(`/?pw_fin_vis=${bust}#${FINANCE_PATH}`, { waitUntil: "domcontentloaded" });
+    await page.reload({ waitUntil: "domcontentloaded" });
     await expect(page).toHaveURL(new RegExp(`/employer/planner/plans/${PLAN}/finance`));
     await expect(page.locator("body")).not.toContainText("Something went wrong");
 

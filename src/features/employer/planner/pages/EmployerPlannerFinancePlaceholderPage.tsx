@@ -30,14 +30,21 @@ export function EmployerPlannerFinancePlaceholderPage() {
     >
       <section className="wm-planner-card" data-testid="planner-employer-finance-hero">
         <div className="wm-planner-sectionLabel">Finance</div>
-        <h1 className="wm-pageTitle" style={{ margin: "6px 0 0" }}>
+        <h1 className="wm-pageTitle" style={{ margin: "var(--wm-space-6) 0 0" }}>
           Finance &amp; Budget
         </h1>
-        <p className="wm-pageSub" style={{ marginTop: 8 }}>
-          Planned cost snapshot for this project. Full ledger and payment processing arrive in
-          Planner P3 — this page is an honest gate, not a fake production finance console.
+        <p className="wm-pageSub" style={{ marginTop: "var(--wm-space-8)" }}>
+          Planned cost snapshot for this project. Full ledger and payment processing will appear
+          here after finance rollout.
         </p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14 }}>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "var(--wm-space-10)",
+            marginTop: "var(--wm-space-14)",
+          }}
+        >
           <button
             type="button"
             className="wm-planner-btnPrimary"
@@ -56,8 +63,8 @@ export function EmployerPlannerFinancePlaceholderPage() {
             style={{
               display: "inline-flex",
               alignItems: "center",
-              padding: "10px 14px",
-              borderRadius: 10,
+              padding: "var(--wm-space-10) var(--wm-space-14)",
+              borderRadius: "var(--wm-radius-10)",
               textDecoration: "none",
               fontWeight: 700,
             }}
@@ -71,10 +78,10 @@ export function EmployerPlannerFinancePlaceholderPage() {
         <section
           className="wm-planner-card wm-planner-empty"
           data-testid="planner-employer-finance-missing"
-          style={{ marginTop: 12 }}
+          style={{ marginTop: "var(--wm-space-12)" }}
         >
           <div className="wm-planner-empty__icon" aria-hidden="true">
-            ₹
+            —
           </div>
           <div className="wm-planner-empty__copy">
             <div className="wm-planner-empty__title">Plan not found</div>
@@ -87,7 +94,11 @@ export function EmployerPlannerFinancePlaceholderPage() {
             to={ROUTE_PATHS.employerPlannerPlans}
             className="wm-planner-btnPrimary"
             data-testid="planner-employer-finance-missing-cta"
-            style={{ display: "inline-flex", textDecoration: "none", marginTop: 12 }}
+            style={{
+              display: "inline-flex",
+              textDecoration: "none",
+              marginTop: "var(--wm-space-12)",
+            }}
           >
             Go to Plans
           </Link>
@@ -96,16 +107,16 @@ export function EmployerPlannerFinancePlaceholderPage() {
         <section
           className="wm-planner-card"
           data-testid="planner-employer-finance-snapshot"
-          style={{ marginTop: 12 }}
+          style={{ marginTop: "var(--wm-space-12)" }}
         >
-          <div className="wm-planner-sectionLabel">Visible budget snapshot (P1)</div>
-          <div className="wm-planner-sectionTitle" style={{ marginTop: 4 }}>
+          <div className="wm-planner-sectionLabel">Budget snapshot</div>
+          <div className="wm-planner-sectionTitle" style={{ marginTop: "var(--wm-space-4)" }}>
             {plan.name}
           </div>
           <dl
             className="wm-planner-kpiStrip wm-planner-kpiStrip--agency wm-planner-kpiStrip--counts"
             data-testid="planner-employer-finance-kpis"
-            style={{ marginTop: 12 }}
+            style={{ marginTop: "var(--wm-space-12)" }}
           >
             <div className="wm-planner-kpiTile">
               <div className="wm-planner-kpiLabel">Worker-days</div>
@@ -131,13 +142,13 @@ export function EmployerPlannerFinancePlaceholderPage() {
                 className="wm-planner-kpiValue"
                 data-testid="planner-employer-finance-ledger-gate"
               >
-                P3 soon
+                Not available yet
               </div>
             </div>
           </dl>
           <p
             className="wm-pageSub"
-            style={{ marginTop: 12 }}
+            style={{ marginTop: "var(--wm-space-12)" }}
             data-testid="planner-employer-finance-gate-copy"
           >
             Payment tracking is shown here for planning only. No charges, payouts, or CSV ledger on

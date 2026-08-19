@@ -21,6 +21,7 @@ export type EmployerShiftCreateDraftForm = {
   readonly payBasis: EmployerShiftDraftPayBasis;
   readonly shiftTiming: string;
   readonly locationName: string;
+  readonly locationPincode: string;
   readonly locationAddress: string;
   readonly mapsLink: string;
   readonly startAt: number;

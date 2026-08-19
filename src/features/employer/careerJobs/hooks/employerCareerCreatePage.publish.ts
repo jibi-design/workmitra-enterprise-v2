@@ -29,7 +29,7 @@ export async function publishEmployerCareerPost({
   screeningQuestions,
   nav,
   setNotice,
-}: PublishParams): Promise<void> {
+}: PublishParams): Promise<boolean> {
   const salaryMin = clampInt(Number(req.salaryMin) || 0, 0, 999_999_999);
   const salaryMax = clampInt(Number(req.salaryMax) || salaryMin, salaryMin, 999_999_999);
   const noticePeriodDays =
@@ -48,7 +48,7 @@ export async function publishEmployerCareerPost({
           "Sign in as an employer is required to publish. Demo employer id is disabled when AUTH is on.",
         tone: "warn",
       });
-      return;
+      return false;
     }
     throw err;
   }
@@ -61,6 +61,7 @@ export async function publishEmployerCareerPost({
     jobType: basic.jobType,
     workMode: basic.workMode,
     location: basic.workMode === "remote" ? "Remote / Anywhere" : basic.location.trim(),
+    locationPincode: basic.locationPincode.trim(),
     vacancies: Number(basic.vacancies),
     probationPeriod: basic.probationPeriod,
     salaryMin,
@@ -88,9 +89,10 @@ export async function publishEmployerCareerPost({
         "Some job details are invalid or unsafe. Please review the job details and try again.",
       tone: "warn",
     });
-    return;
+    return false;
   }
 
   careerCreateDraftStorage.clear();
   nav(ROUTE_PATHS.employerCareerPostDashboard.replace(":postId", postId));
+  return true;
 }

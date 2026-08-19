@@ -40,6 +40,7 @@ export type EditFields = {
   startDateStr: string;
   endDateStr: string;
   locationName: string;
+  locationPincode: string;
   dressCode: string;
 };
 
@@ -83,6 +84,7 @@ export function buildInitialFields(post: ShiftPost): EditFields {
     startDateStr: toDateStr(post.startAt),
     endDateStr: toDateStr(post.endAt),
     locationName: post.locationName,
+    locationPincode: post.locationPincode ?? "",
     dressCode: post.dressCode ?? "",
   };
 }
@@ -96,6 +98,7 @@ export type ShiftEditSavePayload = {
   startAt?: number;
   endAt?: number;
   locationName?: string;
+  locationPincode?: string;
   dressCode?: string;
 };
 

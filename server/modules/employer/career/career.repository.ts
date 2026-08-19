@@ -1,5 +1,6 @@
 import { getPool } from "../../../db/pool.js";
 import { withResilientTransaction } from "../../../db/resilient.js";
+import { CAREER_POST_SELECT } from "../../career/postSelect.js";
 import type {
   CareerPostRow,
   CareerApplicationRow,
@@ -21,8 +22,7 @@ export function isCareerUuid(value: string): boolean {
 export const employerCareerRepository = {
   async findPostById(postId: string): Promise<CareerPostRow | null> {
     const result = await getPool().query<CareerPostRow>(
-      `SELECT id, employer_user_id, title, description, location, status,
-              COALESCE(details, '{}'::jsonb) AS details, created_at, updated_at
+      `SELECT ${CAREER_POST_SELECT}
        FROM career_posts
        WHERE id = $1 AND status != 'deleted'`,
       [postId],
@@ -32,8 +32,7 @@ export const employerCareerRepository = {
 
   async listPostsByEmployer(employerUserId: string): Promise<CareerPostRow[]> {
     const result = await getPool().query<CareerPostRow>(
-      `SELECT id, employer_user_id, title, description, location, status,
-              COALESCE(details, '{}'::jsonb) AS details, created_at, updated_at
+      `SELECT ${CAREER_POST_SELECT}
        FROM career_posts
        WHERE employer_user_id = $1 AND status != 'deleted'
        ORDER BY updated_at DESC`,
@@ -47,21 +46,22 @@ export const employerCareerRepository = {
     title: string;
     description: string;
     location: string | null;
+    locationPincode: string;
     status: string;
     details: Record<string, unknown>;
   }): Promise<CareerPostRow> {
     return withResilientTransaction(async (client) => {
       const result = await client.query<CareerPostRow>(
         `INSERT INTO career_posts
-           (employer_user_id, title, description, location, status, details)
-         VALUES ($1, $2, $3, $4, $5, $6::jsonb)
-         RETURNING id, employer_user_id, title, description, location, status,
-                   COALESCE(details, '{}'::jsonb) AS details, created_at, updated_at`,
+           (employer_user_id, title, description, location, location_pincode, status, details)
+         VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)
+         RETURNING ${CAREER_POST_SELECT}`,
         [
           params.employerUserId,
           params.title,
           params.description,
           params.location,
+          params.locationPincode,
           params.status,
           JSON.stringify(params.details),
         ],
@@ -76,6 +76,7 @@ export const employerCareerRepository = {
     title: string;
     description: string;
     location: string | null;
+    locationPincode: string;
     status: string;
     details: Record<string, unknown>;
   }): Promise<CareerPostRow | null> {
@@ -85,18 +86,19 @@ export const employerCareerRepository = {
          SET title = $3,
              description = $4,
              location = $5,
-             status = $6,
-             details = $7::jsonb,
+             location_pincode = $6,
+             status = $7,
+             details = $8::jsonb,
              updated_at = now()
          WHERE id = $1 AND employer_user_id = $2 AND status != 'deleted'
-         RETURNING id, employer_user_id, title, description, location, status,
-                   COALESCE(details, '{}'::jsonb) AS details, created_at, updated_at`,
+         RETURNING ${CAREER_POST_SELECT}`,
         [
           params.postId,
           params.employerUserId,
           params.title,
           params.description,
           params.location,
+          params.locationPincode,
           params.status,
           JSON.stringify(params.details),
         ],

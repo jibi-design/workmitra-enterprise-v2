@@ -31,7 +31,7 @@ export function ShiftTimelinePaymentPanel({ paymentStage }: ShiftTimelinePayment
       aria-label="Financial clarity"
     >
       <div style={{ display: "grid", gap: 3 }}>
-        <div style={{ fontSize: 12, fontWeight: 950, color: AMBER_DARK }}>Financial clarity</div>
+        <div style={{ fontSize: 12, fontWeight: 800, color: AMBER_DARK }}>Financial clarity</div>
 
         <div
           style={{
@@ -103,7 +103,7 @@ function PaymentStepBadge({
         padding: "8px 6px",
         textAlign: "center",
         fontSize: 10,
-        fontWeight: 950,
+        fontWeight: 800,
       }}
     >
       {label}

@@ -108,7 +108,8 @@ export function EmployeeMyCurrentJobCard({ onOpen }: { onOpen: () => void }) {
         <div
           className="wm-ee-card wm-career-card"
           style={{
-            padding: 18,
+            padding: "var(--wm-dna-card-padding, 14px)",
+            minHeight: "var(--wm-dna-card-min-height, 140px)",
             borderRadius: "var(--wm-radius-employer-card)",
             background: "rgba(255, 255, 255, 0.65)",
             border: "1px solid rgba(255, 255, 255, 0.9)",
@@ -180,7 +181,8 @@ export function EmployeeMyCurrentJobCard({ onOpen }: { onOpen: () => void }) {
               onClick={onOpen}
               style={{
                 width: "100%",
-                padding: 18,
+                padding: "var(--wm-dna-card-padding, 14px)",
+                minHeight: "var(--wm-dna-card-min-height, 140px)",
                 borderRadius: "var(--wm-radius-employer-card)",
                 border: "1px solid rgba(255, 255, 255, 0.9)",
                 background: "linear-gradient(135deg, rgba(255,255,255,0.9), rgba(248,250,252,0.7))",

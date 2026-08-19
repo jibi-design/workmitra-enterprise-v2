@@ -4,7 +4,7 @@
   box-sizing: border-box;
   border-radius: var(--wm-radius-employee-card);
   border: 1px solid rgba(29, 78, 216, 0.12);
-  background: rgba(255, 255, 255, 0.88);
+  background: #ffffff;
   box-shadow: 0 8px 24px rgba(29, 78, 216, 0.06);
   padding: var(--wm-card-padding);
 }
@@ -13,15 +13,39 @@
   padding: var(--wm-card-padding-compact);
 }
 
-@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .wm-career-surface-glass {
-    backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
-    -webkit-backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
-  }
-}
 
 .wm-er-vCareer .wm-career-surface-glass {
   border-radius: var(--wm-radius-employer-card);
+}
+
+.wm-career-candidates-radar {
+  box-sizing: border-box;
+  margin-top: var(--wm-space-2, 8px);
+  padding: var(--wm-space-3, 12px);
+  border-radius: var(--wm-radius-employer-card);
+  border: 1px solid var(--wm-career-accent-border);
+  background: var(--wm-career-accent-soft);
+}
+
+.wm-career-candidates-radar__title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--wm-career-text);
+}
+
+.wm-career-candidates-radar__copy {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 500;
+  color: var(--wm-career-muted);
+}
+
+.wm-career-candidates-radar__copy strong {
+  color: var(--wm-career-text);
+  font-weight: 700;
 }
 
 @media (prefers-reduced-motion: reduce) {

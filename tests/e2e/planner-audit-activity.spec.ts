@@ -20,7 +20,7 @@ async function seedPlanWithAudit(page: Page): Promise<void> {
             id: planId,
             name: "Audit Trail Plan",
             companyName: "Audit Co",
-            locationName: "Kochi",
+            locationName: "City A",
             category: "Security",
             experience: "experienced",
             startDate: "2026-11-01",

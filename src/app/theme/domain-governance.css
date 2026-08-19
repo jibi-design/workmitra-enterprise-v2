@@ -366,6 +366,35 @@
 }
 
 /* ------------------------------------------------ */
+/* 9b. Personal Work Diary — light Career-blue only */
+/* ------------------------------------------------ */
+
+.wm-ee-vDiary {
+  --wm-ee-accent: var(--wm-diary-accent);
+  --wm-ee-accent-strong: var(--wm-diary-accent-strong);
+  --wm-ee-wash: var(--wm-diary-wash);
+}
+
+.wm-ee-vDiary .wm-ee-card {
+  border-color: var(--wm-diary-accent-border);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.05), transparent 32%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(255, 255, 255, 0.94));
+}
+
+.wm-ee-vDiary .wm-ee-tile::before {
+  background: var(--wm-diary-accent);
+}
+
+.wm-ee-vDiary .wm-ee-domainIcon {
+  border-color: var(--wm-diary-accent-border);
+  background:
+    radial-gradient(circle at 30% 0%, rgba(255, 255, 255, 0.95), transparent 58%),
+    var(--wm-diary-accent-soft);
+  color: var(--wm-diary-accent);
+}
+
+/* ------------------------------------------------ */
 /* 10. Employee Workforce domain amber only there   */
 /* ------------------------------------------------ */
 

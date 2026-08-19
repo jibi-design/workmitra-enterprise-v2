@@ -60,7 +60,7 @@ export function CareerPostDetailStickyBar({
                 : "Withdraw application"
             }
             style={{
-              color: "#dc2626",
+              color: "var(--wm-error, #dc2626)",
               borderColor: "rgba(220,38,38,0.3)",
               background: "rgba(254,242,242,0.5)",
               fontWeight: 800,
@@ -70,6 +70,23 @@ export function CareerPostDetailStickyBar({
             }}
           >
             {withdrawOnlineBlocked ? "Contact support" : "Withdraw"}
+          </button>
+        ) : null}
+
+        {isApplied ? (
+          <button
+            className="wm-primarybtn wm-apply-btn"
+            type="button"
+            disabled
+            aria-disabled="true"
+            style={{
+              flex: 1,
+              padding: "12px 24px",
+              borderRadius: "var(--wm-radius-chip)",
+              fontWeight: 900,
+            }}
+          >
+            Submitted
           </button>
         ) : null}
 

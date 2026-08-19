@@ -1,6 +1,8 @@
 // App name: Job Mitra
 // Blind local radar metrics + favorite overlap (read-only home card).
 
+import { broadcastCoversJobPincode } from "../../../shared/location/broadcastCoversJobPincode";
+import { parsePincode } from "../../../shared/location/pincode";
 import { availabilityStorage, getRolling7Days } from "../../../shared/shift/availability.reader";
 import { employerSettingsStorage } from "../../company/storage/employerSettings.storage";
 import { favoritesStorage } from "../storage/favoritesStorage";
@@ -23,8 +25,9 @@ let metricsCacheKey = "";
 let metricsCache: LocalWorkersRadarMetrics = EMPTY_METRICS;
 
 function computeLocalWorkersRadarMetrics(): LocalWorkersRadarMetrics {
-  const city = employerSettingsStorage.get().locationCity.trim();
-  const cityKey = city.toLowerCase();
+  const jobPincode = parsePincode(employerSettingsStorage.get().locationPincode);
+  if (!jobPincode) return EMPTY_METRICS;
+
   const rolling = new Set(getRolling7Days().map((day) => day.iso));
   const favoriteIds = new Set(
     favoritesStorage.getAll().map((item) => item.workerMlId.trim().toUpperCase()),
@@ -34,10 +37,7 @@ function computeLocalWorkersRadarMetrics(): LocalWorkersRadarMetrics {
   const seenFavorite = new Set<string>();
 
   for (const broadcast of availabilityStorage.getAllActive()) {
-    if (cityKey && broadcast.city && broadcast.city.trim().toLowerCase() !== cityKey) {
-      continue;
-    }
-
+    if (!broadcastCoversJobPincode(broadcast, jobPincode)) continue;
     if (!broadcast.selectedDates.some((iso) => rolling.has(iso))) continue;
 
     const workerKey = broadcast.workerMlId.trim().toUpperCase();
@@ -58,11 +58,11 @@ function computeLocalWorkersRadarMetrics(): LocalWorkersRadarMetrics {
 
 /** Stable-reference snapshot for useSyncExternalStore (prevents infinite re-render loops). */
 export function readLocalWorkersRadarMetricsSnapshot(): LocalWorkersRadarMetrics {
-  const city = employerSettingsStorage.get().locationCity.trim();
+  const pincode = parsePincode(employerSettingsStorage.get().locationPincode) ?? "";
   const availRaw = localStorage.getItem(ALL_AVAILABILITY_KEY) ?? "";
   const favRaw = localStorage.getItem(resolveShiftEmployerScopedKey("shift_favorites_v1")) ?? "";
   const profileRaw = localStorage.getItem(EMPLOYER_PROFILE_KEY) ?? "";
-  const cacheKey = `${city}|${availRaw}|${favRaw}|${profileRaw}`;
+  const cacheKey = `${pincode}|${availRaw}|${favRaw}|${profileRaw}`;
 
   if (cacheKey === metricsCacheKey) {
     return metricsCache;

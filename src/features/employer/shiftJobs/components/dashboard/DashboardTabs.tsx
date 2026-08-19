@@ -1,10 +1,9 @@
 // App name: Job Mitra
 // File name: DashboardTabs.tsx
-// Luxury L2 — CLS-safe spring tab transitions via enterprise CSS classes
+// Luxury L2 — one-line scroll tabs (no auto-fill grid wrap)
 
 import { PulseNode } from "../../../../pulse/PulseNode";
 import type { DashboardTab } from "../../helpers/shiftDashboardHelpers";
-import { EnterpriseResponsiveGrid } from "../../../../../shared/components/enterprise";
 
 type DashboardTabsProps = {
   activeTab: DashboardTab;
@@ -25,11 +24,11 @@ const TAB_LABELS: Record<DashboardTab, string> = {
 export function DashboardTabs({ activeTab, counts, onChange }: DashboardTabsProps) {
   return (
     <div className="wm-ent-tab-shell" data-testid="shift-dashboard-tabs">
-      <EnterpriseResponsiveGrid
-        minItemWidth={88}
-        gap={6}
-        collapseMobile
-        testId="shift-dashboard-tabs-grid"
+      <div
+        className="wm-ent-tab-row"
+        role="tablist"
+        aria-label="Application status"
+        data-testid="shift-dashboard-tabs-grid"
       >
         {ALL_TABS.map((tab) => {
           const button = (
@@ -41,10 +40,25 @@ export function DashboardTabs({ activeTab, counts, onChange }: DashboardTabsProp
             />
           );
 
+          if (tab === "applied") {
+            return (
+              <PulseNode
+                key={tab}
+                className="wm-ent-tab-cell"
+                id="shift-dashboard-applications"
+                variant="button"
+                style={{ "--wm-pulse-node-radius": "14px" }}
+              >
+                {button}
+              </PulseNode>
+            );
+          }
+
           if (tab === "selected") {
             return (
               <PulseNode
                 key={tab}
+                className="wm-ent-tab-cell"
                 id="employer-shift-confirmed-roster"
                 variant="button"
                 style={{ "--wm-pulse-node-radius": "14px" }}
@@ -58,6 +72,7 @@ export function DashboardTabs({ activeTab, counts, onChange }: DashboardTabsProp
             return (
               <PulseNode
                 key={tab}
+                className="wm-ent-tab-cell"
                 id="employer-shift-replacement-needed"
                 variant="button"
                 style={{ "--wm-pulse-node-radius": "14px" }}
@@ -67,9 +82,13 @@ export function DashboardTabs({ activeTab, counts, onChange }: DashboardTabsProp
             );
           }
 
-          return <div key={tab}>{button}</div>;
+          return (
+            <div key={tab} className="wm-ent-tab-cell">
+              {button}
+            </div>
+          );
         })}
-      </EnterpriseResponsiveGrid>
+      </div>
     </div>
   );
 }
@@ -88,13 +107,21 @@ function DashboardTabButton({
   return (
     <button
       type="button"
+      role="tab"
       onClick={onClick}
       className={`wm-ent-tab-btn${isActive ? " is-active" : ""}`}
-      aria-pressed={isActive}
+      aria-selected={isActive}
     >
-      <div>{label}</div>
-
-      {count > 0 ? <span className="wm-ent-tab-count">{count}</span> : null}
+      <span className="wm-ent-tab-stack">
+        <span className="wm-ent-tab-label">{label}</span>
+        <span
+          className="wm-ent-tab-count"
+          data-empty={count > 0 ? "false" : "true"}
+          aria-hidden={count <= 0}
+        >
+          {count > 0 ? count : 0}
+        </span>
+      </span>
     </button>
   );
 }

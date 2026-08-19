@@ -11,6 +11,11 @@ type CandidateReviewEmptyStateProps = {
   readonly tab: DashboardTab;
   readonly filters: CandidateReviewFilters;
   readonly hasAnyCandidates: boolean;
+  readonly laterPipeline: {
+    readonly shortlisted: number;
+    readonly backup: number;
+    readonly selected: number;
+  };
   readonly onReset: () => void;
   readonly onRequestTabChange: (tab: DashboardTab) => void;
 };
@@ -58,11 +63,12 @@ export function CandidateReviewEmptyState({
   tab,
   filters,
   hasAnyCandidates,
+  laterPipeline,
   onReset,
   onRequestTabChange,
 }: CandidateReviewEmptyStateProps) {
   const filteredOut = hasAnyCandidates && isCandidateReviewFilterActive(filters);
-  const copy = filteredOut ? getFilteredCopy() : getTabCopy(tab);
+  const copy = filteredOut ? getFilteredCopy() : getTabCopy(tab, laterPipeline);
   const actionButton =
     !filteredOut && copy.actionLabel && copy.actionTab
       ? { label: copy.actionLabel, tab: copy.actionTab }
@@ -142,8 +148,36 @@ function getFilteredCopy(): EmptyCopy {
   };
 }
 
-function getTabCopy(tab: DashboardTab): EmptyCopy {
+function getTabCopy(
+  tab: DashboardTab,
+  laterPipeline: CandidateReviewEmptyStateProps["laterPipeline"],
+): EmptyCopy {
   if (tab === "applied") {
+    if (laterPipeline.shortlisted + laterPipeline.backup + laterPipeline.selected > 0) {
+      const nextTab: DashboardTab =
+        laterPipeline.shortlisted > 0
+          ? "shortlisted"
+          : laterPipeline.selected > 0
+            ? "selected"
+            : "backup";
+      return {
+        title: "No new applicants in this queue",
+        message:
+          "This post already has candidates in later stages. Open Shortlisted or Confirmed to continue hiring — this is not an empty vacancy.",
+        actionLabel:
+          nextTab === "shortlisted"
+            ? "Go to Shortlist"
+            : nextTab === "selected"
+              ? "View Confirmed"
+              : "View Backup",
+        actionTab: nextTab,
+        checklist: [
+          "Applied is only the new-applicant queue.",
+          "Shortlisted workers still need Confirm Worker.",
+          "Do not treat an empty Applied tab as zero interest.",
+        ],
+      };
+    }
     return {
       title: "No new applicants yet",
       message:

@@ -1,8 +1,19 @@
 /** Job Mitra | DomainHero.tsx — Unified domain home hero primitive (Golden Rulebook Step 1) */
 
 import type { ReactNode } from "react";
+import {
+  DEVICE_LOCAL_DISCLOSURE,
+  isDeviceLocalDomain,
+} from "../../config/storageHonesty";
 
-export type DomainHeroVariant = "shift" | "career" | "planner" | "workforce" | "settings";
+export type DomainHeroVariant =
+  | "shift"
+  | "career"
+  | "diary"
+  | "planner"
+  | "workforce"
+  | "settings"
+  | "vault";
 export type DomainHeroAudience = "employer" | "employee";
 
 export type DomainHeroProps = {
@@ -10,12 +21,14 @@ export type DomainHeroProps = {
   audience: DomainHeroAudience;
   eyebrow?: string;
   title: string;
-  subtitle?: string;
-  description?: string;
+  subtitle?: ReactNode;
+  description?: ReactNode;
   icon?: ReactNode;
   trailing?: ReactNode;
   children?: ReactNode;
   className?: string;
+  /** Override auto device-local honesty line (Play Store). */
+  hideDeviceLocalDisclosure?: boolean;
 };
 
 function buildHeroClass(
@@ -39,8 +52,13 @@ export function DomainHero({
   trailing,
   children,
   className,
+  hideDeviceLocalDisclosure = false,
 }: DomainHeroProps) {
   const showTopRow = icon || title || subtitle || eyebrow || trailing;
+  const showDeviceLocal =
+    import.meta.env.PROD &&
+    !hideDeviceLocalDisclosure &&
+    isDeviceLocalDomain(variant);
 
   return (
     <section className={buildHeroClass(variant, audience, className)} aria-label={title}>
@@ -61,6 +79,12 @@ export function DomainHero({
       ) : null}
 
       {description ? <p className="wm-domainHeroDescription">{description}</p> : null}
+
+      {showDeviceLocal ? (
+        <p className="wm-domainHeroDescription wm-domainHeroDescription--local" role="note">
+          {DEVICE_LOCAL_DISCLOSURE}
+        </p>
+      ) : null}
 
       {children ? <div className="wm-domainHeroBody">{children}</div> : null}
     </section>

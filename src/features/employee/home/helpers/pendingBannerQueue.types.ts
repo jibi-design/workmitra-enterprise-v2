@@ -35,4 +35,5 @@ export type PendingBannerQueueView = {
   liveCount: number;
   queueIndex: number;
   queueTotal: number;
+  dismissItem: (fingerprint: string) => void;
 };

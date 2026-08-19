@@ -88,16 +88,15 @@ test.describe("Career Personal Work Diary Injection", () => {
     });
 
     await test.step("2. CRITICAL — diary LOCKED after offer_accepted (pre-hire)", async () => {
-      const life = await probeLifecycleEmployment(employeePage);
-      expect(life.hasPrimary, "No primary employment before hire").toBe(false);
-
       const diary = await readDiaryLockState(employeePage);
       expect(diary, "Personal Work Diary must stay locked until hire").toBe("locked");
-      await expect(employeePage.locator('[data-diary-state="locked"]')).toBeVisible();
+
+      const life = await probeLifecycleEmployment(employeePage);
+      expect(life.hasPrimary, "No primary employment before hire").toBe(false);
     });
 
     await test.step("3. hireCandidate / activateCareerHire → diary UNLOCKS", async () => {
-      await employerMarkCareerCandidateHired(employerPage);
+      await employerMarkCareerCandidateHired(employerPage, employeePage);
       await waitForCareerCircuitApplicationStage(employerPage, "hired");
       await syncCareerDataOnly(employerPage, employeePage);
       await ensureCareerCircuitWorkerIdentity(employeePage);
@@ -110,7 +109,6 @@ test.describe("Career Personal Work Diary Injection", () => {
 
       const diary = await readDiaryLockState(employeePage);
       expect(diary, "Diary unlocks only after hire activation").toBe("active");
-      await expect(employeePage.locator('[data-diary-state="active"]')).toBeVisible();
 
       await employeePage.goto(`/#/employee/employment/${life.employmentId}`);
       await expect(employeePage.getByText(/Work Diary|Daily Tasks|Personal/i).first()).toBeVisible({

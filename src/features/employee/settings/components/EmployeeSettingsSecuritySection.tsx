@@ -52,7 +52,7 @@ export function EmployeeSettingsSecuritySection({
         </label>
       </div>
       <div className="wm-ee-helperText" style={{ marginTop: 2, marginBottom: 12 }}>
-        Require PIN to open the app. Phase-0 demo toggle.
+        Require PIN to open the app on this device.
       </div>
 
       {/* Change Password — Coming Soon */}
@@ -85,7 +85,7 @@ export function EmployeeSettingsSecuritySection({
         <div>
           <div style={securityLabelStyle}>Active sessions</div>
           <div style={securityDescStyle}>
-            This device only (Phase-0). Multi-device list in Phase 1.
+            This device only. Multi-device session list coming later.
           </div>
         </div>
         <span

@@ -5,9 +5,12 @@
 
 export {
   isSoSiteUuid,
+  provisionLocalSiteMembership,
   provisionSiteMembership,
   provisionSiteMembershipBestEffort,
 } from "../../shiftOps/services/membershipBridge.service";
+
+export { ensureShiftOpsSiteForPost } from "../../shiftOps/services/ensureSiteForShiftPost.service";
 
 export {
   canCommunicateInShiftOpsGroup,

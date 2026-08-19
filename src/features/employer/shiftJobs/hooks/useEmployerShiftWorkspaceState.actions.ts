@@ -15,6 +15,11 @@ import {
 import { clampText, isReadOnlyStatus, wsId } from "../types/shiftWorkspaceTypes";
 import type { ShiftWorkspaceUpdate } from "../types/shiftWorkspaceTypes";
 import type { WorkspaceDraft } from "./useEmployerShiftWorkspaceState.types";
+import {
+  formatWorkspaceSendError,
+  isWorkspaceMessageApiEnabled,
+  sendAndSyncWorkspaceMessage,
+} from "../../../shift/services/workspaceMessageSync.service";
 
 export type ShiftWorkspaceActionContext = {
   all: ReturnType<typeof getWorkspacesSnapshot>;
@@ -89,37 +94,57 @@ export function createEmployerShiftWorkspaceActions(ctx: ShiftWorkspaceActionCon
 
     const title = clampText(broadcastDraft.title, 60) || "Announcement";
     const body = clampText(broadcastDraft.body, 240);
-    const now = Date.now();
 
-    const updateBase: ShiftWorkspaceUpdate = {
-      id: wsId("u"),
-      createdAt: now,
-      kind: "broadcast",
-      title,
-    };
+    void (async () => {
+      if (isWorkspaceMessageApiEnabled()) {
+        try {
+          const synced = await sendAndSyncWorkspaceMessage({
+            role: "employer",
+            postId: workspace.postId,
+            kind: "broadcast",
+            title,
+            body,
+            jobName: workspace.jobName,
+            startAt: workspace.startAt,
+          });
+          if (synced) {
+            setBroadcastOpen(false);
+            return;
+          }
+          setActionError("Could not match this work group to a live server shift. Refresh, then try again.");
+          return;
+        } catch (error) {
+          setActionError(formatWorkspaceSendError(error));
+          return;
+        }
+      }
 
-    const update: ShiftWorkspaceUpdate = body ? { ...updateBase, body } : updateBase;
-
-    const next = all.map((item) =>
-      item.id !== workspace.id
-        ? item
-        : {
-            ...item,
-            updates: [update, ...item.updates].slice(0, 50),
-            lastActivityAt: now,
-            unreadCount: Math.max(0, item.unreadCount) + 1,
-          },
-    );
-
-    if (!persistWorkspaces(next)) return;
-
-    notifyWorkspaceUpdate(
-      "New announcement",
-      `${workspace.jobName} - ${workspace.companyName}. ${title}${body ? `: ${body.slice(0, 60)}` : ""}`,
-      ROUTE_PATHS.employeeShiftWorkspace.replace(":workspaceId", workspace.id),
-    );
-
-    setBroadcastOpen(false);
+      const now = Date.now();
+      const updateBase: ShiftWorkspaceUpdate = {
+        id: wsId("u"),
+        createdAt: now,
+        kind: "broadcast",
+        title,
+      };
+      const update: ShiftWorkspaceUpdate = body ? { ...updateBase, body } : updateBase;
+      const next = all.map((item) =>
+        item.id !== workspace.id
+          ? item
+          : {
+              ...item,
+              updates: [update, ...item.updates].slice(0, 50),
+              lastActivityAt: now,
+              unreadCount: Math.max(0, item.unreadCount) + 1,
+            },
+      );
+      if (!persistWorkspaces(next)) return;
+      notifyWorkspaceUpdate(
+        "New announcement",
+        `${workspace.jobName} - ${workspace.companyName}. ${title}${body ? `: ${body.slice(0, 60)}` : ""}`,
+        ROUTE_PATHS.employeeShiftWorkspace.replace(":workspaceId", workspace.id),
+      );
+      setBroadcastOpen(false);
+    })();
   }
 
   function sendDirectReply() {
@@ -131,36 +156,56 @@ export function createEmployerShiftWorkspaceActions(ctx: ShiftWorkspaceActionCon
 
     if (!body) return;
 
-    const now = Date.now();
+    void (async () => {
+      if (isWorkspaceMessageApiEnabled()) {
+        try {
+          const synced = await sendAndSyncWorkspaceMessage({
+            role: "employer",
+            postId: workspace.postId,
+            kind: "direct",
+            title,
+            body,
+            jobName: workspace.jobName,
+            startAt: workspace.startAt,
+          });
+          if (synced) {
+            setReplyOpen(false);
+            return;
+          }
+          setActionError("Could not match this work group to a live server shift. Refresh, then try again.");
+          return;
+        } catch (error) {
+          setActionError(formatWorkspaceSendError(error));
+          return;
+        }
+      }
 
-    const update: ShiftWorkspaceUpdate = {
-      id: wsId("u"),
-      createdAt: now,
-      kind: "direct",
-      title,
-      body,
-    };
-
-    const next = all.map((item) =>
-      item.id !== workspace.id
-        ? item
-        : {
-            ...item,
-            updates: [update, ...item.updates].slice(0, 50),
-            lastActivityAt: now,
-            unreadCount: Math.max(0, item.unreadCount) + 1,
-          },
-    );
-
-    if (!persistWorkspaces(next)) return;
-
-    notifyWorkspaceUpdate(
-      "New message",
-      `${workspace.jobName} - ${workspace.companyName}. Employer replied in workspace.`,
-      ROUTE_PATHS.employeeShiftWorkspace.replace(":workspaceId", workspace.id),
-    );
-
-    setReplyOpen(false);
+      const now = Date.now();
+      const update: ShiftWorkspaceUpdate = {
+        id: wsId("u"),
+        createdAt: now,
+        kind: "direct",
+        title,
+        body,
+      };
+      const next = all.map((item) =>
+        item.id !== workspace.id
+          ? item
+          : {
+              ...item,
+              updates: [update, ...item.updates].slice(0, 50),
+              lastActivityAt: now,
+              unreadCount: Math.max(0, item.unreadCount) + 1,
+            },
+      );
+      if (!persistWorkspaces(next)) return;
+      notifyWorkspaceUpdate(
+        "New message",
+        `${workspace.jobName} - ${workspace.companyName}. Employer replied in workspace.`,
+        ROUTE_PATHS.employeeShiftWorkspace.replace(":workspaceId", workspace.id),
+      );
+      setReplyOpen(false);
+    })();
   }
 
   function markCompleted() {

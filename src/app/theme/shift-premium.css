@@ -5,14 +5,12 @@
   box-sizing: border-box;
   border-radius: var(--wm-radius-employee-card);
   border: 1px solid rgba(22, 163, 74, 0.12);
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.08);
-  backdrop-filter: blur(12px) var(--wm-glass-saturate);
-  -webkit-backdrop-filter: blur(12px) var(--wm-glass-saturate);
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
   padding: var(--wm-card-padding);
   transition:
-    transform var(--wm-motion-base) var(--wm-motion-spring),
-    box-shadow var(--wm-motion-base) var(--wm-motion-spring);
+    box-shadow var(--wm-motion-base) var(--wm-motion-spring),
+    border-color var(--wm-motion-base) var(--wm-motion-spring);
 }
 
 .wm-shift-card--compact {
@@ -25,22 +23,19 @@
 
 @media (hover: hover) {
   .wm-shift-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 14px 32px rgba(22, 163, 74, 0.12);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
   }
 }
 
 .wm-shift-card:active {
-  transform: scale(0.98);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
 }
 
 .wm-shift-card--employer {
   border-radius: var(--wm-radius-employer-card);
-  background: rgba(255, 255, 255, 0.74);
+  background: #ffffff;
   border: 1px solid rgba(22, 163, 74, 0.14);
   box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
-  backdrop-filter: blur(16px) var(--wm-glass-saturate);
-  -webkit-backdrop-filter: blur(16px) var(--wm-glass-saturate);
 }
 
 .wm-shift-logo {
@@ -207,7 +202,7 @@
 }
 
 .wm-shift-workspace-hero {
-  padding: 20px 18px;
+  padding: var(--wm-dna-card-padding, 14px);
   border-radius: var(--wm-radius-employee-card);
   border: 1px solid rgba(22, 163, 74, 0.12);
   background:
@@ -217,7 +212,7 @@
 }
 
 .wm-shift-earnings-hero {
-  padding: 20px 18px;
+  padding: var(--wm-dna-card-padding, 14px);
   border-radius: var(--wm-radius-employee-card);
   border: 1px solid rgba(22, 163, 74, 0.14);
   background: linear-gradient(135deg, rgba(22, 163, 74, 0.14), rgba(255, 255, 255, 0.94) 55%);

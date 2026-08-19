@@ -84,6 +84,7 @@ function buildDetailsPayload(post: CareerJobPost): Record<string, unknown> {
     jobType: post.jobType,
     workMode: post.workMode,
     location: post.location,
+    locationPincode: post.locationPincode,
     vacancies: post.vacancies,
     probationPeriod: post.probationPeriod,
     salaryMin: post.salaryMin,
@@ -111,6 +112,7 @@ export function buildServerPostCreateBody(post: CareerJobPost): Record<string, u
     title: post.jobTitle,
     description: post.description || post.jobTitle,
     location: post.location || null,
+    locationPincode: post.locationPincode || null,
     status: toServerCareerPostStatus(post.status),
     details: buildDetailsPayload(post),
   };
@@ -148,6 +150,12 @@ function stubFromServer(dto: ServerCareerPostDto): CareerJobPost | null {
     workMode:
       details.workMode === "remote" || details.workMode === "hybrid" ? details.workMode : "on-site",
     location: asString("location", dto.location ?? ""),
+    locationPincode:
+      typeof details.locationPincode === "string"
+        ? details.locationPincode
+        : typeof dto.location_pincode === "string"
+          ? dto.location_pincode
+          : "",
     vacancies: Math.max(1, asNumber("vacancies", 1)),
     probationPeriod: asString("probationPeriod", "none"),
     salaryMin: asNumber("salaryMin", 0),

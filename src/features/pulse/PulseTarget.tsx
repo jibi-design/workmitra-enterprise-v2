@@ -60,8 +60,6 @@ export function PulseTargetCard({
           position: "relative",
           width: "100%",
           borderRadius: "var(--wm-pulse-node-radius, 24px)",
-          overflow: "hidden",
-          isolation: "isolate",
         }}
       >
         {children}

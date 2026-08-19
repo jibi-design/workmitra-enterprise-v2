@@ -1,0 +1,40 @@
+{
+  "harness": "authenticated-store-stress",
+  "profile": "store-submission-live-1k-authenticated",
+  "verdict": "BLOCKED",
+  "generatedAt": "2026-08-10T08:40:00.000Z",
+  "targetsTried": [
+    "https://mitraaccesshub.com",
+    "https://mitra-access-hub.jibin-dev-apps.workers.dev"
+  ],
+  "findings": [
+    "Cloudflare Worker serves text/html (SPA/Coming Soon) for /v1/jobmitra/* including health, auth/csrf, auth/login",
+    "HTTP 200 with HTML is not an API success — prior unauthenticated PASS was a false positive against static HTML",
+    "Login returns 200 HTML with zero Set-Cookie — authenticated session warm-up impossible on this origin",
+    "VITE_API_URL=/ expects same-origin API via Nginx; live CF Worker does not reverse-proxy to workmitra-api:3001",
+    "api.mitralabs.app and api.mitraaccesshub.com did not resolve from this host",
+    "Supabase Postgres is reachable (DATABASE_URL pooler) — load-test user was provisioned successfully in auth_users"
+  ],
+  "provisioning": {
+    "loadTestUserEmailMasked": "l***@workmitra.com",
+    "userId": "e67f8e7e-e63f-4d0c-96e3-b4c664037734",
+    "password": "ephemeral-in-process-only-not-persisted-to-dotenv"
+  },
+  "metrics": null,
+  "p95Ms": null,
+  "p99Ms": null,
+  "authP95Ms": null,
+  "supabaseDashboard": "Not observed — no authenticated API traffic reached Supabase via Cloudflare. Monitor Connections after API edge is wired.",
+  "remediation": [
+    "Deploy Job Mitra API behind a public HTTPS origin (or CF Worker route /v1/* → API)",
+    "Point WM_API_BASE / VITE_API_URL at that API origin",
+    "Re-run: WM_API_BASE=... K6_VUS_MAX=1000 K6_CHAOS=0 npx tsx tests/load/provision-and-run-auth-stress.ts",
+    "During run, watch Supabase Dashboard → Database → Connections (Supavisor) and Query performance"
+  ],
+  "artifacts": [
+    "tests/load/node-store-submission-stress.mjs (HTML fail-closed)",
+    "tests/load/provision-and-run-auth-stress.ts",
+    "tests/load/run-authenticated-store-stress.mjs",
+    "tests/load/probe-api-vs-spa.mjs"
+  ]
+}

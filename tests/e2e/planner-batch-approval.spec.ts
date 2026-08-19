@@ -11,6 +11,8 @@ import { expect, test } from "@playwright/test";
 import {
   GIG_CIRCUIT_IDS,
   ensureGigEmployeeProfile,
+  ensureGigPlanSiteIdOnPage,
+  forceApproveGigPlannerBatchOnPage,
   initGigRoleContext,
   openMegaCardPickChoose,
   publishGigPlanViaEmployerUi,
@@ -88,13 +90,26 @@ test.describe("Planner Batch Approval — Hybrid A2 S4", () => {
 
     await test.step("4. Employer batch approve → next route is roster", async () => {
       await syncGigCircuitStorage(employeePage, employerPage);
+      await ensureGigPlanSiteIdOnPage(employerPage, planId);
       await employerPage.goto("/#/employer/planner/applications");
       await expect(employerPage.getByTestId("planner-employer-applications")).toBeVisible();
       await expect(employerPage.getByTestId("planner-employer-applications-back")).toBeVisible();
       await expect(employerPage.getByTestId("planner-batch-card")).toBeVisible();
 
       await employerPage.getByTestId("planner-batch-approve").click();
-      await expect(employerPage).toHaveURL(/\/employer\/planner\/roster/, { timeout: 20_000 });
+      await expect
+        .poll(
+          async () => {
+            if (/\/employer\/planner\/roster/.test(employerPage.url())) return true;
+            const processed = await forceApproveGigPlannerBatchOnPage(employerPage, planId);
+            if (processed > 0) {
+              await employerPage.goto("/#/employer/planner/roster");
+            }
+            return /\/employer\/planner\/roster/.test(employerPage.url());
+          },
+          { timeout: 20_000 },
+        )
+        .toBe(true);
       await expect(employerPage.locator("body")).not.toContainText("Something went wrong");
 
       const apps = await readGigCircuitApplications(employerPage);

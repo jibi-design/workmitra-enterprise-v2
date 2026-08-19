@@ -25,6 +25,7 @@ const STEP1_ALLOW = new Set([
   "name",
   "companyName",
   "locationName",
+  "locationPincode",
   "category",
   "experience",
   "startDate",
@@ -82,6 +83,7 @@ function sanitizeStep1(raw: Step1Data): Step1Data {
     name: clampString(out.name ?? ""),
     companyName: clampString(out.companyName ?? ""),
     locationName: clampString(out.locationName ?? ""),
+    locationPincode: clampString(out.locationPincode ?? "", 16).replace(/\D/g, "").slice(0, 6),
     category: clampString(out.category ?? "Construction", 80),
     experience: (clampString(out.experience ?? "helper", 40) ||
       "helper") as Step1Data["experience"],

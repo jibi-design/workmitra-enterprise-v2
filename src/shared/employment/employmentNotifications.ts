@@ -112,7 +112,7 @@ export function notifyBothPleaseRate(
       targetId: careerPostId,
       title: "Please rate your experience",
       body: `Rate your experience as ${jobTitle}${companyName ? " at " + companyName : ""}. ${signature}`,
-      route: ROUTE_PATHS.employeeCareerHome,
+      route: ROUTE_PATHS.employeeReviewCenter,
     });
   }
 
@@ -124,7 +124,7 @@ export function notifyBothPleaseRate(
       targetId: careerPostId,
       title: "Please rate your employee",
       body: `Rate ${employeeName}'s work as ${jobTitle}. ${signature}`,
-      route: ROUTE_PATHS.employerCareerHome,
+      route: ROUTE_PATHS.employerReviewCenter,
     });
   }
 }

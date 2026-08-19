@@ -84,7 +84,7 @@ test.describe("Career Work Vault Finalization", () => {
       await waitForCareerCircuitApplicationStage(employeePage, "offer_accepted");
       await syncCareerDataOnly(employeePage, employerPage);
 
-      await employerMarkCareerCandidateHired(employerPage);
+      await employerMarkCareerCandidateHired(employerPage, employeePage);
       await waitForCareerCircuitApplicationStage(employerPage, "hired");
       await syncCareerDataOnly(employerPage, employeePage);
 

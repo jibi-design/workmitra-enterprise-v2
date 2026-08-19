@@ -1,32 +1,32 @@
-/** Section 4 — Ownership & access (transfer-ready architecture). */
+/** Section 4 — Ownership display (single-employer Pro · transfer UI removed). */
 
+import { useAuthStore } from "../../../../../shared/store/authStore";
 import type { EmployerProfile } from "../../storage/employerSettings.storage";
-import { BusinessTransferPanel } from "./BusinessTransferPanel";
+import type { NoticeData } from "../../../../../shared/components/NoticeModal";
 import {
   EXECUTIVE_CARD_SHELL,
   EXECUTIVE_HELPER,
   EXECUTIVE_SECTION_KICKER,
   EXECUTIVE_SECTION_TITLE,
 } from "../../helpers/employerProfileCard.styles";
-import type { NoticeData } from "../../../../../shared/components/NoticeModal";
 
 type Props = {
   readonly data: EmployerProfile;
-  readonly onProfileRefresh: () => void;
-  readonly onNotice: (notice: NoticeData) => void;
+  readonly onProfileRefresh?: () => void;
+  readonly onNotice?: (notice: NoticeData) => void;
 };
 
-export function OwnershipAccessSection({ data, onProfileRefresh, onNotice }: Props) {
-  const ownerName = data.fullName.trim() || "Not set";
-  const transferStatus = data.transferStatus ?? "none";
-  const adminCount = data.businessAdminIds?.length ?? 0;
+export function OwnershipAccessSection({ data }: Props) {
+  const user = useAuthStore((s) => s.user);
+  const ownerName = user?.fullName?.trim() || data.fullName.trim() || "Not set";
+  const ownerEmail = user?.email?.trim() || data.email.trim() || "—";
 
   return (
     <section style={EXECUTIVE_CARD_SHELL} data-testid="employer-ownership-section">
       <div style={EXECUTIVE_SECTION_KICKER}>Ownership & access</div>
-      <h2 style={EXECUTIVE_SECTION_TITLE}>Business access</h2>
+      <h2 style={EXECUTIVE_SECTION_TITLE}>Business owner</h2>
       <p style={EXECUTIVE_HELPER}>
-        Only business profile ownership can transfer. Your personal account data never transfers.
+        Single-employer Pro · ownership transfer and admin sharing are disabled on this surface.
       </p>
 
       <div
@@ -41,24 +41,12 @@ export function OwnershipAccessSection({ data, onProfileRefresh, onNotice }: Pro
         }}
       >
         <Row label="Current owner" value={ownerName} />
-        <Row label="Transfer status" value={formatTransferStatus(transferStatus)} />
-        <Row label="Staff admins" value={adminCount > 0 ? `${adminCount} added` : "Coming soon"} />
+        <Row label="Sign-in email" value={ownerEmail} />
+        <Row label="Auth user ID" value={user?.id ?? "—"} />
+        <Row label="Staff admins" value="Not available (single-owner)" />
       </div>
-
-      <BusinessTransferPanel
-        profile={data}
-        onProfileRefresh={onProfileRefresh}
-        onNotice={onNotice}
-      />
     </section>
   );
-}
-
-function formatTransferStatus(status: string): string {
-  if (status === "pending") return "Transfer in progress";
-  if (status === "completed") return "Transfer completed";
-  if (status === "cancelled") return "Transfer cancelled";
-  return "No transfer in progress";
 }
 
 function Row({ label, value }: { readonly label: string; readonly value: string }) {

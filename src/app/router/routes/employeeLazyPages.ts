@@ -50,6 +50,20 @@ export const EmployeePlannerEarningsPage = lazyPage(() =>
     default: m.EmployeePlannerEarningsPage,
   })),
 );
+export const EmployeeWeeklyShiftPlannerPage = lazyPage(() =>
+  ensureThemeBundle("shift-planner").then(() =>
+    import("../../../features/shiftPlanner/pages/WeeklyShiftPlanner").then((m) => ({
+      default: m.EmployeeWeeklyShiftPlannerPage,
+    })),
+  ),
+);
+export const EmployeeSwapRequestPage = lazyPage(() =>
+  ensureThemeBundle("shift-planner").then(() =>
+    import("../../../features/shiftPlanner/pages/EmployeeSwapRequest").then((m) => ({
+      default: m.EmployeeSwapRequest,
+    })),
+  ),
+);
 export const ShiftControlCenterPage = lazyPage(() =>
   import("../../../features/employee/shiftJobs/pages/ShiftControlCenterPage").then((m) => ({
     default: m.ShiftControlCenterPage,
@@ -160,6 +174,11 @@ export const EmployeeEmploymentDetailPage = lazyPage(() =>
     default: m.EmployeeEmploymentDetailPage,
   })),
 );
+export const PersonalWorkDiaryPage = lazyPage(() =>
+  import("../../../features/employee/personalWorkDiary/pages/PersonalWorkDiaryPage").then((m) => ({
+    default: m.PersonalWorkDiaryPage,
+  })),
+);
 export const EmployeeReviewCenterPage = lazyPage(() =>
   import("../../../features/shared/reviewCenter/pages/EmployeeReviewCenterPage").then((m) => ({
     default: m.EmployeeReviewCenterPage,
@@ -217,8 +236,8 @@ export const ShiftOpsInviteLandingPage = lazyPage(() =>
   })),
 );
 export const ShiftOpsDualVerifyPage = lazyPage(() =>
-  import("../../../features/shiftOps/pages/ShiftOpsDualVerifyPage").then((m) => ({
-    default: m.ShiftOpsDualVerifyPage,
+  import("../../../features/shiftOps/pages/ShiftOpsCameraScanPage").then((m) => ({
+    default: m.ShiftOpsCameraScanPage,
   })),
 );
 export const ShiftOpsPendingApprovalPage = lazyPage(() =>

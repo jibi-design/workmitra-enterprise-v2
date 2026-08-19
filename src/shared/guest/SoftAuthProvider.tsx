@@ -1,13 +1,14 @@
-/** Phase 4 — Soft auth context for high-intent guest actions. */
+/** Phase 4 — Soft auth context for high-intent guest create/apply actions. */
 
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore, type UserRole } from "../store/authStore";
-import { SoftAuthSheet } from "./SoftAuthSheet";
+import { useAuthStore } from "../store/authStore";
+import { GuestIntentWarningModal } from "./GuestIntentWarningModal";
 import { stashIntentPacket, type IntentPacket } from "./intentPacket";
-import { resumeIntentAfterAuth } from "./resumeIntent";
-import { AUTH_BACKEND_ENABLED } from "../config/authConfig";
 import { SoftAuthContext, type SoftAuthContextValue, type SoftAuthGateInput } from "./useSoftAuth";
+import { ROUTE_PATHS } from "../../app/router/routePaths";
+import { isEmployerCreateIntent, isPublishPhase } from "./guestIntentKinds";
+import { hasGuestCreatePreviewSkip, setGuestCreatePreviewSkip } from "./guestCreatePreview.session";
 
 export function SoftAuthProvider({ children }: { readonly children: ReactNode }) {
   const nav = useNavigate();
@@ -25,11 +26,20 @@ export function SoftAuthProvider({ children }: { readonly children: ReactNode })
 
   const requireAuthForAction = useCallback(
     (input: SoftAuthGateInput): boolean => {
-      // Demo / AUTH-off: guest local-first actions proceed without soft sheet.
-      if (!AUTH_BACKEND_ENABLED) {
+      if (!sessionChecked) {
         return true;
       }
-      if (sessionChecked && isAuthenticated) {
+      if (isAuthenticated) {
+        return true;
+      }
+
+      if (input.action === "save_shift" || input.action === "save_career") {
+        return true;
+      }
+
+      const enterCreate =
+        isEmployerCreateIntent(input.action) && !isPublishPhase(input.payload);
+      if (enterCreate && hasGuestCreatePreviewSkip()) {
         return true;
       }
 
@@ -47,13 +57,19 @@ export function SoftAuthProvider({ children }: { readonly children: ReactNode })
     [isAuthenticated, sessionChecked],
   );
 
-  const onAuthenticated = useCallback(
-    (role: UserRole) => {
-      setOpen(false);
-      resumeIntentAfterAuth(nav, role);
-    },
-    [nav],
-  );
+  const onPrimary = useCallback(() => {
+    const dest =
+      intent?.roleHint === "employer" ? ROUTE_PATHS.register : ROUTE_PATHS.login;
+    setOpen(false);
+    nav(dest, { state: { from: intent?.returnPath ?? "/" } });
+  }, [intent, nav]);
+
+  const onSkip = useCallback(() => {
+    if (intent && isEmployerCreateIntent(intent.action) && !isPublishPhase(intent.payload)) {
+      setGuestCreatePreviewSkip();
+    }
+    setOpen(false);
+  }, [intent]);
 
   const value = useMemo<SoftAuthContextValue>(
     () => ({ requireAuthForAction, openSoftAuth }),
@@ -63,11 +79,11 @@ export function SoftAuthProvider({ children }: { readonly children: ReactNode })
   return (
     <SoftAuthContext.Provider value={value}>
       {children}
-      <SoftAuthSheet
+      <GuestIntentWarningModal
         open={open}
         intent={intent}
-        onClose={() => setOpen(false)}
-        onAuthenticated={onAuthenticated}
+        onPrimary={onPrimary}
+        onSkip={onSkip}
       />
     </SoftAuthContext.Provider>
   );

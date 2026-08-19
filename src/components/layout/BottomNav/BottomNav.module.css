@@ -1,4 +1,4 @@
-/** Job Mitra | BottomNav.module.css | src/components/layout/BottomNav/BottomNav.module.css */
+/** Job Mitra | BottomNav.module.css | Floating glass dock + projected active tab */
 
 .navContainer {
   position: fixed;
@@ -12,22 +12,79 @@
   min-height: 72px;
   height: calc(72px + env(safe-area-inset-bottom, 0px));
 
-  /* Premium neutral glass — no domain tint on chrome */
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(20px) var(--wm-glass-saturate);
   -webkit-backdrop-filter: blur(20px) var(--wm-glass-saturate);
 
-  border-top: 1px solid rgba(255, 255, 255, 0.5);
+  border-top: 1.5px solid color-mix(in srgb, var(--nav-theme-color, #64748b) 42%, transparent);
   padding: 8px 4px calc(8px + env(safe-area-inset-bottom, 0px)) 4px;
 
   z-index: 1000;
-  box-shadow: 0 -8px 28px rgba(15, 23, 42, 0.06);
+  box-shadow:
+    0 -8px 28px rgba(15, 23, 42, 0.06),
+    0 -10px 24px -8px color-mix(in srgb, var(--nav-theme-color, #64748b) 26%, transparent);
   will-change: transform;
+  transition:
+    border-color 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    background 280ms ease;
+  overflow: visible;
 }
 
+/* Shared floating glass pill dock (Employee + Employer) */
+:global(.wm-shellEmployee) .navContainer,
 :global(.wm-shellEmployer) .navContainer {
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 -10px 32px rgba(0, 0, 0, 0.06);
+  left: 0;
+  right: 0;
+  width: min(28rem, calc(100% - 2rem));
+  margin: 0 auto;
+  bottom: calc(0.65rem + env(safe-area-inset-bottom, 0px));
+  height: 56px;
+  min-height: 56px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid rgba(226, 232, 240, 0.8); /* border-slate-200/80 */
+  border-top: 1px solid rgba(226, 232, 240, 0.8);
+  background: rgba(255, 255, 255, 0.8); /* bg-white/80 */
+  backdrop-filter: blur(24px) saturate(1.25); /* backdrop-blur-lg */
+  -webkit-backdrop-filter: blur(24px) saturate(1.25);
+  box-shadow:
+    0 16px 36px rgba(15, 23, 42, 0.1),
+    0 10px 24px -6px color-mix(in srgb, var(--nav-theme-color, #64748b) 22%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  z-index: 1000;
+  overflow: visible;
+}
+
+/* Domain edge tint on floating dock (Shift/Career/etc.) — soft, not harsh */
+:global(.wm-shellEmployee) .navContainer:not([data-nav-domain="employeeDefault"]),
+:global(.wm-shellEmployer) .navContainer:not([data-nav-domain="employerDefault"]) {
+  border-color: color-mix(in srgb, var(--nav-theme-color, #64748b) 38%, rgba(226, 232, 240, 0.85));
+}
+
+/* Employer Home — crisp neutral slate (no purple) */
+:global(.wm-shellEmployer) .navContainer[data-nav-domain="employerDefault"] {
+  --nav-theme-color: #64748b;
+  border-color: rgba(226, 232, 240, 0.9);
+  box-shadow:
+    0 16px 36px rgba(15, 23, 42, 0.08),
+    0 8px 18px -6px rgba(100, 116, 139, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+:global(.wm-shellEmployer) .navContainer[data-nav-domain="employerDefault"] .navItemActive {
+  color: #475569;
+}
+
+:global(.wm-shellEmployer) .navContainer[data-nav-domain="employerDefault"] .navItemActive .iconBox {
+  background: #ffffff;
+  border-color: rgba(203, 213, 225, 0.95);
+  box-shadow:
+    0 12px 28px rgba(15, 23, 42, 0.12),
+    0 0 0 1px rgba(148, 163, 184, 0.22),
+    0 8px 20px -4px rgba(100, 116, 139, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+  color: #475569;
 }
 
 .navItem {
@@ -37,34 +94,34 @@
   align-items: center;
   justify-content: center;
   gap: 2px;
-  color: var(--wm-neutral-400);
+  color: #475569; /* slate-600 — readable unselected labels */
   flex: 1;
-  min-height: 56px;
+  min-height: 48px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition:
-    transform var(--wm-motion-fast) var(--wm-motion-spring),
-    color 0.2s var(--wm-motion-spring);
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @media (hover: hover) {
   .navItem:not(.navItemActive):hover {
-    transform: scale(1.05);
-    color: var(--wm-neutral-500);
+    transform: scale(1.04);
+    color: #334155; /* slate-700 */
   }
 }
 
 .navItem:active {
-  transform: scale(0.92);
+  transform: scale(0.94);
 }
 
 .navItemActive {
   color: var(--nav-theme-color);
-  transform: scale(1.08);
+  transform: none;
 }
 
 .navItemActive:active {
-  transform: scale(1);
+  transform: scale(0.98);
 }
 
 .iconBox {
@@ -72,75 +129,90 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 52px;
+  width: 44px;
   height: 30px;
   border-radius: 999px;
   margin-bottom: 1px;
+  border: 1.5px solid transparent;
+  background: transparent;
   transition:
-    background var(--wm-motion-base) var(--wm-motion-spring),
-    transform var(--wm-motion-base) var(--wm-motion-spring),
-    box-shadow var(--wm-motion-base) var(--wm-motion-spring);
+    background 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
 }
 
+/* 3D projected active tab — floats up out of the dock */
 .navItemActive .iconBox {
-  background: color-mix(in srgb, var(--nav-theme-color) 16%, transparent);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  transform: translateY(-12px);
+  background: #ffffff;
+  border-color: color-mix(in srgb, var(--nav-theme-color) 32%, rgba(226, 232, 240, 0.9));
+  box-shadow:
+    0 14px 28px rgba(15, 23, 42, 0.14),
+    0 0 0 1px color-mix(in srgb, var(--nav-theme-color) 18%, transparent),
+    0 10px 22px -4px color-mix(in srgb, var(--nav-theme-color) 36%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
 .icon {
-  transition: transform var(--wm-motion-base) var(--wm-motion-spring);
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .navItemActive .icon {
-  transform: translateY(-0.5px) scale(1.04);
+  transform: scale(1.06);
 }
 
 .label {
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 650;
   letter-spacing: 0.02em;
-  opacity: 0.8;
+  opacity: 1;
   line-height: 1;
+  color: inherit;
   transition:
-    color var(--wm-motion-base) var(--wm-motion-spring),
-    font-weight var(--wm-motion-base) var(--wm-motion-spring),
-    opacity var(--wm-motion-base) var(--wm-motion-spring);
+    color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    font-weight 220ms ease,
+    opacity 220ms ease,
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .navItemActive .label {
   opacity: 1;
-  font-weight: 700;
+  font-weight: 750;
+  transform: translateY(-4px);
 }
 
-/* ── Pulse-aware tab dot ───────────────────────────────────────── */
-
-@keyframes wmTabPulse {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.65;
-    box-shadow: 0 0 4px var(--nav-theme-color);
-  }
-  50% {
-    transform: scale(1.45);
-    opacity: 1;
-    box-shadow: 0 0 8px var(--nav-theme-color);
-  }
-}
-
-.pulseDot {
+/* Soft curved elevation halo under projected icon */
+.navItemActive::after {
+  content: "";
   position: absolute;
-  top: 1px;
-  right: 8px;
-  width: 7px;
-  height: 7px;
+  left: 50%;
+  bottom: 14px;
+  width: 28px;
+  height: 8px;
   border-radius: 50%;
-  background-color: var(--nav-theme-color);
-  border: 1.5px solid rgba(255, 255, 255, 0.9);
-  animation: wmTabPulse 1.6s ease-in-out infinite;
-  z-index: 2;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--nav-theme-color) 28%, transparent) 0%,
+    transparent 72%
+  );
   pointer-events: none;
+  z-index: 0;
+  transition: opacity 280ms ease, background 280ms ease;
 }
+
+:global(.wm-shellEmployer) .navContainer[data-nav-domain="employerDefault"] .navItemActive::after {
+  background: radial-gradient(ellipse at center, rgba(100, 116, 139, 0.28) 0%, transparent 72%);
+}
+
+/* ── Unread badge (info-only; never pulse LED) ─────────────────── */
 
 .unreadDot {
   position: absolute;
@@ -155,19 +227,25 @@
   pointer-events: none;
 }
 
+.navItemActive .unreadDot {
+  top: 4px;
+  right: 4px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .navItem,
   .iconBox,
   .icon,
-  .label {
+  .label,
+  .navContainer {
     transition: none;
   }
 
-  .navItemActive {
-    transform: none;
+  .navItemActive .iconBox {
+    transform: translateY(-10px);
   }
 
-  .pulseDot {
-    animation: none;
+  .navItemActive .label {
+    transform: none;
   }
 }

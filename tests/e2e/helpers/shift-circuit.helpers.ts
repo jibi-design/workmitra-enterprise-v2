@@ -1,4 +1,8 @@
 import { expect, type Page } from "@playwright/test";
+import { E2E_VERIFIED_EMPLOYER_PROFILE, ensureVerifiedEmployerProfileOnPage } from "./e2e-employer-profile";
+import { hydrateGigEmployerApplicationsOnPage } from "./gig-planner-circuit.helpers";
+
+const SHIFT_E2E_SITE_ID = "00000000-0000-4000-8000-000000000001";
 
 /** Deterministic IDs for the Shift Full Circuit baseline run */
 export const SHIFT_CIRCUIT_IDS = {
@@ -16,6 +20,7 @@ const SPLASH_SESSION_KEY = "wm_splash_intro_played_v1";
 /** Domain data + pulse queue — safe to mirror across dual browser contexts */
 export const SHIFT_CIRCUIT_DATA_KEYS = [
   "wm_employer_shift_posts_v1",
+  "wm_employee_shift_search_v1",
   "wm_employee_shift_applications_v1",
   "wm_employee_shift_workspaces_v1",
   "wm_employee_profile_v1",
@@ -40,6 +45,7 @@ export const SHIFT_CIRCUIT_SHARED_KEYS = [
 
 const STORAGE_SYNC_EVENTS = [
   "wm:employer-shift-posts-changed",
+  "wm:employee-shift-search-changed",
   "wm:employee-shift-applications-changed",
   "wm:employee-shift-workspaces-changed",
   "wm:employee-notifications-changed",
@@ -69,23 +75,31 @@ type CircuitNotification = {
 
 export async function initRoleContext(page: Page, role: "employer" | "employee"): Promise<void> {
   await page.addInitScript(
-    ({ sessionRole, splashKey, profile }) => {
+    ({ sessionRole, splashKey, profile, employerProfile }) => {
       sessionStorage.setItem("wm_role_session_v1", sessionRole);
       sessionStorage.setItem(splashKey, "1");
 
       if (profile) {
         localStorage.setItem("wm_employee_profile_v1", JSON.stringify(profile));
       }
+
+      if (employerProfile) {
+        localStorage.setItem("wm_employer_profile_v1", JSON.stringify(employerProfile));
+        localStorage.setItem("wm:employer-profile", JSON.stringify(employerProfile));
+        localStorage.setItem("wm_employer_onboarding_complete_v1", "1");
+        localStorage.setItem("wm_onboarding_complete_v1", "1");
+      }
     },
     {
       sessionRole: role,
       splashKey: SPLASH_SESSION_KEY,
+      employerProfile: role === "employer" ? E2E_VERIFIED_EMPLOYER_PROFILE : null,
       profile:
         role === "employee"
           ? {
               uniqueId: SHIFT_CIRCUIT_IDS.workerMlId,
               fullName: SHIFT_CIRCUIT_IDS.workerName,
-              city: "Kochi",
+              city: "City A",
               skills: ["loading"],
               experience: "fresher",
               languages: ["Malayalam"],
@@ -125,7 +139,7 @@ export async function seedShiftCircuitPost(page: Page): Promise<void> {
           experience: "helper",
           payPerDay: 900,
           payBasis: "per_day",
-          locationName: "Kochi, Kerala",
+          locationName: "City A",
           locationAddress: "",
           distanceKm: 4,
           startAt: seedNow + 86_400_000,
@@ -144,10 +158,20 @@ export async function seedShiftCircuitPost(page: Page): Promise<void> {
           mustHave: ["Can lift 20kg"],
           goodToHave: ["Forklift license"],
           isHiddenFromSearch: false,
+          siteId: "00000000-0000-4000-8000-000000000001",
         },
       ];
 
       localStorage.setItem("wm_employer_shift_posts_v1", JSON.stringify(posts));
+      localStorage.setItem(
+        "wm_employee_shift_search_v1",
+        JSON.stringify(
+          posts.map((post) => ({
+            ...post,
+            payBasis: post.payBasis ?? "per_day",
+          })),
+        ),
+      );
       localStorage.removeItem("wm_employee_shift_applications_v1");
       localStorage.removeItem("wm_employee_shift_workspaces_v1");
       localStorage.removeItem("wm_employee_notifications_v1");
@@ -203,6 +227,8 @@ export async function syncShiftCircuitStorage(
     },
     { data: snapshot, events },
   );
+
+  await hydrateGigEmployerApplicationsOnPage(target);
 }
 
 export async function readEmployeeUnreadCount(page: Page): Promise<number> {
@@ -225,7 +251,16 @@ export async function readCircuitNotifications(
   page: Page,
   role: "employer" | "employee",
 ): Promise<CircuitNotification[]> {
-  const key = role === "employer" ? "wm_employer_notifications_v1" : "wm_employee_notifications_v1";
+  if (role === "employer") {
+    return page.evaluate(async () => {
+      const { employerNotificationsStorage } =
+        await import("/src/features/employer/notifications/storage/employerNotifications.storage.ts");
+      return employerNotificationsStorage.getAll().map((item) => ({
+        title: item.title,
+        body: item.body,
+      }));
+    });
+  }
 
   return page.evaluate((storageKey) => {
     const raw = localStorage.getItem(storageKey);
@@ -243,7 +278,7 @@ export async function readCircuitNotifications(
         );
       })
       .map((item) => ({ title: item.title, body: item.body }));
-  }, key);
+  }, "wm_employee_notifications_v1");
 }
 
 export async function readCircuitWorkspaces(page: Page): Promise<CircuitWorkspace[]> {
@@ -308,6 +343,48 @@ export async function ensureCircuitWorkerIdentity(page: Page): Promise<void> {
       window.dispatchEvent(new Event("wm:employee-shift-workspaces-changed"));
     }
   }, SHIFT_CIRCUIT_IDS);
+}
+
+export async function forceConfirmShiftCandidateOnPage(
+  page: Page,
+  postId: string,
+  appId: string,
+): Promise<string | null> {
+  await ensureVerifiedEmployerProfileOnPage(page);
+  await hydrateGigEmployerApplicationsOnPage(page);
+
+  return page.evaluate(
+    async ({ targetPostId, targetAppId, siteId }) => {
+      const { readEmployerPosts, writeEmployerPosts } =
+        await import("/src/features/employer/shiftJobs/storage/employerShift.postStorage.ts");
+      const { confirmCandidate } =
+        await import("/src/features/employer/shiftJobs/storage/employerShift.candidateConfirmCore.ts");
+
+      const posts = readEmployerPosts();
+      const post = posts.find((item) => item.id === targetPostId);
+      if (!post) return null;
+
+      const patched =
+        post.siteId === siteId ? post : { ...post, siteId };
+      if (patched !== post) {
+        writeEmployerPosts(posts.map((item) => (item.id === targetPostId ? patched : item)));
+      }
+
+      const result = confirmCandidate(patched, targetAppId);
+      if (!result.ok) return null;
+
+      writeEmployerPosts(
+        readEmployerPosts().map((item) => (item.id === targetPostId ? result.post : item)),
+      );
+
+      window.dispatchEvent(new Event("wm:employer-shift-posts-changed"));
+      window.dispatchEvent(new Event("wm:employee-shift-applications-changed"));
+      window.dispatchEvent(new Event("wm:employee-shift-workspaces-changed"));
+
+      return result.workspaceId ?? null;
+    },
+    { targetPostId: postId, targetAppId: appId, siteId: SHIFT_E2E_SITE_ID },
+  );
 }
 
 export async function gotoEmployerPostDashboard(page: Page): Promise<void> {
@@ -426,4 +503,69 @@ export async function assertPulseArrivalLock(page: Page): Promise<void> {
       },
     )
     .toBeLessThan(0.08);
+}
+
+/** Ensure employer home PendingActionsHub sees a completed workspace awaiting employer rating. */
+export async function ensureEmployerPendingShiftReviewOnPage(
+  page: Page,
+  workspaceId: string,
+): Promise<void> {
+  await ensureVerifiedEmployerProfileOnPage(page);
+
+  await page.evaluate(
+    async ({ wsId, ids }) => {
+      const { saveWorkspaces, getWorkspacesSnapshot } =
+        await import("/src/features/employer/shiftJobs/storage/shiftWorkspaceStorage.ts");
+
+      const globalRaw = localStorage.getItem("wm_employee_shift_workspaces_v1");
+      const global = globalRaw ? (JSON.parse(globalRaw) as unknown[]) : [];
+      const fromGlobal = global.find(
+        (item) =>
+          typeof item === "object" &&
+          item !== null &&
+          (item as { id?: string }).id === wsId,
+      ) as Record<string, unknown> | undefined;
+
+      const now = Date.now();
+      const workspace = fromGlobal
+        ? {
+            ...fromGlobal,
+            status: "completed",
+            employerRating: undefined,
+            employerRatedAt: undefined,
+          }
+        : {
+            id: wsId,
+            postId: ids.postId,
+            workerMlId: ids.workerMlId,
+            workerName: ids.workerName,
+            companyName: ids.companyName,
+            jobName: ids.jobName,
+            category: "other",
+            locationName: "City A",
+            startAt: now - 172_800_000,
+            endAt: now - 86_400_000,
+            status: "completed",
+            lastActivityAt: now - 86_400_000,
+            unreadCount: 0,
+            updates: [],
+          };
+
+      const existing = getWorkspacesSnapshot();
+      const merged = [...existing.filter((item) => item.id !== wsId), workspace];
+      saveWorkspaces(merged as Parameters<typeof saveWorkspaces>[0]);
+      window.dispatchEvent(new Event("wm:pending-actions-changed"));
+    },
+    { wsId: workspaceId, ids: SHIFT_CIRCUIT_IDS },
+  );
+}
+
+/** Expand compact employer pending banner when role home uses the strip. */
+export async function expandEmployerPendingActionsHubIfCompact(page: Page): Promise<void> {
+  const banner = page.getByTestId("employer-pending-actions-banner");
+  await expect(banner).toBeVisible({ timeout: 15_000 });
+
+  if ((await banner.getAttribute("data-pending-expanded")) !== "true") {
+    await banner.getByRole("button", { name: /Maximize pending actions list/i }).click();
+  }
 }

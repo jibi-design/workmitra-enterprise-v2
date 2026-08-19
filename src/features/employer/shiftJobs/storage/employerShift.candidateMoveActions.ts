@@ -9,11 +9,24 @@ import {
   readEmployeeApplications,
   writeEmployeeApplications,
 } from "./employerShift.employeeBridge";
+import { shiftAppIdsMatch, shiftPostIdsMatch } from "../../../shift/utils/shiftIdBridge";
 import type { ApplicantStatus, EmployeeShiftApplication, ShiftPost } from "./employerShift.types";
 import { uniq } from "./employerShift.utils";
 
 function candidateIdFromApp(app: EmployeeShiftApplication, fallbackAppId: string): string {
   return app.profileSnapshot?.uniqueId?.trim().toUpperCase() || fallbackAppId;
+}
+
+function findCandidateApp(
+  apps: EmployeeShiftApplication[],
+  post: ShiftPost,
+  appId: string,
+): EmployeeShiftApplication | undefined {
+  return (
+    apps.find(
+      (app) => shiftAppIdsMatch(app.id, appId) && shiftPostIdsMatch(app.postId, post.id),
+    ) ?? apps.find((app) => shiftAppIdsMatch(app.id, appId))
+  );
 }
 
 export function moveCandidateToShortlist(
@@ -24,12 +37,16 @@ export function moveCandidateToShortlist(
   changed: boolean;
 } {
   const apps = readEmployeeApplications();
-  const target = apps.find((app) => app.id === appId && app.postId === post.id);
+  const target =
+    findCandidateApp(apps, post, appId) ??
+    apps.find((app) => shiftPostIdsMatch(app.postId, post.id) && canMoveCandidate(app.status));
 
   if (!target) return { post, changed: false };
   if (!canMoveCandidate(target.status)) return { post, changed: false };
 
-  const appWrite = writeEmployeeApplications(updateApplicationStatus(apps, appId, "shortlisted"));
+  const appWrite = writeEmployeeApplications(
+    updateApplicationStatus(apps, target.id, "shortlisted"),
+  );
   if (!appWrite.ok) return { post, changed: false };
 
   appendSelectionAuditEvent({
@@ -70,12 +87,12 @@ export function moveCandidateToWaiting(
   changed: boolean;
 } {
   const apps = readEmployeeApplications();
-  const target = apps.find((app) => app.id === appId && app.postId === post.id);
+  const target = findCandidateApp(apps, post, appId);
 
   if (!target) return { post, changed: false };
   if (!canMoveCandidate(target.status)) return { post, changed: false };
 
-  const appWrite = writeEmployeeApplications(updateApplicationStatus(apps, appId, "waiting"));
+  const appWrite = writeEmployeeApplications(updateApplicationStatus(apps, target.id, "waiting"));
   if (!appWrite.ok) return { post, changed: false };
 
   notifyCrossRole({
@@ -109,12 +126,12 @@ export function rejectCandidate(
   changed: boolean;
 } {
   const apps = readEmployeeApplications();
-  const target = apps.find((app) => app.id === appId && app.postId === post.id);
+  const target = findCandidateApp(apps, post, appId);
 
   if (!target) return { post, changed: false };
   if (target.status === "confirmed") return { post, changed: false };
 
-  const appWrite = writeEmployeeApplications(updateApplicationStatus(apps, appId, "rejected"));
+  const appWrite = writeEmployeeApplications(updateApplicationStatus(apps, target.id, "rejected"));
   if (!appWrite.ok) return { post, changed: false };
 
   appendSelectionAuditEvent({
@@ -152,7 +169,9 @@ function updateApplicationStatus(
   status: ApplicantStatus,
 ): EmployeeShiftApplication[] {
   const at = Date.now();
-  return apps.map((app) => (app.id === appId ? { ...app, status, statusChangedAt: at } : app));
+  return apps.map((app) =>
+    shiftAppIdsMatch(app.id, appId) ? { ...app, status, statusChangedAt: at } : app,
+  );
 }
 
 function canMoveCandidate(status: ApplicantStatus): boolean {

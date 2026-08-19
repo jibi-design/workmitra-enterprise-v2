@@ -23,27 +23,51 @@
   padding: 48px 20px 36px;
   border-radius: 28px;
   border: 1px solid rgba(255, 255, 255, 0.14);
+  /* Base fill if bg layer fails; gradients live on .wm-publicLanding__heroBg */
+  background: linear-gradient(160deg, #0b1220 0%, #152238 55%, #1e293b 100%);
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.28);
+  color: #fff;
+  /* Dark surface → MITRA resolves to pure white (Global Brand Rules) */
+  --wm-brand-mitra-current: var(--wm-brand-mitra-on-dark);
+}
+
+.wm-publicLanding__heroBg {
+  position: absolute;
+  inset: -14% -10%;
+  z-index: 0;
+  pointer-events: none;
   background:
     radial-gradient(120% 80% at 12% 8%, rgba(37, 99, 235, 0.28), transparent 55%),
     radial-gradient(90% 70% at 88% 20%, rgba(15, 23, 42, 0.35), transparent 50%),
     linear-gradient(160deg, #0b1220 0%, #152238 55%, #1e293b 100%);
-  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.28);
-  color: #fff;
+  transform: translate3d(0, calc(var(--wm-hero-parallax, 0) * 1px), 0) scale(1.08);
+  will-change: transform;
 }
 
-.wm-publicLanding__brand {
+.wm-publicLanding__hero > :not(.wm-publicLanding__heroBg) {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wm-publicLanding__heroBg {
+    transform: none;
+    will-change: auto;
+  }
+}
+
+.wm-publicLanding__brand.wm-brandMark {
   margin: 0;
   font-size: clamp(2rem, 6vw, 2.75rem);
-  font-weight: 800;
-  letter-spacing: -0.05em;
   line-height: 1.05;
+  letter-spacing: -0.05em;
 }
 
 .wm-publicLanding__headline {
   margin: 0;
   max-width: 18ch;
   font-size: clamp(1.35rem, 4vw, 1.75rem);
-  font-weight: 650;
+  font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.25;
 }
@@ -111,7 +135,7 @@
 .wm-publicLanding__sectionTitle {
   margin: 0;
   font-size: 20px;
-  font-weight: 750;
+  font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--wm-neutral-900, #0f172a);
 }
@@ -140,6 +164,26 @@
   color: var(--wm-neutral-700, #334155);
 }
 
+/* Scroll-reveal: hold invisible until IntersectionObserver flips is-revealed */
+@media (prefers-reduced-motion: no-preference) {
+  .wm-publicLanding__proof.is-pending .wm-publicLanding__proofItem {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  .wm-publicLanding__proofItem--d0.wm-animateScaleIn {
+    animation-delay: 0ms;
+  }
+
+  .wm-publicLanding__proofItem--d1.wm-animateScaleIn {
+    animation-delay: 80ms;
+  }
+
+  .wm-publicLanding__proofItem--d2.wm-animateScaleIn {
+    animation-delay: 160ms;
+  }
+}
+
 .wm-publicLanding__domains {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -147,13 +191,13 @@
 }
 
 .wm-publicLanding__domain {
-  padding: 16px;
-  border-radius: 18px;
+  padding: var(--wm-dna-card-padding, 14px);
+  border-radius: var(--wm-dna-card-radius-employee, 20px);
   border: 1px solid var(--wm-glass-border, rgba(148, 163, 184, 0.28));
   background: var(--wm-emp-glass-bg-strong, rgba(255, 255, 255, 0.82));
   backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate, saturate(1.2));
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
-  min-height: 112px;
+  min-height: var(--wm-dna-card-min-height, 140px);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -162,7 +206,7 @@
 .wm-publicLanding__domainTitle {
   margin: 0;
   font-size: 15px;
-  font-weight: 750;
+  font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--wm-neutral-900, #0f172a);
 }
@@ -185,6 +229,9 @@
 }
 .wm-publicLanding__domain--planner {
   border-top: 3px solid var(--wm-planner-accent, #0ea5e9);
+}
+.wm-publicLanding__domain--labs {
+  border-top: 3px solid var(--wm-labs-accent, #4f46e5);
 }
 
 .wm-publicLanding__steps {

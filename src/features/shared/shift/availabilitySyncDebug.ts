@@ -10,6 +10,8 @@ export const AVAILABILITY_DEBUG_FLAG = "wm_debug_availability_sync";
 
 export function isAvailabilitySyncDebugEnabled(): boolean {
   if (typeof window === "undefined") return false;
+  // Never show QA overlays outside Vite DEV — even if localStorage flag is set.
+  if (!import.meta.env.DEV) return false;
   try {
     return window.localStorage.getItem(AVAILABILITY_DEBUG_FLAG) === "1";
   } catch {

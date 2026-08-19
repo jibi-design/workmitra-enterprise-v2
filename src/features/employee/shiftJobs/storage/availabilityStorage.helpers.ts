@@ -1,3 +1,5 @@
+import { parseCommuteRadius } from "../../../shared/location/commuteRadius";
+import { parsePincode } from "../../../shared/location/pincode";
 import type { AvailabilityBroadcast, RollingDay } from "./availabilityStorage.types";
 
 export type { AvailabilityBroadcast, RollingDay };
@@ -117,6 +119,8 @@ export function normalizeBroadcast(raw: unknown): AvailabilityBroadcast | null {
     expiresAt,
     city: typeof record.city === "string" ? record.city : undefined,
     category: typeof record.category === "string" ? record.category : undefined,
+    basePincode: parsePincode(record.basePincode) ?? undefined,
+    commuteRadius: parseCommuteRadius(record.commuteRadius),
   };
 }
 

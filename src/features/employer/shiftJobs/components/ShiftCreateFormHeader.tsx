@@ -1,6 +1,7 @@
 // App name: Job Mitra | ShiftCreateFormHeader.tsx — DomainHero (Wave 2)
 
 import { DomainHero } from "../../../../shared/components/layout/DomainHero";
+import { MitraLabsIdLabel } from "../../../../shared/components/brand/MitraLabsIdLabel";
 
 type Props = {
   isTemplate: boolean;
@@ -70,7 +71,7 @@ export function ShiftCreateFormHeader({ isTemplate, groupPreview, employerMlId =
 
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 11, color: "var(--wm-er-muted)", lineHeight: 1.45 }}>
-              Your Mitra Labs ID will be visible to applicants.
+              Your <MitraLabsIdLabel /> will be visible to applicants.
             </div>
             <div
               style={{

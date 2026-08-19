@@ -82,7 +82,7 @@ export function DualTrackVerificationPanel({
     if (company.companyStatus !== "active") {
       onNotice({
         title: "Company not active",
-        message: `${company.companyName} is marked ${company.companyStatus} at Companies House.`,
+        message: `${company.companyName} is marked ${company.companyStatus} in the company registry.`,
         tone: "warn",
       });
     }
@@ -101,7 +101,7 @@ export function DualTrackVerificationPanel({
       onNotice({
         title: "Incomplete Enterprise track",
         message:
-          "Provide Companies House CRN, VAT ID, registered address, and a corporate-domain email.",
+          "Provide a business / company registration number, tax ID / VAT (optional), registered address, and a corporate-domain email.",
         tone: "warn",
       });
       return;
@@ -154,7 +154,7 @@ export function DualTrackVerificationPanel({
       onNotice({
         title: "Incomplete Micro track",
         message:
-          "Attest owner government ID and provide trade/shop proof or GPS/location proof (CRN not required).",
+          "Attest owner government ID and provide trade/shop proof or GPS/location proof (company registration number not required).",
         tone: "warn",
       });
       return;
@@ -211,8 +211,8 @@ export function DualTrackVerificationPanel({
         Choose verification track
       </div>
       <div style={{ marginTop: 6, fontSize: 11, color: "var(--wm-er-muted)", lineHeight: 1.5 }}>
-        Enterprise track for registered companies (CRN/VAT). Micro track for shops, catering,
-        contractors — no CRN required.
+        Enterprise track for registered companies (registration number and optional tax ID). Micro track for shops, catering,
+        contractors — registration number is not required.
       </div>
 
       {activeSubmitted ? (
@@ -249,7 +249,7 @@ export function DualTrackVerificationPanel({
         >
           <div style={{ fontSize: 12, fontWeight: 800 }}>Track A · Enterprise</div>
           <div style={{ marginTop: 2, fontSize: 11, color: "var(--wm-er-muted)" }}>
-            CRN, VAT, address, corporate email
+            Registration, tax ID, address, corporate email
           </div>
         </button>
         <button
@@ -278,14 +278,14 @@ export function DualTrackVerificationPanel({
       {trackKind === "enterprise" ? (
         <div style={{ marginTop: 14, display: "grid", gap: 10 }}>
           <SettingsTextField
-            label="Companies House CRN"
+            label="Business / Company Registration Number"
             value={enterprise.companiesHouseCrn}
             disabled={!editMode}
             onChange={(v) => {
               resetCrnLookup();
               setEnterprise((p) => ({ ...p, companiesHouseCrn: v }));
             }}
-            placeholder="e.g. 01234567 or SC123456"
+            placeholder="Company registration number"
           />
           {editMode ? (
             <button
@@ -295,7 +295,7 @@ export function DualTrackVerificationPanel({
               onClick={() => void lookupCrn()}
               style={{ justifySelf: "start" }}
             >
-              {lookingUpCrn ? "Looking up…" : "Look up Companies House"}
+              {lookingUpCrn ? "Looking up…" : "Look up registration"}
             </button>
           ) : null}
           {crnCompany ? (
@@ -306,15 +306,15 @@ export function DualTrackVerificationPanel({
             <div style={{ fontSize: 11, fontWeight: 700, color: "#b45309" }}>{crnError}</div>
           ) : (
             <div style={{ fontSize: 11, color: "var(--wm-er-muted)" }}>
-              Mock CRNs: 01234567, 09876543, SC123456
+              Enter your official company registration number to look up.
             </div>
           )}
           <SettingsTextField
-            label="VAT ID"
+            label="Tax ID / VAT (Optional)"
             value={enterprise.vatId}
             disabled={!editMode}
             onChange={(v) => setEnterprise((p) => ({ ...p, vatId: v }))}
-            placeholder="e.g. GB123456789"
+            placeholder="Tax ID / VAT (optional)"
           />
           <SettingsTextField
             label="Registered address"
@@ -328,14 +328,14 @@ export function DualTrackVerificationPanel({
             value={enterprise.corporateEmail}
             disabled={!editMode}
             onChange={(v) => setEnterprise((p) => ({ ...p, corporateEmail: v }))}
-            placeholder="name@company.co.uk"
+            placeholder="name@company.com"
           />
           <SettingsTextField
             label="Declared company domain (optional)"
             value={enterprise.corporateDomain}
             disabled={!editMode}
             onChange={(v) => setEnterprise((p) => ({ ...p, corporateDomain: v }))}
-            placeholder="company.co.uk"
+            placeholder="company.com"
           />
           <div
             style={{
@@ -411,14 +411,14 @@ export function DualTrackVerificationPanel({
               value={micro.gpsLat}
               disabled={!editMode}
               onChange={(v) => setMicro((p) => ({ ...p, gpsLat: v }))}
-              placeholder="e.g. 51.5074"
+              placeholder="Latitude"
             />
             <SettingsTextField
               label="Longitude"
               value={micro.gpsLng}
               disabled={!editMode}
               onChange={(v) => setMicro((p) => ({ ...p, gpsLng: v }))}
-              placeholder="e.g. -0.1278"
+              placeholder="Longitude"
             />
           </div>
           <SettingsTextField
@@ -426,7 +426,7 @@ export function DualTrackVerificationPanel({
             value={micro.locationProofNote}
             disabled={!editMode}
             onChange={(v) => setMicro((p) => ({ ...p, locationProofNote: v }))}
-            placeholder="Shop landmark / what3words / address confirmation"
+            placeholder="Landmark or address confirmation"
           />
           {editMode ? (
             <button

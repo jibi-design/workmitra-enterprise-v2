@@ -6,7 +6,7 @@ import {
   LOGIN_RATE_LIMIT_WINDOW_SEC,
   PRODUCT_SCOPE_JOBMITRA,
 } from "./constants.js";
-import { verifyPassword } from "./password.js";
+import { verifyPassword, hashPassword } from "./password.js";
 import { authRepository } from "./auth.repository.js";
 import { auditService } from "./audit.service.js";
 import { hashIp } from "./crypto.js";
@@ -119,6 +119,99 @@ export const dbAuthService = {
     const row = await authRepository.findUserById(userId);
     if (!row) return null;
     return authRepository.toAuthUser(row, PRODUCT_SCOPE_JOBMITRA);
+  },
+
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+    meta: RequestMeta,
+  ): Promise<LoginResult> {
+    const row = await authRepository.findUserById(userId);
+    if (!row) {
+      return {
+        ok: false,
+        code: "UNAUTHENTICATED",
+        message: "Not authenticated",
+        httpStatus: 401,
+      };
+    }
+    const valid = await verifyPassword(currentPassword, row.password_hash);
+    if (!valid) {
+      await auditService.log("password_change_failed", meta, {
+        userId,
+        metadata: { reason: "bad_current_password" },
+      });
+      return {
+        ok: false,
+        code: "INVALID_CREDENTIALS",
+        message: "Current password is incorrect",
+        httpStatus: 401,
+      };
+    }
+    if (currentPassword === newPassword) {
+      return {
+        ok: false,
+        code: "VALIDATION_ERROR",
+        message: "New password must be different from the current password",
+        httpStatus: 400,
+      };
+    }
+    const nextHash = await hashPassword(newPassword);
+    await authRepository.updatePasswordHash(userId, nextHash);
+    const user = await authRepository.toAuthUser(row, PRODUCT_SCOPE_JOBMITRA);
+    if (!user) {
+      return {
+        ok: false,
+        code: "UNAUTHENTICATED",
+        message: "Not authenticated",
+        httpStatus: 401,
+      };
+    }
+    await auditService.log("password_changed", meta, { userId });
+    return { ok: true, user };
+  },
+
+  async deleteAccount(
+    userId: string,
+    password: string,
+    meta: RequestMeta,
+  ): Promise<{ ok: true } | { ok: false; code: string; message: string; httpStatus?: number }> {
+    const row = await authRepository.findUserById(userId);
+    if (!row) {
+      return {
+        ok: false,
+        code: "UNAUTHENTICATED",
+        message: "Not authenticated",
+        httpStatus: 401,
+      };
+    }
+    const valid = await verifyPassword(password, row.password_hash);
+    if (!valid) {
+      await auditService.log("account_deletion_failed", meta, {
+        userId,
+        metadata: { reason: "bad_password" },
+      });
+      return {
+        ok: false,
+        code: "INVALID_CREDENTIALS",
+        message: "Password is incorrect",
+        httpStatus: 401,
+      };
+    }
+    const scrubbedHash = await hashPassword(`deleted:${userId}:${Date.now()}`);
+    const marked = await authRepository.markUserDeleted(userId, scrubbedHash);
+    if (!marked) {
+      return {
+        ok: false,
+        code: "ALREADY_DELETED",
+        message: "Account is already deleted",
+        httpStatus: 409,
+      };
+    }
+    await authRepository.revokeAllSessionsForUser(userId);
+    await auditService.log("account_deleted", meta, { userId });
+    return { ok: true };
   },
 
   isRole(value: unknown): value is UserRole {

@@ -34,6 +34,7 @@ export {
   drainSiteMembershipProvisionItem,
   isSoSiteUuid,
 } from "./services/membershipBridge.service";
+export { ensureShiftOpsSiteForPost } from "./services/ensureSiteForShiftPost.service";
 
 export {
   listActiveGroupRoster,

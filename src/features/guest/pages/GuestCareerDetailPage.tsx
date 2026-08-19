@@ -49,12 +49,6 @@ export function GuestCareerDetailPage() {
 
   function onSave() {
     guestStorage.toggleShortlistCareer(postId);
-    requireAuthForAction({
-      action: "save_career",
-      targetId: postId,
-      returnPath,
-      roleHint: "employee",
-    });
   }
 
   if (!post) {

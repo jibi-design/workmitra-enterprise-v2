@@ -1,0 +1,622 @@
+/* Landing premium polish — Employer Home DNA (content unchanged)
+ * Square 2-up role tiles matching Employer Core Services cards.
+ * P1 craft: brand hierarchy, quieter greeting, entrance + selection motion.
+ */
+
+.wm-landing-role-pick--erDna {
+  --wm-er-glass-bg-strong: rgba(255, 255, 255, 0.92);
+  --wm-er-elevation-shadow:
+    0 18px 44px -12px rgba(15, 23, 42, 0.14),
+    0 8px 20px -8px rgba(15, 23, 42, 0.08);
+  --wm-landing-card-radius: 24px;
+  --wm-blur-lg: 22px;
+  --wm-dna-card-min-height: 148px;
+  --wm-landing-enter-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ——— Ambient stage drift (atmosphere only) ——— */
+@keyframes wm-landing-ambient-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(1.6%, -1.2%, 0) scale(1.03);
+  }
+}
+
+@keyframes wm-landing-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes wm-landing-brand-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes wm-landing-tile-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes wm-landing-continue-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.wm-landing-role-pick--erDna.wm-auth-stage {
+  background: #f8fafc;
+  min-height: 100dvh;
+  padding: 28px 18px 32px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.wm-landing-role-pick--erDna.wm-auth-stage::before {
+  background:
+    radial-gradient(58% 48% at 8% -4%, color-mix(in srgb, var(--wm-auth-hire) 16%, transparent), transparent 62%),
+    radial-gradient(52% 42% at 96% 4%, color-mix(in srgb, var(--wm-auth-candidate) 14%, transparent), transparent 58%),
+    radial-gradient(40% 36% at 50% 100%, color-mix(in srgb, #64748b 8%, transparent), transparent 70%),
+    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 42%, #eef2f7 100%);
+  animation: wm-landing-ambient-drift 32s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.wm-landing-role-pick--erDna.wm-auth-stage::after {
+  opacity: 0.03;
+  background-image:
+    linear-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 70% 55% at 50% 28%, #000 18%, transparent 72%);
+}
+
+.wm-landing-role-pick--erDna .wm-auth-panel--erDna {
+  position: relative;
+  isolation: isolate;
+  max-width: 420px;
+  width: 100%;
+  margin-inline: auto;
+  padding: 24px 18px 20px;
+  overflow: hidden;
+  box-shadow:
+    var(--wm-er-elevation-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(var(--wm-blur-lg)) saturate(1.35);
+  -webkit-backdrop-filter: blur(var(--wm-blur-lg)) saturate(1.35);
+  animation: wm-landing-panel-enter 560ms var(--wm-landing-enter-ease) backwards;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-panel--erDna::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    125deg,
+    rgba(255, 255, 255, 0.42) 0%,
+    transparent 38%,
+    color-mix(in srgb, #0f172a 4%, transparent) 100%
+  );
+  opacity: 0.9;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-panel--erDna > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ——— Brand hierarchy: Job Mitra = main title; Labs tag = small muted line ——— */
+.wm-landing-role-pick--erDna .wm-auth-hero--erDna {
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-hero__brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  animation: wm-landing-brand-enter 480ms var(--wm-landing-enter-ease) 40ms backwards;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-hero__logo {
+  margin: 0;
+  padding: 0;
+  border: none;
+  font: inherit;
+  filter: drop-shadow(0 10px 22px rgba(15, 23, 42, 0.1));
+}
+
+.wm-landing-role-pick--erDna .wm-auth-hero__logoMark {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Main title — Job Mitra dual-tone (Job emerald + Mitra slate), Plus Jakarta Sans */
+.wm-landing-role-pick--erDna .wm-auth-hero__logoMark--large .wm-auth-hero__jobMitraMark.wm-brandMark {
+  font-size: clamp(1.625rem, 4.5vw, 1.875rem); /* ~26–30px */
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-hero__logoMark--large .wm-brandMark__job {
+  color: var(--wm-brand-job, #059669);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-hero__logoMark--large .wm-brandMark__mitra {
+  color: var(--wm-brand-mitra, #0f172a);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+/* Tag line — muted “A Product of”; Mitra Labs dual-tone locked (not washed) */
+.wm-landing-role-pick--erDna .wm-auth-hero__productOf {
+  margin: 0;
+  letter-spacing: 0.02em;
+  font-size: 11px;
+  font-weight: 550;
+  line-height: 1.35;
+  color: var(--wm-text-muted, #64748b);
+  font-family: "Plus Jakarta Sans", var(--wm-font-sans, system-ui, sans-serif);
+}
+
+.wm-landing-role-pick--erDna .wm-auth-hero__productOf .wm-brandMark {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-hero__productOf .wm-brandMark__mitra {
+  color: var(--wm-brand-mitra, #0f172a);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-hero__productOf .wm-brandMark__labs {
+  color: var(--wm-brand-labs, #00a3ff);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* Footer: Product powered by Mitra Access Hub (name clickable) */
+.wm-landing-role-pick--erDna .wm-auth-brand-footer--compact {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-brand-footer__line--primary,
+.wm-landing-role-pick--erDna .wm-auth-brand-footer__line--legal {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 6px;
+  width: 100%;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-brand-footer__poweredBy {
+  white-space: normal;
+  text-align: center;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-brand-footer__line--legal {
+  font-size: 10.5px;
+}
+
+.wm-landing-role-pick--erDna.wm-auth-stage .wm-auth-footer .wm-auth-footer__accessHubLink,
+.wm-landing-role-pick--erDna .wm-auth-footer__accessHubLink {
+  color: var(--wm-brand-mitra, #0f172a) !important;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+.wm-landing-role-pick--erDna.wm-auth-stage .wm-auth-footer .wm-auth-footer__accessHubLink:hover,
+.wm-landing-role-pick--erDna .wm-auth-footer__accessHubLink:hover {
+  color: var(--wm-brand-labs, #00a3ff) !important;
+  text-decoration: underline;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-footer__accessHubLink:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--wm-brand-labs, #00a3ff) 70%, #fff);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Footer Mitra Labs mark — same lock (ignore muted footer color) */
+.wm-landing-role-pick--erDna .wm-auth-brand-footer .wm-brandMark {
+  font-size: inherit;
+  line-height: inherit;
+  font-weight: inherit;
+}
+
+.wm-landing-role-pick--erDna.wm-auth-stage .wm-auth-footer .wm-brandMark__mitra,
+.wm-landing-role-pick--erDna .wm-auth-brand-footer .wm-brandMark__mitra {
+  color: var(--wm-brand-mitra, #0f172a) !important;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.wm-landing-role-pick--erDna.wm-auth-stage .wm-auth-footer .wm-brandMark__labs,
+.wm-landing-role-pick--erDna .wm-auth-brand-footer .wm-brandMark__labs {
+  color: var(--wm-brand-labs, #00a3ff) !important;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-hero__greeting {
+  gap: 3px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 4px 14px rgba(15, 23, 42, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(10px) saturate(1.08);
+  -webkit-backdrop-filter: blur(10px) saturate(1.08);
+  animation: wm-landing-brand-enter 480ms var(--wm-landing-enter-ease) 90ms backwards;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-hero__title--erDna {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: #0f172a;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-hero__sub--erDna {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: #64748b;
+}
+
+/* ——— 2-up square tiles (Employer Core Services rhythm) ——— */
+.wm-landing-role-pick--erDna .wm-auth-bento--erDna.wm-auth-bento--square {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-card--square {
+  --wm-domain-border: 1.75px solid
+    color-mix(in srgb, var(--wm-card-domain-accent, #059669) 58%, #94a3b8 12%);
+  --wm-domain-ambient-shadow:
+    0 12px 34px -6px rgba(15, 23, 42, 0.1),
+    0 0 0 1px color-mix(in srgb, var(--wm-card-domain-accent, #059669) 16%, transparent),
+    0 10px 26px -6px color-mix(in srgb, var(--wm-card-domain-accent, #059669) 28%, transparent);
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  width: 100%;
+  min-height: var(--wm-dna-card-min-height, 148px);
+  height: 100%;
+  padding: 14px !important;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: var(--wm-landing-card-radius);
+  border: var(--wm-domain-border);
+  background: var(--wm-er-glass-bg-strong, rgba(255, 255, 255, 0.92));
+  box-shadow:
+    0 10px 28px -8px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  text-align: left;
+  transition:
+    transform 200ms var(--wm-landing-enter-ease),
+    box-shadow 220ms var(--wm-landing-enter-ease),
+    border-color 200ms ease,
+    background 200ms ease;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-card--square:nth-child(1) {
+  animation: wm-landing-tile-enter 460ms var(--wm-landing-enter-ease) 120ms backwards;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-card--square:nth-child(2) {
+  animation: wm-landing-tile-enter 460ms var(--wm-landing-enter-ease) 180ms backwards;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-card--square::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    125deg,
+    rgba(255, 255, 255, 0.35) 0%,
+    transparent 38%,
+    color-mix(in srgb, #0f172a 4%, transparent) 100%
+  );
+  opacity: 0.9;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-card--square > * {
+  position: relative;
+  z-index: 1;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-card--idle.wm-auth-role-card--square {
+  border: 1.75px solid color-mix(in srgb, var(--wm-card-domain-accent, #059669) 22%, #94a3b8 48%);
+  box-shadow:
+    0 6px 16px -6px rgba(15, 23, 42, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88);
+}
+
+@media (hover: hover) {
+  .wm-landing-role-pick--erDna .wm-auth-role-card--idle.wm-auth-role-card--square:hover {
+    border-color: color-mix(in srgb, var(--wm-card-domain-accent, #059669) 52%, #94a3b8);
+    box-shadow:
+      0 14px 32px -8px rgba(15, 23, 42, 0.1),
+      0 0 0 1px color-mix(in srgb, var(--wm-card-domain-accent, #059669) 18%, transparent),
+      0 10px 22px -6px color-mix(in srgb, var(--wm-card-domain-accent, #059669) 28%, transparent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.92);
+    transform: translateY(-2px);
+  }
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-card--selected.wm-auth-role-card--square,
+.wm-landing-role-pick--erDna .wm-auth-role-card--square.is-active {
+  border: var(--wm-domain-border);
+  background: var(--wm-er-glass-bg-strong, rgba(255, 255, 255, 0.96));
+  box-shadow:
+    var(--wm-domain-ambient-shadow),
+    0 0 0 3px color-mix(in srgb, var(--wm-card-domain-accent, #059669) 14%, transparent);
+  transform: translateY(-1px);
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-card--square:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--wm-card-domain-accent, #059669) 70%, #fff);
+  outline-offset: 3px;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-card--square .wm-homeGlassCard__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  margin: 0;
+  flex-shrink: 0;
+  line-height: 0;
+  box-shadow:
+    0 6px 14px color-mix(in srgb, var(--wm-card-domain-accent, #059669) 18%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-card--square .wm-homeGlassCard__icon svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-card--square .wm-homeGlassCard__title {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: #0f172a;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-card--square .wm-auth-role-catBadge {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  margin: 0;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 9.5px;
+  font-weight: 780;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--wm-card-domain-accent, #059669) 75%, #0f172a);
+  background: color-mix(in srgb, var(--wm-card-domain-accent, #059669) 14%, rgba(255, 255, 255, 0.92));
+  border: 1px solid color-mix(in srgb, var(--wm-card-domain-accent, #059669) 32%, transparent);
+  box-shadow:
+    0 4px 12px color-mix(in srgb, var(--wm-card-domain-accent, #059669) 16%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  pointer-events: none;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-card--square .wm-homeGlassCard__subtitle {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #475569;
+  overflow-wrap: anywhere;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-card--square .wm-homeGlassCard__trailing {
+  display: flex !important;
+  width: 100%;
+  margin-top: auto;
+  padding-top: 4px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-role-card--square .wm-auth-role-selectMark {
+  width: 22px;
+  height: 22px;
+}
+
+/* Continue CTA — same scale as Employer “+ Post” (40px), not a third banner */
+.wm-landing-role-pick--erDna .wm-auth-continue--erDna {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 40px;
+  height: 40px;
+  gap: 8px;
+  padding: 0 10px 0 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 720;
+  letter-spacing: -0.01em;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--wm-auth-continue-accent, var(--wm-auth-hire, #059669)) 78%, #ffffff) 0%,
+    var(--wm-auth-continue-accent, var(--wm-auth-hire, #059669)) 48%,
+    color-mix(in srgb, var(--wm-auth-continue-accent, var(--wm-auth-hire, #059669)) 82%, #0f172a) 100%
+  );
+  border: 1px solid color-mix(in srgb, #ffffff 28%, transparent);
+  box-shadow:
+    0 8px 18px -8px color-mix(in srgb, var(--wm-auth-continue-accent, var(--wm-auth-hire, #059669)) 36%, transparent),
+    0 2px 8px -2px rgba(15, 23, 42, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transition:
+    transform 180ms var(--wm-auth-ease, cubic-bezier(0.22, 1, 0.36, 1)),
+    box-shadow 220ms var(--wm-auth-ease, cubic-bezier(0.22, 1, 0.36, 1)),
+    filter 200ms ease,
+    gap 180ms ease;
+  animation: wm-landing-continue-enter 440ms var(--wm-landing-enter-ease) 240ms backwards;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-continue--erDna:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--wm-auth-continue-accent, var(--wm-auth-hire, #059669)) 70%, #fff);
+  outline-offset: 3px;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-continue__label {
+  line-height: 1.2;
+  text-shadow: none;
+}
+
+.wm-landing-role-pick--erDna .wm-auth-continue__arrow {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.26);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 2px 6px rgba(15, 23, 42, 0.1);
+  transition: transform 180ms var(--wm-auth-ease, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+@media (hover: hover) {
+  .wm-landing-role-pick--erDna .wm-auth-continue--erDna:hover:not(:disabled) {
+    filter: brightness(1.04) saturate(1.04);
+    transform: translateY(-1px);
+    gap: 10px;
+    box-shadow:
+      0 12px 24px -10px color-mix(in srgb, var(--wm-auth-continue-accent, var(--wm-auth-hire, #059669)) 44%, transparent),
+      0 4px 10px -4px rgba(15, 23, 42, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  }
+
+  .wm-landing-role-pick--erDna .wm-auth-continue--erDna:hover:not(:disabled) .wm-auth-continue__arrow {
+    transform: translateX(2px);
+    background: rgba(255, 255, 255, 0.34);
+  }
+}
+
+.wm-landing-role-pick--erDna .wm-auth-continue--erDna:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+.wm-landing-role-pick--erDna .wm-auth-footer--erDna {
+  margin-top: 16px;
+  max-width: 420px;
+  width: 100%;
+  animation: wm-landing-brand-enter 480ms var(--wm-landing-enter-ease) 280ms backwards;
+}
+
+/* Kill leftover horizontal-row copy grid from auth-entry on square tiles */
+.wm-landing-role-pick--erDna .wm-auth-role-card--square .wm-homeGlassCard__copy {
+  display: contents;
+}
+
+/* ——— Reduced motion: craft without motion ——— */
+@media (prefers-reduced-motion: reduce) {
+  .wm-landing-role-pick--erDna.wm-auth-stage::before,
+  .wm-landing-role-pick--erDna .wm-auth-panel--erDna,
+  .wm-landing-role-pick--erDna .wm-auth-hero__brand,
+  .wm-landing-role-pick--erDna .wm-auth-hero__greeting,
+  .wm-landing-role-pick--erDna .wm-auth-role-card--square,
+  .wm-landing-role-pick--erDna .wm-auth-continue--erDna,
+  .wm-landing-role-pick--erDna .wm-auth-footer--erDna {
+    animation: none !important;
+  }
+
+  .wm-landing-role-pick--erDna .wm-auth-role-card--square,
+  .wm-landing-role-pick--erDna .wm-auth-continue--erDna,
+  .wm-landing-role-pick--erDna .wm-auth-role-selectMark {
+    transition: none;
+  }
+
+  .wm-landing-role-pick--erDna .wm-auth-role-card--idle.wm-auth-role-card--square:hover,
+  .wm-landing-role-pick--erDna .wm-auth-role-card--selected.wm-auth-role-card--square,
+  .wm-landing-role-pick--erDna .wm-auth-role-card--square.is-active {
+    transform: none;
+  }
+
+  .wm-landing-role-pick--erDna.wm-auth-stage::before {
+    will-change: auto;
+  }
+}

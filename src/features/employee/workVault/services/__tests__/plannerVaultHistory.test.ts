@@ -35,7 +35,7 @@ function seedEpoch(epochIndex: number, extras?: { attendanceRate?: number }) {
     attendanceRate: extras?.attendanceRate ?? 90,
     reliabilityScore: 88,
     siteManagerId: "ML-SITE-MGR-1",
-    siteId: "site_kochi_1",
+    siteId: "site_City A_1",
   });
 }
 

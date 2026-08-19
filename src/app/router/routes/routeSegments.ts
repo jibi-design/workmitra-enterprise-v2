@@ -6,6 +6,7 @@ export const EC = {
   workforce: "workforce",
   dashboard: "dashboard",
   employmentDetail: "employment/:employmentId",
+  personalWorkDiary: "personal-work-diary",
   profile: "profile",
   notifications: "notifications",
   settings: "settings",
@@ -32,6 +33,9 @@ export const EC = {
   plannerWorkspaces: "planner/workspaces",
   plannerWorkspace: "planner/workspace/:workspaceId",
   plannerEarnings: "planner/earnings",
+  /** Weekly Shift Planner (7-day + P2P swaps) — siblings of Demand Planner paths */
+  shiftPlanner: "planner",
+  shiftPlannerSwaps: "planner/swaps",
   careerSearch: "career/search",
   careerPostDetails: "career/post/:postId",
   careerApplications: "career/applications",
@@ -58,6 +62,7 @@ export const EC = {
 
 export const ER = {
   shift: "shift",
+  dashboard: "dashboard",
   career: "career",
   analytics: "analytics",
   workforce: "workforce",
@@ -92,6 +97,9 @@ export const ER = {
   plannerApplications: "planner/applications",
   plannerRoster: "planner/roster",
   plannerRosterDetail: "planner/roster/:planId",
+  /** Weekly Shift Planner (7-day + P2P swaps) — siblings of Demand Planner paths */
+  shiftPlanner: "planner",
+  shiftPlannerSwaps: "planner/swaps",
   workforceStaff: "workforce/staff",
   workforceStaffDetail: "workforce/staff/:staffId",
   workforceAnnouncements: "workforce/announcements",
@@ -115,6 +123,13 @@ export const ER = {
   consoleRoster: "console/roster",
   consoleIncidents: "console/incidents",
   shiftOpsApprovals: "shift-ops/approvals",
+  /** Mitra Labs utility hub */
+  labs: "labs",
+  labsInvites: "labs/invites",
+  labsQr: "labs/qr",
+  labsReport: "labs/report",
+  labsReportFolder: "labs/report/:folderId",
+  labsAiPhoto: "labs/ai-photo",
 } as const;
 
 export const AC = {
@@ -122,5 +137,6 @@ export const AC = {
   users: "users",
   analytics: "analytics",
   notifications: "notifications",
+  moderation: "moderation",
   settings: "settings",
 } as const;

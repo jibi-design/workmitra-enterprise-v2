@@ -2,6 +2,7 @@
 
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../router/routePaths";
+import { JobMitraBrandName } from "../../shared/components/brand/BrandName";
 import { useThemeBundle } from "./useThemeBundle";
 
 export function GuestBrowseShell() {
@@ -30,9 +31,10 @@ export function GuestBrowseShell() {
           type="button"
           className="wm-outlineBtn"
           onClick={() => nav(ROUTE_PATHS.explore)}
+          aria-label="Job Mitra"
           style={{ fontWeight: 800 }}
         >
-          Job Mitra
+          <JobMitraBrandName as="span" />
         </button>
         <nav style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
           <Link to={ROUTE_PATHS.guestShifts} style={{ fontSize: 13, fontWeight: 750 }}>

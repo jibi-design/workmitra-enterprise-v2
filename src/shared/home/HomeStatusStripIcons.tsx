@@ -1,7 +1,7 @@
 /** Job Mitra | HomeStatusStripIcons.tsx | Micro icons for home status strips */
 
 type IconProps = {
-  readonly size?: 12 | 13;
+  readonly size?: 11 | 12 | 13;
 };
 
 export function HomeStatusStripClockIcon({ size = 13 }: IconProps) {
@@ -27,10 +27,16 @@ export function HomeStatusStripBellIcon({ size = 13 }: IconProps) {
   );
 }
 
-export function HomeStatusStripChevronIcon({ size = 12 }: IconProps) {
+export function HomeStatusStripChevronIcon({
+  size = 11,
+  expanded = false,
+}: IconProps & { readonly expanded?: boolean }) {
+  const d = expanded
+    ? "M7.4 15.6 12 11l4.6 4.6L18 14.2 12 8.2 6 14.2Z"
+    : "M7.4 8.4 12 13l4.6-4.6L18 9.8 12 15.8 6 9.8Z";
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="currentColor" d="M9.3 6.3 14.9 12l-5.6 5.7 1.4 1.4L17.7 12 10.7 4.9Z" />
+      <path fill="currentColor" d={d} />
     </svg>
   );
 }

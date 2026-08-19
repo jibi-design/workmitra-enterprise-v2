@@ -1,16 +1,9 @@
 /**
- * Master Testing Roadmap — Phase 1 / TEST CASE 1
- * Candidate Availability ↔ Employer Sync (storage + event path used by UI cards).
- *
- * Covers the same reads as:
- * - LocalWorkersRadarCard → readLocalWorkersRadarMetricsSnapshot
- * - FavoriteWorkerAvailabilityBadge → getAvailabilityDaysLabel (+ provider map)
- * - ShiftCreateNearbyAvailabilityCard → countWorkersFreeOnIsoDate
- *
+ * Phase 1 — Candidate Availability ↔ Employer Sync (radar / badge / nearby).
  * Run: npm test -- src/tests/phase1.availabilitySync.case1.test.ts
  */
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   availabilityStorage,
   getRolling7Days,
@@ -25,12 +18,31 @@ import {
   subscribeLocalWorkersRadarMetrics,
 } from "../features/employer/shiftJobs/helpers/localWorkersRadar.helpers";
 import { favoritesStorage } from "../features/employer/shiftJobs/storage/favoritesStorage";
+import { employerSettingsStorage } from "../features/employer/company/storage/employerSettings.storage";
 
 const WORKER_ML_ID = "ML_QA_CASE1_WORKER";
 const WORKER_NAME = "QA Case1 Worker";
-const CITY = "Kochi";
+const CITY = "City A";
+const PINCODE = "670001";
+
+let profileGetSpy: ReturnType<typeof vi.spyOn> | undefined;
+
+function seedMatchingLocation(): void {
+  profileGetSpy?.mockRestore();
+  profileGetSpy = vi.spyOn(employerSettingsStorage, "get").mockReturnValue({
+    ...employerSettingsStorage.EMPTY_PROFILE,
+    locationPincode: PINCODE,
+    locationCity: CITY,
+  });
+}
+
+function workerLocation() {
+  return { city: CITY, basePincode: PINCODE, commuteRadius: 15 as const };
+}
 
 function clearAvailabilityKeys(): void {
+  profileGetSpy?.mockRestore();
+  profileGetSpy = undefined;
   localStorage.removeItem(BROADCAST_KEY);
   localStorage.removeItem(ALL_KEY);
   localStorage.removeItem("wm_employer_shift_favorites_v1");
@@ -65,7 +77,7 @@ describe("Phase 1 — TEST CASE 1: Candidate Availability & Employer Sync", () =
       workerMlId: WORKER_ML_ID,
       workerName: WORKER_NAME,
       selectedDates: [dayA!],
-      city: CITY,
+      ...workerLocation(),
     });
 
     expect(fires.length).toBeGreaterThanOrEqual(1);
@@ -84,6 +96,7 @@ describe("Phase 1 — TEST CASE 1: Candidate Availability & Employer Sync", () =
     const dayB = rolling[2]!.iso;
     const shiftStartAt = middayEpochForIso(dayA);
 
+    seedMatchingLocation();
     favoritesStorage.addManual({ workerMlId: WORKER_ML_ID, workerName: WORKER_NAME });
 
     let eventCount = 0;
@@ -108,7 +121,7 @@ describe("Phase 1 — TEST CASE 1: Candidate Availability & Employer Sync", () =
     availabilityStorage.toggleMyDate(dayA, {
       workerMlId: WORKER_ML_ID,
       workerName: WORKER_NAME,
-      city: CITY,
+      ...workerLocation(),
     });
 
     expect(eventCount).toBeGreaterThanOrEqual(1);
@@ -126,13 +139,14 @@ describe("Phase 1 — TEST CASE 1: Candidate Availability & Employer Sync", () =
 
     // c) ShiftCreateNearbyAvailabilityCard reader
     expect(availabilityStorage.countWorkersFreeOnIsoDate(dayA)).toBe(1);
+    expect(availabilityStorage.countWorkersFreeOnIsoDateNear(dayA, PINCODE)).toBe(1);
     expect(availabilityStorage.isWorkerFreeOnDate(WORKER_ML_ID, shiftStartAt)).toBe(true);
 
     // Add second day — nearby for dayA still 1; label still present
     availabilityStorage.toggleMyDate(dayB, {
       workerMlId: WORKER_ML_ID,
       workerName: WORKER_NAME,
-      city: CITY,
+      ...workerLocation(),
     });
     expect(availabilityStorage.getMySelectedDates().sort()).toEqual([dayA, dayB].sort());
     expect(availabilityStorage.countWorkersFreeOnIsoDate(dayA)).toBe(1);
@@ -145,13 +159,14 @@ describe("Phase 1 — TEST CASE 1: Candidate Availability & Employer Sync", () =
 
   it("clears dates and drops radar / badge / nearby counts to 0", () => {
     const dayA = getRolling7Days()[1]!.iso;
+    seedMatchingLocation();
     favoritesStorage.addManual({ workerMlId: WORKER_ML_ID, workerName: WORKER_NAME });
 
     availabilityStorage.saveMyAvailability({
       workerMlId: WORKER_ML_ID,
       workerName: WORKER_NAME,
       selectedDates: [dayA],
-      city: CITY,
+      ...workerLocation(),
     });
 
     expect(readLocalWorkersRadarMetricsSnapshot().totalAvailableCount).toBe(1);
@@ -166,7 +181,7 @@ describe("Phase 1 — TEST CASE 1: Candidate Availability & Employer Sync", () =
     availabilityStorage.toggleMyDate(dayA, {
       workerMlId: WORKER_ML_ID,
       workerName: WORKER_NAME,
-      city: CITY,
+      ...workerLocation(),
     });
 
     expect(clearEvents).toBeGreaterThanOrEqual(1);
@@ -188,7 +203,7 @@ describe("Phase 1 — TEST CASE 1: Candidate Availability & Employer Sync", () =
       workerMlId: "ml_qa_case1_mixed",
       workerName: WORKER_NAME,
       selectedDates: [dayA],
-      city: CITY,
+      ...workerLocation(),
     });
 
     // Employer favorites / UI often normalize to uppercase
@@ -198,6 +213,7 @@ describe("Phase 1 — TEST CASE 1: Candidate Availability & Employer Sync", () =
 
   it("notifies subscribers synchronously (no artificial delay)", () => {
     const dayA = getRolling7Days()[1]!.iso;
+    seedMatchingLocation();
     const order: string[] = [];
 
     const unsub = availabilityStorage.subscribe(() => {
@@ -211,12 +227,24 @@ describe("Phase 1 — TEST CASE 1: Candidate Availability & Employer Sync", () =
       workerMlId: WORKER_ML_ID,
       workerName: WORKER_NAME,
       selectedDates: [dayA],
-      city: CITY,
+      ...workerLocation(),
     });
     order.push("after-save");
 
     expect(order).toEqual(["before-save", "subscriber", "after-save"]);
     unsub();
+  });
+
+  it("fail-closes radar when employer pincode is missing", () => {
+    const dayA = getRolling7Days()[1]!.iso;
+    availabilityStorage.saveMyAvailability({
+      workerMlId: WORKER_ML_ID,
+      workerName: WORKER_NAME,
+      selectedDates: [dayA],
+      ...workerLocation(),
+    });
+    expect(readLocalWorkersRadarMetricsSnapshot().totalAvailableCount).toBe(0);
+    expect(availabilityStorage.countWorkersFreeOnIsoDateNear(dayA, "")).toBe(0);
   });
 });
 
@@ -231,6 +259,7 @@ describe("Phase 1 — radar snapshot cache invalidates on pool write", () => {
 
   it("returns a fresh metrics object when pool raw changes", () => {
     const dayA = getRolling7Days()[1]!.iso;
+    seedMatchingLocation();
     const before = readLocalWorkersRadarMetricsSnapshot();
     expect(before.totalAvailableCount).toBe(0);
 
@@ -238,7 +267,7 @@ describe("Phase 1 — radar snapshot cache invalidates on pool write", () => {
       workerMlId: WORKER_ML_ID,
       workerName: WORKER_NAME,
       selectedDates: [dayA],
-      city: CITY,
+      ...workerLocation(),
     });
 
     const after = readLocalWorkersRadarMetricsSnapshot();
@@ -254,7 +283,7 @@ describe("Phase 1 — radar snapshot cache invalidates on pool write", () => {
       workerMlId: WORKER_ML_ID,
       workerName: WORKER_NAME,
       selectedDates: [dayA],
-      city: CITY,
+      ...workerLocation(),
     });
 
     const a = availabilityStorage.getMySelectedDates();

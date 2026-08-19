@@ -681,12 +681,106 @@ hide important workspace meaning from employer users
 show future features as active
 ```
 
+## 13A. Authenticated load gateway lock (2026-08-10)
+
+Canonical record:
+
+```txt
+17_AUTHENTICATED_LOAD_BENCHMARK_LOCK_2026-08-10.md
+tests/load/authenticated-store-stress-FINAL-AUDIT-report.json
+```
+
+Locked empirical findings:
+
+```txt
+Application HTTP 5xx on authenticated 1k ramp: 0
+Client timeouts: 0
+WM_LOAD_TEST_RELAX_RATE_LIMIT bypass: PASS through 200 concurrent VUs
+Free Cloudflare quick tunnel (*.trycloudflare.com): edge throttle above ~200 VUs
+```
+
+Locked operational rule:
+
+```txt
+PAUSE further authenticated 1k VU store-stress until a Named Cloudflare Tunnel
+or durable API / production edge gateway is attached.
+Do not certify 500–1000 VU production readiness on trycloudflare quick tunnels.
+```
+
+Resume command (after durable gateway):
+
+```txt
+WM_API_BASE=<durable-https> K6_VUS_MAX=1000 K6_CHAOS=0 npm run test:load:store-stress:auth
+```
+
+## 13B. Owner Telegram phone-first lock (2026-08-10)
+
+Canonical record:
+
+```txt
+18_BACKEND_INTEGRATION_BLUEPRINT.md
+```
+
+Locked intent:
+
+```txt
+Telegram (owner personal chat) = primary real-time awareness
+Super Admin dashboard         = secondary console + Class C actions only
+Extend Super Admin Defender Telegram plane — do NOT add a second bot inside Job Mitra
+```
+
+Locked quick-action rule:
+
+```txt
+Class A/B (Telegram buttons OK, audit-logged): employer/worker approve-reject,
+  dispute ack, mute, digest-now, deep-link read
+Class C (Super Admin Owner HITL only): lockdown, kill, LKG, IP blacklist, shield,
+  mass delete, high-value payout/refund, billing/DNS/SSL changes
+```
+
+Locked implementation gate:
+
+```txt
+Phase 1 WorkMitra Telegram collectors / digests / §10 enhancements: UNBLOCKED
+  (Docs 18 + 19 LOCKED).
+HFM Telegram event streaming: BLOCKED until Doc 18 §1.4 HFM Phase 1 live provisioning clears.
+Metrics/health probes must use durable origins (not trycloudflare quick tunnels).
+```
+
+## 13C. Pro-Level Owner-alert enhancements lock (2026-08-10)
+
+Canonical records:
+
+```txt
+18_BACKEND_INTEGRATION_BLUEPRINT.md §10
+19_DOC18_PRO_LEVEL_ASSESSMENT.md
+```
+
+Locked enhancements:
+
+```txt
+1. Telegram delivery-failure telemetry → SMS or Email fallback for Tier 0 / RED only
+2. Weekly synthetic canary (All Clear / System Heartbeat)
+3. RED Acknowledge quick-action + re-notify loop (default every 15 minutes)
+4. Capacity alerts include time-to-exhaustion alongside 75/85/95%
+```
+
+Locked multi-product rule:
+
+```txt
+Doc 18 principles apply to WorkMitra Enterprise AND HomeFix Mitra.
+HFM live Telegram emits require HFM Phase 1 Supabase/Cloudflare provisioning first.
+```
+
 ## 14. Approval Status
 
 ### 14.1 Current Status
 
 ```txt
 Reviewed — July 2026 Job Mitra locks added (§8.3.1–8.3.3)
+Load gateway lock — August 2026 (§13A) LOCKED with doc 17
+Owner Telegram governance — August 2026 (§13B) LOCKED with doc 18
+Pro-Level owner-alert enhancements — August 2026 (§13C) LOCKED with docs 18§10 + 19
 ```
 
 ### 14.2 Review Flow

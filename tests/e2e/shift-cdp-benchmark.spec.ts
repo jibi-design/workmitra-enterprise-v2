@@ -30,7 +30,8 @@ const HEAP_EPSILON_BYTES = 2 * 1024 * 1024;
 test.describe.configure({ mode: "serial" });
 
 test.describe("MNC CDP — Shift performance under low-end throttle", () => {
-  test("FPS ≥55 under 2x CPU while scrolling 500 candidates", async ({ page }) => {
+  test("FPS ≥55 under 2x CPU while scrolling 500 candidates", async ({ page, browserName }) => {
+    test.skip(browserName !== "chromium", "CDP session is Chromium-only");
     test.setTimeout(180_000);
 
     await bootstrapEmployerSession(page);
@@ -68,7 +69,11 @@ test.describe("MNC CDP — Shift performance under low-end throttle", () => {
     );
   });
 
-  test("Memory decay — 50 mount/unmount cycles return heap to baseline", async ({ page }) => {
+  test("Memory decay — 50 mount/unmount cycles return heap to baseline", async ({
+    page,
+    browserName,
+  }) => {
+    test.skip(browserName !== "chromium", "CDP session is Chromium-only");
     test.setTimeout(240_000);
 
     await bootstrapEmployerSession(page);

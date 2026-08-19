@@ -12,6 +12,7 @@
 import { employerSettingsStorage } from "../../employer/company/storage/employerSettings.storage";
 import { getEmployerOrgId } from "../../employer/company/helpers/employerDualId.helpers";
 import { AUTH_BACKEND_ENABLED } from "../../../shared/config/authConfig";
+import { useAuthStore } from "../../../shared/store/authStore";
 
 export const CAREER_EMPLOYER_SCOPE_CHANGED_EVENT = "wm:career-employer-scope-changed";
 
@@ -47,16 +48,21 @@ function cleanScopeToken(raw: string): string {
   return raw.trim().replace(/[^a-zA-Z0-9_-]/g, "_");
 }
 
+function resolveCareerOrgRaw(): string {
+  const profile = employerSettingsStorage.get();
+  const orgId = getEmployerOrgId(profile)?.trim();
+  const companyId = profile.companyUniqueId?.trim() || profile.uniqueId?.trim();
+  if (orgId || companyId) return orgId || companyId || "";
+  return useAuthStore.getState().user?.activeOrgId?.trim() || "";
+}
+
 /**
  * Non-throwing scope resolution for UI guards and zero-leak soft paths.
  * Never returns the demo collision bucket when PROD or AUTH is on.
  */
 export function peekCareerEmployerScopeId(): CareerEmployerScopePeek {
   try {
-    const profile = employerSettingsStorage.get();
-    const orgId = getEmployerOrgId(profile)?.trim();
-    const companyId = profile.companyUniqueId?.trim() || profile.uniqueId?.trim();
-    const raw = orgId || companyId || "";
+    const raw = resolveCareerOrgRaw();
 
     if (!raw) {
       return { ok: false, reason: "missing_org_id" };

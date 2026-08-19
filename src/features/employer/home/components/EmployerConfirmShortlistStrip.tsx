@@ -1,12 +1,13 @@
 /** Job Mitra | EmployerConfirmShortlistStrip.tsx | Confirm-shortlist action strip */
 
-import { useCallback, useSyncExternalStore } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 import { useNavigate } from "react-router-dom";
 import { HomeStatusStripFrame } from "../../../../shared/home/HomeStatusStripFrame";
 import { EMPLOYEE_APPS_CHANGED_EVENT } from "../../shiftJobs/storage/employerShift.keys";
 import {
   findConfirmWaitingPost,
   getPostsSnapshot,
+  listConfirmWaitingPosts,
   shiftPostDashboardPath,
   subscribePosts,
 } from "../../shiftJobs/helpers/shiftHomeHelpers";
@@ -46,11 +47,17 @@ function subscribeWaiting(onStoreChange: () => void): () => void {
 export function EmployerConfirmShortlistStrip() {
   const nav = useNavigate();
   const waiting = useSyncExternalStore(subscribeWaiting, getWaiting, getWaiting);
+  const posts = useSyncExternalStore(subscribePosts, getPostsSnapshot, getPostsSnapshot);
 
-  const handleOpen = useCallback(() => {
-    if (!waiting) return;
-    nav(shiftPostDashboardPath(waiting.postId, "shortlisted"));
-  }, [nav, waiting]);
+  const details = useMemo(
+    () =>
+      listConfirmWaitingPosts(posts).map((row) => ({
+        id: row.postId,
+        line: `${row.shortlisted} shortlisted on ${row.jobName}`,
+        onOpen: () => nav(shiftPostDashboardPath(row.postId, "shortlisted")),
+      })),
+    [nav, posts],
+  );
 
   if (!waiting) return null;
 
@@ -64,7 +71,7 @@ export function EmployerConfirmShortlistStrip() {
       ariaLabel={line}
       dismissId={`confirm:${waiting.postId}|${waiting.shortlisted}`}
       icon={<CheckUserIcon />}
-      onOpen={handleOpen}
+      details={details}
     />
   );
 }

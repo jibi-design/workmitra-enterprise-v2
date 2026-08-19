@@ -1,12 +1,14 @@
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import type { AuthUser } from "../auth/types.js";
+import { employerShiftRepository } from "../employer/shift/shift.repository.js";
 import { hashQrToken, shiftOpsRepository } from "./shiftOps.repository.js";
+import { shiftOpsLifecycleService } from "./shiftOps.lifecycle.service.js";
 
 export type ShiftOpsResult<T> =
   { ok: true; data: T } | { ok: false; code: string; message: string; httpStatus: number };
 
 function asUuid(value: string): boolean {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
     value.trim(),
   );
 }
@@ -129,8 +131,24 @@ export const shiftOpsService = {
         httpStatus: 400,
       };
     }
-    const workspaceId =
+    const jobPostId =
+      typeof body.job_post_id === "string" && asUuid(body.job_post_id)
+        ? body.job_post_id
+        : typeof body.jobPostId === "string" && asUuid(body.jobPostId)
+          ? body.jobPostId
+          : null;
+    const appId =
+      typeof body.app_id === "string" && asUuid(body.app_id)
+        ? body.app_id
+        : typeof body.appId === "string" && asUuid(body.appId)
+          ? body.appId
+          : null;
+    let workspaceId =
       typeof body.workspaceId === "string" && asUuid(body.workspaceId) ? body.workspaceId : null;
+    if (!workspaceId && jobPostId && appId) {
+      const byPair = await employerShiftRepository.findWorkspaceByPostAndApp(jobPostId, appId);
+      workspaceId = byPair?.id ?? null;
+    }
     const employmentId =
       typeof body.employmentId === "string" && asUuid(body.employmentId) ? body.employmentId : null;
     if (!workspaceId && !employmentId) {
@@ -143,7 +161,14 @@ export const shiftOpsService = {
     }
     let revieweeUserId = typeof body.revieweeUserId === "string" ? body.revieweeUserId.trim() : "";
     if (workspaceId) {
-      const ws = await shiftOpsRepository.findWorkspaceWithPost(workspaceId);
+      let ws = await shiftOpsRepository.findWorkspaceWithPost(workspaceId);
+      if (!ws && jobPostId && appId) {
+        const byPair = await employerShiftRepository.findWorkspaceByPostAndApp(jobPostId, appId);
+        if (byPair) {
+          workspaceId = byPair.id;
+          ws = await shiftOpsRepository.findWorkspaceWithPost(workspaceId);
+        }
+      }
       if (!ws) {
         return { ok: false, code: "NOT_FOUND", message: "Workspace not found", httpStatus: 404 };
       }
@@ -152,8 +177,16 @@ export const shiftOpsService = {
           return { ok: false, code: "FORBIDDEN", message: "Not your post", httpStatus: 403 };
         }
         revieweeUserId = asUuid(ws.worker_wm_id) ? ws.worker_wm_id : revieweeUserId;
+        if (!asUuid(revieweeUserId)) {
+          const app = await employerShiftRepository.findApplicationById(ws.app_id);
+          if (app && asUuid(app.worker_wm_id)) revieweeUserId = app.worker_wm_id;
+        }
       } else {
-        if (!workerMatches(ws.worker_wm_id, user)) {
+        const app = await employerShiftRepository.findApplicationById(ws.app_id);
+        const workerOk =
+          workerMatches(ws.worker_wm_id, user) ||
+          (app != null && workerMatches(app.worker_wm_id, user));
+        if (!workerOk) {
           return { ok: false, code: "FORBIDDEN", message: "Not your workspace", httpStatus: 403 };
         }
         revieweeUserId = ws.employer_id;
@@ -195,4 +228,8 @@ export const shiftOpsService = {
     });
     return { ok: true, data: row };
   },
+
+  completeWorkspace: shiftOpsLifecycleService.completeWorkspace,
+  listReviews: shiftOpsLifecycleService.listReviews,
+  archiveSite: shiftOpsLifecycleService.archiveSite,
 };

@@ -4,14 +4,13 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSoftAuth } from "../../../../shared/guest/useSoftAuth";
+import { ROUTE_PATHS } from "../../../../app/router/routePaths";
 
-import type { ConfirmData } from "../../../../shared/components/ConfirmModal";
 import type { NoticeData } from "../../../../shared/components/NoticeModal";
-import { useUnsavedChangesGuard } from "../../../../shared/hooks/useUnsavedChangesGuard";
 import {
   goEmployerCareerCreateBack,
   goEmployerCareerCreateNext,
-  handleEmployerCareerCreateCancel,
   handleEmployerCareerCreatePublishIntent,
 } from "./employerCareerCreatePage.navigation";
 import type { ScreeningQuestion } from "../components/CareerCreateScreeningSection";
@@ -29,8 +28,10 @@ import { getCareerPostsSnapshot } from "../helpers/careerDashboardHelpers";
 import {
   formatNoticePeriodForConfirm,
   getEmployerProfileDefaults,
+  isEmployerCareerCreateDirty,
   normalizeStep,
 } from "../helpers/employerCareerCreatePage.helpers";
+import { useCareerCreateUnsavedLeave } from "./useCareerCreateUnsavedLeave";
 import { publishEmployerCareerPost } from "./employerCareerCreatePage.publish";
 import {
   clearEmployerCareerCreateDraft,
@@ -48,6 +49,7 @@ import { careerCreateDraftStorage } from "../storage/careerCreateDraft.storage";
 
 export function useEmployerCareerCreatePage() {
   const nav = useNavigate();
+  const { requireAuthForAction } = useSoftAuth();
   const employerDefaults = useMemo(() => getEmployerProfileDefaults(), []);
   const savedDraft = useMemo(() => careerCreateDraftStorage.get(), []);
 
@@ -61,6 +63,7 @@ export function useEmployerCareerCreatePage() {
     jobType: savedDraft?.basic.jobType ?? "full-time",
     workMode: savedDraft?.basic.workMode ?? "on-site",
     location: savedDraft?.basic.location ?? employerDefaults.location,
+    locationPincode: savedDraft?.basic.locationPincode ?? "",
     vacancies: savedDraft?.basic.vacancies ?? "",
     probationPeriod: savedDraft?.basic.probationPeriod ?? "none",
   }));
@@ -88,8 +91,6 @@ export function useEmployerCareerCreatePage() {
     () => savedDraft?.screeningQuestions ?? [],
   );
 
-  const [confirmData, setConfirmData] = useState<ConfirmData | null>(null);
-  const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
   const [publishPreviewOpen, setPublishPreviewOpen] = useState(false);
   const [notice, setNotice] = useState<NoticeData | null>(
     savedDraft
@@ -118,19 +119,27 @@ export function useEmployerCareerCreatePage() {
   const isAllValid =
     step1Errors.length === 0 && step2Errors.length === 0 && step3Errors.length === 0;
 
-  const isDirty = useCallback((): boolean => {
-    return (
-      basic.companyName.trim().length > 0 ||
-      basic.jobTitle.trim().length > 0 ||
-      basic.location.trim().length > 0 ||
-      req.description.trim().length > 0 ||
-      req.salaryMin.trim().length > 0 ||
-      req.skills.trim().length > 0 ||
-      screeningQuestions.length > 0
-    );
-  }, [basic, req, screeningQuestions]);
+  const isDirty = isEmployerCareerCreateDirty(
+    basic,
+    req,
+    screeningQuestions.length,
+    employerDefaults,
+  );
 
-  useUnsavedChangesGuard(isDirty(), "You have unsaved Career Job changes. Leave this page?");
+  const discardDraftAndResetMemory = useCallback((): void => {
+    clearEmployerCareerCreateDraft();
+    setHasLoadedDraft(false);
+    setStep(1);
+    setBasic(createFreshBasicState(employerDefaults));
+    setReq(createFreshRequirementsState());
+    setInterview(createFreshInterviewState());
+    setScreeningQuestions([]);
+  }, [employerDefaults]);
+
+  const leave = useCareerCreateUnsavedLeave({
+    when: isDirty || hasLoadedDraft,
+    discardAndReset: discardDraftAndResetMemory,
+  });
 
   function resetToFreshPost() {
     clearEmployerCareerCreateDraft();
@@ -171,26 +180,6 @@ export function useEmployerCareerCreatePage() {
     goEmployerCareerCreateBack({ step, setStep });
   }
 
-  function discardDraftAndResetMemory(): void {
-    clearEmployerCareerCreateDraft();
-    setHasLoadedDraft(false);
-    setStep(1);
-    setBasic(createFreshBasicState(employerDefaults));
-    setReq(createFreshRequirementsState());
-    setInterview(createFreshInterviewState());
-    setScreeningQuestions([]);
-  }
-
-  function handleCancel() {
-    handleEmployerCareerCreateCancel({
-      isDirty,
-      nav,
-      discardDraft: discardDraftAndResetMemory,
-      setConfirmData,
-      setConfirmAction,
-    });
-  }
-
   const publishDuplicateWarnings = useMemo(
     () =>
       findDuplicateCareerWarnings(getCareerPostsSnapshot(), {
@@ -227,6 +216,17 @@ export function useEmployerCareerCreatePage() {
   }, [req, screeningQuestions]);
 
   function handleCreate() {
+    if (
+      !requireAuthForAction({
+        action: "create_career",
+        targetId: "career_publish",
+        returnPath: ROUTE_PATHS.employerCareerCreate,
+        roleHint: "employer",
+        payload: { phase: "publish" },
+      })
+    ) {
+      return;
+    }
     handleEmployerCareerCreatePublishIntent({
       isAllValid,
       step1Errors,
@@ -238,6 +238,7 @@ export function useEmployerCareerCreatePage() {
   }
 
   function doCreate() {
+    leave.setBypass(true);
     void publishEmployerCareerPost({
       basic,
       req,
@@ -245,18 +246,11 @@ export function useEmployerCareerCreatePage() {
       screeningQuestions,
       nav,
       setNotice,
+    }).then((ok) => {
+      if (!ok) leave.setBypass(false);
+    }).catch(() => {
+      leave.setBypass(false);
     });
-  }
-
-  function clearConfirm() {
-    setConfirmData(null);
-    setConfirmAction(null);
-  }
-
-  function confirmLeave() {
-    setConfirmData(null);
-    if (confirmAction) confirmAction();
-    setConfirmAction(null);
   }
 
   function closePublishPreview() {
@@ -277,7 +271,7 @@ export function useEmployerCareerCreatePage() {
     screeningQuestions,
     setScreeningQuestions,
     hasLoadedDraft,
-    confirmData,
+    confirmData: leave.confirmData,
     publishPreviewOpen,
     notice,
     setNotice,
@@ -293,10 +287,10 @@ export function useEmployerCareerCreatePage() {
     saveDraft,
     goNext,
     goBack,
-    handleCancel,
+    handleCancel: leave.handleCancel,
     handleCreate,
-    clearConfirm,
-    confirmLeave,
+    clearConfirm: leave.clearConfirm,
+    confirmLeave: leave.confirmLeave,
     closePublishPreview,
     confirmPublish,
   };

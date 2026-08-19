@@ -1,6 +1,8 @@
 // App: Job Mitra / WorkMitra_Enterprise_v2
 // File: JobMitraLandingLogo.tsx
-// Path: C:\features\auth\components\JobMitraLandingLogo.tsx
+// Global Brand Rules: JOB emerald (#059669) + MITRA slate/white
+
+import { JobMitraBrandName } from "../../../shared/components/brand/BrandName";
 
 type Props = {
   size?: "large" | "small";
@@ -8,12 +10,16 @@ type Props = {
 
 export function JobMitraLandingLogo({ size }: Props) {
   const isLarge = size === "large";
-  const iconSize = isLarge ? 32 : 24;
-  const textSize = isLarge ? 26 : 18;
+  const iconSize = isLarge ? 40 : 24;
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-      {/* Crisp, Sharp Enterprise Icon */}
+    <div
+      className={
+        isLarge
+          ? "wm-auth-hero__logoMark wm-auth-hero__logoMark--large"
+          : "wm-auth-hero__logoMark wm-auth-hero__logoMark--small"
+      }
+    >
       <svg width={iconSize} height={iconSize} viewBox="0 0 48 48" aria-hidden="true">
         <rect x="4" y="4" width="40" height="40" rx="10" fill="#0F172A" />
         <path
@@ -24,31 +30,10 @@ export function JobMitraLandingLogo({ size }: Props) {
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <circle cx="24" cy="18" r="4" fill="#3B82F6" />
+        <circle cx="24" cy="18" r="4" fill="#059669" />
       </svg>
 
-      <div style={{ display: "flex", alignItems: "baseline", lineHeight: 1 }}>
-        <span
-          style={{
-            fontSize: textSize,
-            fontWeight: 800,
-            color: "#0F172A",
-            letterSpacing: "-0.04em",
-          }}
-        >
-          Job
-        </span>
-        <span
-          style={{
-            fontSize: textSize,
-            fontWeight: 800,
-            color: "#2563EB",
-            letterSpacing: "-0.04em",
-          }}
-        >
-          Mitra
-        </span>
-      </div>
+      <JobMitraBrandName as="span" className="wm-auth-hero__jobMitraMark" />
     </div>
   );
 }

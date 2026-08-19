@@ -1,12 +1,15 @@
-/** Job Mitra | idValidator.ts — validates Mitra Labs ML IDs only */
+/** Job Mitra | idValidator.ts — validates exact ML-JBXX-ABC-XXXX UniCard IDs */
 
 import {
+  APP_SHORT_CODE,
   ID_CHARSET,
   ID_PREFIX,
   ID_SEPARATOR,
-  ID_BLOCK_LENGTH,
+  ID_APP_TYPE_BLOCK_LENGTH,
   ID_NAME_BLOCK_LENGTH,
+  ID_UNIQUE_BLOCK_LENGTH,
   ID_DISPLAY_LENGTH,
+  ID_TYPE_CODE_LENGTH,
 } from "../constants/idConstants";
 import type { IdValidationResult } from "../types/identityTypes";
 
@@ -21,8 +24,12 @@ function validateCharset(block: string, allowIo = false): string | null {
 }
 
 /**
- * Validates a Mitra Labs unique ID.
- * Format: ML-XXXX-ABC-XXXX (legacy WM/JM prefixes are rejected).
+ * Validates a Job Mitra unique ID.
+ * Exact format only: ML-JBXX-ABC-XXXX
+ *   - ML   = Mitra Labs
+ *   - JBXX = Job Mitra (JB) + two type/category chars (XX)
+ *   - ABC  = name block
+ *   - XXXX = uniqueness block
  */
 export function validateId(id: string): IdValidationResult {
   if (!id || typeof id !== "string") {
@@ -32,50 +39,73 @@ export function validateId(id: string): IdValidationResult {
   const trimmed = id.trim().toUpperCase();
 
   if (trimmed.length !== ID_DISPLAY_LENGTH) {
-    return { valid: false, reason: `ID must be exactly ${ID_DISPLAY_LENGTH} characters.` };
-  }
-
-  const parts = trimmed.split(ID_SEPARATOR);
-
-  if (parts.length !== 4) {
-    return { valid: false, reason: "ID must have exactly 4 blocks separated by dashes." };
-  }
-
-  const [prefix, block1, nameBlock, block3] = parts;
-
-  if (prefix !== ID_PREFIX) {
     return {
       valid: false,
-      reason: `ID must start with "${ID_PREFIX}".`,
+      reason: `ID must be exactly ${ID_DISPLAY_LENGTH} characters (ML-JBXX-ABC-XXXX).`,
     };
   }
 
-  if (block1.length !== ID_BLOCK_LENGTH) {
-    return { valid: false, reason: `Block 1 must be ${ID_BLOCK_LENGTH} characters.` };
+  const parts = trimmed.split(ID_SEPARATOR);
+  if (parts.length !== 4) {
+    return {
+      valid: false,
+      reason: "ID must have exactly 4 blocks separated by dashes (ML-JBXX-ABC-XXXX).",
+    };
+  }
+
+  const [labsPrefix, appTypeBlock, nameBlock, uniqueBlock] = parts;
+
+  if (labsPrefix !== ID_PREFIX) {
+    return { valid: false, reason: `ID must start with "${ID_PREFIX}".` };
+  }
+
+  if (appTypeBlock.length !== ID_APP_TYPE_BLOCK_LENGTH) {
+    return {
+      valid: false,
+      reason: `App/type block must be ${ID_APP_TYPE_BLOCK_LENGTH} characters (JBXX).`,
+    };
+  }
+
+  if (!appTypeBlock.startsWith(APP_SHORT_CODE)) {
+    return {
+      valid: false,
+      reason: `App/type block must start with "${APP_SHORT_CODE}" (Job Mitra).`,
+    };
+  }
+
+  const typeCode = appTypeBlock.slice(APP_SHORT_CODE.length);
+  if (typeCode.length !== ID_TYPE_CODE_LENGTH) {
+    return {
+      valid: false,
+      reason: `Type code (XX) must be ${ID_TYPE_CODE_LENGTH} characters after "${APP_SHORT_CODE}".`,
+    };
+  }
+
+  const typeError = validateCharset(typeCode);
+  if (typeError) {
+    return { valid: false, reason: typeError };
   }
 
   if (nameBlock.length !== ID_NAME_BLOCK_LENGTH) {
     return { valid: false, reason: `Name block must be ${ID_NAME_BLOCK_LENGTH} characters.` };
   }
 
-  if (block3.length !== ID_BLOCK_LENGTH) {
-    return { valid: false, reason: `Block 3 must be ${ID_BLOCK_LENGTH} characters.` };
-  }
-
-  const block1Error = validateCharset(block1);
-  if (block1Error) {
-    return { valid: false, reason: block1Error };
-  }
-
-  // Name block may contain I/O from real-name derivation (ML outer blocks stay strict).
+  // Name block may contain I/O from real-name derivation.
   const nameBlockError = validateCharset(nameBlock, true);
   if (nameBlockError) {
     return { valid: false, reason: nameBlockError };
   }
 
-  const block3Error = validateCharset(block3);
-  if (block3Error) {
-    return { valid: false, reason: block3Error };
+  if (uniqueBlock.length !== ID_UNIQUE_BLOCK_LENGTH) {
+    return {
+      valid: false,
+      reason: `Uniqueness block must be ${ID_UNIQUE_BLOCK_LENGTH} characters.`,
+    };
+  }
+
+  const uniqueError = validateCharset(uniqueBlock);
+  if (uniqueError) {
+    return { valid: false, reason: uniqueError };
   }
 
   return { valid: true };

@@ -44,7 +44,7 @@ export function ShiftTimelineHeader({
           <div
             style={{
               fontSize: 16,
-              fontWeight: 950,
+              fontWeight: 800,
               color: TEXT_DARK,
               lineHeight: 1.25,
             }}
@@ -74,7 +74,7 @@ export function ShiftTimelineHeader({
             background: badgeVisual.background,
             color: badgeVisual.color,
             fontSize: 10,
-            fontWeight: 950,
+            fontWeight: 800,
             letterSpacing: 0.2,
             textTransform: "uppercase",
             whiteSpace: "nowrap",

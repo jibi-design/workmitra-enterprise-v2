@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import type { EmployerProfile } from "../../storage/employerSettings.storage";
 import { INDUSTRY_OPTIONS, COMPANY_SIZE_OPTIONS } from "../../storage/employerSettings.storage";
 import { SettingsTextField, SettingsSelectField } from "../SettingsFormFields";
-import { CompanyLogoPicker } from "../SettingsProfileSections";
+import { CompanyLogoPicker } from "../SettingsCompanyLogoPicker";
 import { IconCompany } from "../../helpers/settingsIcons";
 import { getPublicProfilePath, resolvePublicHandle } from "../../helpers/employerIdentity.helpers";
 import {
@@ -20,6 +20,7 @@ import {
   fieldTextareaDisabledStyle,
   fieldRowStyle,
 } from "../../helpers/settingsStyles";
+import { sanitizePincodeInput } from "../../../../shared/location/pincode";
 import type { NoticeData } from "../../../../../shared/components/NoticeModal";
 
 const FOCUS_COLOR = "var(--wm-er-accent-hr)";
@@ -72,7 +73,7 @@ export function BusinessProfileSection({
         <div>
           <div style={EXECUTIVE_SECTION_KICKER}>Business profile</div>
           <h2 style={{ ...EXECUTIVE_SECTION_TITLE, marginTop: 2 }}>
-            നിങ്ങളുടെ സ്ഥാപനത്തിന്റെ പ്രൊഫൈൽ
+            Your business profile
           </h2>
         </div>
       </div>
@@ -137,6 +138,18 @@ export function BusinessProfileSection({
           placeholder="Enter your state"
           capitalizeWords
         />
+      </div>
+
+      <SettingsTextField
+        label="Work area code"
+        value={data.locationPincode}
+        disabled={!editMode}
+        onChange={(v) => onFieldChange("locationPincode", sanitizePincodeInput(v))}
+        placeholder="Work area code"
+        required
+      />
+      <div style={{ marginTop: 5, fontSize: 11, color: "var(--wm-er-muted)", lineHeight: 1.45 }}>
+        Used for Local Workers Radar. Matching workers are counted as a number only.
       </div>
 
       <SettingsTextField

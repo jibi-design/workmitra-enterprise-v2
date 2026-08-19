@@ -11,10 +11,12 @@ export function EmployeeCareerSearchTabContent({
   activeTab,
   state,
   hasSearchText,
+  onOpenSaved,
 }: {
   activeTab: CareerSearchMainTab;
   state: SearchState;
   hasSearchText: boolean;
+  onOpenSaved: () => void;
 }) {
   const sharedProps = {
     savedJobIds: state.savedJobIds,
@@ -23,6 +25,7 @@ export function EmployeeCareerSearchTabContent({
     onOpenApplications: state.openApplications,
     onToggleSaved: state.toggleSaved,
     onClearFilters: state.clearFilters,
+    onOpenSaved,
   };
 
   if (activeTab === "search") {

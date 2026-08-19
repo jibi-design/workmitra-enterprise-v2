@@ -1,5 +1,6 @@
 // App name: Job Mitra | EmployerFavoriteAddCard.tsx — surface-glass (Wave 3)
 
+import { MitraLabsBrandName } from "../../../../shared/components/brand/BrandName";
 type EmployerFavoriteAddCardProps = {
   addInput: string;
   addName: string;
@@ -27,7 +28,7 @@ export function EmployerFavoriteAddCard({
       data-testid="employer-favorites-add"
     >
       <div style={{ fontSize: 13, fontWeight: 700, color: "var(--wm-er-text)", marginBottom: 10 }}>
-        Add Worker by Mitra Labs ID
+        Add Worker by <MitraLabsBrandName size="sm" /> ID
       </div>
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>

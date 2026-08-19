@@ -2,7 +2,7 @@
 // File: EmployeeCareerHomeHeader.tsx
 
 import { PulseTargetButton } from "../../../../pulse/PulseTarget";
-import { DomainHero } from "../../../../../shared/components/layout/DomainHero";
+import { ActionPill, DomainHero } from "../../../../../shared/components/layout/designDna";
 
 type Props = {
   activeJobCount: number;
@@ -58,11 +58,10 @@ function MetricTile({
           : "1px solid rgba(255, 255, 255, 0.7)",
         background: emphasis
           ? "linear-gradient(135deg, rgba(239, 246, 255, 0.95), rgba(219, 234, 254, 0.6))"
-          : "rgba(255, 255, 255, 0.65)",
+          : "rgba(255, 255, 255, 0.96)",
         boxShadow: emphasis
           ? "0 8px 16px rgba(37, 99, 235, 0.08)"
           : "0 4px 12px rgba(0, 0, 0, 0.02)",
-        backdropFilter: "blur(var(--wm-blur-md))",
       }}
     >
       <div
@@ -108,25 +107,25 @@ export function EmployeeCareerHomeHeader({
     >
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--wm-stack-gap)" }}>
         <PulseTargetButton pulseId="career-search-cta" radius="16px">
-          <button
-            type="button"
+          <ActionPill
+            domain="career"
             onClick={onSearchJobs}
-            className="wm-primarybtn wm-press-btn"
             style={{ width: "100%", minHeight: 48 }}
           >
             Find Career Jobs
-          </button>
+          </ActionPill>
         </PulseTargetButton>
 
         <PulseTargetButton pulseId="career-dashboard-applications" radius="16px">
-          <button
-            type="button"
+          <ActionPill
+            bare
+            domain="career"
             onClick={onMyApplications}
             className="wm-outlineBtn wm-press-btn"
             style={{ width: "100%", minHeight: 48 }}
           >
             My Applications
-          </button>
+          </ActionPill>
         </PulseTargetButton>
       </div>
 

@@ -8,6 +8,7 @@ import { mergeServerApplicationIntoLsCache } from "../../../career/services/care
 import {
   careerGateApi,
   isCareerApiSyncEnabled,
+  mustRollbackCareerLocalWrite,
   resolveCareerGateApplicationId,
   resolveCareerGatePostId,
 } from "../../../career/services/careerGateApi.service";
@@ -78,8 +79,11 @@ async function syncInterviewServerStatus(params: {
   const serverAppId = resolveCareerGateApplicationId(params.appId);
 
   if (!serverPostId || !serverAppId) {
-    writeCareerApps(params.priorApps);
-    return false;
+    if (mustRollbackCareerLocalWrite(serverPostId) || mustRollbackCareerLocalWrite(serverAppId)) {
+      writeCareerApps(params.priorApps);
+      return false;
+    }
+    return true;
   }
 
   try {

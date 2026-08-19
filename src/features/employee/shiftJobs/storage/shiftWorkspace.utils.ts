@@ -3,6 +3,7 @@
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\shiftJobs\storage\shiftWorkspace.utils.ts
 
 import type { UnknownRecord } from "../types/shiftWorkspace.types";
+import { scopeAppLocalId } from "../../../../shared/identity/constants/idConstants";
 
 export type JsonStorageWriteResult =
   { readonly ok: true } | { readonly ok: false; readonly reason: "storage_error" };
@@ -50,7 +51,8 @@ export function safeDispatch(eventName: string): void {
 }
 
 export function createLocalId(prefix: string): string {
-  return `${prefix}_${Math.random().toString(16).slice(2)}_${Date.now().toString(16)}`;
+  const scoped = scopeAppLocalId(prefix);
+  return `${scoped}_${Math.random().toString(16).slice(2)}_${Date.now().toString(16)}`;
 }
 
 export function clampText(raw: string, max: number): string {

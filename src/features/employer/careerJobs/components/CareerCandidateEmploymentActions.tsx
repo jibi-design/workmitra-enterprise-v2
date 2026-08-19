@@ -186,6 +186,7 @@ export function CareerCandidateEmploymentActions({ careerPostId, employeeName, o
             <button
               type="button"
               className="wm-primarybtn"
+              data-testid="career-mark-as-joined"
               onClick={() => setJoinedOpen(true)}
               style={{ fontSize: 11, padding: "6px 12px", height: 32 }}
             >
@@ -197,6 +198,7 @@ export function CareerCandidateEmploymentActions({ careerPostId, employeeName, o
             <button
               type="button"
               className="wm-primarybtn"
+              data-testid="career-confirm-resignation"
               onClick={() =>
                 setConfirmResign({
                   title: "Confirm resignation?",

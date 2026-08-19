@@ -1,53 +1,12 @@
 /** Job Mitra | HelpSupportPage.tsx — DomainHero (pageHead purge) */
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
+import { JobMitraBrandName } from "./brand/BrandName";
+import { HELP_SUPPORT_FAQ_ITEMS } from "./help/helpSupportFaqItems";
 import { DomainHero } from "./layout/DomainHero";
 
-const FAQ_ITEMS: { q: string; a: string }[] = [
-  {
-    q: "How do I complete my profile?",
-    a: "Go to your Profile page and fill in all sections — name, city, skills, experience, languages, job types, and availability. A complete profile increases your chances of getting hired.",
-  },
-  {
-    q: "How do I apply for a job?",
-    a: "Go to Find Shifts or Find Career Jobs, use filters to narrow your search, then tap on a job to see details and apply. If Quick Apply is enabled, you can apply with one tap.",
-  },
-  {
-    q: "How does the rating system work?",
-    a: "After a shift or job is completed, both the worker and employer rate each other. Ratings are permanent and linked to your Mitra Labs ID. Higher ratings build trust and improve your chances.",
-  },
-  {
-    q: "Can I edit my review?",
-    a: "You can edit a review once within 48 hours of submitting it. After that, the review becomes permanent. An 'Edited' badge will be shown on edited reviews.",
-  },
-  {
-    q: "How do I export my data?",
-    a: "Go to Settings, scroll to 'Backup and restore', and tap 'Export my data'. A JSON file will be downloaded. You can import this file on a new device to restore it.",
-  },
-  {
-    q: "What is my Mitra Labs ID?",
-    a: "Your Mitra Labs ID (ML ID) is a unique, permanent identifier created from your name. Share it with employers so they can find and verify you. It appears on your profile and all job interactions. Format: ML-XXXX-ABC-XXXX.",
-  },
-  {
-    q: "How do I verify an employer?",
-    a: "Go to Work Vault, tap the 'Verify Employer' tab, and enter the employer's Mitra Labs ID. You'll see their rating, reviews, and track record before applying.",
-  },
-  {
-    q: "How do I resign from a job?",
-    a: "Go to your Career Jobs section, open your current employment, and tap 'Resign'. You'll need to provide a reason. Your employer will be notified and must confirm the resignation.",
-  },
-  {
-    q: "How do I install Job Mitra on my phone?",
-    a: "Open Job Mitra in your phone browser. You'll see an 'Add to Home Screen' or 'Install' option in the browser menu. Tap it to install Job Mitra as an app on your phone.",
-  },
-  {
-    q: "My data is missing. What do I do?",
-    a: "Job Mitra stores data on your device. If you cleared browser data, your data may be lost. If you had exported a backup, go to Settings and use 'Import backup' to restore it.",
-  },
-];
-
 const ONBOARDING_KEY = "wm_onboarding_complete_v1";
-const SUPPORT_EMAIL = "support@mitralabs.app";
+const SUPPORT_EMAIL = "support@mitraaccesshub.com";
 
 function buildMailtoUrl(subject: string): string {
   return `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}`;
@@ -70,8 +29,8 @@ function FaqItem({
   open,
   onToggle,
 }: {
-  q: string;
-  a: string;
+  q: ReactNode;
+  a: ReactNode;
   open: boolean;
   onToggle: () => void;
 }) {
@@ -82,7 +41,6 @@ function FaqItem({
         className="wm-helpFaqRow"
         onClick={onToggle}
         aria-expanded={open}
-        aria-label={q}
       >
         <span className="wm-helpFaqRow__q">{q}</span>
         <span
@@ -119,16 +77,20 @@ export function HelpSupportPage() {
         icon={<HelpIcon />}
         title="Help & Support"
         subtitle="Find answers, report issues, or contact us"
-        description="FAQ, contact channels, and app info for Job Mitra."
+        description={
+          <>
+            FAQ, contact channels, and app info for <JobMitraBrandName size="sm" />.
+          </>
+        }
       />
 
       <section className="wm-helpFaqCard" aria-label="Frequently Asked Questions">
         <div className="wm-helpSectionTitle">Frequently Asked Questions</div>
         <div className="wm-helpFaqList">
-          {FAQ_ITEMS.length === 0 ? (
+          {HELP_SUPPORT_FAQ_ITEMS.length === 0 ? (
             <div className="wm-ent-empty">No FAQ items available yet.</div>
           ) : (
-            FAQ_ITEMS.map((item, i) => (
+            HELP_SUPPORT_FAQ_ITEMS.map((item, i) => (
               <FaqItem
                 key={i}
                 q={item.q}

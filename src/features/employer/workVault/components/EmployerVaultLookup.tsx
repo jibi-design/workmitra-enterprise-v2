@@ -5,6 +5,7 @@ import { ID_FORMAT_HINT } from "../../../../shared/identity/constants/idConstant
 import { validateId } from "../../../../shared/identity/validators/idValidator";
 import { lookupById } from "../../../../shared/identity/registry/idRegistry";
 import { VAULT_ACCENT } from "../../../shared/workVault/vaultPublic";
+import { MitraLabsIdLabel } from "../../../../shared/components/brand/MitraLabsIdLabel";
 import type { IdRegistryEntry } from "../../../../shared/identity/types/identityTypes";
 
 type EmployerVaultLookupProps = {
@@ -106,8 +107,8 @@ export function EmployerVaultLookup({ onEmployeeFound }: EmployerVaultLookupProp
       </div>
 
       <div style={{ fontSize: 11, color: "var(--wm-er-muted)", lineHeight: 1.6 }}>
-        Enter the employee&apos;s Mitra Labs ID to view their public profile and request document
-        access.
+        Enter the employee&apos;s <MitraLabsIdLabel /> to view their public profile and request
+        document access.
       </div>
     </div>
   );

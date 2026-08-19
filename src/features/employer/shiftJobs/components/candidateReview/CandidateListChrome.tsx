@@ -1,5 +1,7 @@
 /** EmployerShiftCandidateList chrome helpers */
 
+import { JobMitraBrandName } from "../../../../../shared/components/brand/BrandName";
+
 type CompareModeBarProps = {
   enabled: boolean;
   selectedCount: number;
@@ -86,8 +88,9 @@ export function BackupPromotionHint() {
       <div
         style={{ marginTop: 6, fontSize: 11, fontWeight: 750, color: "#b45309", lineHeight: 1.5 }}
       >
-        If a confirmed worker is replaced, review this list and use Confirm manually. Job Mitra will
-        not auto-confirm a backup worker without employer action.
+        If a confirmed worker is replaced, review this list and use Confirm manually.{" "}
+        <JobMitraBrandName size="sm" /> will not auto-confirm a backup worker without employer
+        action.
       </div>
     </div>
   );

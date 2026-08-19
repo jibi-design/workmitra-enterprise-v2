@@ -23,7 +23,7 @@ describe("demandPlanner schema v2 migrator (Hybrid A2 S2)", () => {
       id: "dp_legacy_001",
       name: "Hospital Roster",
       companyName: "Agency Co",
-      locationName: "Kochi",
+      locationName: "City A",
       category: "Healthcare",
       experience: "experienced",
       startDate: "2026-08-01",
@@ -116,7 +116,7 @@ describe("demandPlanner schema v2 migrator (Hybrid A2 S2)", () => {
     const id = demandPlannerStorage.create({
       name: "New Plan",
       companyName: "Agency",
-      locationName: "Kochi",
+      locationName: "City A",
       category: "Construction",
       experience: "experienced",
       startDate: "2026-09-01",

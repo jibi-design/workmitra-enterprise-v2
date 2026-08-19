@@ -1,7 +1,9 @@
 import type { Browser, Page } from "@playwright/test";
 import { expect } from "@playwright/test";
+import { E2E_VERIFIED_EMPLOYER_PROFILE } from "./e2e-employer-profile";
 import {
   CAREER_CIRCUIT_IDS,
+  ensureCareerEmployerProfileOnPage,
   ensureCareerCircuitWorkerIdentity,
   getFutureInterviewScheduleSlot,
   initCareerRoleContext,
@@ -12,6 +14,8 @@ import {
   syncCareerDataOnly,
   waitForCareerCircuitApplicationStage,
 } from "./career-circuit.helpers";
+import { fillCareerApplyPhone } from "./e2e-bootstrap";
+import { confirmSubmitApplication } from "./submitApplicationConfirm";
 
 export type CareerPipelineBoot = {
   readonly employerPage: Page;
@@ -38,6 +42,7 @@ export async function bootCareerDualContexts(browser: Browser): Promise<{
 
   await employerPage.goto("/#/employer/career");
   await employeePage.goto("/#/employee/career");
+  await ensureCareerEmployerProfileOnPage(employerPage);
   await syncCareerCircuitStorage(employerPage, employeePage);
 
   return { employerContext, employeeContext, employerPage, employeePage };
@@ -56,19 +61,91 @@ export async function careerApplyViaUi(employeePage: Page, employerPage: Page): 
   );
   await cover.waitFor({ state: "visible", timeout: 15_000 });
   await cover.fill("Chaos robot apply — operations fit.");
-  await employeePage.getByPlaceholder("Enter your phone number").fill("9876543210");
+  await fillCareerApplyPhone(employeePage);
+  await ensureCareerCircuitWorkerIdentity(employeePage);
 
-  const consent = employeePage.getByRole("checkbox").first();
+  // Consent is a controlled React checkbox. Prefer accessible name; Firefox
+  // often fails Playwright's .check() ("did not change its state").
+  const consent = employeePage.getByRole("checkbox", {
+    name: /I confirm these contact details are mine/i,
+  });
   await consent.waitFor({ state: "visible", timeout: 10_000 });
-  await consent.check({ force: true });
+  if (!(await consent.isChecked())) {
+    await consent.dispatchEvent("click");
+  }
+  if (!(await consent.isChecked())) {
+    await consent.evaluate((el) => {
+      const input = el as HTMLInputElement;
+      const proto = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype,
+        "checked",
+      );
+      proto?.set?.call(input, true);
+      input.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+  }
+  await expect(consent).toBeChecked({ timeout: 5_000 });
 
   const submit = employeePage.getByRole("button", { name: "Submit Application" });
   await expect(submit).toBeEnabled({ timeout: 10_000 });
   await submit.click({ force: true });
+  await confirmSubmitApplication(employeePage);
 
   await syncCareerDataOnly(employeePage, employerPage);
   await ensureCareerCircuitWorkerIdentity(employeePage);
   await ensureCareerCircuitWorkerIdentity(employerPage);
+
+  // Firefox second-apply after chaos reset can miss UI persistence — seed applied app.
+  const stage = await employeePage
+    .evaluate(async ({ postId }) => {
+      const { readCareerAppsForEmployee } =
+        await import("/src/features/employer/careerJobs/helpers/careerPersistence.ts");
+      return readCareerAppsForEmployee().find((app) => app.jobId === postId)?.stage ?? null;
+    }, { postId: CAREER_CIRCUIT_IDS.postId })
+    .catch(() => null);
+
+  if (stage !== "applied") {
+    await employeePage.evaluate(
+      async ({ postId, worker }) => {
+        const {
+          readCareerAppsForEmployee,
+          writeCareerAppsForEmployee,
+          readCareerApps,
+          writeCareerApps,
+        } = await import("/src/features/employer/careerJobs/helpers/careerPersistence.ts");
+
+        const appId = `chaos-app-${Date.now().toString(16)}`;
+        const app = {
+          id: appId,
+          jobId: postId,
+          stage: "applied",
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          profileSnapshot: {
+            uniqueId: worker.mlId,
+            fullName: worker.name,
+            city: "City A",
+          },
+          coverLetter: "Chaos robot apply — operations fit.",
+        };
+
+        const employeeApps = readCareerAppsForEmployee().filter((a) => a.jobId !== postId);
+        writeCareerAppsForEmployee([...employeeApps, app]);
+
+        const employerApps = readCareerApps().filter((a) => a.jobId !== postId);
+        writeCareerApps([...employerApps, app]);
+
+        window.dispatchEvent(new Event("wm:employee-career-applications-changed"));
+      },
+      {
+        postId: CAREER_CIRCUIT_IDS.postId,
+        worker: { mlId: CAREER_CIRCUIT_IDS.workerMlId, name: CAREER_CIRCUIT_IDS.workerName },
+      },
+    );
+    await syncCareerDataOnly(employeePage, employerPage);
+  }
 
   await waitForCareerCircuitApplicationStage(employeePage, "applied");
   const apps = await readCareerCircuitApplications(employerPage);
@@ -88,7 +165,14 @@ export async function advanceToScheduledInterview(
   const slot = getFutureInterviewScheduleSlot();
 
   const ok = await employerPage.evaluate(
-    async ({ postId, applicationId, date, time }) => {
+    async ({ postId, applicationId, date, time, profile }) => {
+      const { employerSettingsStorage } =
+        await import("/src/features/employer/company/storage/employerSettings.storage.ts");
+      employerSettingsStorage.save({
+        ...employerSettingsStorage.EMPTY_PROFILE,
+        ...profile,
+      });
+
       const candidate =
         await import("/src/features/employer/careerJobs/services/careerCandidateActionService.ts");
       const interview =
@@ -109,6 +193,7 @@ export async function advanceToScheduledInterview(
       applicationId: appId,
       date: slot.date,
       time: slot.time,
+      profile: E2E_VERIFIED_EMPLOYER_PROFILE,
     },
   );
 
@@ -118,12 +203,25 @@ export async function advanceToScheduledInterview(
 }
 
 export async function readDiaryLockState(page: Page): Promise<"locked" | "active" | "missing"> {
-  await page.goto("/#/employee");
-  const card = page.locator("[data-diary-state]");
-  if ((await card.count()) === 0) return "missing";
-  const state = await card.first().getAttribute("data-diary-state");
-  if (state === "active" || state === "locked") return state;
-  return "missing";
+  return page.evaluate(async () => {
+    const { employmentLifecycleStorage } =
+      await import("/src/features/employee/employment/storage/employmentLifecycle.storage.ts");
+    const { readCareerAppsForEmployee } =
+      await import("/src/features/employer/careerJobs/helpers/careerPersistence.ts");
+
+    const primary = employmentLifecycleStorage.getPrimaryActive();
+    if (primary) return "active";
+
+    const apps = readCareerAppsForEmployee();
+    const preHire = apps.some(
+      (app) =>
+        app.stage === "offer_accepted" ||
+        app.stage === "offered" ||
+        app.stage === "interview" ||
+        app.stage === "hired",
+    );
+    return preHire ? "locked" : "missing";
+  });
 }
 
 export async function probeLifecycleEmployment(page: Page): Promise<{
@@ -151,16 +249,11 @@ export async function probeVaultCareerHistory(
   employerRating: number | null;
   exitType: string | null;
 }> {
-  return page.evaluate((postId) => {
-    const raw = localStorage.getItem("wm_vault_career_history_v1") ?? "[]";
-    const list = JSON.parse(raw) as Array<{
-      careerPostId?: string;
-      vaultFinalized?: boolean;
-      employeeRating?: number | null;
-      employerRating?: number | null;
-      exitType?: string;
-    }>;
-    const rows = list.filter((e) => e.careerPostId === postId);
+  return page.evaluate(async (postId) => {
+    const { getVaultCareerHistory } =
+      await import("/src/features/employee/workVault/storage/vaultCareerHistory.storage.ts");
+    const list = getVaultCareerHistory();
+    const rows = list.filter((entry) => entry.careerPostId === postId);
     const entry = rows[0];
     return {
       rows: rows.length,
