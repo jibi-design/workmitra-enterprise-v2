@@ -52,6 +52,23 @@ describe("guest write policy", () => {
     ).toBe(false);
   });
 
+  it("blocks guest PUT and PATCH without a session", () => {
+    expect(
+      guestMaySendHttpWrite({
+        method: "PUT",
+        url: "/v1/jobmitra/employer/shift/posts/1",
+        isAuthenticated: false,
+      }),
+    ).toBe(false);
+    expect(
+      guestMaySendHttpWrite({
+        method: "PATCH",
+        url: "/v1/jobmitra/employee/career/applications/1",
+        isAuthenticated: false,
+      }),
+    ).toBe(false);
+  });
+
   it("detects mutating verbs", () => {
     expect(isMutatingHttpMethod("post")).toBe(true);
     expect(isMutatingHttpMethod("GET")).toBe(false);

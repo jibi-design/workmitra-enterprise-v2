@@ -1,8 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  LOGOUT_MED01_SENSITIVE_KEYS,
-  purgeUserLocalStateOnLogout,
-} from "./logoutLocalPurge";
+import { LOGOUT_MED01_SENSITIVE_KEYS, purgeUserLocalStateOnLogout } from "./logoutLocalPurge";
 import { piiSecureStorage } from "../security/piiSecureStorage";
 
 describe("purgeUserLocalStateOnLogout (MED-01)", () => {
@@ -20,6 +17,8 @@ describe("purgeUserLocalStateOnLogout (MED-01)", () => {
     localStorage.setItem("wm_mitra_labs_passes_v1", JSON.stringify([{ guestName: "Secret" }]));
     localStorage.setItem("wm_theme_preference", "dark");
     localStorage.setItem("wm_last_sync", "123");
+    localStorage.setItem("wm_guest_shortlist_shifts_v1", JSON.stringify(["post-a"]));
+    localStorage.setItem("wm_guest_device_hash_v1", "abc123");
 
     const mirrorSpy = vi.spyOn(piiSecureStorage, "clearMemoryMirror");
 
@@ -31,6 +30,8 @@ describe("purgeUserLocalStateOnLogout (MED-01)", () => {
     expect(localStorage.getItem("wm_mitra_labs_passes_v1")).toBeNull();
     expect(localStorage.getItem("wm_theme_preference")).toBe("dark");
     expect(localStorage.getItem("wm_last_sync")).toBe("123");
+    expect(localStorage.getItem("wm_guest_shortlist_shifts_v1")).toBeNull();
+    expect(localStorage.getItem("wm_guest_device_hash_v1")).toBe("abc123");
     expect(mirrorSpy).toHaveBeenCalledTimes(1);
   });
 });

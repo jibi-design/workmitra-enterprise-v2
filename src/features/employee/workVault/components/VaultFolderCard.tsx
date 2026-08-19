@@ -86,7 +86,7 @@ export function VaultFolderCard({
       }}
     >
       {/* Left: icon + info */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0, flex: 1 }}>
         <div className="wm-vault-folder-icon" aria-hidden="true">
           <FolderIcon icon={folder.icon} />
         </div>

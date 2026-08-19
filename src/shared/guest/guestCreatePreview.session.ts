@@ -17,3 +17,11 @@ export function setGuestCreatePreviewSkip(): void {
     /* ignore */
   }
 }
+
+export function clearGuestCreatePreviewSkip(): void {
+  try {
+    sessionStorage.removeItem(KEY);
+  } catch {
+    /* ignore */
+  }
+}

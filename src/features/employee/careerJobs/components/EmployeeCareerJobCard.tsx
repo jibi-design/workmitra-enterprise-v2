@@ -2,6 +2,7 @@
 // File name: EmployeeCareerJobCard.tsx
 // Full file path: C:\projects\WorkMitra_Enterprise_v2\src\features\employee\careerJobs\components\EmployeeCareerJobCard.tsx
 
+import { memo } from "react";
 import { getCareerDiscoveryLabels } from "../helpers/careerDiscoveryHelpers";
 import {
   fmtExperience,
@@ -28,7 +29,7 @@ type EmployeeCareerJobCardProps = {
 const CAREER_TEXT = "var(--wm-career-text, #0f172a)";
 const CAREER_MUTED = "var(--wm-career-muted, #64748b)";
 
-export function EmployeeCareerJobCard({
+function EmployeeCareerJobCardInner({
   post,
   isSaved,
   applicationStatus,
@@ -207,6 +208,8 @@ export function EmployeeCareerJobCard({
     </article>
   );
 }
+
+export const EmployeeCareerJobCard = memo(EmployeeCareerJobCardInner);
 
 function StatusPill({ label, active }: { label: string; active: boolean }) {
   return (

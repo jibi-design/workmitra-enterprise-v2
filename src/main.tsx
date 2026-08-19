@@ -2,7 +2,7 @@
 import { StrictMode, type ComponentType } from "react";
 import { createRoot } from "react-dom/client";
 import { normalizeHashRouterDeepLink } from "./app/router/pendingRoute";
-import { installIncomingCallNativeBridge } from "./features/shared/calling";
+import { installIncomingCallNativeBridge } from "./features/shared/calling/incomingCallBridge";
 import { installGuestWriteGuard } from "./shared/guest/security/installGuestWriteGuard";
 import { ensureGuestDeviceHash } from "./shared/guest/security/guestDeviceIntegrity";
 import "./index.css";

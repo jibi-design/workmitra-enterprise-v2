@@ -186,6 +186,13 @@ export function getRateLimitStore(): RateLimitBucketStore {
     return activeStore;
   }
 
+  if (process.env.NODE_ENV === "production" && prefer !== "memory") {
+    throw new Error(
+      "[Job Mitra API] Production rate-limit store requires UPSTASH_REDIS_REST_URL + " +
+        "UPSTASH_REDIS_REST_TOKEN, or set RATE_LIMIT_STORE=memory for a single-node opt-in.",
+    );
+  }
+
   if (prefer === "redis" || prefer === "upstash") {
     console.warn(
       "[Job Mitra API] RATE_LIMIT_STORE=redis/upstash but UPSTASH_REDIS_REST_URL/TOKEN unset — using memory.",
@@ -195,9 +202,7 @@ export function getRateLimitStore(): RateLimitBucketStore {
   activeStore = new MemoryRateLimitStore();
   if (process.env.NODE_ENV === "production") {
     console.warn(
-      "[Job Mitra API] Rate limit / CSRF store: memory in production — " +
-        "tokens and buckets reset on process restart. Set UPSTASH_REDIS_REST_URL + " +
-        "UPSTASH_REDIS_REST_TOKEN for multi-node / restart-safe CSRF + rate limits.",
+      "[Job Mitra API] Rate limit / CSRF store: memory (explicit RATE_LIMIT_STORE=memory).",
     );
   } else {
     console.log("[Job Mitra API] Rate limit store: memory (single-node).");

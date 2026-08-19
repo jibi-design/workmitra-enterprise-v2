@@ -252,7 +252,7 @@
 
 /* Extra scroll clearance — last status cards must clear bottom nav + FAB */
 .wm-er-shellPlanner .wm-container.pb-safe-nav {
-  padding-bottom: calc(132px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(7.5rem + env(safe-area-inset-bottom, 0px));
 }
 
 /* ------------------------------------------------ */

@@ -56,6 +56,15 @@ describe("guest write isolation", () => {
     );
   });
 
+  it("blocks guest PUT without a session", () => {
+    const res = mockRes();
+    expect(
+      enforceGuestWriteIsolation(mockReq(), res, "/v1/jobmitra/employer/shift/posts/1", "PUT"),
+    ).toBe(false);
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toContain("GUEST_WRITE_FORBIDDEN");
+  });
+
   it("allows mutating calls with a session cookie", () => {
     const res = mockRes();
     expect(

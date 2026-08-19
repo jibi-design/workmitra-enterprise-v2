@@ -7,7 +7,7 @@ import type {
   CareerSearchApplicationState,
   CareerSearchPost,
 } from "../helpers/careerSearchHelpers";
-import { EmployeeCareerJobCard } from "./EmployeeCareerJobCard";
+import { EmployeeCareerSearchVirtualList } from "./EmployeeCareerSearchVirtualList";
 
 type EmployeeCareerSearchResultsProps = {
   posts: CareerSearchPost[];
@@ -46,21 +46,6 @@ export function EmployeeCareerSearchResults({
   onOpenSaved,
 }: EmployeeCareerSearchResultsProps) {
   const cleanQuery = query.trim();
-
-  function renderCard(post: CareerSearchPost) {
-    return (
-      <EmployeeCareerJobCard
-        key={post.id}
-        post={post}
-        isSaved={savedJobIds.includes(post.id)}
-        applicationStatus={applicationStatusByPostId[post.id]}
-        variant="standard"
-        onOpen={onOpen}
-        onOpenApplications={onOpenApplications}
-        onToggleSaved={onToggleSaved}
-      />
-    );
-  }
 
   return (
     <>
@@ -130,7 +115,14 @@ export function EmployeeCareerSearchResults({
             onOpenSaved={onOpenSaved}
           />
         ) : (
-          posts.map((post) => renderCard(post))
+          <EmployeeCareerSearchVirtualList
+            posts={posts}
+            savedJobIds={savedJobIds}
+            applicationStatusByPostId={applicationStatusByPostId}
+            onOpen={onOpen}
+            onOpenApplications={onOpenApplications}
+            onToggleSaved={onToggleSaved}
+          />
         )}
       </div>
     </>
@@ -153,7 +145,9 @@ function getResultHelperText(
   if (count === 0) {
     if (query) return "No jobs matched this search. Try another title or location.";
     if (activeTab === "recent") return "Recently viewed jobs will appear here.";
-    return hasFilters ? "No active roles match these filters." : "Empty catalog — no career jobs listed yet.";
+    return hasFilters
+      ? "No active roles match these filters."
+      : "Empty catalog — no career jobs listed yet.";
   }
   if (activeTab === "saved") return "Open saved jobs and apply from the detail page.";
   if (activeTab === "applied") return "View submitted applications from here.";
@@ -168,7 +162,12 @@ type EmptyCareerResultsProps = {
   onOpenSaved: () => void;
 };
 
-function EmptyCareerResults({ hasFilters, query, onClearFilters, onOpenSaved }: EmptyCareerResultsProps) {
+function EmptyCareerResults({
+  hasFilters,
+  query,
+  onClearFilters,
+  onOpenSaved,
+}: EmptyCareerResultsProps) {
   return (
     <CareerEmptyState
       title={query ? "No matching roles found" : "Empty catalog"}

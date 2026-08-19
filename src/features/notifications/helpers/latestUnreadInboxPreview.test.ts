@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { pickLatestLiveShiftCareer, pickLatestUnreadShiftCareer, resolveInboxTickerHref } from "./latestUnreadInboxPreview";
+import {
+  pickLatestLiveShiftCareer,
+  pickLatestUnreadShiftCareer,
+  resolveInboxTickerHref,
+} from "./latestUnreadInboxPreview";
 
 describe("latestUnreadInboxPreview", () => {
   it("picks newest unread shift/career only", () => {
@@ -58,7 +62,7 @@ describe("latestUnreadInboxPreview", () => {
     expect(latest?.domain).toBe("employment");
   });
 
-  it("falls back to latest read shift/career when nothing is unread", () => {
+  it("shows no live ticker row when nothing is unread", () => {
     const latest = pickLatestLiveShiftCareer([
       {
         id: "4",
@@ -75,7 +79,7 @@ describe("latestUnreadInboxPreview", () => {
         isRead: false,
       },
     ]);
-    expect(latest?.id).toBe("4");
+    expect(latest).toBeNull();
   });
 
   it("routes planner paths to inbox", () => {

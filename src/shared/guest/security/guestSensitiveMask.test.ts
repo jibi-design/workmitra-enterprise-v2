@@ -17,8 +17,13 @@ describe("guest sensitive mask", () => {
     expect(maskGuestSensitiveText("Reach +44 7700 900123")).toContain("••••");
   });
 
-  it("coarsens street numbers for guests", () => {
-    expect(toGuestPublicPlace("12 High Street, Canal Quarter")).toBe("High Street Canal Quarter");
+  it("keeps only coarse area labels, dropping street pinpoints", () => {
+    expect(toGuestPublicPlace("12 High Street, Canal Quarter, Reading, UK")).toBe("Reading, UK");
+    expect(toGuestPublicPlace("12 High Street, Canal Quarter")).toBe("Canal Quarter");
+  });
+
+  it("masks obfuscated contact strings", () => {
+    expect(maskGuestSensitiveText("mail me at name at firm dot com")).toContain("contact hidden");
   });
 
   it("falls back when only a door number remains", () => {

@@ -2,8 +2,8 @@
  * Defense Layer 2 — frontend pluggable monitor (console + optional Sentry).
  */
 
-import * as Sentry from "@sentry/react";
 import { sanitizeForLog, sanitizeString } from "./sanitize";
+import type * as SentryNs from "@sentry/react";
 
 export type MonitorLevel = "fatal" | "error" | "warning" | "info";
 
@@ -29,19 +29,25 @@ class ConsoleSink implements MonitoringSink {
 }
 
 class SentrySink implements MonitoringSink {
+  private readonly sentry: typeof SentryNs;
+
+  constructor(sentry: typeof SentryNs) {
+    this.sentry = sentry;
+  }
+
   captureException(error: unknown, context?: MonitorContext): void {
     const safeCtx = context ? (sanitizeForLog(context) as Record<string, unknown>) : undefined;
-    Sentry.withScope((scope) => {
+    this.sentry.withScope((scope) => {
       if (safeCtx) scope.setExtras(safeCtx);
-      Sentry.captureException(error instanceof Error ? error : new Error(String(error)));
+      this.sentry.captureException(error instanceof Error ? error : new Error(String(error)));
     });
   }
 
   captureMessage(message: string, level: MonitorLevel = "info", context?: MonitorContext): void {
     const safeCtx = context ? (sanitizeForLog(context) as Record<string, unknown>) : undefined;
-    Sentry.withScope((scope) => {
+    this.sentry.withScope((scope) => {
       if (safeCtx) scope.setExtras(safeCtx);
-      Sentry.captureMessage(sanitizeString(message), level);
+      this.sentry.captureMessage(sanitizeString(message), level);
     });
   }
 }
@@ -82,9 +88,23 @@ export function initClientMonitor(): void {
   initialized = true;
 
   const sinks: MonitoringSink[] = [new ConsoleSink()];
-  const dsn = String(import.meta.env.VITE_SENTRY_DSN ?? "").trim();
+  sink = new FanoutSink(sinks);
 
-  if (dsn) {
+  window.addEventListener("error", (ev) => {
+    sink.captureException(ev.error ?? ev.message, {
+      kind: "window.onerror",
+      filename: ev.filename,
+    });
+  });
+
+  window.addEventListener("unhandledrejection", (ev) => {
+    sink.captureException(ev.reason, { kind: "unhandledrejection" });
+  });
+
+  const dsn = String(import.meta.env.VITE_SENTRY_DSN ?? "").trim();
+  if (!dsn) return;
+
+  void import("@sentry/react").then((Sentry) => {
     Sentry.init({
       dsn,
       environment: String(import.meta.env.MODE ?? "development"),
@@ -102,20 +122,8 @@ export function initClientMonitor(): void {
         return event;
       },
     });
-    sinks.push(new SentrySink());
-  }
-
-  sink = new FanoutSink(sinks);
-
-  window.addEventListener("error", (ev) => {
-    sink.captureException(ev.error ?? ev.message, {
-      kind: "window.onerror",
-      filename: ev.filename,
-    });
-  });
-
-  window.addEventListener("unhandledrejection", (ev) => {
-    sink.captureException(ev.reason, { kind: "unhandledrejection" });
+    sinks.push(new SentrySink(Sentry));
+    sink = new FanoutSink(sinks);
   });
 }
 

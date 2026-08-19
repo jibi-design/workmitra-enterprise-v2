@@ -14,12 +14,6 @@ import { ROUTE_PATHS } from "./routePaths";
 import { ErrorBoundary, RouteErrorBoundary } from "../../shared/components/ErrorBoundary";
 import { RequireActiveContext } from "./guards/RequireActiveContext";
 import { RoleGate } from "./guards/RoleGate";
-import { LandingRolePickPage } from "../../features/auth/pages/LandingRolePickPage";
-import { LoginPage } from "../../features/auth/pages/LoginPage";
-import { RegisterPage } from "../../features/auth/pages/RegisterPage";
-import { ForgotPasswordPage } from "../../features/auth/pages/ForgotPasswordPage";
-import { ResetPasswordPage } from "../../features/auth/pages/ResetPasswordPage";
-import { PublicLandingPage } from "../../features/public/pages/PublicLandingPage";
 import { EmployeeShell } from "../shells/EmployeeShell";
 import { EmployerShell } from "../shells/EmployerShell";
 import { AdminShell } from "../shells/AdminShell";
@@ -27,16 +21,24 @@ import { PublicWebsiteShell } from "../shells/PublicWebsiteShell";
 import { GuestBrowseShell } from "../shells/GuestBrowseShell";
 import { PulseTrailProvider } from "../../features/pulse/PulseTrailProvider";
 import { SoftAuthProvider } from "../../shared/guest/SoftAuthProvider";
-import { GuestExplorePage } from "../../features/guest/pages/GuestExplorePage";
-import { GuestShiftsPage } from "../../features/guest/pages/GuestShiftsPage";
-import { GuestShiftDetailPage } from "../../features/guest/pages/GuestShiftDetailPage";
-import { GuestCareersPage } from "../../features/guest/pages/GuestCareersPage";
-import { GuestCareerDetailPage } from "../../features/guest/pages/GuestCareerDetailPage";
 import { adminDisabledRoute, adminRouteTree } from "./routes/admin.routes";
 import { NotFoundPage } from "./routes/adminLazyPages";
 import { employeeRouteTree } from "./routes/employee.routes";
 import { employerRouteTree } from "./routes/employer.routes";
 import { PublicPassVerifyPage } from "./routes/employerLazyPages";
+import {
+  ForgotPasswordPage,
+  GuestCareerDetailPage,
+  GuestCareersPage,
+  GuestExplorePage,
+  GuestShiftDetailPage,
+  GuestShiftsPage,
+  LandingRolePickPage,
+  LoginPage,
+  PublicLandingPage,
+  RegisterPage,
+  ResetPasswordPage,
+} from "./routes/publicLazyPages";
 import { IS_DEV_ADMIN_ENABLED, PageLoader, RoleHomeRedirect } from "./routes/routerHelpers";
 
 const appRouter = createHashRouter(

@@ -5,8 +5,6 @@
   flex-direction: column;
   gap: var(--wm-stack-gap, 16px);
   box-sizing: border-box;
-  /* Extra clearance so last Intelligence/Reports card clears BottomNav + safe area */
-  padding-bottom: calc(48px + env(safe-area-inset-bottom, 0px));
 }
 
 .wm-homeSectionPanel {
@@ -204,7 +202,8 @@
   box-sizing: border-box;
   padding: 12px 14px;
   border-radius: var(--wm-home-radius-card, var(--wm-radius-employee-card, 24px));
-  border: 1.5px solid color-mix(in srgb, var(--wm-diary-accent, #3b82f6) 36%, rgba(226, 232, 240, 0.9));
+  border: 1.5px solid
+    color-mix(in srgb, var(--wm-diary-accent, #3b82f6) 36%, rgba(226, 232, 240, 0.9));
   background:
     radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.14), transparent 44%),
     linear-gradient(
@@ -232,8 +231,7 @@
 .wm-homeDiaryBanner--locked {
   opacity: 0.94;
   cursor: default;
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.88));
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.88));
   border: 1px solid rgba(226, 232, 240, 0.88);
   box-shadow: var(--wm-emp-card-shadow, 0 8px 24px rgba(15, 23, 42, 0.05));
 }
@@ -1670,5 +1668,3 @@
   color: var(--wm-brand-600, #2563eb);
   cursor: pointer;
 }
-
-

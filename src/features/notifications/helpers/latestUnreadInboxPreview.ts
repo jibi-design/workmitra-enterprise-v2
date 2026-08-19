@@ -72,17 +72,16 @@ export function listLiveShiftCareer(
   limit = 5,
 ): InboxTickerItem[] {
   const unread: InboxTickerItem[] = [];
-  const rest: InboxTickerItem[] = [];
   const seen = new Set<string>();
   const sorted = [...items].sort((a, b) => b.createdAt - a.createdAt);
   for (const source of sorted) {
     const mapped = toTickerItem(source);
-    if (!mapped || seen.has(mapped.id)) continue;
+    if (!mapped || seen.has(mapped.id) || source.isRead) continue;
     seen.add(mapped.id);
-    if (!source.isRead) unread.push(mapped);
-    else rest.push(mapped);
+    unread.push(mapped);
+    if (unread.length >= limit) break;
   }
-  return [...unread, ...rest].slice(0, limit);
+  return unread;
 }
 
 export function pickLatestLiveShiftCareer(
@@ -101,7 +100,10 @@ export function resolveInboxTickerHref(item: InboxTickerItem, inboxPath: string)
   if (route.includes("/review-center")) return route;
   if (item.domain === "shift" && route.includes("/shift")) return route;
   if (item.domain === "career" && route.includes("/career")) return route;
-  if (item.domain === "employment" && (route.includes("/career") || route.includes("/employment"))) {
+  if (
+    item.domain === "employment" &&
+    (route.includes("/career") || route.includes("/employment"))
+  ) {
     return route;
   }
   if (item.domain === "system" && route.startsWith("/") && !PLANNER_PATH.test(route)) return route;

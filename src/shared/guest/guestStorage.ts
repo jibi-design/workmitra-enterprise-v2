@@ -198,6 +198,20 @@ export const guestStorage = {
     return next;
   },
 
+  /** Shortlists / drafts / shadow profile only — keep device hash for fraud throttle. */
+  clearProfileArtifacts(): void {
+    try {
+      localStorage.removeItem(SHORTLIST_SHIFTS_KEY);
+      localStorage.removeItem(SHORTLIST_CAREERS_KEY);
+      localStorage.removeItem(SHADOW_PROFILE_KEY);
+      localStorage.removeItem(DRAFTS_KEY);
+      invalidateCaches();
+      window.dispatchEvent(new Event(CHANGE_EVENT));
+    } catch {
+      /* ignore */
+    }
+  },
+
   clearAll(): void {
     try {
       const keys: string[] = [];

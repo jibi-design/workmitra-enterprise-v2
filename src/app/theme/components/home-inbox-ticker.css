@@ -225,7 +225,12 @@
 }
 
 .wm-homeTickerLayout__badge {
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 0;
+  max-width: 42%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   padding: 2px 6px;
   border-radius: var(--wm-radius-pill);
   background: color-mix(in srgb, var(--wm-status-strip-accent) 16%, transparent);
@@ -234,11 +239,10 @@
   font-weight: 700;
   letter-spacing: 0.02em;
   line-height: 1.2;
-  white-space: nowrap;
 }
 
 .wm-homeTickerLayout__headline {
-  flex: 0 1 auto;
+  flex: 1 1 38%;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;

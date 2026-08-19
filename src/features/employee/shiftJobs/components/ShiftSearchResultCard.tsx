@@ -1,6 +1,7 @@
 /** Shift search result card */
 
 import type { KeyboardEvent, MouseEvent } from "react";
+import { memo } from "react";
 import { experienceLabel, formatShiftDateRange } from "../helpers/shiftSearchViewHelpers";
 import type { ShiftPayBasis, ShiftPostDemo } from "../types/shiftSearch.types";
 
@@ -15,7 +16,7 @@ type Props = {
   onQuickApply: (event: MouseEvent, postId: string) => void;
 };
 
-export function ShiftSearchResultCard({
+function ShiftSearchResultCardInner({
   post,
   applied,
   quickApplyEnabled,
@@ -110,6 +111,8 @@ export function ShiftSearchResultCard({
     </article>
   );
 }
+
+export const ShiftSearchResultCard = memo(ShiftSearchResultCardInner);
 
 function companyInitials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);

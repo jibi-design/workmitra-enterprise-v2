@@ -7,8 +7,11 @@
 
 import { VAULT_STORAGE_KEYS } from "../../features/employee/workVault/constants/vaultConstants";
 import { clearOtp } from "../../features/employee/workVault/services/vaultOtpService";
+import { clearGuestCreatePreviewSkip } from "../guest/guestCreatePreview.session";
+import { guestStorage } from "../guest/guestStorage";
+import { clearIntentPacket } from "../guest/intentPacket";
 import { clearPiiDeviceKey } from "../security/piiCrypto";
-import { PII_STORAGE_KEYS } from "../security/piiSecureStorage";
+import { PII_STORAGE_KEYS, piiSecureStorage } from "../security/piiSecureStorage";
 import {
   clearShiftRetryDeadLetter,
   clearShiftRetryQueue,
@@ -107,11 +110,16 @@ function collectPrefixMatches(): string[] {
 export function purgeUserLocalStateOnLogout(): void {
   clearOtp();
   clearPiiDeviceKey();
+  piiSecureStorage.clearMemoryMirror();
   clearShiftRetryQueue();
   clearShiftRetryDeadLetter();
 
   const keys = new Set<string>([...EXACT_PURGE_KEYS, ...collectPrefixMatches()]);
   for (const key of keys) safeRemove(key);
+
+  guestStorage.clearProfileArtifacts();
+  clearIntentPacket();
+  clearGuestCreatePreviewSkip();
 
   // Wave-5 P3: exhaustively clear session-scoped CSRF / tab tokens
   try {
