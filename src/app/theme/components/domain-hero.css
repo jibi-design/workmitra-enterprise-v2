@@ -6,7 +6,7 @@
   padding: var(--wm-card-padding);
   border: 1px solid var(--wm-glass-border);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   box-sizing: border-box;
 }
 
@@ -20,24 +20,12 @@
   box-shadow: var(--wm-er-card-shadow);
 }
 
-@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .wm-domainHero--employee {
-    backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
-    -webkit-backdrop-filter: blur(var(--wm-blur-md)) var(--wm-glass-saturate);
-  }
-
-  .wm-domainHero--employer {
-    backdrop-filter: blur(var(--wm-blur-lg)) var(--wm-glass-saturate);
-    -webkit-backdrop-filter: blur(var(--wm-blur-lg)) var(--wm-glass-saturate);
-  }
-}
-
 /* Domain tints — structure step; material tokens land in Step 2 */
 .wm-domainHero--shift {
   border-color: rgba(22, 163, 74, 0.18);
   background:
     radial-gradient(circle at 94% 0%, rgba(22, 163, 74, 0.12), transparent 36%),
-    linear-gradient(135deg, var(--wm-emp-glass-bg-strong), rgba(240, 253, 244, 0.78));
+    linear-gradient(135deg, #ffffff, rgba(240, 253, 244, 0.96));
 }
 
 .wm-domainHero--shift.wm-domainHero--employer {
@@ -57,6 +45,23 @@
   background:
     radial-gradient(circle at 100% 0%, rgba(29, 78, 216, 0.06), transparent 34%),
     linear-gradient(135deg, var(--wm-er-glass-bg-strong), rgba(241, 245, 249, 0.82));
+}
+
+.wm-domainHero--diary {
+  border-color: color-mix(in srgb, var(--wm-diary-accent, #3b82f6) 42%, transparent);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.1), transparent 34%),
+    linear-gradient(135deg, var(--wm-emp-glass-bg-strong), rgba(239, 246, 255, 0.88));
+}
+
+.wm-domainHero--diary .wm-domainHeroIcon {
+  border-color: var(--wm-diary-accent-border, rgba(59, 130, 246, 0.22));
+  background: var(--wm-diary-accent-soft, rgba(59, 130, 246, 0.12));
+  color: var(--wm-diary-accent, #3b82f6);
+}
+
+.wm-domainHero--diary .wm-domainHeroEyebrow {
+  color: var(--wm-diary-accent-strong, #2563eb);
 }
 
 .wm-domainHero--planner {
@@ -119,6 +124,15 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--wm-stack-gap);
+}
+
+.wm-domainHero--shift.wm-domainHero--employee .wm-domainHeroTop {
+  align-items: center;
+}
+
+.wm-domainHero--shift.wm-domainHero--employee .wm-domainHeroTrailing {
+  padding-top: 10px;
+  padding-bottom: 4px;
 }
 
 .wm-domainHeroIdentity {

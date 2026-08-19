@@ -73,5 +73,17 @@ export async function handleEmployeeShiftOpsRoutes(
     return true;
   }
 
+  if (method === "GET" && subpath === "/reviews") {
+    const result = await shiftOpsService.listReviews(req.authenticatedUser);
+    if (!result.ok) {
+      sendJson(res, result.httpStatus, {
+        error: { code: result.code, message: result.message, requestId },
+      });
+      return true;
+    }
+    sendJson(res, 200, envelope(result.data, requestId));
+    return true;
+  }
+
   return false;
 }

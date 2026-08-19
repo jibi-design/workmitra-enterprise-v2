@@ -58,5 +58,51 @@ export async function handleEmployerShiftOpsRoutes(
     return true;
   }
 
+  if (method === "GET" && subpath === "/reviews") {
+    const result = await shiftOpsService.listReviews(req.authenticatedUser);
+    if (!result.ok) {
+      sendJson(res, result.httpStatus, {
+        error: { code: result.code, message: result.message, requestId },
+      });
+      return true;
+    }
+    sendJson(res, 200, envelope(result.data, requestId));
+    return true;
+  }
+
+  const completeWs = subpath.match(/^\/workspaces\/([^/]+)\/complete$/);
+  if (method === "POST" && completeWs) {
+    const result = await shiftOpsService.completeWorkspace(completeWs[1], req.authenticatedUser);
+    if (!result.ok) {
+      sendJson(res, result.httpStatus, {
+        error: { code: result.code, message: result.message, requestId },
+      });
+      return true;
+    }
+    sendJson(res, 200, envelope(result.data, requestId));
+    return true;
+  }
+
+  const archiveSite = subpath.match(/^\/sites\/([^/]+)\/archive$/);
+  if (method === "POST" && archiveSite) {
+    const body = (await readJsonBody(req)) ?? {};
+    const extraKeys = Array.isArray(body.jobPostKeys)
+      ? body.jobPostKeys.filter((key: unknown): key is string => typeof key === "string")
+      : [];
+    const result = await shiftOpsService.archiveSite(
+      archiveSite[1],
+      req.authenticatedUser,
+      extraKeys,
+    );
+    if (!result.ok) {
+      sendJson(res, result.httpStatus, {
+        error: { code: result.code, message: result.message, requestId },
+      });
+      return true;
+    }
+    sendJson(res, 200, envelope(result.data, requestId));
+    return true;
+  }
+
   return false;
 }

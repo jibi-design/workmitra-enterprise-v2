@@ -12,12 +12,17 @@ export function EmployeePlannerApplicationsPage() {
 
   return (
     <div className="wm-ee-vPlanner wm-planner-page" data-testid="planner-employee-applications">
-      <PlannerApplicationsHeader onBrowseProjects={openDiscover} />
+      <PlannerApplicationsHeader />
       <PlannerApplicationsKpiTiles kpi={kpi} />
       <PlannerApplicationsTabs tab={tab} counts={counts} onChange={setTab} />
       <PlannerApplicationsList
         applications={filteredApplications}
         postMap={postMap}
+        pipelineHint={
+          filteredApplications.length === 0 && counts.all > 0
+            ? "Invites or later-stage applications are in another tab — switch Active or Confirmed."
+            : null
+        }
         onBrowseProjects={openDiscover}
         onOpenApplication={openApplication}
       />

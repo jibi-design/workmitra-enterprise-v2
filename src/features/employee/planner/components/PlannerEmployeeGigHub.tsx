@@ -77,45 +77,51 @@ export function PlannerEmployeeGigHub() {
 
       <PlannerEmployeeCommandGrid />
 
-      <PlannerShiftHomeProjectStrip />
+      {preview.length === 0 ? (
+        <div className="wm-planner-card" data-testid="planner-gig-hub-empty">
+          <div className="wm-planner-sectionLabel">Catalog</div>
+          <div className="wm-planner-sectionTitle">Empty catalog</div>
+          <p className="wm-typeHelper">
+            No project plans listed yet. When an employer publishes a multi-day plan, it appears
+            here. Use Browse Projects in the command center to check again.
+          </p>
+        </div>
+      ) : (
+        <>
+          <PlannerShiftHomeProjectStrip />
 
-      <div className="wm-planner-card">
-        <div className="wm-planner-sectionLabel">Preview</div>
-        <div className="wm-planner-sectionTitle">Open projects preview</div>
-        {preview.length === 0 ? (
-          <div className="wm-typeHelper">
-            No project plans near you yet. When an employer publishes a plan, it appears here and on
-            Gig Home.
-          </div>
-        ) : (
-          preview.map((entry) => (
+          <div className="wm-planner-card">
+            <div className="wm-planner-sectionLabel">Preview</div>
+            <div className="wm-planner-sectionTitle">Open projects preview</div>
+            {preview.map((entry) => (
+              <button
+                key={entry.planId}
+                type="button"
+                className="wm-planner-btnGhost"
+                style={{
+                  width: "100%",
+                  marginBottom: "var(--wm-stack-gap)",
+                  justifyContent: "space-between",
+                }}
+                onClick={() => nav(employeeProjectDetailPath(entry.planId))}
+              >
+                <span>{entry.planName}</span>
+                <span className="wm-planner-badge">
+                  {formatPlannerPayRange(entry.payMin, entry.payMax)}
+                </span>
+              </button>
+            ))}
             <button
-              key={entry.planId}
               type="button"
-              className="wm-planner-btnGhost"
-              style={{
-                width: "100%",
-                marginBottom: "var(--wm-stack-gap)",
-                justifyContent: "space-between",
-              }}
-              onClick={() => nav(employeeProjectDetailPath(entry.planId))}
+              className="wm-planner-btnPrimary"
+              style={{ width: "100%", marginTop: 4 }}
+              onClick={() => nav(ROUTE_PATHS.employeePlannerBrowse)}
             >
-              <span>{entry.planName}</span>
-              <span className="wm-planner-badge">
-                {formatPlannerPayRange(entry.payMin, entry.payMax)}
-              </span>
+              Open project catalog →
             </button>
-          ))
-        )}
-        <button
-          type="button"
-          className="wm-planner-btnPrimary"
-          style={{ width: "100%", marginTop: 4 }}
-          onClick={() => nav(ROUTE_PATHS.employeePlannerBrowse)}
-        >
-          Browse all Gig Projects →
-        </button>
-      </div>
+          </div>
+        </>
+      )}
     </PlannerShell>
   );
 }

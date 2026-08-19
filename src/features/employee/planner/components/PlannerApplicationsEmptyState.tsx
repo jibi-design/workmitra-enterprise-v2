@@ -2,9 +2,10 @@
 
 type Props = {
   onBrowseProjects: () => void;
+  pipelineHint?: string | null;
 };
 
-export function PlannerApplicationsEmptyState({ onBrowseProjects }: Props) {
+export function PlannerApplicationsEmptyState({ onBrowseProjects, pipelineHint }: Props) {
   return (
     <section
       data-testid="planner-applications-empty"
@@ -22,9 +23,12 @@ export function PlannerApplicationsEmptyState({ onBrowseProjects }: Props) {
         textAlign: "center",
       }}
     >
-      <div style={{ fontSize: 16, fontWeight: 950, color: "#0f172a" }}>No applications yet</div>
+      <div style={{ fontSize: 16, fontWeight: 950, color: "#0f172a" }}>
+        {pipelineHint ? "Nothing in this tab" : "Empty catalog"}
+      </div>
       <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.5, maxWidth: 290 }}>
-        Browse Gig Projects and apply to multi-day plans to track bundle status here.
+        {pipelineHint ??
+          "No project applications yet. Open Browse Projects from Gig Home when you are ready to apply."}
       </div>
       <button
         type="button"

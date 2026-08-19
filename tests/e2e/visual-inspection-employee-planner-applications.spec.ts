@@ -23,6 +23,7 @@ const REPORT_MD = REPORT_JSON.replace(/\.json$/, ".md");
 const APPS_SMASH_NEEDLES = [
   "My Project ApplicationsMulti",
   "Browse ProjectsTrack",
+  "Empty catalogBrowse",
   "No applications yetBrowse",
 ] as const;
 
@@ -50,8 +51,8 @@ test.describe("Employee Planner Applications Visual Inspection", () => {
     );
 
     const bust = Date.now();
-    await page.goto(`/?pw_apps_vis=${bust}#${APPS_PATH}`, { waitUntil: "networkidle" });
-    await page.reload({ waitUntil: "networkidle" });
+    await page.goto(`/?pw_apps_vis=${bust}#${APPS_PATH}`, { waitUntil: "domcontentloaded" });
+    await page.reload({ waitUntil: "domcontentloaded" });
     await expect(page).toHaveURL(/\/employee\/planner\/applications/);
     await expect(page.locator("body")).not.toContainText("Something went wrong");
 
@@ -61,7 +62,6 @@ test.describe("Employee Planner Applications Visual Inspection", () => {
     await expect(page.getByText("My Project Applications")).toBeVisible();
     await expect(page.getByTestId("planner-applications-empty")).toBeVisible();
     await expect(page.getByTestId("planner-applications-empty-cta")).toBeVisible();
-    await expect(page.getByTestId("planner-applications-browse")).toBeVisible();
 
     await page.screenshot({
       path: join(process.cwd(), "test-results", "employee-planner-applications-full.png"),

@@ -33,13 +33,20 @@ const rootEl = document.getElementById("root")!;
  */
 async function mount(): Promise<void> {
   try {
-    await hydratePiiSecureStorage();
-    await hydrateVaultDocumentsPlaintext();
+    await Promise.race([
+      (async () => {
+        await hydratePiiSecureStorage();
+        await hydrateVaultDocumentsPlaintext();
+      })(),
+      new Promise<void>((resolve) => {
+        window.setTimeout(resolve, 2_000);
+      }),
+    ]);
   } catch (err) {
     console.error("[WorkMitra] PII / vault document hydrate failed", err);
   }
 
-  let GodModePanel: ComponentType = () => null;
+  let GodModePanel: ComponentType | null = null;
   if (import.meta.env.DEV) {
     const mod = await import("./dev/GodModePanel.tsx");
     GodModePanel = mod.GodModePanel;
@@ -48,7 +55,7 @@ async function mount(): Promise<void> {
   createRoot(rootEl).render(
     <StrictMode>
       <App />
-      <GodModePanel />
+      {GodModePanel ? <GodModePanel /> : null}
     </StrictMode>,
   );
 }

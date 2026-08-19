@@ -7,6 +7,8 @@ import { plannerPublicIndex } from "../../../shared/planner/plannerPublic";
 import { employeePlanEngagementStorage } from "../storage/employeePlanEngagement.storage";
 import { employeeProjectDetailPath } from "../../planner/helpers/plannerEmployeeRoutes";
 import { PlannerPickChooseModal } from "./PlannerPickChooseModal";
+import { employeeProfileStorage } from "../../profile/storage/employeeProfile.storage";
+import { filterPlannerEntriesNearWorker } from "../helpers/plannerNearby.filter";
 
 type Props = {
   onToast: (message: string) => void;
@@ -29,9 +31,9 @@ function subscribeEngagement(cb: () => void) {
 function formatMegaPay(entry: PlannerPublicIndexEntry): string {
   if (entry.payMin <= 0 && entry.payMax <= 0) return "";
   if (entry.payMin === entry.payMax) {
-    return `₹${entry.payMin.toLocaleString("en-IN")}/day`;
+    return `${entry.payMin.toLocaleString("en-GB")}/day`;
   }
-  return `₹${entry.payMin.toLocaleString("en-IN")}–${entry.payMax.toLocaleString("en-IN")}/day`;
+  return `${entry.payMin.toLocaleString("en-GB")}–${entry.payMax.toLocaleString("en-GB")}/day`;
 }
 
 function MegaCard({
@@ -71,7 +73,7 @@ function MegaCard({
         <div className="wm-planner-badge">Gig Project · {entry.openDayCount} days open</div>
         <div style={{ fontSize: 15, fontWeight: 800, marginTop: 6 }}>{headline}</div>
         <div style={{ fontSize: 12, color: "var(--wm-neutral-500)", marginTop: 4 }}>
-          {entry.companyName} · {entry.locationName} · {entry.category}
+          {entry.companyName} · {entry.category}
         </div>
       </div>
       <div style={{ padding: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -114,11 +116,30 @@ function MegaCard({
 
 export function PlannerMegaProjectSection({ onToast, onNeedProfile, isProfileComplete }: Props) {
   const nav = useNavigate();
-  const entries = useSyncExternalStore(
+  const rawEntries = useSyncExternalStore(
     plannerPublicIndex.subscribe,
     getIndexSnapshot,
     getIndexSnapshot,
   );
+
+  const profileKey = useSyncExternalStore(
+    employeeProfileStorage.subscribe,
+    () => {
+      const profile = employeeProfileStorage.get();
+      return `${profile.basePincode}|${profile.commuteRadius}`;
+    },
+    () => "",
+  );
+
+  const entries = useMemo(() => {
+    void profileKey;
+    const profile = employeeProfileStorage.get();
+    return filterPlannerEntriesNearWorker({
+      entries: rawEntries,
+      workerPincode: profile.basePincode,
+      commuteRadiusKm: profile.commuteRadius,
+    });
+  }, [rawEntries, profileKey]);
 
   useSyncExternalStore(subscribeEngagement, getEngagementSnapshotKey, getEngagementSnapshotKey);
 
@@ -182,8 +203,11 @@ export function PlannerMegaProjectSection({ onToast, onNeedProfile, isProfileCom
           data-testid="planner-browse-mega-empty"
           style={{ fontSize: 12, color: "var(--wm-neutral-500)", lineHeight: 1.5, fontWeight: 600 }}
         >
-          No project plans near you yet. When employers publish multi-day plans, Mega Cards appear
-          here. Pick &amp; Choose, earnings meter, and conflict guard activate on each project.
+          <div className="wm-planner-sectionTitle">Empty catalog</div>
+          <p className="wm-typeHelper" style={{ margin: "8px 0 0" }}>
+            No project plans listed yet. When employers publish multi-day plans, they appear here.
+            Pick &amp; Choose, earnings, and conflict guard activate on each project.
+          </p>
         </div>
       ) : (
         <div style={{ display: "grid", gap: 16 }}>
