@@ -183,15 +183,23 @@
 
 .wm-erDashBento {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
   margin: 12px 0;
   align-items: stretch;
 }
 
-@media (max-width: 359px) {
+.wm-erDashBento--triple {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 720px) {
   .wm-erDashBento {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .wm-erDashBento--triple {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -239,6 +247,27 @@
 .wm-erDashJobBadge--upcoming {
   color: var(--wm-shift-accent, #16a34a);
   background: color-mix(in srgb, var(--wm-shift-accent, #16a34a) 14%, transparent);
+}
+
+.wm-erDashJobBadge--match,
+.wm-erDashJobBadge--available {
+  color: var(--wm-shift-accent, #16a34a);
+  background: color-mix(in srgb, var(--wm-shift-accent, #16a34a) 14%, transparent);
+}
+
+.wm-erDashJobBadge--gate {
+  color: var(--wm-workforce-accent, #b45309);
+  background: color-mix(in srgb, var(--wm-workforce-accent, #b45309) 14%, transparent);
+}
+
+.wm-erDashJobBadge--gap {
+  color: var(--wm-planner-accent, #0891b2);
+  background: color-mix(in srgb, var(--wm-planner-accent, #0891b2) 14%, transparent);
+}
+
+.wm-erDashJobBadge--budget {
+  color: var(--wm-planner-accent, #0891b2);
+  background: color-mix(in srgb, var(--wm-planner-accent, #0891b2) 14%, transparent);
 }
 
 .wm-erDashJobs__meta {

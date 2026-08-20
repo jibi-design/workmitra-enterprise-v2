@@ -20,20 +20,44 @@ import {
 import { listPlannerApplicationBatches } from "../../planner/services/plannerBatchApproval.service";
 import { DEMAND_PLANS_CHANGED_EVENT } from "../../planner/storage/demandPlanner.schema";
 import { demandPlannerStorage } from "../../planner/storage/demandPlannerStorage";
+import {
+  EMPLOYER_COMPLIANCE_CHANGED,
+  employerComplianceStorage,
+} from "../../compliance/storage/employerCompliance.storage";
+import {
+  buildEmployerInterviewRows,
+  buildEmployerMatchCandidates,
+} from "../helpers/employerDashboard.helpers";
 import { computeCareerOsSnapshot } from "../helpers/employerDashboard.osCareer";
+import {
+  EMPTY_LANE_PREVIEW_LIVE,
+  type LanePreviewLiveInput,
+} from "../helpers/employerDashboard.lanePreview.live";
+import { computeOsRibbonExtras, type OsRibbonExtras } from "../helpers/employerDashboard.osExtras";
 import {
   buildWorkspaceStrip,
   type EmployerOsWorkspaceStrip,
 } from "../helpers/employerDashboard.osOps";
 import {
+  buildPlannerBudgetRows,
+  buildPlannerGapRows,
   buildPlannerOpenRows,
   buildPlannerOsRows,
   computePlannerOsSnapshot,
+  countPlannerOpenWeeks,
+  countPlannerUnfilledTotal,
+  countPlannerWorkerDaysTotal,
 } from "../helpers/employerDashboard.osPlanner";
 import {
+  buildShiftGateRows,
   buildShiftOpenRows,
   buildShiftOsRows,
+  buildShiftRosterRows,
   computeShiftOsSnapshot,
+  countShiftGateReady,
+  countShiftRosterMatches,
+  countShiftsStartingSoon,
+  countUpcomingShiftPosts,
 } from "../helpers/employerDashboard.osShift";
 import type {
   EmployerOsDomainSnapshot,
@@ -50,6 +74,14 @@ export type EmployerOsDashboardModel = {
   readonly plannerRows: readonly EmployerOsTrackerRow[];
   readonly shiftOpen: readonly EmployerOsOpenRow[];
   readonly plannerOpen: readonly EmployerOsOpenRow[];
+  readonly shiftRoster: readonly EmployerOsOpenRow[];
+  readonly shiftGate: readonly EmployerOsOpenRow[];
+  readonly plannerGaps: readonly EmployerOsOpenRow[];
+  readonly plannerBudget: readonly EmployerOsOpenRow[];
+  readonly shiftStartingSoon: number;
+  readonly shiftUpcoming: number;
+  readonly extras: OsRibbonExtras;
+  readonly laneLive: LanePreviewLiveInput;
 };
 
 type OsBundle = {
@@ -61,6 +93,7 @@ type OsBundle = {
   shiftWorkspaces: ReturnType<typeof getWorkspacesSnapshot>;
   plans: ReturnType<typeof demandPlannerStorage.getAll>;
   batches: ReturnType<typeof listPlannerApplicationBatches>;
+  documents: ReturnType<typeof employerComplianceStorage.getAll>;
 };
 
 function safeRead<T>(read: () => T, fallback: T): T {
@@ -81,6 +114,7 @@ function readBundle(): OsBundle {
     shiftWorkspaces: safeRead(getWorkspacesSnapshot, []),
     plans: safeRead(() => demandPlannerStorage.getAll(), []),
     batches: safeRead(listPlannerApplicationBatches, []),
+    documents: safeRead(() => [...employerComplianceStorage.getAll()], []),
   };
 }
 
@@ -96,12 +130,14 @@ function subscribe(onChange: () => void): () => void {
   const unsubShiftWs = subscribeWorkspaces(refresh);
   window.addEventListener(DEMAND_PLANS_CHANGED_EVENT, refresh);
   window.addEventListener("wm:employee-shift-applications-changed", refresh);
+  window.addEventListener(EMPLOYER_COMPLIANCE_CHANGED, refresh);
   return () => {
     unsubCareer();
     unsubShift();
     unsubShiftWs();
     window.removeEventListener(DEMAND_PLANS_CHANGED_EVENT, refresh);
     window.removeEventListener("wm:employee-shift-applications-changed", refresh);
+    window.removeEventListener(EMPLOYER_COMPLIANCE_CHANGED, refresh);
   };
 }
 
@@ -139,6 +175,13 @@ export function useEmployerOsDashboardModel(): EmployerOsDashboardModel {
       const shiftWorkspaces = Array.isArray(data.shiftWorkspaces) ? data.shiftWorkspaces : [];
       const plans = Array.isArray(data.plans) ? data.plans : [];
       const batches = Array.isArray(data.batches) ? data.batches : [];
+      const documents = Array.isArray(data.documents) ? data.documents : [];
+      const matches = buildEmployerMatchCandidates(careerPosts, careerApps, 1);
+      const interviews = buildEmployerInterviewRows(
+        careerApps,
+        new Map(careerPosts.map((post) => [post.id, post])),
+      );
+      const shiftUpcoming = countUpcomingShiftPosts(shiftPosts);
       return {
         shiftSnap: computeShiftOsSnapshot(shiftPosts, shiftApps),
         careerSnap: computeCareerOsSnapshot(careerPosts, careerApps),
@@ -148,6 +191,28 @@ export function useEmployerOsDashboardModel(): EmployerOsDashboardModel {
         plannerRows: buildPlannerOsRows(batches),
         shiftOpen: buildShiftOpenRows(shiftPosts),
         plannerOpen: buildPlannerOpenRows(plans),
+        shiftRoster: buildShiftRosterRows(shiftApps, shiftPosts),
+        shiftGate: buildShiftGateRows(shiftPosts),
+        plannerGaps: buildPlannerGapRows(plans),
+        plannerBudget: buildPlannerBudgetRows(plans),
+        shiftStartingSoon: countShiftsStartingSoon(shiftPosts),
+        shiftUpcoming,
+        extras: computeOsRibbonExtras({
+          workspaces: shiftWorkspaces,
+          apps: shiftApps,
+          documents,
+        }),
+        laneLive: {
+          shiftUpcoming,
+          shiftRoster: countShiftRosterMatches(shiftApps, shiftPosts),
+          shiftGateReady: countShiftGateReady(shiftPosts),
+          careerApplicants: careerApps.length,
+          careerTopMatch: matches[0]?.matchPercent ?? null,
+          careerInterviews: interviews.length,
+          plannerWeeks: countPlannerOpenWeeks(plans),
+          plannerGaps: countPlannerUnfilledTotal(plans),
+          plannerWorkerDays: countPlannerWorkerDaysTotal(plans),
+        },
       };
     } catch {
       return {
@@ -159,6 +224,19 @@ export function useEmployerOsDashboardModel(): EmployerOsDashboardModel {
         plannerRows: [],
         shiftOpen: [],
         plannerOpen: [],
+        shiftRoster: [],
+        shiftGate: [],
+        plannerGaps: [],
+        plannerBudget: [],
+        shiftStartingSoon: 0,
+        shiftUpcoming: 0,
+        extras: {
+          workspaceClockedIn: 0,
+          gatePending: 0,
+          gateFlags: 0,
+          vaultExpiring: 0,
+        },
+        laneLive: EMPTY_LANE_PREVIEW_LIVE,
       };
     }
   }, [data]);

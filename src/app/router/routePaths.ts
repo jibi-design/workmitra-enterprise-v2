@@ -85,9 +85,8 @@ export const ROUTE_PATHS = {
   employerNotifications: "/employer/notifications",
   employerMyStaff: "/employer/my-staff",
 
-  // Employer Review Center & Analytics
+  // Employer Review Center
   employerReviewCenter: "/employer/review-center",
-  employerAnalytics: "/employer/analytics",
 
   // Employer Career - detailed routes (Phase-0)
   employerCareerCreate: "/employer/career/create",

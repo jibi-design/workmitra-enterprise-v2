@@ -26,6 +26,26 @@ function isShiftOwnedPost(post: ShiftPost): boolean {
   return post.source !== "planner" && !post.planId;
 }
 
+const SHIFT_START_SOON_MS = 2 * 60 * 60 * 1000;
+
+export function isLiveShiftOwnedPost(post: ShiftPost): boolean {
+  return isShiftOwnedPost(post) && post.status !== "completed" && post.status !== "cancelled";
+}
+
+export function countUpcomingShiftPosts(posts: readonly ShiftPost[], now = Date.now()): number {
+  return posts.filter((post) => isLiveShiftOwnedPost(post) && post.startAt > now).length;
+}
+
+export function countShiftsStartingSoon(
+  posts: readonly ShiftPost[],
+  now = Date.now(),
+  windowMs = SHIFT_START_SOON_MS,
+): number {
+  return posts.filter(
+    (post) => isLiveShiftOwnedPost(post) && post.startAt > now && post.startAt <= now + windowMs,
+  ).length;
+}
+
 export function mapShiftOsStage(status: string): string | null {
   if (status === "applied") return "Applied";
   if (status === "shortlisted" || status === "waiting") return "Shortlisted";
@@ -38,9 +58,7 @@ export function computeShiftOsSnapshot(
   apps: readonly EmployeeShiftApplication[],
 ): EmployerOsDomainSnapshot {
   const shiftApps = apps.filter((app) => !isPlannerTaggedShiftApp(app));
-  const open = posts.filter(
-    (post) => isShiftOwnedPost(post) && post.status !== "completed" && post.status !== "cancelled",
-  ).length;
+  const open = posts.filter((post) => isLiveShiftOwnedPost(post)).length;
   const pending = shiftApps.filter(
     (app) => app.status === "applied" || app.status === "shortlisted" || app.status === "waiting",
   ).length;
@@ -84,10 +102,7 @@ export function buildShiftOsRows(
 
 export function buildShiftOpenRows(posts: readonly ShiftPost[]): EmployerOsOpenRow[] {
   return posts
-    .filter(
-      (post) =>
-        isShiftOwnedPost(post) && post.status !== "completed" && post.status !== "cancelled",
-    )
+    .filter((post) => isLiveShiftOwnedPost(post))
     .sort((a, b) => a.startAt - b.startAt)
     .slice(0, 8)
     .map((post) => ({
@@ -97,4 +112,63 @@ export function buildShiftOpenRows(posts: readonly ShiftPost[]): EmployerOsOpenR
       href: ROUTE_PATHS.employerShiftPostDashboard.replace(":postId", post.id),
       badge: post.startAt > Date.now() ? "Upcoming" : "Active",
     }));
+}
+
+export function buildShiftRosterRows(
+  apps: readonly EmployeeShiftApplication[],
+  posts: readonly ShiftPost[],
+): EmployerOsOpenRow[] {
+  const postsById = new Map(posts.map((post) => [post.id, post]));
+  const rows: EmployerOsOpenRow[] = [];
+  for (const app of apps) {
+    if (isPlannerTaggedShiftApp(app)) continue;
+    if (app.status !== "applied" && app.status !== "shortlisted" && app.status !== "waiting") {
+      continue;
+    }
+    const post = postsById.get(app.postId);
+    if (!post || !isLiveShiftOwnedPost(post)) continue;
+    rows.push({
+      id: app.id,
+      title: app.profileSnapshot?.fullName?.trim() || "Worker",
+      meta: post.jobName?.trim() || "Open shift",
+      href: ROUTE_PATHS.employerCandidateDetail
+        .replace(":postId", app.postId)
+        .replace(":appId", app.id),
+      badge: app.status === "waiting" ? "Available" : "Match",
+    });
+  }
+  return rows.slice(0, 8);
+}
+
+export function buildShiftGateRows(posts: readonly ShiftPost[]): EmployerOsOpenRow[] {
+  return posts
+    .filter((post) => isLiveShiftOwnedPost(post) && (post.confirmedIds?.length ?? 0) > 0)
+    .sort((a, b) => a.startAt - b.startAt)
+    .slice(0, 8)
+    .map((post) => ({
+      id: post.id,
+      title: post.jobName,
+      meta: `${post.confirmedIds.length} confirmed · gate ready`,
+      href: ROUTE_PATHS.employerShiftPostDashboard.replace(":postId", post.id),
+      badge: "Gate",
+    }));
+}
+
+export function countShiftRosterMatches(
+  apps: readonly EmployeeShiftApplication[],
+  posts: readonly ShiftPost[],
+): number {
+  const liveIds = new Set(posts.filter(isLiveShiftOwnedPost).map((post) => post.id));
+  return apps.filter(
+    (app) =>
+      !isPlannerTaggedShiftApp(app) &&
+      liveIds.has(app.postId) &&
+      (app.status === "applied" || app.status === "shortlisted" || app.status === "waiting"),
+  ).length;
+}
+
+export function countShiftGateReady(posts: readonly ShiftPost[]): number {
+  return posts
+    .filter(isLiveShiftOwnedPost)
+    .reduce((sum, post) => sum + (post.confirmedIds?.length ?? 0), 0);
 }

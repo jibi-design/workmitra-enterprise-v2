@@ -1,7 +1,7 @@
 /** Job Mitra | AppRouter.tsx | Thin router shell — feature routes live under ./routes */
 /** Wave-4: createHashRouter so useBlocker dirty-form guards work */
 
-import { Suspense } from "react";
+import { lazy, Suspense } from "react";
 import {
   Navigate,
   Outlet,
@@ -40,6 +40,22 @@ import {
   ResetPasswordPage,
 } from "./routes/publicLazyPages";
 import { IS_DEV_ADMIN_ENABLED, PageLoader, RoleHomeRedirect } from "./routes/routerHelpers";
+
+const CapRibbonGeometryHarnessPage = import.meta.env.DEV
+  ? lazy(() =>
+      import("../../features/employer/home/pages/CapRibbonGeometryHarnessPage").then((m) => ({
+        default: m.CapRibbonGeometryHarnessPage,
+      })),
+    )
+  : null;
+
+const LaneSubcardGeometryHarnessPage = import.meta.env.DEV
+  ? lazy(() =>
+      import("../../features/employer/home/pages/LaneSubcardGeometryHarnessPage").then((m) => ({
+        default: m.LaneSubcardGeometryHarnessPage,
+      })),
+    )
+  : null;
 
 const appRouter = createHashRouter(
   createRoutesFromElements(
@@ -184,6 +200,12 @@ const appRouter = createHashRouter(
       )}
 
       <Route path="/_go" element={<RoleHomeRedirect />} />
+      {CapRibbonGeometryHarnessPage ? (
+        <Route path="/dev/cap-ribbon-geometry" element={<CapRibbonGeometryHarnessPage />} />
+      ) : null}
+      {LaneSubcardGeometryHarnessPage ? (
+        <Route path="/dev/lane-subcard-geometry" element={<LaneSubcardGeometryHarnessPage />} />
+      ) : null}
       <Route path="*" element={<NotFoundPage />} />
     </Route>,
   ),

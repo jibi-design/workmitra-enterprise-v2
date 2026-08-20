@@ -6,4 +6,3 @@ export {
   EmployerDashboard,
   EmployerDashboard as default,
 } from "../../features/employer/home/pages/EmployerDashboard";
-export type { EmployerDashboardProps } from "../../features/employer/home/pages/EmployerDashboard";

@@ -17,7 +17,6 @@ import {
   BulkTaskAssignPage,
   CommandCenterPage,
   ConsoleIncidentReportsPage,
-  EmployerAnalyticsPage,
   EmployerAnnounceCreateWrapper,
   EmployerAnnounceDashWrapper,
   EmployerAnnouncementsListWrapper,
@@ -123,11 +122,7 @@ export const employerRouteTree = (
         />
       </Route>
     </Route>
-    <Route
-      element={
-        <LaunchModuleBoundary enabled fallback={ROUTE_PATHS.employerHome} />
-      }
-    >
+    <Route element={<LaunchModuleBoundary enabled fallback={ROUTE_PATHS.employerHome} />}>
       <Route path={ER.workforce} element={<EmployerWorkforceHomePage />} />
       <Route path={ER.workforceStaff} element={<EmployerWorkforceStaffPage />} />
       <Route path={ER.workforceStaffDetail} element={<EmployerStaffDetailWrapper />} />
@@ -147,14 +142,10 @@ export const employerRouteTree = (
     <Route path={ER.myStaff} element={<EmployerMyStaffPage />} />
     <Route path={ER.reviewCenter} element={<EmployerReviewCenterPage />} />
     <Route path={ER.myStaffDetail} element={<EmployerStaffDetailPage />} />
-    <Route path={ER.analytics} element={<EmployerAnalyticsPage />} />
+    <Route path={ER.analytics} element={<Navigate to={ROUTE_PATHS.employerDashboard} replace />} />
     <Route path={ER.hrManagement} element={<HRManagementPage />} />
     <Route path={ER.hrCandidateDetail} element={<HRCandidateDetailPage />} />
-    <Route
-      element={
-        <LaunchModuleBoundary enabled fallback={ROUTE_PATHS.employerHome} />
-      }
-    >
+    <Route element={<LaunchModuleBoundary enabled fallback={ROUTE_PATHS.employerHome} />}>
       <Route path={ER.console} element={<ManagerConsolePage />} />
       <Route path={ER.consoleCommandCenter} element={<CommandCenterPage />} />
       <Route path={ER.consoleAttendance} element={<BulkAttendancePage />} />

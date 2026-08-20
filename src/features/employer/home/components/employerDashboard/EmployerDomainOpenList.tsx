@@ -8,22 +8,11 @@ type Props = {
   readonly title: string;
   readonly sub: string;
   readonly empty: string;
-  readonly ctaLabel: string;
-  readonly ctaHref: string;
   readonly rows: readonly EmployerOsOpenRow[];
   readonly testId: string;
 };
 
-export function EmployerDomainOpenList({
-  kicker,
-  title,
-  sub,
-  empty,
-  ctaLabel,
-  ctaHref,
-  rows,
-  testId,
-}: Props) {
+export function EmployerDomainOpenList({ kicker, title, sub, empty, rows, testId }: Props) {
   const nav = useNavigate();
 
   return (
@@ -55,14 +44,6 @@ export function EmployerDomainOpenList({
           ))}
         </ul>
       )}
-
-      <button
-        type="button"
-        className="wm-primarybtn wm-erDashWidgetCta"
-        onClick={() => nav(ctaHref)}
-      >
-        {ctaLabel}
-      </button>
     </section>
   );
 }

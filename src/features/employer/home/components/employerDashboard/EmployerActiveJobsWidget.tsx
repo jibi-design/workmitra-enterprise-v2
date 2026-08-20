@@ -1,6 +1,5 @@
 /** Employer Pro — active jobs management widget. */
 
-import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATHS } from "../../../../../app/router/routePaths";
 import type { EmployerActiveJobRow } from "../../helpers/employerDashboard.helpers";
@@ -32,16 +31,7 @@ export function EmployerActiveJobsWidget({ jobs }: Props) {
       <p className="wm-dashWidget__sub">Listings with applicant response counts.</p>
 
       {jobs.length === 0 ? (
-        <div className="wm-erDashEmpty">
-          No career posts yet.{" "}
-          <button
-            type="button"
-            className="wm-linkBtn"
-            onClick={() => nav(ROUTE_PATHS.employerCareerCreate)}
-          >
-            Create one
-          </button>
-        </div>
+        <div className="wm-erDashEmpty">Tracks: Open role listings • Applicant response counts</div>
       ) : (
         <ul className="wm-erDashJobs">
           {jobs.map((job) => (
@@ -62,9 +52,7 @@ export function EmployerActiveJobsWidget({ jobs }: Props) {
                     <span className="wm-erDashJobs__count">
                       {job.applicants} applicant{job.applicants === 1 ? "" : "s"}
                     </span>
-                    <span>
-                      {job.shortlisted} shortlisted
-                    </span>
+                    <span>{job.shortlisted} shortlisted</span>
                   </div>
                 </div>
               </button>
@@ -72,14 +60,6 @@ export function EmployerActiveJobsWidget({ jobs }: Props) {
           ))}
         </ul>
       )}
-
-      <button
-        type="button"
-        className="wm-primarybtn wm-erDashWidgetCta"
-        onClick={() => nav(ROUTE_PATHS.employerCareerCreate)}
-      >
-        <Plus size={16} aria-hidden="true" /> Quick post job
-      </button>
     </section>
   );
 }

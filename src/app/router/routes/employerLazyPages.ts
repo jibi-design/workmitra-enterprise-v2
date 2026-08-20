@@ -293,11 +293,6 @@ export const EmployerVaultViewPage = lazyPage(() =>
     default: m.EmployerVaultViewPage,
   })),
 );
-export const EmployerAnalyticsPage = lazyPage(async () => {
-  ensureThemeBundle("analytics-dashboard");
-  const m = await import("../../../features/employer/home/pages/EmployerAnalyticsPage");
-  return { default: m.EmployerAnalyticsPage };
-});
 export const MitraLabsHubPage = lazyPage(() =>
   ensureThemeBundle("mitra-labs").then(() =>
     import("../../../features/mitraLabs/pages/MitraLabsHub").then((m) => ({

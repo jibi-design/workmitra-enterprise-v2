@@ -1,0 +1,213 @@
+/* Employer OS — static status ribbon + lower focus zone. */
+
+.wm-erDashCapRibbon {
+  margin: 0 0 12px;
+}
+
+.wm-erDashCapRibbon__kicker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 16px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--wm-er-muted, #64748b);
+}
+
+.wm-erDashCapRibbon__live {
+  flex: 0 0 auto;
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.wm-erDashCapRibbon__lead {
+  margin: 4px 0 10px;
+  min-height: 36px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--wm-er-muted, #64748b);
+}
+
+.wm-erDashCapGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  grid-auto-rows: var(--wm-er-cap-tile-h, 116px);
+}
+
+@media (min-width: 720px) {
+  .wm-erDashCapGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.wm-erDashCapTile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+  height: var(--wm-er-cap-tile-h, 116px);
+  min-height: var(--wm-er-cap-tile-h, 116px);
+  max-height: var(--wm-er-cap-tile-h, 116px);
+  margin: 0;
+  padding: 10px;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid var(--wm-glass-border, rgba(148, 163, 184, 0.28));
+  background: var(--wm-er-glass-bg-strong, rgba(255, 255, 255, 0.9));
+  box-shadow: var(--wm-er-card-shadow, 0 6px 18px rgba(15, 23, 42, 0.05));
+  text-align: left;
+  cursor: default;
+  pointer-events: none;
+  font: inherit;
+  color: inherit;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+.wm-erDashCapTile--shift {
+  border-color: color-mix(in srgb, var(--wm-shift-accent, #16a34a) 28%, transparent);
+}
+
+.wm-erDashCapTile--career {
+  border-color: color-mix(in srgb, var(--wm-career-accent, #2563eb) 28%, transparent);
+}
+
+.wm-erDashCapTile--planner {
+  border-color: color-mix(in srgb, var(--wm-planner-accent, #0891b2) 28%, transparent);
+}
+
+.wm-erDashCapTile--workspaces {
+  border-color: color-mix(in srgb, var(--wm-dashboard-accent, #0f766e) 28%, transparent);
+}
+
+.wm-erDashCapTile--gate {
+  border-color: color-mix(in srgb, var(--wm-workforce-accent, #b45309) 28%, transparent);
+}
+
+.wm-erDashCapTile--trust {
+  border-color: color-mix(in srgb, var(--wm-vault-accent, #7c3aed) 28%, transparent);
+}
+
+.wm-erDashFocusZone {
+  margin-top: 4px;
+}
+
+.wm-erDashFocusZone__kicker {
+  margin: 0 0 8px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--wm-er-muted, #64748b);
+}
+
+.wm-erDashCapTile__title {
+  flex: 0 0 auto;
+  width: 100%;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 18px;
+  color: var(--wm-er-text, #0f172a);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wm-erDashCapTile__hint,
+.wm-erDashCapTile__alert {
+  flex: 0 0 auto;
+  min-height: 0;
+  margin-top: 6px;
+  max-width: 100%;
+  max-height: calc(1.35em * 2);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.wm-erDashCapTile__hint {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 15px;
+  color: var(--wm-er-muted, #64748b);
+}
+
+.wm-erDashCapTile__alert {
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  color: var(--wm-er-text, #0f172a);
+  max-height: calc(1.3em * 2);
+}
+
+.wm-erDashCapBadges {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: auto;
+  flex: 0 0 24px;
+  min-height: 24px;
+  max-height: 24px;
+  overflow: hidden;
+}
+
+.wm-erDashCapBadge {
+  margin: 0;
+  min-width: 0;
+  max-width: 100%;
+  flex: 1 1 0;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.2;
+  cursor: default;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wm-erDashCapBadge--shift {
+  color: var(--wm-shift-accent, #16a34a);
+  background: color-mix(in srgb, var(--wm-shift-accent, #16a34a) 12%, #fff);
+  border-color: color-mix(in srgb, var(--wm-shift-accent, #16a34a) 28%, transparent);
+}
+
+.wm-erDashCapBadge--career {
+  color: var(--wm-career-accent, #2563eb);
+  background: color-mix(in srgb, var(--wm-career-accent, #2563eb) 12%, #fff);
+  border-color: color-mix(in srgb, var(--wm-career-accent, #2563eb) 28%, transparent);
+}
+
+.wm-erDashCapBadge--planner {
+  color: var(--wm-planner-accent, #0891b2);
+  background: color-mix(in srgb, var(--wm-planner-accent, #0891b2) 12%, #fff);
+  border-color: color-mix(in srgb, var(--wm-planner-accent, #0891b2) 28%, transparent);
+}
+
+.wm-erDashCapBadge--alert,
+.wm-erDashCapBadge--neutral {
+  color: var(--wm-er-text, #0f172a);
+  background: color-mix(in srgb, var(--wm-neutral-400, #94a3b8) 14%, #fff);
+  border-color: color-mix(in srgb, var(--wm-neutral-400, #94a3b8) 28%, transparent);
+}

@@ -1,49 +1,82 @@
-/** Employer Pro — applicant pipeline tracker with visual stepper. */
+/** Employer OS — domain-specific applicant / batch tracker. */
 
 import { useNavigate } from "react-router-dom";
-import { ROUTE_PATHS } from "../../../../../app/router/routePaths";
-import {
-  formatRelativeDay,
-  type EmployerPipelineFilter,
-  type EmployerPipelineRow,
-  type EmployerPipelineStage,
-  type EmployerPipelineStageCounts,
-} from "../../helpers/employerDashboard.helpers";
+import { formatRelativeDay } from "../../helpers/employerDashboard.helpers";
+import type { EmployerOsDomain } from "../../helpers/employerDashboard.osTypes";
+import type {
+  EmployerOsStageDef,
+  EmployerOsTrackerRow,
+} from "../../helpers/employerDashboard.osTypes";
 import { EmployerPipelineStepper } from "./EmployerPipelineStepper";
 
 type Props = {
-  readonly rows: readonly EmployerPipelineRow[];
-  readonly stageCounts: EmployerPipelineStageCounts;
-  readonly filter: EmployerPipelineFilter;
-  readonly onFilterChange: (next: EmployerPipelineFilter) => void;
+  readonly domain: EmployerOsDomain;
+  readonly rows: readonly EmployerOsTrackerRow[];
+  readonly stages: readonly EmployerOsStageDef[];
+  readonly stageCounts: Record<string, number>;
+  readonly filter: string;
+  readonly onFilterChange: (next: string) => void;
 };
 
-function badgeClass(stage: EmployerPipelineStage): string {
+const COPY: Record<
+  EmployerOsDomain,
+  { kicker: string; title: string; sub: string; empty: string }
+> = {
+  shift: {
+    kicker: "Shift Jobs",
+    title: "Shift applicants",
+    sub: "Applied → Shortlisted → Confirmed",
+    empty: "0 applicants here. Ready when workers apply.",
+  },
+  career: {
+    kicker: "Career Jobs",
+    title: "Career applicants",
+    sub: "Applied → Shortlisted → Interview → Hired",
+    empty: "0 applicants here. Ready when candidates apply.",
+  },
+  planner: {
+    kicker: "Planner",
+    title: "Plan applications",
+    sub: "Pending → Shortlisted → Confirmed",
+    empty: "0 batches here. Ready when a plan receives applies.",
+  },
+};
+
+function badgeClass(stage: string): string {
   if (stage === "Shortlisted") return "wm-erDashBadge wm-erDashBadge--shortlist";
-  if (stage === "Interview") return "wm-erDashBadge wm-erDashBadge--interview";
-  if (stage === "Hired") return "wm-erDashBadge wm-erDashBadge--hired";
+  if (stage === "Interview" || stage === "Pending")
+    return "wm-erDashBadge wm-erDashBadge--interview";
+  if (stage === "Hired" || stage === "Confirmed") return "wm-erDashBadge wm-erDashBadge--hired";
   if (stage === "Rejected") return "wm-erDashBadge wm-erDashBadge--rejected";
   return "wm-erDashBadge wm-erDashBadge--applied";
 }
 
 export function EmployerPipelineTracker({
+  domain,
   rows,
+  stages,
   stageCounts,
   filter,
   onFilterChange,
 }: Props) {
   const nav = useNavigate();
+  const copy = COPY[domain];
 
   return (
-    <section className="wm-dashWidget" data-testid="employer-pipeline-tracker">
-      <div className="wm-dashWidget__kicker">Hiring pipeline</div>
-      <h2 className="wm-dashWidget__title">Applicant tracker</h2>
-      <p className="wm-dashWidget__sub">Applied → Shortlisted → Interview → Hired</p>
+    <section className="wm-dashWidget" data-testid="employer-pipeline-tracker" data-domain={domain}>
+      <div className="wm-dashWidget__kicker">{copy.kicker}</div>
+      <h2 className="wm-dashWidget__title">{copy.title}</h2>
+      <p className="wm-dashWidget__sub">{copy.sub}</p>
 
-      <EmployerPipelineStepper counts={stageCounts} filter={filter} onSelect={onFilterChange} />
+      <EmployerPipelineStepper
+        stages={stages}
+        counts={stageCounts}
+        filter={filter}
+        onSelect={onFilterChange}
+      />
 
       {rows.length === 0 ? (
-        <div className="wm-erDashEmpty">No applicants in this stage yet.</div>
+        <div className="wm-erDashEmpty">{copy.empty}</div>
       ) : (
         <ul className="wm-erDashPipeline">
           {rows.map((row) => (
@@ -51,18 +84,12 @@ export function EmployerPipelineTracker({
               <button
                 type="button"
                 className="wm-erDashPipeline__row"
-                onClick={() =>
-                  nav(
-                    ROUTE_PATHS.employerCareerCandidateDetail
-                      .replace(":postId", row.jobId)
-                      .replace(":appId", row.id),
-                  )
-                }
+                onClick={() => nav(row.href)}
               >
                 <div className="wm-erDashPipeline__copy">
-                  <div className="wm-erDashPipeline__title">{row.candidateName}</div>
+                  <div className="wm-erDashPipeline__title">{row.title}</div>
                   <div className="wm-erDashPipeline__meta">
-                    {row.jobTitle} · {formatRelativeDay(row.updatedAt)}
+                    {row.subtitle} · {formatRelativeDay(row.updatedAt)}
                   </div>
                 </div>
                 <span className={badgeClass(row.stage)}>{row.stage}</span>

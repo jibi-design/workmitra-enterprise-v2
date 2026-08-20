@@ -1,30 +1,26 @@
-/** Employer Pro — Applied → Hired visual stepper. Filters the list below. */
+/** Employer Pro — stage stepper used by Shift, Career, and Planner trackers. */
 
-import {
-  EMPLOYER_PIPELINE_STEPPER_STAGES,
-  type EmployerPipelineFilter,
-  type EmployerPipelineStageCounts,
-  type EmployerPipelineStepperStage,
-} from "../../helpers/employerDashboard.helpers";
+import type { EmployerOsStageDef } from "../../helpers/employerDashboard.osTypes";
 
 type Props = {
-  readonly counts: EmployerPipelineStageCounts;
-  readonly filter: EmployerPipelineFilter;
-  readonly onSelect: (stage: EmployerPipelineStepperStage) => void;
+  readonly stages: readonly EmployerOsStageDef[];
+  readonly counts: Record<string, number>;
+  readonly filter: string;
+  readonly onSelect: (stage: string) => void;
 };
 
-export function EmployerPipelineStepper({ counts, filter, onSelect }: Props) {
-  const currentIndex = EMPLOYER_PIPELINE_STEPPER_STAGES.findIndex((stage) => stage === filter);
+export function EmployerPipelineStepper({ stages, counts, filter, onSelect }: Props) {
+  const currentIndex = stages.findIndex((stage) => stage.key === filter);
 
   return (
-    <ol className="wm-erDashStepper" aria-label="Applicant pipeline stages">
-      {EMPLOYER_PIPELINE_STEPPER_STAGES.map((stage, index) => {
-        const value = counts[stage];
+    <ol className="wm-erDashStepper" aria-label="Pipeline stages">
+      {stages.map((stage, index) => {
+        const value = counts[stage.key] ?? 0;
         const reached = currentIndex >= 0 && index <= currentIndex;
-        const isCurrent = filter === stage;
+        const isCurrent = filter === stage.key;
         return (
           <li
-            key={stage}
+            key={stage.key}
             className={`wm-erDashStepper__step${reached ? " isReached" : ""}${
               isCurrent ? " isCurrent" : ""
             }`}
@@ -34,12 +30,12 @@ export function EmployerPipelineStepper({ counts, filter, onSelect }: Props) {
               className="wm-erDashStepper__btn"
               aria-pressed={isCurrent}
               aria-current={isCurrent ? "step" : undefined}
-              onClick={() => onSelect(stage)}
+              onClick={() => onSelect(stage.key)}
             >
               <span className="wm-erDashStepper__node" aria-hidden="true">
                 {value}
               </span>
-              <span className="wm-erDashStepper__name">{stage}</span>
+              <span className="wm-erDashStepper__name">{stage.label}</span>
             </button>
           </li>
         );

@@ -1,0 +1,74 @@
+/* Lane sub-card — title + guide + sample preview badge. */
+
+.wm-erDashPreviewCard {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  box-sizing: border-box;
+  min-height: 92px;
+  margin: 0;
+  padding: 12px;
+  pointer-events: none;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+.wm-erDashPreviewCard__copy {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.wm-erDashPreviewCard__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 18px;
+  color: var(--wm-er-text, #0f172a);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.wm-erDashPreviewCard__blurb {
+  margin: 6px 0 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--wm-er-muted, #64748b);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.wm-erDashPreviewCard__badge {
+  flex: 0 0 auto;
+  max-width: none;
+  padding: 5px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 14px;
+  letter-spacing: 0.02em;
+  color: var(--wm-er-text, #0f172a);
+  background: color-mix(in srgb, var(--wm-neutral-400, #94a3b8) 16%, #fff);
+  border: 1px solid color-mix(in srgb, var(--wm-neutral-400, #94a3b8) 28%, transparent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  cursor: default;
+}
+
+@media (max-width: 420px) {
+  .wm-erDashPreviewCard {
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 92px;
+  }
+}

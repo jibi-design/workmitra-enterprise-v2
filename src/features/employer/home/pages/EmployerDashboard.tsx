@@ -3,35 +3,21 @@
  * Canonical feature path. Alias: src/pages/employer/EmployerDashboard.tsx
  */
 
-import { useMemo, useState, type CSSProperties } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { ROUTE_PATHS } from "../../../../app/router/routePaths";
+import { useMemo, type CSSProperties } from "react";
+import { useSearchParams } from "react-router-dom";
 import { employerSettingsStorage } from "../../company/storage/employerSettings.storage";
-import { EmployerDashMetricsCards } from "../components/employerDashboard/EmployerDashMetricsCards";
-import { EmployerPipelineTracker } from "../components/employerDashboard/EmployerPipelineTracker";
-import { EmployerMatchPanel } from "../components/employerDashboard/EmployerMatchPanel";
-import { EmployerActiveJobsWidget } from "../components/employerDashboard/EmployerActiveJobsWidget";
-import { EmployerInterviewActionsPanel } from "../components/employerDashboard/EmployerInterviewActionsPanel";
+import { EmployerDashboardOperations } from "../components/employerDashboard/EmployerDashboardOperations";
 import { EmployerDashboardUtilitiesPanel } from "../components/employerDashboard/EmployerDashboardUtilitiesPanel";
-import { useEmployerDashboardModel } from "../hooks/useEmployerDashboardModel";
-import type { EmployerPipelineFilter } from "../helpers/employerDashboard.helpers";
 import {
   parseEmployerDashboardTab,
   writeEmployerDashboardTabParam,
   type EmployerDashboardTab,
 } from "../helpers/employerDashboard.tab";
 
-export type EmployerDashboardProps = {
-  readonly showBackToHome?: boolean;
-};
-
 export type { EmployerDashboardTab };
 
-export function EmployerDashboard({ showBackToHome = true }: EmployerDashboardProps) {
-  const nav = useNavigate();
+export function EmployerDashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [filter, setFilter] = useState<EmployerPipelineFilter>("Applied");
-  const model = useEmployerDashboardModel(filter);
   let companyName = "";
   try {
     companyName = employerSettingsStorage.get()?.companyName?.trim() || "";
@@ -59,30 +45,16 @@ export function EmployerDashboard({ showBackToHome = true }: EmployerDashboardPr
       }
     >
       <header className="wm-dashHero">
-        {showBackToHome ? (
-          <button
-            type="button"
-            className="wm-dashHero__back"
-            onClick={() => nav(ROUTE_PATHS.employerHome)}
-            aria-label="Back to home"
-          >
-            ← Home
-          </button>
-        ) : null}
         <div className="wm-dashHero__kicker">Employer Pro</div>
         <h1 className="wm-dashHero__title">Employer Dashboard</h1>
         <p className="wm-dashHero__sub">
           {companyName
-            ? `${companyName} · hiring operations for your signed-in session`
-            : "Career hiring operations bound to your signed-in employer session."}
+            ? `${companyName} · Shift, Career, Planner, gate, and vault in one glance`
+            : "Shift, Career, Planner, workspaces, gate, and vault — one operations hub."}
         </p>
       </header>
 
-      <div
-        className="wm-erDashTabs"
-        role="tablist"
-        aria-label="Employer dashboard sections"
-      >
+      <div className="wm-erDashTabs" role="tablist" aria-label="Employer dashboard sections">
         <button
           type="button"
           role="tab"
@@ -109,33 +81,11 @@ export function EmployerDashboard({ showBackToHome = true }: EmployerDashboardPr
       </div>
 
       {activeTab === "operations" ? (
-        <div
-          id="er-dash-panel-operations"
-          role="tabpanel"
-          aria-labelledby="er-dash-tab-operations"
-        >
-          <EmployerDashMetricsCards metrics={model.metrics} />
-
-          <EmployerPipelineTracker
-            rows={model.pipeline}
-            stageCounts={model.stageCounts}
-            filter={filter}
-            onFilterChange={setFilter}
-          />
-
-          <div className="wm-erDashBento" data-testid="employer-jobs-matches-bento">
-            <EmployerActiveJobsWidget jobs={model.activeJobs} />
-            <EmployerMatchPanel items={model.matches} />
-          </div>
-
-          <EmployerInterviewActionsPanel interviews={model.interviews} />
+        <div id="er-dash-panel-operations" role="tabpanel" aria-labelledby="er-dash-tab-operations">
+          <EmployerDashboardOperations />
         </div>
       ) : (
-        <div
-          id="er-dash-panel-event-day"
-          role="tabpanel"
-          aria-labelledby="er-dash-tab-event-day"
-        >
+        <div id="er-dash-panel-event-day" role="tabpanel" aria-labelledby="er-dash-tab-event-day">
           <EmployerDashboardUtilitiesPanel />
         </div>
       )}

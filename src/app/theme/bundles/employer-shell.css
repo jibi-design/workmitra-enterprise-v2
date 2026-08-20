@@ -12,7 +12,9 @@
 @import "./../shift-dashboard-analysis.css";
 @import "./../components/home-premium.css";
 @import "./../components/employer-dash-hero.css";
+@import "./../components/employer-dash-lane-preview.css";
 @import "./../components/employer-dash-os.css";
+@import "./../components/employer-dash-cap-ribbon.css";
 @import "./../components/employer-dash-utilities.css";
 @import "./../components/employer-dash-event-day.css";
 @import "./../components/employee-home-console.css";

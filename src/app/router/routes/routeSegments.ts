@@ -64,6 +64,7 @@ export const ER = {
   shift: "shift",
   dashboard: "dashboard",
   career: "career",
+  /** Legacy bookmark — redirects to employer dashboard. */
   analytics: "analytics",
   workforce: "workforce",
   settings: "settings",

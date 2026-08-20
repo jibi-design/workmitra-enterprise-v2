@@ -1,5 +1,6 @@
 /** Job Mitra | shiftDbTruth.service.ts — Phase 13 Shift DB→LS merge (auth on) */
 
+import { ApiRequestError } from "../../../shared/services/apiService";
 import { isShiftApiSyncEnabled, shiftGateApi } from "./shiftGateApi.service";
 import { buildShiftPostCreateBody } from "./shiftDbTruth.mappers.helpers";
 import {
@@ -24,6 +25,10 @@ let lastPostsHydrate = 0;
 let lastAppsHydrate = 0;
 const COOLDOWN = 5_000;
 
+function isAuthGateResponse(error: unknown): boolean {
+  return error instanceof ApiRequestError && (error.status === 401 || error.status === 403);
+}
+
 export async function hydrateShiftPostsFromServer(force = false): Promise<boolean> {
   if (!isShiftApiSyncEnabled()) return true;
   const now = Date.now();
@@ -39,8 +44,8 @@ export async function hydrateShiftPostsFromServer(force = false): Promise<boolea
       const posts = await shiftGateApi.listMyPosts();
       mergeServerPostsBatchIntoLsCache(posts);
       lastPostsHydrate = Date.now();
-    } catch {
-      ok = false;
+    } catch (err) {
+      ok = isAuthGateResponse(err);
     } finally {
       postsHydrateInFlight = null;
     }
@@ -64,8 +69,8 @@ export async function hydrateShiftApplicationsFromServer(force = false): Promise
       const apps = await shiftGateApi.listMyApplications();
       mergeServerApplicationsBatchIntoLsCache(apps);
       lastAppsHydrate = Date.now();
-    } catch {
-      ok = false;
+    } catch (err) {
+      ok = isAuthGateResponse(err);
     } finally {
       appsHydrateInFlight = null;
     }
@@ -77,9 +82,7 @@ export async function hydrateShiftApplicationsFromServer(force = false): Promise
 const employerAppsHydrateInFlight = new Map<string, Promise<void>>();
 const lastEmployerAppsHydrate = new Map<string, number>();
 
-export async function hydrateEmployerPostApplicationsFromServer(
-  postId: string,
-): Promise<boolean> {
+export async function hydrateEmployerPostApplicationsFromServer(postId: string): Promise<boolean> {
   if (!isShiftApiSyncEnabled()) return true;
   const serverId = isShiftServerUuid(postId)
     ? postId.trim()
@@ -100,8 +103,8 @@ export async function hydrateEmployerPostApplicationsFromServer(
       const apps = await shiftGateApi.listPostApplications(serverId);
       mergeServerApplicationsBatchIntoLsCache(apps, serverId);
       lastEmployerAppsHydrate.set(serverId, Date.now());
-    } catch {
-      ok = false;
+    } catch (err) {
+      ok = isAuthGateResponse(err);
     } finally {
       employerAppsHydrateInFlight.delete(serverId);
     }

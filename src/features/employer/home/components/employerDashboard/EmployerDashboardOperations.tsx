@@ -1,14 +1,12 @@
 /** Operations tab — Shift / Career / Planner OS lanes. */
 
 import { useMemo, useState } from "react";
-import { ROUTE_PATHS } from "../../../../../app/router/routePaths";
-import { EmployerActiveJobsWidget } from "./EmployerActiveJobsWidget";
 import { EmployerDashMetricsCards } from "./EmployerDashMetricsCards";
-import { EmployerDomainOpenList } from "./EmployerDomainOpenList";
-import { EmployerInterviewActionsPanel } from "./EmployerInterviewActionsPanel";
-import { EmployerMatchPanel } from "./EmployerMatchPanel";
 import { EmployerPipelineTracker } from "./EmployerPipelineTracker";
-import { EmployerOsWorkspaceStrip } from "./EmployerOsWorkspaceStrip";
+import { EmployerCapabilityRibbon } from "./EmployerCapabilityRibbon";
+import { EmployerDomainWorkflowPath } from "./EmployerDomainWorkflowPath";
+import { EmployerLaneSubSections } from "./EmployerLaneSubSections";
+import { overlayLanePreviewCards } from "../../helpers/employerDashboard.lanePreview.live";
 import { careerPipelineToOsRows, CAREER_OS_STAGES } from "../../helpers/employerDashboard.osCareer";
 import { PLANNER_OS_STAGES } from "../../helpers/employerDashboard.osPlanner";
 import { SHIFT_OS_STAGES } from "../../helpers/employerDashboard.osShift";
@@ -20,11 +18,13 @@ import {
 } from "../../helpers/employerDashboard.osTypes";
 import { useEmployerDashboardModel } from "../../hooks/useEmployerDashboardModel";
 import { useEmployerOsDashboardModel } from "../../hooks/useEmployerOsDashboardModel";
+import { useEmployerOsLiveHydrate } from "../../hooks/useEmployerOsLiveHydrate";
 
 export function EmployerDashboardOperations() {
   const [domain, setDomain] = useState<EmployerOsDomain>("shift");
   const [filter, setFilter] = useState(EMPLOYER_OS_DEFAULT_STAGE.shift);
   const os = useEmployerOsDashboardModel();
+  const live = useEmployerOsLiveHydrate();
   const career = useEmployerDashboardModel("all");
 
   function selectDomain(next: EmployerOsDomain) {
@@ -47,66 +47,47 @@ export function EmployerDashboardOperations() {
 
   const stageCounts = countOsStages(sourceRows, stages);
   const rows = filterOsRows(sourceRows, filter);
+  const laneCards = overlayLanePreviewCards(domain, os.laneLive);
 
   return (
     <>
-      <EmployerOsWorkspaceStrip strip={os.workspaces} />
-      <EmployerDashMetricsCards
+      <EmployerCapabilityRibbon
         shift={os.shiftSnap}
         career={os.careerSnap}
         planner={os.plannerSnap}
-        selected={domain}
-        onSelect={selectDomain}
+        workspaces={os.workspaces}
+        shiftStartingSoon={os.shiftStartingSoon}
+        shiftUpcoming={os.shiftUpcoming}
+        workspaceClockedIn={Math.max(os.extras.workspaceClockedIn, live.hrClockedIn)}
+        gatePending={os.extras.gatePending}
+        gateFlags={os.extras.gateFlags}
+        vaultExpiring={os.extras.vaultExpiring}
+        liveState={live.state}
       />
 
-      <EmployerPipelineTracker
-        domain={domain}
-        rows={rows}
-        stages={stages}
-        stageCounts={stageCounts}
-        filter={filter}
-        onFilterChange={setFilter}
-      />
+      <div className="wm-erDashFocusZone" data-testid="employer-focus-zone">
+        <div className="wm-erDashFocusZone__kicker">Work this lane</div>
+        <EmployerDashMetricsCards
+          shift={os.shiftSnap}
+          career={os.careerSnap}
+          planner={os.plannerSnap}
+          selected={domain}
+          onSelect={selectDomain}
+        />
 
-      {domain === "career" ? (
-        <>
-          <div className="wm-erDashBento" data-testid="employer-jobs-matches-bento">
-            <EmployerActiveJobsWidget jobs={career.activeJobs} />
-            <EmployerMatchPanel items={career.matches} />
-          </div>
-          <EmployerInterviewActionsPanel interviews={career.interviews} />
-        </>
-      ) : null}
+        <EmployerDomainWorkflowPath domain={domain} />
 
-      {domain === "shift" ? (
-        <div className="wm-erDashBento" data-testid="employer-shift-open-bento">
-          <EmployerDomainOpenList
-            kicker="Shift Jobs"
-            title="Upcoming & open shifts"
-            sub="Soonest start first. Upcoming posts are marked."
-            empty="No open Shift posts yet."
-            ctaLabel="Post a shift"
-            ctaHref={ROUTE_PATHS.employerShiftCreate}
-            rows={os.shiftOpen}
-            testId="employer-shift-open-list"
-          />
-        </div>
-      ) : null}
+        <EmployerPipelineTracker
+          domain={domain}
+          rows={rows}
+          stages={stages}
+          stageCounts={stageCounts}
+          filter={filter}
+          onFilterChange={setFilter}
+        />
 
-      {domain === "planner" ? (
-        <div className="wm-erDashBento" data-testid="employer-planner-open-bento">
-          <EmployerDomainOpenList
-            kicker="Planner"
-            title="Open plans"
-            sub="Draft and active demand plans."
-            empty="No open plans yet."
-            ctaLabel="Create a plan"
-            ctaHref={ROUTE_PATHS.employerPlannerNew}
-            rows={os.plannerOpen}
-            testId="employer-planner-open-list"
-          />
-        </div>
-      ) : null}
+        <EmployerLaneSubSections domain={domain} cards={laneCards} />
+      </div>
     </>
   );
 }

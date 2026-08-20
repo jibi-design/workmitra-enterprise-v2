@@ -1,24 +1,80 @@
 /* Employer OS dashboard — Shift / Career / Planner snapshot cards. */
 
+.wm-erDash--dashboard {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 .wm-erDashOsStrip {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
   margin: 0 0 12px;
+  grid-auto-rows: var(--wm-er-os-card-h, 104px);
+}
+
+@media (min-width: 520px) {
+  .wm-erDashOsStrip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .wm-erDashOsCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
   min-width: 0;
+  width: 100%;
+  height: var(--wm-er-os-card-h, 104px);
+  min-height: var(--wm-er-os-card-h, 104px);
+  max-height: var(--wm-er-os-card-h, 104px);
   margin: 0;
-  padding: 10px;
+  padding: 0;
+  overflow: hidden;
   border-radius: 14px;
   border: 1px solid var(--wm-glass-border, rgba(148, 163, 184, 0.28));
   background: #fff;
   text-align: left;
+  box-shadow: var(--wm-er-card-shadow, 0 6px 18px rgba(15, 23, 42, 0.05));
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+.wm-erDashOsCard__plus {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--wm-er-text, #0f172a);
+  background: color-mix(in srgb, var(--wm-neutral-400, #94a3b8) 16%, #fff);
+}
+
+.wm-erDashOsCard__select {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 10px 34px 10px 10px;
+  border: 0;
+  background: transparent;
+  text-align: left;
   cursor: pointer;
   font: inherit;
   color: inherit;
-  box-shadow: var(--wm-er-card-shadow, 0 6px 18px rgba(15, 23, 42, 0.05));
 }
 
 .wm-erDashOsCard--shift {
@@ -41,39 +97,59 @@
 }
 
 .wm-erDashOsCard__kicker {
+  width: 100%;
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.4px;
   text-transform: uppercase;
   color: var(--wm-er-muted, #64748b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .wm-erDashOsCard__value {
-  margin-top: 4px;
-  font-size: 22px;
+  margin-top: 6px;
+  max-width: 100%;
+  font-size: 13px;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
   color: var(--wm-er-text, #0f172a);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
 }
 
-.wm-erDashOsCard__meta,
-.wm-erDashOsCard__sub {
-  margin: 2px 0 0;
+.wm-erDashOsCard__hint {
+  margin-top: 6px;
+  max-width: 100%;
+  max-height: calc(1.35em * 2);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--wm-er-muted, #64748b);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.wm-erDashOsCard__meta {
+  margin-top: auto;
+  max-width: 100%;
   font-size: 11px;
   font-weight: 600;
-  color: var(--wm-er-muted, #64748b);
-}
-
-.wm-erDashOsCard__sub {
-  font-size: 10px;
   line-height: 1.3;
-}
-
-.wm-erDashOsCard__extra {
-  margin: 4px 0 0;
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--wm-er-text, #0f172a);
+  color: var(--wm-er-muted, #64748b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .wm-erDashWsStrip {
@@ -129,10 +205,57 @@
   color: var(--wm-er-text, #0f172a);
 }
 
-.wm-erDashWsChip__label {
-  display: block;
-  margin-top: 2px;
+.wm-erDashWorkflow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  list-style: none;
+  border-radius: 12px;
+  border: 1px solid var(--wm-glass-border, rgba(148, 163, 184, 0.28));
+  background: color-mix(in srgb, var(--wm-er-glass-bg-strong, #fff) 92%, transparent);
+}
+
+.wm-erDashWorkflow__step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wm-erDashWorkflow__n {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--wm-er-text, #0f172a);
+  background: color-mix(in srgb, var(--wm-neutral-400, #94a3b8) 18%, #fff);
+}
+
+.wm-erDashWorkflow--shift .wm-erDashWorkflow__n {
+  background: color-mix(in srgb, var(--wm-shift-accent, #16a34a) 16%, #fff);
+}
+
+.wm-erDashWorkflow--career .wm-erDashWorkflow__n {
+  background: color-mix(in srgb, var(--wm-career-accent, #2563eb) 16%, #fff);
+}
+
+.wm-erDashWorkflow--planner .wm-erDashWorkflow__n {
+  background: color-mix(in srgb, var(--wm-planner-accent, #0891b2) 16%, #fff);
+}
+
+.wm-erDashWorkflow__label {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--wm-er-text, #0f172a);
+}
+
+.wm-erDashWorkflow__arrow {
+  font-size: 11px;
   color: var(--wm-er-muted, #64748b);
 }

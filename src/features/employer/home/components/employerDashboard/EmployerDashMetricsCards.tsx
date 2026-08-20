@@ -1,5 +1,9 @@
-/** Employer OS — three domain snapshot cards (Shift / Career / Planner). */
+/** Work this lane — domain switchers + quick create. Not the status ribbon. */
 
+import type { MouseEvent } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { laneFocusCopy } from "../../helpers/employerDashboard.laneFocus";
 import type {
   EmployerOsDomain,
   EmployerOsDomainSnapshot,
@@ -22,27 +26,50 @@ function DomainCard({
   readonly selected: boolean;
   readonly onSelect: () => void;
 }) {
+  const nav = useNavigate();
+  const copy = laneFocusCopy(snap);
+
+  function onPlus(event: MouseEvent<HTMLButtonElement>) {
+    event.stopPropagation();
+    event.preventDefault();
+    nav(copy.plusHref);
+  }
+
   return (
-    <button
-      type="button"
-      className={`wm-erDashOsCard wm-erDashOsCard--${snap.domain}${selected ? " isSelected" : ""}`}
-      data-testid={`employer-os-card-${snap.domain}`}
-      aria-pressed={selected}
-      onClick={onSelect}
+    <article
+      className={`wm-erDashOsCard wm-erDashOsCard--${snap.domain}${selected ? " isSelected" : ""}${
+        copy.empty ? " isIdle" : " isLive"
+      }`}
+      data-empty={copy.empty ? "true" : "false"}
     >
-      <div className="wm-erDashOsCard__kicker">{snap.title}</div>
-      <div className="wm-erDashOsCard__value">{snap.pendingCount}</div>
-      <p className="wm-erDashOsCard__meta">{snap.pendingLabel}</p>
-      <p className="wm-erDashOsCard__sub">
-        {snap.openCount} {snap.openLabel.toLowerCase()} · {snap.confirmedCount}{" "}
-        {snap.confirmedLabel.toLowerCase()}
-      </p>
-      {snap.extraLabel != null && snap.extraCount != null ? (
-        <p className="wm-erDashOsCard__extra">
-          {snap.extraCount} {snap.extraLabel.toLowerCase()}
-        </p>
-      ) : null}
-    </button>
+      <button
+        type="button"
+        className="wm-erDashOsCard__plus"
+        data-testid={`employer-os-plus-${snap.domain}`}
+        aria-label={copy.plusLabel}
+        title={copy.plusLabel}
+        onClick={onPlus}
+      >
+        +
+      </button>
+      <button
+        type="button"
+        className="wm-erDashOsCard__select"
+        data-testid={`employer-os-card-${snap.domain}`}
+        aria-pressed={selected}
+        onClick={onSelect}
+      >
+        <span className="wm-erDashOsCard__kicker">{copy.title}</span>
+        {copy.empty ? (
+          <span className="wm-erDashOsCard__hint">{copy.hint}</span>
+        ) : (
+          <>
+            <span className="wm-erDashOsCard__value">{copy.openLine}</span>
+            <span className="wm-erDashOsCard__meta">{copy.pendingLine}</span>
+          </>
+        )}
+      </button>
+    </article>
   );
 }
 
@@ -51,7 +78,7 @@ export function EmployerDashMetricsCards({ shift, career, planner, selected, onS
     <section
       className="wm-erDashHero wm-erDashOsStrip wm-stable-row"
       data-testid="employer-dash-hero"
-      aria-label="Shift, Career, and Planner snapshot"
+      aria-label="Choose Shift, Career, or Planner to work"
     >
       <DomainCard snap={shift} selected={selected === "shift"} onSelect={() => onSelect("shift")} />
       <DomainCard

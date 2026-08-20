@@ -13,17 +13,20 @@ export function EmployerInterviewActionsPanel({ interviews }: Props) {
   const nav = useNavigate();
 
   return (
-    <section className="wm-dashWidget" data-testid="employer-interview-actions">
+    <section className="wm-dashWidget wm-erDashBentoCard" data-testid="employer-interview-actions">
       <div className="wm-dashWidget__kicker">Interviews</div>
       <h2 className="wm-dashWidget__title">Schedule &amp; contact</h2>
       <p className="wm-dashWidget__sub">Upcoming interviews with quick candidate contact.</p>
 
       {interviews.length === 0 ? (
-        <div className="wm-erDashEmpty">No scheduled interviews right now.</div>
+        <div className="wm-erDashEmpty">Tracks: Interview bookings • Candidate contact</div>
       ) : (
         <ul className="wm-erDashInterviewList">
           {interviews.map((item) => (
-            <li key={`${item.appId}-${item.roundLabel}-${item.scheduledDate}`} className="wm-erDashInterviewList__item">
+            <li
+              key={`${item.appId}-${item.roundLabel}-${item.scheduledDate}`}
+              className="wm-erDashInterviewList__item"
+            >
               <div className="wm-erDashInterviewList__copy">
                 <div className="wm-erDashInterviewList__title">{item.candidateName}</div>
                 <div className="wm-erDashInterviewList__meta">

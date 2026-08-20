@@ -23,7 +23,7 @@ export function EmployerMatchPanel({ items }: Props) {
       </p>
 
       {items.length === 0 ? (
-        <div className="wm-erDashEmpty">No active-role candidates to rank yet.</div>
+        <div className="wm-erDashEmpty">Tracks: Skill match engine • Review-ready applicants</div>
       ) : (
         <ul className="wm-erDashMatchList">
           {items.map((item) => (
