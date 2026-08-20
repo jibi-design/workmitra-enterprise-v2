@@ -1,62 +1,69 @@
-/** Employer Pro — dense 3-up hiring hero metrics. */
+/** Employer OS — three domain snapshot cards (Shift / Career / Planner). */
 
-import { Briefcase, CalendarClock, Users } from "lucide-react";
-import type { EmployerDashMetrics } from "../../helpers/employerDashboard.helpers";
+import type {
+  EmployerOsDomain,
+  EmployerOsDomainSnapshot,
+} from "../../helpers/employerDashboard.osTypes";
 
 type Props = {
-  readonly metrics: EmployerDashMetrics;
+  readonly shift: EmployerOsDomainSnapshot;
+  readonly career: EmployerOsDomainSnapshot;
+  readonly planner: EmployerOsDomainSnapshot;
+  readonly selected: EmployerOsDomain;
+  readonly onSelect: (domain: EmployerOsDomain) => void;
 };
 
-function plural(count: number, one: string, many: string): string {
-  return `${count} ${count === 1 ? one : many}`;
+function DomainCard({
+  snap,
+  selected,
+  onSelect,
+}: {
+  readonly snap: EmployerOsDomainSnapshot;
+  readonly selected: boolean;
+  readonly onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={`wm-erDashOsCard wm-erDashOsCard--${snap.domain}${selected ? " isSelected" : ""}`}
+      data-testid={`employer-os-card-${snap.domain}`}
+      aria-pressed={selected}
+      onClick={onSelect}
+    >
+      <div className="wm-erDashOsCard__kicker">{snap.title}</div>
+      <div className="wm-erDashOsCard__value">{snap.pendingCount}</div>
+      <p className="wm-erDashOsCard__meta">{snap.pendingLabel}</p>
+      <p className="wm-erDashOsCard__sub">
+        {snap.openCount} {snap.openLabel.toLowerCase()} · {snap.confirmedCount}{" "}
+        {snap.confirmedLabel.toLowerCase()}
+      </p>
+      {snap.extraLabel != null && snap.extraCount != null ? (
+        <p className="wm-erDashOsCard__extra">
+          {snap.extraCount} {snap.extraLabel.toLowerCase()}
+        </p>
+      ) : null}
+    </button>
+  );
 }
 
-export function EmployerDashMetricsCards({ metrics }: Props) {
-  const activePosts = metrics?.activePosts ?? 0;
-  const totalApplicants = metrics?.totalApplicants ?? 0;
-  const scheduled = metrics?.todayInterviews ?? 0;
-
+export function EmployerDashMetricsCards({ shift, career, planner, selected, onSelect }: Props) {
   return (
-    <section className="wm-erDashHero wm-stable-row" data-testid="employer-dash-hero" aria-label="Hiring metrics">
-      <article className="wm-erDashHero__cell wm-erDashHero__cell--roles">
-        <div className="wm-erDashHero__top">
-          <div className="wm-erDashHero__icon" aria-hidden="true">
-            <Briefcase size={16} strokeWidth={2.25} />
-          </div>
-          <span className="wm-erDashHero__badge">Active</span>
-        </div>
-        <div className="wm-erDashHero__label">Active roles</div>
-        <div className="wm-erDashHero__value">{activePosts}</div>
-        <p className="wm-erDashHero__meta">{plural(activePosts, "listing", "listings")}</p>
-      </article>
-
-      <article className="wm-erDashHero__cell wm-erDashHero__cell--apps">
-        <div className="wm-erDashHero__top">
-          <div className="wm-erDashHero__icon" aria-hidden="true">
-            <Users size={16} strokeWidth={2.25} />
-          </div>
-          <span className="wm-erDashHero__badge">Received</span>
-        </div>
-        <div className="wm-erDashHero__label">Applicants</div>
-        <div className="wm-erDashHero__value">{totalApplicants}</div>
-        <p className="wm-erDashHero__meta">
-          {plural(totalApplicants, "applicant", "applicants")}
-        </p>
-      </article>
-
-      <article className="wm-erDashHero__cell wm-erDashHero__cell--today">
-        <div className="wm-erDashHero__top">
-          <div className="wm-erDashHero__icon" aria-hidden="true">
-            <CalendarClock size={16} strokeWidth={2.25} />
-          </div>
-          <span className="wm-erDashHero__badge">Today</span>
-        </div>
-        <div className="wm-erDashHero__label">Scheduled</div>
-        <div className="wm-erDashHero__value">{scheduled}</div>
-        <p className="wm-erDashHero__meta">
-          {plural(scheduled, "interview today", "interviews today")}
-        </p>
-      </article>
+    <section
+      className="wm-erDashHero wm-erDashOsStrip wm-stable-row"
+      data-testid="employer-dash-hero"
+      aria-label="Shift, Career, and Planner snapshot"
+    >
+      <DomainCard snap={shift} selected={selected === "shift"} onSelect={() => onSelect("shift")} />
+      <DomainCard
+        snap={career}
+        selected={selected === "career"}
+        onSelect={() => onSelect("career")}
+      />
+      <DomainCard
+        snap={planner}
+        selected={selected === "planner"}
+        onSelect={() => onSelect("planner")}
+      />
     </section>
   );
 }

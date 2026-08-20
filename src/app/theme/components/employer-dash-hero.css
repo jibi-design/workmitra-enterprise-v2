@@ -236,6 +236,11 @@
   background: color-mix(in srgb, var(--wm-er-muted, #64748b) 14%, transparent);
 }
 
+.wm-erDashJobBadge--upcoming {
+  color: var(--wm-shift-accent, #16a34a);
+  background: color-mix(in srgb, var(--wm-shift-accent, #16a34a) 14%, transparent);
+}
+
 .wm-erDashJobs__meta {
   display: flex;
   flex-wrap: wrap;
